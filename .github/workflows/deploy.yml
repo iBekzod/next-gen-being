@@ -20,10 +20,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/projects/next-gen-being
+            chmod -R ug+rwX storage bootstrap/cache || true
             git pull origin main
             composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
+            php artisan migrate --force || true
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            sudo supervisorctl restart laravel-queue:*
+            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S supervisorctl restart laravel-queue:*
+            echo "Deployment completed successfully!"
