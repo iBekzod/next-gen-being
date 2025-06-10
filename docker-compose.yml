@@ -16,7 +16,7 @@ services:
     entrypoint: ["sh", "/usr/local/bin/entrypoint.sh"]
     command: ["php-fpm"]
     depends_on:
-      - ngb-db
+      - ngb-database
       - ngb-redis
     networks:
       - laravel
