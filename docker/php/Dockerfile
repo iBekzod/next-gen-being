@@ -3,6 +3,7 @@ FROM php:8.4-fpm
 ARG UID=1000
 ARG GID=1000
 
+# Install required packages including Node.js and npm
 RUN apt-get update && apt-get install -y \
     curl \
     zip \
@@ -21,9 +22,14 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libsqlite3-dev \
     libmariadb-dev \
+    gnupg \
+    ca-certificates \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo \
-        pdo_mysql \
+        pdo_pgsql \
         mbstring \
         zip \
         exif \
@@ -31,7 +37,9 @@ RUN apt-get update && apt-get install -y \
         intl \
         bcmath \
         opcache \
-    && pecl install redis && docker-php-ext-enable redis \
+        gd \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Create matching user
@@ -42,10 +50,14 @@ RUN groupadd -g ${GID} appgroup && \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Copy PHP configs and entrypoint
 COPY ./docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 COPY ./docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Set working directory
 WORKDIR /var/www/html
 
+# Default command
 CMD ["php-fpm"]
+ 
