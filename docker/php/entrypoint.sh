@@ -3,10 +3,6 @@ set -e
 
 echo "🚀 Running Laravel Docker Entrypoint..."
 
-# Ensure correct permissions
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R ug+rwx /var/www/html/storage /var/www/html/bootstrap/cache
-
 # Only install composer dependencies if vendor folder is missing
 if [ ! -d "vendor" ]; then
     composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -21,6 +17,9 @@ php artisan config:cache
 # Run migrations (fail-safe)
 php artisan migrate --force || echo "⚠️  Migrations failed or already applied."
 
+npm install -D tailwindcss postcss autoprefixer || echo "⚠️ Node installation failed."
+
+npx tailwindcss init -p || echo "⚠️ Npx installation failed."
 # Restart queue
 php artisan queue:restart || echo "⚠️  Queue restart failed."
 

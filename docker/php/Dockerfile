@@ -3,6 +3,9 @@ FROM php:8.4-fpm
 ARG UID=1000
 ARG GID=1000
 
+# Set working directory first
+WORKDIR /var/www/html
+
 # Install required packages including Node.js and npm
 RUN apt-get update && apt-get install -y \
     curl \
@@ -44,20 +47,30 @@ RUN apt-get update && apt-get install -y \
 
 # Create matching user
 RUN groupadd -g ${GID} appgroup && \
-    useradd -u ${UID} -g appgroup -m appuser && \
-    chown -R appuser:appgroup /var/www/html
+    useradd -u ${UID} -g appgroup -m appuser
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy package.json first for better Docker layer caching
+COPY package*.json ./
+
+# Install npm dependencies first
+RUN npm install
+
+# Copy application files
+COPY . .
 
 # Copy PHP configs and entrypoint
 COPY ./docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 COPY ./docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Set working directory
-WORKDIR /var/www/html
+# Fix permissions after all files are copied
+RUN chown -R appuser:appgroup /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    chmod -R 775 /var/www/html/storage && \
+    chmod -R 775 /var/www/html/bootstrap/cache
 
 # Default command
 CMD ["php-fpm"]
- 
