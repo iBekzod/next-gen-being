@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\HealthCheckController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
@@ -11,7 +13,7 @@ use Filament\Http\Controllers\Auth\LoginController;
 Route::get('/', function () {
     return view('home');
 })->name('home');
-
+Route::get('/health', HealthCheckController::class)->name('health.check');
 // Public routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');

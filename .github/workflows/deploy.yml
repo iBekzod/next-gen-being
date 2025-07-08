@@ -1,31 +1,172 @@
-name: Deploy Laravel to Droplet
+name: Deploy to Production
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '20'
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, pdo, pdo_pgsql, redis, bcmath, gd, intl, zip, imagick
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          composer validate --strict
+
+      - name: Run PHP linting
+        run: vendor/bin/pint --test
+
+      - name: Copy .env for testing
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Run tests
+        run: php artisan test --parallel
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install and build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: |
+            public/build
+            public/css
+            public/js
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: public/
+
+      - name: Deploy to DigitalOcean Droplet
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DROPLET_IP }}
-          username: deploy
+          username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ~/projects/next-gen-being
-            chmod -R ug+rwX storage bootstrap/cache || true
-            git pull origin main
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force || true
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S supervisorctl restart laravel-queue:*
+            set -e
+            cd ~/projects/nextgenbeing
+
+            # Backup current version
+            timestamp=$(date +%Y%m%d_%H%M%S)
+            mkdir -p ~/backups
+            tar -czf ~/backups/backup_$timestamp.tar.gz --exclude='vendor' --exclude='node_modules' --exclude='storage/logs/*' .
+
+            # Pull latest code
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Update permissions
+            chmod -R 775 storage bootstrap/cache
+            chown -R www-data:www-data storage bootstrap/cache
+
+            # Copy production environment file
+            cp .env.production .env
+
+            # Install dependencies
+            docker-compose -f docker-compose.prod.yml run --rm ngb-app composer install --no-dev --optimize-autoloader
+
+            # Run database migrations
+            docker-compose -f docker-compose.prod.yml run --rm ngb-app php artisan migrate --force
+
+            # Clear and optimize caches
+            docker-compose -f docker-compose.prod.yml run --rm ngb-app php artisan optimize:clear
+            docker-compose -f docker-compose.prod.yml run --rm ngb-app php artisan optimize
+
+            # Restart containers
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml up -d
+
+            # Health check
+            sleep 10
+            curl -f http://localhost/health || exit 1
+
+            # Clear CDN cache if applicable
+            # curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            #      -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            #      -H "Content-Type: application/json" \
+            #      --data '{"purge_everything":true}'
+
             echo "Deployment completed successfully!"
+
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  rollback:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Rollback deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/projects/nextgenbeing
+
+            # Find latest backup
+            latest_backup=$(ls -t ~/backups/backup_*.tar.gz | head -1)
+
+            if [ -z "$latest_backup" ]; then
+              echo "No backup found for rollback!"
+              exit 1
+            fi
+
+            # Restore from backup
+            tar -xzf $latest_backup -C .
+
+            # Restart services
+            docker-compose -f docker-compose.prod.yml restart
+
+            echo "Rollback completed!"

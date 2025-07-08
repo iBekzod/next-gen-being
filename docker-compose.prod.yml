@@ -1,0 +1,159 @@
+services:
+  ngb-app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: ngb-app-prod
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.prod.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./storage/logs:/var/www/html/storage/logs
+    entrypoint: ["sh", "/usr/local/bin/entrypoint.sh"]
+    command: ["php-fpm"]
+    depends_on:
+      - ngb-database
+      - ngb-redis
+      - ngb-meilisearch
+    networks:
+      - laravel_prod
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    healthcheck:
+      test: ["CMD", "php", "artisan", "health:check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngb-nginx:
+    image: nginx:alpine
+    container_name: ngb-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+      - ./storage/logs/nginx:/var/log/nginx
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - ngb-app
+    networks:
+      - laravel_prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngb-database:
+    image: postgres:15-alpine
+    container_name: ngb-database-prod
+    environment:
+      POSTGRES_USER: "${DB_USERNAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    networks:
+      - laravel_prod
+    restart: unless-stopped
+    volumes:
+      - ngb-db-data-prod:/var/lib/postgresql/data
+      - ./docker/db/postgresql.prod.conf:/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngb-redis:
+    image: redis:7-alpine
+    container_name: ngb-redis-prod
+    volumes:
+      - ngb-redis-data-prod:/data
+      - ./docker/redis/redis.prod.conf:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - laravel_prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngb-meilisearch:
+    image: getmeili/meilisearch:v1.5
+    container_name: ngb-meilisearch-prod
+    volumes:
+      - ngb-search-data-prod:/meili_data
+    environment:
+      MEILI_MASTER_KEY: "${MEILISEARCH_KEY}"
+      MEILI_ENV: "production"
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_HTTP_PAYLOAD_SIZE_LIMIT: "100MB"
+    networks:
+      - laravel_prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngb-scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: ngb-scheduler-prod
+    user: root
+    working_dir: /var/www/html
+    depends_on:
+      - ngb-app
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.prod.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/cron/supervisord.prod.conf:/etc/supervisord.conf
+    command: >
+      sh -c "apk add --no-cache supervisor &&
+             mkdir -p /var/log/supervisor &&
+             touch /var/log/supervisor/supervisord.log /var/log/supervisor/laravel-worker.log /var/log/supervisor/laravel-schedule.log &&
+             chown -R appuser:appgroup /var/log/supervisor &&
+             supervisord -c /etc/supervisord.conf"
+    networks:
+      - laravel_prod
+    restart: unless-stopped
+    env_file:
+      - .env.production
+
+  ngb-certbot:
+    image: certbot/certbot
+    container_name: ngb-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - laravel_prod
+
+networks:
+  laravel_prod:
+    driver: bridge
+
+volumes:
+  ngb-db-data-prod:
+    driver: local
+  ngb-redis-data-prod:
+    driver: local
+  ngb-search-data-prod:
+    driver: local
