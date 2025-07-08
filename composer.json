@@ -1,15 +1,39 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "ibekzod/nextgenbeing-blog",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "NextGenBeing - Professional blog platform with AI, subscriptions, and advanced content management",
+    "keywords": ["laravel", "blog", "filament", "livewire", "lemonsqueezy", "ai", "postgresql"],
     "license": "MIT",
+    "homepage": "https://nextgenbeing.com",
+    "authors": [
+        {
+            "name": "iBekzod",
+            "homepage": "https://github.com/iBekzod"
+        }
+    ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
+        "awcodes/filament-tiptap-editor": "^3.5",
         "filament/filament": "^3.3",
+        "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "^3.0",
+        "laravel/cashier": "^15.7",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/sanctum": "^4.0",
+        "laravel/scout": "^10.0",
+        "laravel/tinker": "^2.10.1",
+        "laravel/ui": "^4.6",
+        "league/commonmark": "^2.4",
+        "lemonsqueezy/laravel": "^1.8.5",
+        "livewire/livewire": "^3.0",
+        "meilisearch/meilisearch-php": "^1.0",
+        "spatie/laravel-backup": "^9.0",
+        "spatie/laravel-medialibrary": "^11.0",
+        "spatie/laravel-schedule-monitor": "^3.0",
+        "spatie/laravel-sitemap": "^7.0",
+        "spatie/laravel-sluggable": "^3.5",
+        "symfony/dom-crawler": "^7.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -18,14 +42,19 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.3"
+        "phpunit/phpunit": "^11.5.3",
+        "spatie/laravel-ignition": "^2.0",
+        "barryvdh/laravel-debugbar": "^3.9"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -46,7 +75,6 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
         "dev": [
@@ -56,6 +84,28 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "setup-blog": [
+            "composer install --optimize-autoloader",
+            "npm install",
+            "@php artisan migrate:fresh --seed",
+            "@php artisan storage:link",
+            "@php artisan scout:import App\\Models\\Post",
+            "@php artisan sitemap:generate",
+            "npm run build"
+        ],
+        "production-deploy": [
+            "composer install --no-dev --optimize-autoloader",
+            "@php artisan migrate --force",
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache",
+            "@php artisan sitemap:generate",
+            "@php artisan backup:run"
+        ],
+        "fresh-install": [
+            "@setup-blog",
+            "@php artisan make:filament-user"
         ]
     },
     "extra": {
