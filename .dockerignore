@@ -12,3 +12,5 @@ coverage
 .parcel-cache
 .DS_Store
 vendor
+public/storage
+

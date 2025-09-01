@@ -1,0 +1,8 @@
+// ALL @use rules must come first, before any other rules
+@use 'variables' as *;
+@use 'bootstrap/scss/bootstrap' as *;
+
+// Now you can have @import and other rules
+@import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Any custom CSS rules can go here

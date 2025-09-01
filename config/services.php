@@ -34,5 +34,40 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'paddle' => [
+        'api_key' => env('PADDLE_API_KEY'),
+        'environment' => env('PADDLE_ENVIRONMENT', 'sandbox'), // 'production' for live
+        'webhook_secret' => env('PADDLE_WEBHOOK_SECRET'),
+        'basic_price_id' => env('PADDLE_BASIC_PRICE_ID'),
+        'pro_price_id' => env('PADDLE_PRO_PRICE_ID'),
+        'enterprise_price_id' => env('PADDLE_ENTERPRISE_PRICE_ID'),
+    ],
+    
+    'lemonsqueezy' => [
+        'api_key' => env('LEMONSQUEEZY_API_KEY'),
+        'store_id' => env('LEMONSQUEEZY_STORE_ID'),
+        'signing_secret' => env('LEMONSQUEEZY_SIGNING_SECRET'),
+        'basic_variant_id' => env('LEMONSQUEEZY_BASIC_VARIANT_ID'),
+        'pro_variant_id' => env('LEMONSQUEEZY_PRO_VARIANT_ID'),
+        'enterprise_variant_id' => env('LEMONSQUEEZY_ENTERPRISE_VARIANT_ID'),
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_REDIRECT_URI'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'twitter' => [
+        'client_id' => env('TWITTER_CLIENT_ID'),
+        'client_secret' => env('TWITTER_CLIENT_SECRET'),
+        'redirect' => env('TWITTER_REDIRECT_URI'),
+    ],
 
 ];
