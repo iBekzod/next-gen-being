@@ -1,16 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-<<<<<<< Updated upstream
-use App\Http\Controllers\LandingPageController;
-use App\Http\Controllers\BlogController;
-
-// Route::get('/', [LandingPageController::class, 'index']);
-Route::post('/subscribe', [LandingPageController::class, 'store'])->name('subscribe');
-
-Route::get('/', [BlogController::class, 'index'])->name('home');
-Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
-=======
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserDashboardController;
@@ -92,4 +82,3 @@ Route::get('/privacy', function () {
 Route::get('/terms', function () {
     return view('terms');
 })->name('terms');
->>>>>>> Stashed changes
