@@ -1,0 +1,6 @@
+{
+  "name": "Next Gen Being",
+  "description": "Your Laravel application",
+  "repository": "https://github.com/iBekzod/next-gen-being",
+  "keywords": ["php", "laravel", "postgresql"]
+}
