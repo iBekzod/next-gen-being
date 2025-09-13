@@ -2,21 +2,15 @@
 namespace App\Http\Controllers;
 
 use App\Services\PaddleService;
-use App\Services\LemonSqueezyService;
-use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubscriptionController extends Controller
 {
-    private string $activeProvider;
 
     public function __construct(
-        private PaddleService $paddle,
-        private LemonSqueezyService $lemonSqueezy
+        private PaddleService $paddle
     ) {
-        // Choose your active provider - set to 'paddle' to switch
-        $this->activeProvider = config('services.subscription_provider', 'paddle'); // or 'lemonsqueezy'
     }
 
     public function plans()
@@ -27,7 +21,6 @@ class SubscriptionController extends Controller
                 'price' => 9.99,
                 'interval' => 'month',
                 'paddle_price_id' => config('services.paddle.basic_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.basic_variant_id'),
                 'features' => [
                     'Access to premium articles',
                     'Ad-free reading experience',
@@ -40,7 +33,6 @@ class SubscriptionController extends Controller
                 'price' => 19.99,
                 'interval' => 'month',
                 'paddle_price_id' => config('services.paddle.pro_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.pro_variant_id'),
                 'features' => [
                     'Everything in Basic',
                     'Early access to new content',
@@ -54,7 +46,6 @@ class SubscriptionController extends Controller
                 'price' => 49.99,
                 'interval' => 'month',
                 'paddle_price_id' => config('services.paddle.enterprise_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.enterprise_variant_id'),
                 'features' => [
                     'Everything in Pro',
                     'Team accounts (up to 10 users)',
@@ -78,11 +69,7 @@ class SubscriptionController extends Controller
         $planKey = $request->input('plan');
 
         try {
-            if ($this->activeProvider === 'paddle') {
-                return $this->subscribePaddle($user, $planKey);
-            } else {
-                return $this->subscribeLemonSqueezy($user, $planKey);
-            }
+            return $this->subscribePaddle($user, $planKey);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create checkout: ' . $e->getMessage());
         }
@@ -101,21 +88,6 @@ class SubscriptionController extends Controller
         ]);
 
         return redirect($checkout['checkout_url']);
-    }
-
-    private function subscribeLemonSqueezy($user, string $planKey)
-    {
-        $plans = $this->getPlansConfig();
-        $plan = $plans[$planKey];
-
-        $checkout = $this->lemonSqueezy->createCheckout([
-            'variant_id' => $plan['lemonsqueezy_variant_id'],
-            'email' => $user->email,
-            'name' => $user->name,
-            'user_id' => $user->id,
-        ]);
-
-        return redirect($checkout['data']['attributes']['url']);
     }
 
     public function success()
@@ -146,11 +118,7 @@ class SubscriptionController extends Controller
         }
 
         try {
-            if ($subscription->provider === 'paddle') {
-                $this->paddle->cancelSubscription($subscription->provider_id);
-            } else {
-                $this->lemonSqueezy->cancelSubscription($subscription->provider_id);
-            }
+            $this->paddle->cancelSubscription($subscription->provider_id);
 
             $subscription->update([
                 'status' => 'cancelled',
@@ -173,11 +141,7 @@ class SubscriptionController extends Controller
         }
 
         try {
-            if ($subscription->provider === 'paddle') {
-                $this->paddle->pauseSubscription($subscription->provider_id);
-            } else {
-                $this->lemonSqueezy->pauseSubscription($subscription->provider_id);
-            }
+            $this->paddle->pauseSubscription($subscription->provider_id);
 
             $subscription->update(['status' => 'paused']);
 
@@ -197,12 +161,7 @@ class SubscriptionController extends Controller
         }
 
         try {
-            if ($subscription->provider === 'paddle') {
-                $this->paddle->resumeSubscription($subscription->provider_id);
-            } else {
-                $this->lemonSqueezy->resumeSubscription($subscription->provider_id);
-            }
-
+            $this->paddle->resumeSubscription($subscription->provider_id);
             $subscription->update([
                 'status' => 'active',
                 'ends_at' => null
@@ -221,19 +180,16 @@ class SubscriptionController extends Controller
                 'name' => 'Basic',
                 'price' => 9.99,
                 'paddle_price_id' => config('services.paddle.basic_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.basic_variant_id'),
             ],
             'pro' => [
                 'name' => 'Pro',
                 'price' => 19.99,
                 'paddle_price_id' => config('services.paddle.pro_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.pro_variant_id'),
             ],
             'enterprise' => [
                 'name' => 'Enterprise',
                 'price' => 49.99,
                 'paddle_price_id' => config('services.paddle.enterprise_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.enterprise_variant_id'),
             ]
         ];
     }

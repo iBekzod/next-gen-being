@@ -243,7 +243,7 @@
                 </button>
                 <div x-show="open" x-transition class="px-6 pb-4 text-gray-600 dark:text-gray-400">
                     We accept all major credit cards (Visa, Mastercard, American Express) and debit cards. All payments
-                    are processed securely through LemonSqueezy.
+                    are processed securely through Paddle.
                 </div>
             </div>
 

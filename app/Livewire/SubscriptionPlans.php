@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use App\Services\PaddleService;
-use App\Services\LemonSqueezyService;
 use Illuminate\Support\Facades\Auth;
 
 class SubscriptionPlans extends Component
@@ -24,7 +23,6 @@ class SubscriptionPlans extends Component
                 'price' => 9.99,
                 'interval' => 'month',
                 'paddle_price_id' => config('services.paddle.basic_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.basic_variant_id'),
                 'features' => [
                     'Access to premium articles',
                     'Ad-free reading experience',
@@ -37,7 +35,6 @@ class SubscriptionPlans extends Component
                 'price' => 19.99,
                 'interval' => 'month',
                 'paddle_price_id' => config('services.paddle.pro_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.pro_variant_id'),
                 'features' => [
                     'Everything in Basic',
                     'Early access to new content',
@@ -51,7 +48,6 @@ class SubscriptionPlans extends Component
                 'price' => 49.99,
                 'interval' => 'month',
                 'paddle_price_id' => config('services.paddle.enterprise_price_id'),
-                'lemonsqueezy_variant_id' => config('services.lemonsqueezy.enterprise_variant_id'),
                 'features' => [
                     'Everything in Pro',
                     'Team accounts (up to 10 users)',
@@ -83,16 +79,6 @@ class SubscriptionPlans extends Component
                 ]);
 
                 return redirect($checkout['checkout_url']);
-            } else {
-                $lemonSqueezyService = app(LemonSqueezyService::class);
-                $checkout = $lemonSqueezyService->createCheckout([
-                    'variant_id' => $plan['lemonsqueezy_variant_id'],
-                    'email' => $user->email,
-                    'name' => $user->name,
-                    'user_id' => $user->id,
-                ]);
-
-                return redirect($checkout['data']['attributes']['url']);
             }
         } catch (\Exception $e) {
             session()->flash('error', 'Failed to create checkout: ' . $e->getMessage());

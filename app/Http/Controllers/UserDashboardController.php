@@ -154,7 +154,7 @@ class UserDashboardController extends Controller
         // Cancel any active subscriptions
         if ($user->subscription && $user->subscription->isActive()) {
             try {
-                app(\App\Services\LemonSqueezyService::class)
+                app(\App\Services\PaddleService::class)
                     ->cancelSubscription($user->subscription->lemonsqueezy_id);
             } catch (\Exception $e) {
                 // Log the error but continue with deletion

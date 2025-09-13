@@ -115,21 +115,12 @@ class Subscription extends Model
      */
     public function getPlanNameAttribute(): string
     {
-        if ($this->provider === 'paddle') {
-            return match($this->price_id) {
-                config('services.paddle.basic_price_id') => 'Basic',
-                config('services.paddle.pro_price_id') => 'Pro',
-                config('services.paddle.enterprise_price_id') => 'Enterprise',
-                default => 'Unknown'
-            };
-        } else {
-            return match($this->variant_id) {
-                config('services.lemonsqueezy.basic_variant_id') => 'Basic',
-                config('services.lemonsqueezy.pro_variant_id') => 'Pro',
-                config('services.lemonsqueezy.enterprise_variant_id') => 'Enterprise',
-                default => 'Unknown'
-            };
-        }
+        return match($this->price_id) {
+            config('services.paddle.basic_price_id') => 'Basic',
+            config('services.paddle.pro_price_id') => 'Pro',
+            config('services.paddle.enterprise_price_id') => 'Enterprise',
+            default => 'Unknown'
+        };
     }
 
     /**
