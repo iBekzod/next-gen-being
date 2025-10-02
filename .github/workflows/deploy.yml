@@ -33,11 +33,11 @@ jobs:
       - name: Copy environment file for testing
         run: cp .env.example .env
 
-      - name: Generate application key
-        run: php artisan key:generate
-
       - name: Install Composer dependencies
         run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Generate application key
+        run: php artisan key:generate
 
       - name: Install NPM dependencies
         run: npm ci
@@ -136,8 +136,3 @@ jobs:
           fi
 
           echo "✅ Deployment completed successfully!"
-
-    - name: Verify Deployment
-      run: |
-        sleep 10
-        curl -f https://nextgenbeing.com || curl -f http://nextgenbeing.com || echo "Health check failed - manual verification needed"

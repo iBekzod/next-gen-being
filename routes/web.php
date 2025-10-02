@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HealthCheckController;
+use App\Http\Controllers\LandingPageController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
@@ -8,11 +9,8 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Auth;
-use Filament\Http\Controllers\Auth\LoginController;
 
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+Route::get('/', [LandingPageController::class, 'index'])->name('home');
 Route::get('/health', HealthCheckController::class)->name('health.check');
 // Public routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
@@ -25,7 +23,6 @@ Route::get('/tags/{tag:slug}', [PostController::class, 'index'])->name('tags.sho
 Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('subscription.plans');
 
 // Authentication routes
-// Auth::routes(['verify' => true]);
 
 // Protected routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -57,22 +54,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Cashier webhook routes
-Route::post('/stripe/webhook', '\Laravel\Cashier\Http\Controllers\WebhookController@handleWebhook');
+Route::post('/stripe/webhook', '\\Laravel\\Cashier\\Http\\Controllers\\WebhookController@handleWebhook');
 
 Route::post('/lemonsqueezy/webhook', [App\Http\Controllers\WebhookController::class, 'lemonSqueezyWebhook'])->name('lemonsqueezy.webhook')->withoutMiddleware([VerifyCsrfToken::class]);
 
+Auth::routes(['verify' => true]);
 
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::post('/admin/login', [LoginController::class, 'authenticate'])
-    ->middleware(['web'])
-    ->name('filament.admin.auth.login');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard.home');
 // Policy pages
-Route::get('/privacy', function () {
-    return view('privacy');
-})->name('privacy');
+Route::view('/privacy', 'privacy')->name('privacy');
 
-Route::get('/terms', function () {
-    return view('terms');
-})->name('terms');
+Route::view('/terms', 'terms')->name('terms');
+
+
