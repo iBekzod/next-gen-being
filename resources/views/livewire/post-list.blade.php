@@ -62,7 +62,7 @@
     <div class="flex flex-col mb-8 space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div class="flex items-center space-x-4">
             <button @click="$wire.showFilters = !$wire.showFilters"
-                    class="flex items-center px-4 py-2 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50">
+                    class="flex items-center px-4 py-2 text-sm font-medium transition-colors border border-slate-200 rounded-lg bg-white hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/70">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                 </svg>
@@ -71,7 +71,7 @@
 
             @if($search || $category || $selectedTag || $contentType !== 'all')
             <button wire:click="clearFilters"
-                    class="px-4 py-2 text-sm text-red-600 transition-colors hover:text-red-800">
+                    class="px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
                 Clear all filters
             </button>
             @endif
@@ -82,13 +82,13 @@
                 <input type="text"
                        wire:model.live.debounce.300ms="search"
                        placeholder="Search posts..."
-                       class="w-64 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-64 py-2 pl-10 pr-4 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100">
                 <svg class="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
 
-            <select wire:model.live="sortBy" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <select wire:model.live="sortBy" class="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100">
                 <option value="latest">Latest</option>
                 <option value="popular">Popular</option>
                 <option value="trending">Trending</option>
@@ -241,3 +241,6 @@
     <!-- Pagination -->
     {{ $this->posts->links() }}
 </div>
+
+
+

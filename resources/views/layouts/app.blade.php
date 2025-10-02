@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }">
+<html lang="{{ str_replace('_' , '-', app()->getLocale()) }}" x-data="themeSwitcher()" x-init="init()" x-effect="document.documentElement.classList.toggle('dark', darkMode)">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,6 +16,15 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
+    <script>
+        (function() {
+            const stored = localStorage.getItem("theme") ?? localStorage.getItem("darkMode");
+            const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if ((stored === "dark" || stored === "true") || (!stored && prefersDark)) {
+                document.documentElement.classList.add("dark");
+            }
+        })();
+    </script>
     <!-- Scripts -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     <style>[x-cloak]{display:none!important;}</style>
@@ -89,11 +98,11 @@
                         </button>
 
                         <!-- Search Modal -->
-                        <div x-show="searchOpen" @keydown.escape="searchOpen = false" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+                        <div x-cloak x-show="searchOpen" @keydown.escape="searchOpen = false" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
                             <div class="flex items-start justify-center min-h-screen px-4 pt-16 pb-20">
-                                <div x-show="searchOpen" @click="searchOpen = false" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 transition-opacity bg-black bg-opacity-50"></div>
+                                <div x-cloak x-show="searchOpen" @click="searchOpen = false" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 transition-opacity bg-black bg-opacity-50"></div>
 
-                                <div x-show="searchOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="relative w-full max-w-lg bg-white rounded-lg shadow-xl dark:bg-gray-800">
+                                <div x-cloak x-show="searchOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="relative w-full max-w-lg bg-white rounded-lg shadow-xl dark:bg-gray-800">
                                     <form action="{{ route('search') }}" method="GET" class="p-6">
                                         <div class="flex items-center">
                                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,11 +121,11 @@
                     </div>
 
                     <!-- Dark Mode Toggle -->
-                    <button @click="darkMode = !darkMode" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="toggle()" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <svg x-show="!darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
-                        <svg x-show="darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+                        <svg x-show="darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
                         </svg>
                     </button>
@@ -184,7 +193,7 @@
 
     <!-- Help/Report Button -->
     <div class="fixed z-40 bottom-6 right-6">
-        <button @click="$dispatch('show-help-modal')" class="p-3 text-white transition-all bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <button @click="$dispatch('show-help-modal')" class="p-3 text-white transition-all bg-blue-500 rounded-full shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 hover:bg-blue-500/90">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
@@ -330,37 +339,37 @@
 
             container.appendChild(notification);
 
-            // Animate in
             setTimeout(() => {
                 notification.classList.remove('translate-x-full', 'opacity-0');
             }, 100);
 
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 notification.classList.add('translate-x-full', 'opacity-0');
                 setTimeout(() => notification.remove(), 300);
             }, 5000);
         }
 
-        // Dark mode persistence
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.classList.add('dark');
-        }
-
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('darkMode', {
-                on: localStorage.getItem('darkMode') === 'true',
-                toggle() {
-                    this.on = !this.on;
-                    localStorage.setItem('darkMode', this.on);
-                    if (this.on) {
-                        document.documentElement.classList.add('dark');
+        function themeSwitcher() {
+            return {
+                darkMode: false,
+                init() {
+                    const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
+                    if (stored) {
+                        this.darkMode = stored === 'dark' || stored === 'true';
                     } else {
-                        document.documentElement.classList.remove('dark');
+                        this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                     }
+
+                    this.$watch('darkMode', (value) => {
+                        localStorage.setItem('theme', value ? 'dark' : 'light');
+                        localStorage.removeItem('darkMode');
+                    });
+                },
+                toggle() {
+                    this.darkMode = !this.darkMode;
                 }
-            });
-        });
+            }
+        }
     </script>
 </body>
 </html>
