@@ -122,8 +122,8 @@
                 If you have any questions about these Terms, please contact us at:
             </p>
             <ul>
-                <li>Email: legal@{{ str_replace(['http://', 'https://', 'www.'], '', config('app.url')) }}</li>
-                <li>Address: {{ setting('company_address', 'Your Company Address') }}</li>
+                <li>Email: {{ 'privacy@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}</li>
+                <li>Address: {{ setting('company_address', '240 Bogishamol Street, Yunusabad District, Tashkent 100058, Uzbekistan') }}</li>
             </ul>
         </div>
     </div>
