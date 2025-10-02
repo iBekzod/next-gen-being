@@ -48,6 +48,12 @@
     <meta property="og:url" content="{{ request()->url() }}">
 </head>
 <body class="font-sans antialiased text-gray-900 bg-white dark:bg-gray-900 dark:text-gray-100">
+    @php
+        $navCategories = collect();
+        if (class_exists(\App\Models\Category::class) && \Illuminate\Support\Facades\Schema::hasTable('categories')) {
+            $navCategories = \App\Models\Category::active()->ordered()->get();
+        }
+    @endphp
     <!-- Navigation -->
     <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95" x-data="{ mobileMenuOpen: false }">
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -72,7 +78,7 @@
                                 </svg>
                             </button>
                             <div x-show="open" @click.away="open = false" x-transition class="absolute left-0 z-50 w-48 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
-                                @foreach(\App\Models\Category::active()->ordered()->get() as $category)
+                                @foreach($navCategories as $category)
                                 <a href="{{ route('categories.show', $category->slug) }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     {{ $category->name }}
                                 </a>
@@ -176,7 +182,7 @@
         <div x-show="mobileMenuOpen" x-transition class="bg-white border-t border-gray-200 md:hidden dark:bg-gray-800 dark:border-gray-700" style="display: none;">
             <div class="pt-2 pb-3 space-y-1">
                 <a href="{{ route('posts.index') }}" class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Articles</a>
-                @foreach(\App\Models\Category::active()->ordered()->limit(5)->get() as $category)
+                @foreach($navCategories->take(5) as $category)
                 <a href="{{ route('categories.show', $category->slug) }}" class="block py-2 pl-6 pr-4 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">{{ $category->name }}</a>
                 @endforeach
                 @if(setting('enable_subscriptions'))
@@ -256,7 +262,7 @@
                     <h3 class="mb-4 text-sm font-semibold tracking-wider text-gray-900 uppercase dark:text-white">Content</h3>
                     <ul class="space-y-3">
                         <li><a href="{{ route('posts.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">All Articles</a></li>
-                        @foreach(\App\Models\Category::active()->ordered()->limit(4)->get() as $category)
+                        @foreach($navCategories->take(4) as $category)
                         <li><a href="{{ route('categories.show', $category->slug) }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">{{ $category->name }}</a></li>
                         @endforeach
                     </ul>
