@@ -1,69 +1,54 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Subscription Successful - ' . setting('site_name'))
 @section('description', 'Thank you for subscribing!')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="px-4 py-16 mx-auto max-w-2xl sm:px-6 lg:px-8">
-        <div class="text-center">
+<section class="bg-slate-950 text-white">
+    <div class="px-6 py-16 mx-auto text-center max-w-3xl">
+        <span class="inline-flex items-center px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-emerald-500/20 text-emerald-200">Success</span>
+        <h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">Welcome to premium intelligence.</h1>
+        <p class="mt-4 text-base text-slate-300">Your subscription is active. You now have unrestricted access to every deep dive, drop, and framework.</p>
+    </div>
+</section>
+
+<section class="bg-gray-50 dark:bg-slate-900">
+    <div class="px-6 py-12 mx-auto max-w-3xl">
+        <div class="p-8 text-center bg-white border border-slate-200 rounded-3xl shadow-xl dark:bg-slate-900/70 dark:border-slate-700">
             <div class="flex justify-center mb-6">
-                <div class="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full dark:bg-green-900">
-                    <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+                    <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
             </div>
-
-            <h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
-                Welcome to Premium!
-            </h1>
-
-            <p class="mb-8 text-lg text-gray-600 dark:text-gray-400">
-                Your subscription has been activated successfully. You now have access to all premium content and features.
-            </p>
-
-            <div class="p-6 mb-8 bg-white rounded-lg shadow dark:bg-gray-800">
-                <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                    What's included in your subscription:
-                </h2>
-                <ul class="space-y-3 text-left">
-                    <li class="flex items-start">
-                        <svg class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="ml-3 text-gray-700 dark:text-gray-300">Unlimited access to all premium articles</span>
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="ml-3 text-gray-700 dark:text-gray-300">Ad-free reading experience</span>
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="ml-3 text-gray-700 dark:text-gray-300">Early access to new content</span>
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="ml-3 text-gray-700 dark:text-gray-300">Priority support</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="flex flex-col gap-4 sm:flex-row sm:justify-center">
-                <a href="{{ route('posts.index') }}" class="px-6 py-3 font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
-                    Start Reading Premium Content
+            <h2 class="text-2xl font-semibold text-slate-900 dark:text-white">Here is what is unlocked for you</h2>
+            <ul class="mt-6 space-y-4 text-left">
+                <li class="flex items-start gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 text-emerald-500 bg-emerald-100 rounded-full dark:bg-emerald-900/40"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="text-sm text-slate-600 dark:text-slate-300">Unlimited access to premium briefings and breakdowns</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 text-emerald-500 bg-emerald-100 rounded-full dark:bg-emerald-900/40"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="text-sm text-slate-600 dark:text-slate-300">Early access to new drops, prompts, and playbooks</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 text-emerald-500 bg-emerald-100 rounded-full dark:bg-emerald-900/40"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="text-sm text-slate-600 dark:text-slate-300">Downloadable templates and systems snapshots</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 text-emerald-500 bg-emerald-100 rounded-full dark:bg-emerald-900/40"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="text-sm text-slate-600 dark:text-slate-300">Priority assistance from the NextGenBeing team</span>
+                </li>
+            </ul>
+            <div class="flex flex-col gap-4 mt-10 sm:flex-row sm:justify-center">
+                <a href="{{ route('posts.index') }}" class="inline-flex items-center justify-center px-5 py-3 text-sm font-semibold text-white transition rounded-xl bg-blue-600 hover:bg-blue-700">
+                    Dive into the library
                 </a>
-                <a href="{{ route('subscription.manage') }}" class="px-6 py-3 font-medium text-gray-700 transition-colors border border-gray-300 rounded-lg dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
-                    Manage Subscription
+                <a href="{{ route('subscription.manage') }}" class="inline-flex items-center justify-center px-5 py-3 text-sm font-semibold text-slate-700 transition border rounded-xl border-slate-200 hover:bg-slate-100 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-800">
+                    Manage subscription
                 </a>
             </div>
         </div>
     </div>
-</div>
+</section>
 @endsection
+

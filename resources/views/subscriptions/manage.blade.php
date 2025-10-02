@@ -1,20 +1,19 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Manage Subscription - ' . setting('site_name'))
 @section('description', 'Manage your subscription and billing')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="px-4 py-8 mx-auto max-w-4xl sm:px-6 lg:px-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Manage Subscription
-            </h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-                View and manage your subscription details
-            </p>
-        </div>
+<section class="bg-slate-950 text-white">
+    <div class="px-6 py-16 mx-auto max-w-5xl">
+        <span class="inline-flex items-center px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500/20 text-blue-200">Billing</span>
+        <h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">Manage your subscription.</h1>
+        <p class="mt-4 text-base text-slate-300 max-w-3xl">Update plan status, review billing history, and keep your membership aligned with your operating rhythm.</p>
+    </div>
+</section>
 
+<section class="bg-gray-50 dark:bg-slate-900">
+    <div class="px-6 py-12 mx-auto max-w-4xl sm:px-6 lg:px-8">
         @if($subscription)
         <div class="overflow-hidden bg-white rounded-lg shadow dark:bg-gray-800">
             <div class="px-4 py-5 sm:p-6">
@@ -200,7 +199,7 @@
         </div>
         @endif
     </div>
-</div>
+</section>
 
 @if(session('success'))
 <script>
@@ -218,3 +217,4 @@
 </script>
 @endif
 @endsection
+

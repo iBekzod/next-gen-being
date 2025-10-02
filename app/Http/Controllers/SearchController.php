@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -20,9 +20,10 @@ class SearchController extends Controller
             $type = 'posts';
         }
 
-        return view('search.results', [
+        return view('search.index', [
             'query' => $query,
             'searchType' => $type,
         ]);
     }
 }
+

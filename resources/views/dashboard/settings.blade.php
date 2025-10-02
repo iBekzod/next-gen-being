@@ -1,20 +1,20 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Settings - Dashboard')
 @section('description', 'Manage your account settings')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Account Settings
-            </h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-                Manage your profile and account preferences
-            </p>
-        </div>
+ 
+<section class="bg-slate-950 text-white">
+    <div class="px-6 py-16 mx-auto max-w-7xl">
+        <span class="inline-flex items-center px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500/20 text-blue-200">Account workspace</span>
+        <h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">Account settings</h1>
+        <p class="mt-4 text-base text-slate-300 max-w-2xl">Manage your profile, keep security tight, and stay informed about your subscription status.</p>
+    </div>
+</section>
 
+<section class="bg-gray-50 dark:bg-slate-900">
+    <div class="px-6 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <!-- Sidebar -->
             <div class="lg:col-span-1">
@@ -288,7 +288,7 @@
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @if(session('success'))
 <script>
@@ -298,3 +298,5 @@
 </script>
 @endif
 @endsection
+
+

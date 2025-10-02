@@ -1,35 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>NextGenBeing – Explore the Tech That Evolves You</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    @vite('resources/css/app.css')
-</head>
-<body class="bg-gray-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6">
-    <h1 class="text-4xl md:text-5xl font-bold mb-4 text-center">NextGenBeing</h1>
-    <p class="text-lg md:text-xl text-gray-400 mb-8 text-center">Faceless reviews of tools that upgrade how you think, work, and live.</p>
+﻿@extends('layouts.app')
 
-    @if(session('success'))
-        <div class="bg-green-600 text-white px-4 py-2 rounded mb-4">
-            {{ session('success') }}
+@section('title', 'NextGenBeing - Explore the tech that evolves you')
+@section('description', 'Curated insights, tool breakdowns, and operating frameworks for ambitious builders and creators.')
+
+@section('content')
+<section class="relative overflow-hidden bg-slate-950 text-white">
+    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#3b82f6_0,_transparent_45%)]"></div>
+    <div class="relative px-6 pt-16 pb-24 mx-auto max-w-7xl lg:flex lg:items-center lg:gap-16">
+        <div class="max-w-2xl">
+            <div class="inline-flex items-center px-3 py-1 mb-6 text-sm font-medium text-blue-100 rounded-full bg-blue-500/20 ring-1 ring-inset ring-blue-400/60">
+                Level up faster with faceless, high-signal reviews
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+                Explore the tech that evolves the way you think, work, and live.
+            </h1>
+            <p class="mt-6 text-lg leading-8 text-slate-300">
+                NextGenBeing surfaces the workflows, AI tools, and systems that top performers quietly rely on.
+                Each drop distills hours of research into actionable playbooks you can apply today.
+            </p>
+            <div class="mt-10">
+                @if(session('success'))
+                    <div class="flex items-start gap-3 p-4 text-sm font-medium text-green-100 border border-green-500/40 rounded-xl bg-green-500/10">
+                        <span class="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-200 bg-green-500/30 rounded-full">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </span>
+                        <span class="leading-6">{{ session('success') }}</span>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="p-4 mt-3 text-sm text-red-200 border border-red-500/40 rounded-xl bg-red-500/10">
+                        {{ $errors->first('email') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('landing.subscribe') }}" class="mt-6" x-data="{ loading: false }" @submit="loading = true">
+                    @csrf
+                    <div class="flex flex-col gap-3 p-2 bg-white/10 border border-white/10 rounded-2xl backdrop-blur">
+                        <label for="email" class="text-sm font-medium text-slate-200">Join 3,000+ founders and operators getting the signal, not the noise.</label>
+                        <div class="flex flex-col gap-3 sm:flex-row">
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                required
+                                autocomplete="email"
+                                placeholder="you@domain.com"
+                                class="w-full px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 bg-white rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+                            >
+                            <button
+                                type="submit"
+                                class="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold transition-all duration-200 rounded-xl bg-blue-500 hover:bg-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 disabled:opacity-70"
+                                :class="loading ? 'cursor-wait opacity-80' : ''"
+                                :disabled="loading"
+                            >
+                                <span x-show="!loading" x-cloak>Get the drops</span>
+                                <span x-show="loading" x-cloak class="inline-flex items-center gap-2">
+                                    <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <circle class="opacity-30" cx="12" cy="12" r="9" stroke-width="3"></circle>
+                                        <path d="M21 12a9 9 0 0 1-9 9" stroke-width="3" stroke-linecap="round"></path>
+                                    </svg>
+                                    Sending...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="flex flex-wrap items-center gap-3 mt-6 text-xs text-slate-400">
+                    <span class="flex items-center gap-2"><svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> No spam. Cancel any time.</span>
+                    <span class="hidden w-px h-4 bg-white/10 sm:block"></span>
+                    <span>Delivered every Tuesday.</span>
+                    <span class="hidden w-px h-4 bg-white/10 sm:block"></span>
+                    <a href="{{ route('subscription.plans') }}" class="inline-flex items-center gap-1 text-slate-300 hover:text-white">
+                        Unlock premium intelligence
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </a>
+                </div>
+            </div>
         </div>
-    @endif
+        <div class="relative mt-16 lg:mt-0">
+            <div class="absolute inset-y-0 -left-24 hidden w-px bg-gradient-to-b from-transparent via-blue-500/60 to-transparent lg:block"></div>
+            <div class="relative p-6 bg-white/5 border border-white/10 rounded-3xl shadow-xl backdrop-blur">
+                <div class="flex items-center justify-between mb-6">
+                    <span class="text-sm font-semibold text-blue-200">This week of insight</span>
+                    <span class="text-xs text-slate-400">Issue {{ now()->format('W') }}</span>
+                </div>
+                <div class="space-y-5">
+                    <div class="p-5 rounded-2xl bg-slate-900/50 border border-white/10">
+                        <p class="text-xs font-semibold tracking-wide text-blue-300 uppercase">Capability Stack</p>
+                        <h3 class="mt-2 text-lg font-semibold">Build a personal AI research analyst</h3>
+                        <p class="mt-2 text-sm text-slate-300">Prompt frameworks, toolchain wiring, and review tactics to turn raw knowledge into decisions in minutes.</p>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-slate-900/50 border border-white/10">
+                        <p class="text-xs font-semibold tracking-wide text-orange-300 uppercase">Operator Playbook</p>
+                        <h3 class="mt-2 text-lg font-semibold">A zero-lag weekly reset</h3>
+                        <p class="mt-2 text-sm text-slate-300">The Monday ritual combining Notion, Cron, and Readwise to compress inputs and plan the week in 30 minutes.</p>
+                    </div>
+                    <div class="flex items-center justify-between p-4 text-sm rounded-xl bg-slate-900/40 border border-white/5">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-10 h-10 text-blue-200 bg-blue-500/20 rounded-full">98%</span>
+                            <div>
+                                <p class="font-medium">Readers recommend the drop</p>
+                                <p class="text-xs text-slate-400">Rolling 90 day satisfaction score</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">3,127</p>
+                            <p class="text-xs text-slate-400">Operators subscribed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <form action="{{ route('landing.subscribe') }}" method="POST" class="w-full max-w-md flex flex-col gap-4">
-        @csrf
-        <input type="email" name="email" placeholder="Your email..." class="px-4 py-3 rounded bg-gray-800 border border-gray-700 focus:outline-none" required>
-        @error('email')
-            <span class="text-red-400 text-sm">{{ $message }}</span>
-        @enderror
-        <button type="submit" class="bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded font-semibold transition">
-            Subscribe
-        </button>
-    </form>
+<section class="py-16 bg-white dark:bg-slate-950">
+    <div class="px-6 mx-auto max-w-7xl">
+        <div class="max-w-3xl">
+            <p class="text-sm font-semibold tracking-wide text-blue-600 uppercase">Why readers stay</p>
+            <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Signal-rich briefings, shipped weekly.</h2>
+            <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+                Each edition packages deep research, vetted frameworks, and tested playbooks into a frictionless read.
+                Drop in for the intelligence you need, skip the noise.
+            </p>
+        </div>
+        <div class="grid gap-8 mt-12 md:grid-cols-2 lg:grid-cols-3">
+            <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="inline-flex items-center justify-center w-10 h-10 text-blue-600 bg-blue-100 rounded-xl">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Curated in the open</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Transparent breakdowns of the stack we use to build, test, and launch products faster.</p>
+            </div>
+            <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="inline-flex items-center justify-center w-10 h-10 text-purple-600 bg-purple-100 rounded-xl">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14s-3 .672-3 1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v1m0 12v1m7-7h1M4 12H3m15.364 5.364l.707.707M5.929 6.343l-.707-.707m12.142 0l.707-.707M5.929 17.657l-.707.707"/></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Actionable, not theoretical</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Immediate prompts, automations, and agendas you can drop into your operating system within minutes.</p>
+            </div>
+            <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="inline-flex items-center justify-center w-10 h-10 text-emerald-600 bg-emerald-100 rounded-xl">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Designed for momentum</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Save hours of scattered research and unlock a cadence that keeps your team compounding.</p>
+            </div>
+            <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="inline-flex items-center justify-center w-10 h-10 text-amber-600 bg-amber-100 rounded-xl">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-width="2"/></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Time to value in minutes</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Read in under ten minutes and ship upgrades the same day.</p>
+            </div>
+            <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="inline-flex items-center justify-center w-10 h-10 text-rose-600 bg-rose-100 rounded-xl">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-3-3H8a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v6a2 2 0 01-2 2h-3l-3 3z"/></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Community sourced insight</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Powered by founders, analysts, and systems thinkers behind breakout products.</p>
+            </div>
+            <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="inline-flex items-center justify-center w-10 h-10 text-slate-600 bg-slate-100 rounded-xl">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"/></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">No noise, ever</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">We respect your attention. One drop, once a week, crafted to create leverage.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <footer class="mt-16 text-sm text-gray-500 text-center">
-        © {{ date('Y') }} NextGenBeing. All rights reserved.
-    </footer>
-</body>
-</html>
+<section class="py-16 bg-slate-900">
+    <div class="px-6 mx-auto max-w-7xl">
+        <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div class="max-w-2xl">
+                <p class="text-sm font-semibold tracking-wide text-blue-300 uppercase">Stay sharp</p>
+                <h2 class="mt-3 text-3xl font-bold text-white">Ready to dive deeper?</h2>
+                <p class="mt-4 text-base leading-7 text-slate-300">Browse our in-depth analysis, curated toolkits, and operating frameworks across the most requested topics.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('posts.index') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-slate-900 bg-white rounded-xl shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition">
+                    Browse the library
+                    <svg class="w-4 h-4 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="{{ route('search') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-white border border-white/30 rounded-xl hover:bg-white/10 transition">
+                    Search intelligence
+                </a>
+            </div>
+        </div>
+        <div class="grid gap-6 mt-12 lg:grid-cols-3">
+            <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Workflow architecture</p>
+                <h3 class="mt-2 text-lg font-semibold text-white">Operating systems that compound</h3>
+                <p class="mt-3 text-sm text-slate-300">Weekly agenda setups, async documentation stacks, and focus rituals used by elite operators.</p>
+            </div>
+            <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Tooling reviews</p>
+                <h3 class="mt-2 text-lg font-semibold text-white">Objective, faceless breakdowns</h3>
+                <p class="mt-3 text-sm text-slate-300">See the tradeoffs across AI copilots, research assistants, and automation suites before you invest.</p>
+            </div>
+            <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Playbooks</p>
+                <h3 class="mt-2 text-lg font-semibold text-white">From idea to execution faster</h3>
+                <p class="mt-3 text-sm text-slate-300">Replicate the launch cadence and growth loops powering the next wave of internet-first companies.</p>
+            </div>
+        </div>
+    </div>
+</section>
+@endsection
 
