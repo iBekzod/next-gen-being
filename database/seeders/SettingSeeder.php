@@ -29,7 +29,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'site_logo',
-                'value' => '/images/logo.png',
+                'value' => '/uploads/logo.png',
                 'type' => 'string',
                 'description' => 'Site logo URL',
                 'group' => 'general',

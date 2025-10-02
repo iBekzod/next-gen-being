@@ -108,7 +108,7 @@ class SeoService
                 'name' => config('app.name'),
                 'logo' => [
                     '@type' => 'ImageObject',
-                    'url' => asset('images/logo.png'),
+                    'url' => asset('uploads/logo.png'),
                 ],
             ],
             'datePublished' => $post->published_at?->toISOString(),
