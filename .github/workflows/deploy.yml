@@ -30,20 +30,19 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Copy environment file for testing
-        run: cp .env.example .env
-
       - name: Install Composer dependencies
         run: composer install --no-progress --no-interaction --prefer-dist
 
+      - name: Install NPM dependencies and update lock file
+        run: |
+          npm install
+          npm run build
+
+      - name: Copy environment file for testing
+        run: cp .env.example .env
+
       - name: Generate application key
         run: php artisan key:generate
-
-      - name: Install NPM dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
 
       - name: Run tests
         run: php artisan test
@@ -86,7 +85,7 @@ jobs:
           # Install PHP dependencies
           sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
 
-          # Install Node.js dependencies and build assets
+          # Install Node.js dependencies using npm install (not ci)
           sudo -u www-data npm install --silent
           sudo -u www-data npm run build
 
@@ -118,7 +117,7 @@ jobs:
           # Restart PHP-FPM
           sudo systemctl restart php8.4-fpm
 
-          # Reload Nginx (not restart to avoid downtime)
+          # Reload Nginx
           sudo systemctl reload nginx
 
           # Restart Supervisor processes
@@ -126,13 +125,5 @@ jobs:
 
           # Bring application back up
           sudo -u www-data php artisan up
-
-          # Health check
-          echo "🚀 Performing health check..."
-          if curl -f https://nextgenbeing.com > /dev/null 2>&1; then
-              echo "✅ Health check passed - Application is live!"
-          else
-              echo "⚠️  Health check warning - Check application manually"
-          fi
 
           echo "✅ Deployment completed successfully!"

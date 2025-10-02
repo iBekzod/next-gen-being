@@ -11,6 +11,7 @@ use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
+Route::post('/landing/subscribe', [LandingPageController::class, 'store'])->name('landing.subscribe');
 Route::get('/health', HealthCheckController::class)->name('health.check');
 // Public routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
@@ -65,5 +66,4 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::view('/privacy', 'privacy')->name('privacy');
 
 Route::view('/terms', 'terms')->name('terms');
-
 

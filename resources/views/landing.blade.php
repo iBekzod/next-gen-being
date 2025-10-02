@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <form action="{{ route('subscribe') }}" method="POST" class="w-full max-w-md flex flex-col gap-4">
+    <form action="{{ route('landing.subscribe') }}" method="POST" class="w-full max-w-md flex flex-col gap-4">
         @csrf
         <input type="email" name="email" placeholder="Your email..." class="px-4 py-3 rounded bg-gray-800 border border-gray-700 focus:outline-none" required>
         @error('email')
@@ -32,3 +32,4 @@
     </footer>
 </body>
 </html>
+
