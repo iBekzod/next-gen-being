@@ -13,6 +13,21 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nextgenbeing_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,14 +53,29 @@ jobs:
           npm install
           npm run build
 
-      - name: Copy environment file for testing
-        run: cp .env.example .env
+      - name: Create testing environment file
+        run: |
+          cp .env.example .env.test
+          echo "APP_ENV=testing" >> .env.test
+          echo "APP_DEBUG=true" >> .env.test
+          echo "DB_CONNECTION=pgsql" >> .env.test
+          echo "DB_HOST=localhost" >> .env.test
+          echo "DB_PORT=5432" >> .env.test
+          echo "DB_DATABASE=nextgenbeing_test" >> .env.test
+          echo "DB_USERNAME=postgres" >> .env.test
+          echo "DB_PASSWORD=postgres" >> .env.test
+          echo "SESSION_DRIVER=array" >> .env.test
+          echo "CACHE_DRIVER=array" >> .env.test
+          echo "QUEUE_CONNECTION=sync" >> .env.test
 
       - name: Generate application key
-        run: php artisan key:generate
+        run: php artisan key:generate --env=testing
+
+      - name: Run database migrations for tests
+        run: php artisan migrate --env=testing --force
 
       - name: Run tests
-        run: php artisan test
+        run: php artisan test --env=testing
 
   deploy:
     runs-on: ubuntu-latest
