@@ -11,7 +11,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
-class User extends Authenticatable implements MustVerifyEmail, HasMedia, FilamentUser
+class User extends Authenticatable implements HasMedia, FilamentUser
 {
     use HasFactory, Notifiable, Billable, InteractsWithMedia;
 

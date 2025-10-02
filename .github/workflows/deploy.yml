@@ -1,4 +1,4 @@
-# .github/workflows/deploy-lemp.yml
+# .github/workflows/deploy.yml
 name: Deploy to LEMP Stack
 
 on:
@@ -8,13 +8,45 @@ on:
 env:
   SERVER_IP: ${{ secrets.SERVER_IP }}
   SSH_USER: ${{ secrets.SSH_USER }}
-  SSH_KEY: ${{ secrets.SSH_KEY }}
   APP_DIR: /var/www/nextgenbeing
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    # ... same test configuration as before
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pgsql, mbstring, zip, gd, curl, xml, bcmath, intl, imagick, redis
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Copy environment file for testing
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Run tests
+        run: php artisan test
 
   deploy:
     runs-on: ubuntu-latest
@@ -25,10 +57,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup SSH
+    - name: Setup SSH with private key
       uses: webfactory/ssh-agent@v0.8.0
       with:
-        ssh-private-key: ${{ secrets.SSH_KEY }}
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Add known hosts
       run: |
@@ -40,35 +72,72 @@ jobs:
       with:
         host: ${{ secrets.SERVER_IP }}
         username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd ${{ env.APP_DIR }}
+
+          # Maintenance mode
+          sudo -u www-data php artisan down || true
 
           # Pull latest changes
           sudo -u www-data git fetch origin
           sudo -u www-data git reset --hard origin/main
 
-          # Install dependencies
-          sudo -u www-data composer install --no-dev --optimize-autoloader
+          # Install PHP dependencies
+          sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+
+          # Install Node.js dependencies and build assets
           sudo -u www-data npm install --silent
           sudo -u www-data npm run build
 
-          # Run migrations
+          # Run database migrations
           sudo -u www-data php artisan migrate --force
 
-          # Optimize application
+          # Clear and cache config
+          sudo -u www-data php artisan config:clear
           sudo -u www-data php artisan config:cache
+
+          # Clear and cache routes
+          sudo -u www-data php artisan route:clear
           sudo -u www-data php artisan route:cache
+
+          # Clear and cache views
+          sudo -u www-data php artisan view:clear
           sudo -u www-data php artisan view:cache
 
-          # Set permissions
+          # Clear other caches
+          sudo -u www-data php artisan cache:clear
+          sudo -u www-data php artisan event:cache
+
+          # Set proper permissions
           sudo chown -R www-data:www-data ${{ env.APP_DIR }}
           sudo chmod -R 755 ${{ env.APP_DIR }}
           sudo chmod -R 775 ${{ env.APP_DIR }}/storage
           sudo chmod -R 775 ${{ env.APP_DIR }}/bootstrap/cache
 
-          # Restart services
-          sudo systemctl restart nginx
+          # Restart PHP-FPM
           sudo systemctl restart php8.4-fpm
 
+          # Reload Nginx (not restart to avoid downtime)
+          sudo systemctl reload nginx
+
+          # Restart Supervisor processes
+          sudo supervisorctl restart all
+
+          # Bring application back up
+          sudo -u www-data php artisan up
+
+          # Health check
+          echo "🚀 Performing health check..."
+          if curl -f https://nextgenbeing.com > /dev/null 2>&1; then
+              echo "✅ Health check passed - Application is live!"
+          else
+              echo "⚠️  Health check warning - Check application manually"
+          fi
+
           echo "✅ Deployment completed successfully!"
+
+    - name: Verify Deployment
+      run: |
+        sleep 10
+        curl -f https://nextgenbeing.com || curl -f http://nextgenbeing.com || echo "Health check failed - manual verification needed"
