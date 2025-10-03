@@ -1,17 +1,21 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Terms of Service - ' . setting('site_name'))
+@section('title', 'Terms &amp; Conditions - ' . setting('site_name'))
 @section('description', 'Terms and conditions for using our service')
 
 @section('content')
 <div class="min-h-screen bg-white dark:bg-gray-900">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-8">Terms of Service</h1>
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-8">Terms &amp; Conditions</h1>
 
         <div class="prose prose-lg dark:prose-invert max-w-none">
             <p class="text-gray-600 dark:text-gray-400 mb-6">
                 Last updated: {{ now()->format('F j, Y') }}
             </p>
+
+            <h2>Company Information</h2>
+            <p>These Terms &amp; Conditions ("Terms") are a legal agreement between you and {{ setting('company_name', 'NextGen Being LLC') }} ("Company", "we", "our") governing your use of the products and services provided through {{ setting('site_name') }}.</p>
+            <p>{{ setting('company_name', 'NextGen Being LLC') }} operates from {{ setting('company_address', '240 Bogishamol Street, Yunusabad District, Tashkent 100058, Uzbekistan') }}. You can reach us at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
 
             <h2>1. Acceptance of Terms</h2>
             <p>
@@ -122,10 +126,11 @@
                 If you have any questions about these Terms, please contact us at:
             </p>
             <ul>
-                <li>Email: {{ 'info@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}</li>
+                <li>Email: {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}</li>
                 <li>Address: {{ setting('company_address', '240 Bogishamol Street, Yunusabad District, Tashkent 100058, Uzbekistan') }}</li>
             </ul>
         </div>
     </div>
 </div>
 @endsection
+

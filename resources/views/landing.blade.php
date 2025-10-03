@@ -9,7 +9,7 @@
         openModal() { this.showSubscribeModal = true; },
         closeModal() { this.showSubscribeModal = false; }
     }" x-on:keydown.escape.window="closeModal()">
-    <section class="relative overflow-hidden bg-slate-950 text-white">
+    <section id="product-overview" class="relative overflow-hidden bg-slate-950 text-white">
         <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#3b82f6_0,_transparent_45%)]"></div>
         <div class="relative px-6 pt-20 pb-24 mx-auto max-w-7xl lg:flex lg:items-center lg:gap-16">
             <div class="max-w-2xl">
@@ -145,6 +145,49 @@
         </div>
     </section>
 
+    <section id="membership-details" class="py-20 bg-white dark:bg-slate-950 border-y border-slate-200/60 dark:border-slate-800">
+        <div class="px-6 mx-auto space-y-16 max-w-6xl">
+            <div class="grid gap-12 lg:grid-cols-2">
+                <div>
+                    <p class="text-sm font-semibold tracking-wide text-blue-500 uppercase">Product overview</p>
+                    <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">A membership for builders who need verified operating intelligence.</h2>
+                    <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">NextGenBeing is a digital subscription that delivers weekly research-backed playbooks, curated tooling analysis, and implementation templates designed to help founders, operators, and product teams ship faster with confidence.</p>
+                    <ul class="mt-6 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-500"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span><span><strong>Weekly NextGen Playbook.</strong> 1,200+ word deep dive covering a core system, including step-by-step workflows, operating heuristics, and annotated screenshots.</span></li>
+                        <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-500"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span><span><strong>Downloadable templates &amp; automations.</strong> Implementation checklists, SOPs, and Notion/CSV templates that accompany every drop so teams can deploy the ideas immediately.</span></li>
+                        <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-500"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span><span><strong>Members-only research library.</strong> Unlimited access to our searchable archive of tooling breakdowns, benchmarks, and implementation notes.</span></li>
+                        <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-500"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span><span><strong>Priority support.</strong> Direct line to our research team for clarifications, source requests, and custom teardown suggestions.</span></li>
+                    </ul>
+                </div>
+                <div class="space-y-6">
+                    <p class="text-sm font-semibold tracking-wide text-blue-500 uppercase">Billing &amp; access</p>
+                    <div class="rounded-2xl border border-slate-200 bg-white/60 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Transparent pricing for every stage</h3>
+                        <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                            <li><strong>Basic — $9.99/mo.</strong> Premium articles, ad-free experience, and baseline analytics.</li>
+                            <li><strong>Pro — $19.99/mo.</strong> Everything in Basic plus early access drops, exclusive webinars, and downloadable PDF packs.</li>
+                            <li><strong>Enterprise — $49.99/mo.</strong> Team seats, API access, dedicated success manager, and custom analytics.</li>
+                        </ul>
+                        <p class="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">Every plan starts with a 7-day free trial. You can upgrade, pause, or cancel anytime inside your account dashboard. Annual billing options are available on request.</p>
+                        <p class="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">Need a quote for procurement? Download the enterprise pricing overview or email us at {{ 'sales@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <a href="{{ route('subscription.plans') }}" class="flex items-center justify-between rounded-2xl border border-blue-500/40 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-500 transition hover:bg-blue-500/20">
+                            View detailed pricing
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                        <a href="{{ asset('downloads/nextgenbeing-enterprise-pricing.pdf') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500">
+                            Download enterprise sheet
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16M4 12h16M4 20h16"/></svg>
+                        </a>
+                    </div>
+                    <div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-sm leading-6 text-slate-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300">
+                        <p><strong>Policies at a glance:</strong> <a class="text-blue-600 hover:underline" href="{{ route('terms') }}">Terms &amp; Conditions</a>, <a class="text-blue-600 hover:underline" href="{{ route('privacy') }}">Privacy Policy</a>, and <a class="text-blue-600 hover:underline" href="{{ route('refund') }}">Refund Policy</a> outline how we handle subscriptions, cancellations, and data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <section class="py-16 bg-slate-900">
         <div class="px-6 mx-auto max-w-7xl">
             <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
@@ -163,7 +206,7 @@
                     </a>
                 </div>
             </div>
-            <div class="grid gap-6 mt-12 lg:grid-cols-3">
+            <div id="features" class="grid gap-6 mt-12 lg:grid-cols-3">
                 <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
                     <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Workflow architecture</p>
                     <h3 class="mt-2 text-lg font-semibold text-white">Operating systems that compound</h3>
@@ -179,6 +222,39 @@
                     <h3 class="mt-2 text-lg font-semibold text-white">From idea to execution faster</h3>
                     <p class="mt-3 text-sm text-slate-300">Replicate the launch cadence and growth loops powering the next wave of internet-first companies.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="policies" class="py-16 bg-slate-100 dark:bg-slate-900/40">
+        <div class="px-6 mx-auto max-w-6xl">
+            <div class="max-w-3xl">
+                <p class="text-sm font-semibold tracking-wide text-blue-500 uppercase">Trust &amp; compliance</p>
+                <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Clear policies and secure billing.</h2>
+                <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">All purchases are processed over HTTPS with Paddle. Review our policies any time or reach the team directly at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
+            </div>
+            <div class="grid gap-6 mt-10 md:grid-cols-3">
+                <a href="{{ route('terms') }}" class="group block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Terms &amp; Conditions</h3>
+                        <svg class="h-5 w-5 text-blue-500 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Understand usage rights, subscription terms, and account responsibilities.</p>
+                </a>
+                <a href="{{ route('privacy') }}" class="group block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Privacy Policy</h3>
+                        <svg class="h-5 w-5 text-blue-500 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">See how we handle personal data, security controls, and GDPR compliance.</p>
+                </a>
+                <a href="{{ route('refund') }}" class="group block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Refund Policy</h3>
+                        <svg class="h-5 w-5 text-blue-500 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Review trial periods, cancellation windows, and how to request refunds.</p>
+                </a>
             </div>
         </div>
     </section>

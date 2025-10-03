@@ -67,3 +67,5 @@ Route::view('/privacy', 'privacy')->name('privacy');
 
 Route::view('/terms', 'terms')->name('terms');
 
+Route::view('/refund-policy', 'refund')->name('refund');
+

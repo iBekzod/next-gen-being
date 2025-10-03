@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Privacy Policy - ' . setting('site_name'))
 @section('description', 'Privacy policy and data protection information')
@@ -89,10 +89,11 @@
                 If you have questions about this Privacy Policy, please contact us at:
             </p>
             <ul>
-                <li>Email: {{ 'info@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}</li>
+                <li>Email: {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}</li>
                 <li>Address: {{ setting('company_address', '240 Bogishamol Street, Yunusabad District, Tashkent 100058, Uzbekistan') }}</li>
             </ul>
         </div>
     </div>
 </div>
 @endsection
+

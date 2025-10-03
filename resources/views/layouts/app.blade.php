@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="themeSwitcher()" x-init="init()"
     x-effect="document.documentElement.classList.toggle('dark', darkMode)">
 
@@ -108,6 +108,33 @@
                                     Pricing
                                 </a>
                             @endif
+                            <a href="{{ route('home') }}#product-overview"
+                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                                Product
+                            </a>
+                            <a href="{{ route('home') }}#features"
+                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                                Features
+                            </a>
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open"
+                                    class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                                    Policies
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-transition
+                                    class="absolute left-0 z-50 w-56 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
+                                    <a href="{{ route('terms') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Terms &amp; Conditions</a>
+                                    <a href="{{ route('privacy') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Privacy Policy</a>
+                                    <a href="{{ route('refund') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Refund Policy</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -252,6 +279,16 @@
                         <a href="{{ route('subscription.plans') }}"
                             class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Pricing</a>
                     @endif
+                    <a href="{{ route('home') }}#product-overview"
+                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Product Overview</a>
+                    <a href="{{ route('home') }}#features"
+                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Key Features</a>
+                    <a href="{{ route('terms') }}"
+                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Terms &amp; Conditions</a>
+                    <a href="{{ route('privacy') }}"
+                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Privacy Policy</a>
+                    <a href="{{ route('refund') }}"
+                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Refund Policy</a>
                 </div>
             </div>
         </nav>
@@ -370,9 +407,11 @@
                             <li><a href="/privacy"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Privacy
                                     Policy</a></li>
+                            <li><a href="/refund-policy"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Refund
+                                    Policy</a></li>
                             <li><a href="/terms"
-                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Terms
-                                    of Service</a></li>
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Terms &amp; Conditions</a></li>
                         </ul>
                     </div>
                 </div>
@@ -477,3 +516,5 @@
     </body>
 
     </html>
+
+
