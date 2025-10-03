@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -45,4 +46,18 @@ class Category extends Model
     {
         return $query->orderBy('sort_order')->orderBy('name');
     }
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::forget('seo:sitemap.xml');
+        });
+
+        static::deleted(function () {
+            Cache::forget('seo:sitemap.xml');
+        });
+    }
+
 }
+
+
+

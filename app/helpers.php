@@ -1,6 +1,7 @@
-<?php
+﻿<?php
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 
 if (!function_exists('setting')) {
     /**
@@ -12,8 +13,15 @@ if (!function_exists('setting')) {
      */
     function setting(string $key, $default = null)
     {
-        return $default;
-        // return Setting::get($key, $default);
+        $cacheKey = Setting::cacheKey($key);
+
+        $value = Cache::rememberForever($cacheKey, function () use ($key) {
+            $setting = Setting::query()->where('key', $key)->first();
+
+            return $setting?->value ?? Setting::CACHE_MISS;
+        });
+
+        return $value === Setting::CACHE_MISS ? $default : $value;
     }
 }
 
@@ -143,3 +151,4 @@ if (!function_exists('generate_meta_tags')) {
         return implode("\n", $tags);
     }
 }
+

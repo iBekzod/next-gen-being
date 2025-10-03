@@ -42,9 +42,11 @@ class SettingResource extends Resource
                                 'general' => 'General',
                                 'seo' => 'SEO',
                                 'social' => 'Social Media',
+                                'content' => 'Content',
                                 'analytics' => 'Analytics',
                                 'mail' => 'Email',
                                 'subscription' => 'Subscription',
+                                'ai' => 'AI',
                             ])
                             ->default('general'),
 
@@ -106,11 +108,12 @@ class SettingResource extends Resource
                         'general' => 'General',
                         'seo' => 'SEO',
                         'social' => 'Social Media',
+                        'content' => 'Content',
                         'analytics' => 'Analytics',
                         'mail' => 'Email',
                         'subscription' => 'Subscription',
+                        'ai' => 'AI',
                     ]),
-
                 Tables\Filters\SelectFilter::make('type')
                     ->options([
                         'string' => 'String',
@@ -118,7 +121,6 @@ class SettingResource extends Resource
                         'boolean' => 'Boolean',
                         'integer' => 'Integer',
                     ]),
-
                 Tables\Filters\Filter::make('public_only')
                     ->query(fn ($query) => $query->where('is_public', true)),
             ])
@@ -140,3 +142,5 @@ class SettingResource extends Resource
         ];
     }
 }
+
+

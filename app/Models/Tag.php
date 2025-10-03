@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Illuminate\Support\Facades\Cache;
 
 class Tag extends Model
 {
@@ -52,4 +53,16 @@ class Tag extends Model
     {
         $this->decrement('usage_count');
     }
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::forget('seo:sitemap.xml');
+        });
+
+        static::deleted(function () {
+            Cache::forget('seo:sitemap.xml');
+        });
+    }
+
 }
+

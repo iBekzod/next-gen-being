@@ -40,19 +40,111 @@
     <!-- Additional Head Content -->
     @stack('head')
 
-    @section('seo')
-        <title>@yield('title', setting('default_meta_title'))</title>
-        <meta name="title" content="@yield('title', setting('default_meta_title'))">
-        <meta name="description" content="@yield('description', setting('default_meta_description'))">
-        <meta name="keywords" content="@yield('keywords', 'blog, technology, programming, tutorials')">
-        <meta name="robots" content="index, follow">
-        <meta name="language" content="English">
-        <meta name="author" content="{{ config('app.name') }}">
+    @php
+        $siteName = setting('site_name', config('app.name'));
+        $siteUrl = rtrim(config('app.url', url('/')), '/');
+        $pageTitle = trim(strip_tags($__env->yieldContent('title', $siteName)));
+        $pageTitle = $pageTitle !== '' ? $pageTitle : $siteName;
+        $pageDescription = trim(strip_tags($__env->yieldContent('description', setting('site_description', 'Insights for ambitious builders.'))));
+        $pageKeywords = trim($__env->yieldContent('keywords', setting('default_meta_keywords', 'NextGenBeing, AI workflows, startup playbooks')));
+        $pageAuthor = trim($__env->yieldContent('author', setting('company_name', $siteName)));
+        $pageType = trim($__env->yieldContent('og_type', 'website'));
+        $robots = trim($__env->yieldContent('robots', 'index, follow'));
+        $shareImage = $__env->yieldContent('share_image', setting('default_meta_image', setting('site_logo', asset('uploads/logo.png'))));
+        $canonical = $__env->yieldContent('canonical', url()->current());
+        $locale = str_replace('_', '-', app()->getLocale());
+        $ogLocale = str_replace('-', '_', $locale);
+        $twitterHandle = ltrim((string) setting('social_twitter_handle'), '@');
+        $socialLinks = setting('social_links', []);
+        $sameAs = [];
+        if (is_array($socialLinks)) {
+            foreach ($socialLinks as $link) {
+                if (!empty($link)) {
+                    $sameAs[] = $link;
+                }
+            }
+        }
+        if (!preg_match('/^https?:\\/\\//i', $shareImage ?? '')) {
+            $shareImage = url($shareImage);
+        }
+        if (!preg_match('/^https?:\\/\\//i', $canonical ?? '')) {
+            $canonical = url($canonical);
+        }
+        $rssUrl = \\Illuminate\\Support\\Facades\\Route::has('feed.rss') ? route('feed.rss') : null;
+        $sitemapUrl = \\Illuminate\\Support\\Facades\\Route::has('seo.sitemap') ? route('seo.sitemap') : null;
+        $supportEmail = setting('support_email', 'support@' . parse_url($siteUrl, PHP_URL_HOST));
+        $logoPath = setting('site_logo', asset('uploads/logo.png'));
+        $logoUrl = preg_match('/^https?:\\/\\//i', $logoPath ?? '') ? $logoPath : url($logoPath);
+        $organizationSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $siteName,
+            'url' => $siteUrl,
+            'logo' => $logoUrl,
+        ];
+        if (!empty($sameAs)) {
+            $organizationSchema['sameAs'] = $sameAs;
+        }
+        if (!empty($supportEmail)) {
+            $organizationSchema['contactPoint'] = [[
+                '@type' => 'ContactPoint',
+                'email' => $supportEmail,
+                'contactType' => 'customer support',
+            ]];
+        }
+        $websiteSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => $siteName,
+            'url' => $siteUrl,
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => route('search', ['q' => '{search_term_string}']),
+                'query-input' => 'required name=search_term_string',
+            ],
+        ];
+    @endphp
 
-        <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="@yield('og_type', 'website')">
-        <meta property="og:url" content="{{ request()->url() }}">
-    </head>
+    <title>{{ $pageTitle }}</title>
+    <meta name="title" content="{{ $pageTitle }}">
+    <meta name="description" content="{{ $pageDescription }}">
+    <meta name="keywords" content="{{ $pageKeywords }}">
+    <meta name="author" content="{{ $pageAuthor }}">
+    <meta name="robots" content="{{ $robots }}">
+    <link rel="canonical" href="{{ $canonical }}">
+    @if ($rssUrl)
+        <link rel="alternate" type="application/rss+xml" title="{{ $siteName }} RSS Feed" href="{{ $rssUrl }}">
+    @endif
+    @if ($sitemapUrl)
+        <link rel="sitemap" type="application/xml" href="{{ $sitemapUrl }}">
+    @endif
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:type" content="{{ $pageType }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ $canonical }}">
+    <meta property="og:locale" content="{{ $ogLocale }}">
+    <meta property="og:image" content="{{ $shareImage }}">
+    <meta property="og:image:alt" content="{{ $pageTitle }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <meta name="twitter:image" content="{{ $shareImage }}">
+    @if(!empty($domain))
+        <meta name="twitter:domain" content="{{ $domain }}">
+    @endif
+    @if ($twitterHandle)
+        <meta name="twitter:site" content="@{{ $twitterHandle }}">
+        <meta name="twitter:creator" content="@{{ $twitterHandle }}">
+    @endif
+
+    @if (!empty($organizationSchema['logo']))
+        <script type="application/ld+json">{!! json_encode($organizationSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>
+    @endif
+    <script type="application/ld+json">{!! json_encode($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>
+
+    @stack('structured-data')
+</head>
 
     <body class="font-sans antialiased text-gray-900 bg-white dark:bg-gray-900 dark:text-gray-100">
         @php
@@ -516,5 +608,9 @@
     </body>
 
     </html>
+
+
+
+
 
 

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -120,10 +120,10 @@ class SettingSeeder extends Seeder
             [
                 'key' => 'social_links',
                 'value' => json_encode([
-                    'twitter' => 'https://twitter.com/techblogpro',
-                    'linkedin' => 'https://linkedin.com/company/techblogpro',
-                    'github' => 'https://github.com/techblogpro',
-                    'youtube' => 'https://youtube.com/techblogpro',
+                    'twitter' => 'https://twitter.com/nextgenbeing',
+                    'linkedin' => 'https://linkedin.com/company/nextgenbeing',
+                    'github' => 'https://github.com/nextgenbeing',
+                    'youtube' => 'https://youtube.com/nextgenbeing',
                 ]),
                 'type' => 'json',
                 'description' => 'Social media links',
@@ -146,6 +146,54 @@ class SettingSeeder extends Seeder
                 'type' => 'boolean',
                 'description' => 'Enable analytics tracking',
                 'group' => 'analytics',
+                'is_public' => false,
+            ],
+            [
+                'key' => 'default_meta_keywords',
+                'value' => 'AI workflows, productivity systems, NextGenBeing, startup operating systems',
+                'type' => 'string',
+                'description' => 'Default meta keywords for pages',
+                'group' => 'seo',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'default_meta_image',
+                'value' => '/uploads/meta-default.png',
+                'type' => 'string',
+                'description' => 'Fallback image used for Open Graph and Twitter cards',
+                'group' => 'seo',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'company_name',
+                'value' => 'NextGenBeing',
+                'type' => 'string',
+                'description' => 'Legal name of the company or founder behind the publication',
+                'group' => 'general',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'support_email',
+                'value' => 'support@nextgenbeing.com',
+                'type' => 'string',
+                'description' => 'Primary contact email shown in policies and structured data',
+                'group' => 'general',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'social_twitter_handle',
+                'value' => '@nextgenbeing',
+                'type' => 'string',
+                'description' => 'Twitter / X handle used for cards and organization schema',
+                'group' => 'social',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'seo_custom_robots',
+                'value' => '',
+                'type' => 'string',
+                'description' => 'Additional directives appended to robots.txt (one per line)',
+                'group' => 'seo',
                 'is_public' => false,
             ],
         ];

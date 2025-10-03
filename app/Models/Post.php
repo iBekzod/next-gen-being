@@ -8,6 +8,7 @@ use Spatie\Sluggable\SlugOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Laravel\Scout\Searchable;
+use Illuminate\Support\Facades\Cache;
 
 class Post extends Model implements HasMedia
 {
@@ -183,6 +184,14 @@ class Post extends Model implements HasMedia
                 $post->read_time = $post->calculateReadTime();
             }
         });
+
+        static::saved(function () {
+            Cache::forget('seo:sitemap.xml');
+        });
+
+        static::deleted(function () {
+            Cache::forget('seo:sitemap.xml');
+        });
     }
 
     // Search
@@ -198,3 +207,5 @@ class Post extends Model implements HasMedia
         ];
     }
 }
+
+

@@ -2,6 +2,10 @@
 
 @section('title', 'Refund Policy - ' . setting('site_name'))
 @section('description', 'Understand how refunds and cancellations work for your membership')
+@section('canonical', route('refund'))
+@section('share_image', setting('default_meta_image', setting('site_logo', asset('uploads/logo.png'))))
+@section('author', setting('company_name', setting('site_name', config('app.name'))))
+@section('robots', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1')
 
 @section('content')
 <div class="min-h-screen bg-white dark:bg-gray-900">

@@ -3,6 +3,90 @@
 @section('title', 'NextGenBeing - Explore the tech that evolves you')
 @section('description', 'Curated insights, tool breakdowns, and operating frameworks for ambitious builders and creators.')
 
+
+@php
+    $shareImageLanding = setting('default_meta_image', setting('site_logo', asset('uploads/logo.png')));
+    $shareImageLanding = preg_match('/^https?:\/\//i', $shareImageLanding) ? $shareImageLanding : url($shareImageLanding);
+    $siteName = setting('site_name', config('app.name'));
+    $companyName = setting('company_name', $siteName);
+    $supportEmail = setting('support_email', 'support@' . request()->getHost());
+    $pricingSheet = asset('downloads/nextgenbeing-enterprise-pricing.pdf');
+@endphp
+
+@section('canonical', route('home'))
+@section('share_image', $shareImageLanding)
+@section('author', $companyName)
+@section('robots', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1')
+
+@push('structured-data')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+    'name' => $siteName,
+    'description' => 'Weekly research-backed operating playbooks, tooling analysis, and premium community content from NextGenBeing.',
+    'image' => [$shareImageLanding],
+    'url' => route('home'),
+    'brand' => [
+        '@type' => 'Brand',
+        'name' => $siteName,
+    ],
+    'offers' => [
+        [
+            '@type' => 'Offer',
+            'price' => '9.99',
+            'priceCurrency' => 'USD',
+            'availability' => 'https://schema.org/InStock',
+            'category' => 'Basic',
+            'description' => 'Monthly membership with premium articles, ad-free reading, and analytics.',
+            'url' => route('subscription.plans'),
+        ],
+        [
+            '@type' => 'Offer',
+            'price' => '19.99',
+            'priceCurrency' => 'USD',
+            'availability' => 'https://schema.org/InStock',
+            'category' => 'Pro',
+            'description' => 'Includes early access drops, exclusive webinars, and downloads.',
+            'url' => route('subscription.plans'),
+        ],
+        [
+            '@type' => 'Offer',
+            'price' => '49.99',
+            'priceCurrency' => 'USD',
+            'availability' => 'https://schema.org/InStock',
+            'category' => 'Enterprise',
+            'description' => 'Team seats, API access, and dedicated success support.',
+            'url' => route('subscription.plans'),
+            'additionalProperty' => [
+                [
+                    '@type' => 'PropertyValue',
+                    'name' => 'Enterprise Pricing Sheet',
+                    'value' => $pricingSheet,
+                ],
+            ],
+        ],
+    ],
+    'audience' => [
+        '@type' => 'Audience',
+        'audienceType' => 'Founders, operators, product teams',
+    ],
+    'seller' => [
+        '@type' => 'Organization',
+        'name' => $companyName,
+        'url' => url('/'),
+        'contactPoint' => [
+            [
+                '@type' => 'ContactPoint',
+                'email' => $supportEmail,
+                'contactType' => 'customer support',
+            ],
+        ],
+    ],
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
+
 @section('content')
 <div x-data="{
         showSubscribeModal: {{ $errors->any() ? 'true' : 'false' }},

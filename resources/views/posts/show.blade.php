@@ -5,27 +5,67 @@
 @section('keywords', $post->tags->pluck('name')->implode(', '))
 @section('og_type', 'article')
 
+@php
+    $shareImage = $post->featured_image ? url($post->featured_image) : setting('default_meta_image', setting('site_logo', asset('uploads/logo.png')));
+    $logoPath = setting('site_logo', asset('uploads/logo.png'));
+    $logoUrl = preg_match('/^https?:\/\//i', $logoPath) ? $logoPath : url($logoPath);
+    $siteName = setting('site_name', config('app.name'));
+    $companyName = setting('company_name', $siteName);
+    $publishDate = optional($post->published_at)->toAtomString();
+    $modifiedDate = optional($post->updated_at)->toAtomString();
+    $wordCount = str_word_count(strip_tags($post->content));
+    $tagNames = $post->tags->pluck('name')->filter()->values()->all();
+    $articleSection = optional($post->category)->name;
+@endphp
+
+@section('canonical', route('posts.show', $post->slug))
+@section('share_image', $shareImage)
+@section('author', $post->author->name)
+@section('robots', $post->is_premium ? 'index, follow, noarchive' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1')
+
+
 @push('head')
-<meta property="og:title" content="{{ $post->title }}">
-<meta property="og:description" content="{{ $post->excerpt }}">
-@if($post->featured_image)
-<meta property="og:image" content="{{ url($post->featured_image) }}">
-@endif
 <meta property="article:author" content="{{ $post->author->name }}">
-<meta property="article:published_time" content="{{ $post->published_at->toIso8601String() }}">
-<meta property="article:section" content="{{ $post->category->name }}">
+<meta property="article:published_time" content="{{ optional($post->published_at)->toIso8601String() }}">
+<meta property="article:modified_time" content="{{ optional($post->updated_at)->toIso8601String() }}">
+<meta property="article:section" content="{{ $articleSection }}">
 @foreach($post->tags as $tag)
 <meta property="article:tag" content="{{ $tag->name }}">
 @endforeach
+@endpush
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ $post->title }}">
-<meta name="twitter:description" content="{{ $post->excerpt }}">
-@if($post->featured_image)
-<meta name="twitter:image" content="{{ url($post->featured_image) }}">
-@endif
-
-<link rel="canonical" href="{{ route('posts.show', $post->slug) }}">
+@push('structured-data')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Article',
+    'headline' => $post->title,
+    'description' => $post->excerpt,
+    'image' => [$shareImage],
+    'wordCount' => $wordCount,
+    'author' => [
+        '@type' => 'Person',
+        'name' => $post->author->name,
+    ],
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => $companyName,
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => $logoUrl,
+        ],
+    ],
+    'datePublished' => $publishDate,
+    'dateModified' => $modifiedDate ?: $publishDate,
+    'isAccessibleForFree' => ! $post->is_premium,
+    'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => route('posts.show', $post->slug),
+    ],
+    'articleSection' => $articleSection,
+    'keywords' => $tagNames,
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
 @endpush
 
 @section('content')

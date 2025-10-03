@@ -8,6 +8,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SeoController;
+use App\Http\Controllers\FeedController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
@@ -59,6 +61,10 @@ Route::post('/stripe/webhook', '\\Laravel\\Cashier\\Http\\Controllers\\WebhookCo
 
 Route::post('/lemonsqueezy/webhook', [App\Http\Controllers\WebhookController::class, 'lemonSqueezyWebhook'])->name('lemonsqueezy.webhook')->withoutMiddleware([VerifyCsrfToken::class]);
 
+Route::get('/feed.xml', [FeedController::class, 'rss'])->name('feed.rss');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+
 Auth::routes(['verify' => true]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard.home');
@@ -68,4 +74,7 @@ Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/terms', 'terms')->name('terms');
 
 Route::view('/refund-policy', 'refund')->name('refund');
+
+
+
 

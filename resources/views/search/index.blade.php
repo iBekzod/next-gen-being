@@ -2,6 +2,9 @@
 
 @section('title', 'Search - ' . setting('site_name'))
 @section('description', 'Search across playbooks, tool reviews, and makers on ' . setting('site_name'))
+@section('canonical', route('search'))
+@section('share_image', setting('default_meta_image', setting('site_logo', asset('uploads/logo.png'))))
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <section class="bg-slate-950 text-white">

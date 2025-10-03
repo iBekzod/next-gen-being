@@ -33,6 +33,8 @@ class PostController extends Controller
             abort(403);
         }
 
+        $post->loadMissing(['author', 'category', 'tags']);
+
         return view('posts.show', compact('post'));
     }
 
