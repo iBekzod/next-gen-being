@@ -70,8 +70,8 @@
         if (!preg_match('/^https?:\\/\\//i', $canonical ?? '')) {
             $canonical = url($canonical);
         }
-        $rssUrl = \\Illuminate\\Support\\Facades\\Route::has('feed.rss') ? route('feed.rss') : null;
-        $sitemapUrl = \\Illuminate\\Support\\Facades\\Route::has('seo.sitemap') ? route('seo.sitemap') : null;
+        $rssUrl = \Illuminate\Support\Facades\Route::has('feed.rss') ? route('feed.rss') : null;
+        $sitemapUrl = \Illuminate\Support\Facades\Route::has('seo.sitemap') ? route('seo.sitemap') : null;
         $supportEmail = setting('support_email', 'support@' . parse_url($siteUrl, PHP_URL_HOST));
         $logoPath = setting('site_logo', asset('uploads/logo.png'));
         $logoUrl = preg_match('/^https?:\\/\\//i', $logoPath ?? '') ? $logoPath : url($logoPath);

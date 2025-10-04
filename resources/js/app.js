@@ -1,4 +1,4 @@
-
+﻿
 import './bootstrap';
 import Alpine from 'alpinejs';
 
@@ -168,3 +168,4 @@ document.addEventListener('click', function(e) {
 
 // Start Alpine
 Alpine.start();
+
