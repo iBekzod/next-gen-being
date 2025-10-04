@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="themeSwitcher()" x-init="init()"
     x-effect="document.documentElement.classList.toggle('dark', darkMode)">
 
@@ -57,24 +57,38 @@
         $twitterHandle = ltrim((string) setting('social_twitter_handle'), '@');
         $socialLinks = setting('social_links', []);
         $sameAs = [];
+
         if (is_array($socialLinks)) {
             foreach ($socialLinks as $link) {
-                if (!empty($link)) {
+                if (! empty($link)) {
                     $sameAs[] = $link;
                 }
             }
         }
-        if (!preg_match('/^https?:\\/\\//i', $shareImage ?? '')) {
-            $shareImage = url($shareImage);
-        }
-        if (!preg_match('/^https?:\\/\\//i', $canonical ?? '')) {
-            $canonical = url($canonical);
-        }
+
+        $ensureAbsoluteUrl = function (?string $value) {
+            if (blank($value)) {
+                return $value;
+            }
+
+            if (\Illuminate\Support\Str::startsWith($value, ['http://', 'https://'])) {
+                return $value;
+            }
+
+            return url($value);
+        };
+
+        $shareImage = $ensureAbsoluteUrl($shareImage);
+        $canonical = $ensureAbsoluteUrl($canonical);
+        $logoPath = setting('site_logo', asset('uploads/logo.png'));
+        $logoUrl = $ensureAbsoluteUrl($logoPath);
+        $domain = parse_url($canonical, PHP_URL_HOST) ?? parse_url($siteUrl, PHP_URL_HOST);
+        $twitterUsername = $twitterHandle !== '' ? '@' . $twitterHandle : null;
+
         $rssUrl = \Illuminate\Support\Facades\Route::has('feed.rss') ? route('feed.rss') : null;
         $sitemapUrl = \Illuminate\Support\Facades\Route::has('seo.sitemap') ? route('seo.sitemap') : null;
-        $supportEmail = setting('support_email', 'support@' . parse_url($siteUrl, PHP_URL_HOST));
-        $logoPath = setting('site_logo', asset('uploads/logo.png'));
-        $logoUrl = preg_match('/^https?:\\/\\//i', $logoPath ?? '') ? $logoPath : url($logoPath);
+        $supportEmail = setting('support_email', 'support@' . ($domain ?? parse_url($siteUrl, PHP_URL_HOST)));
+
         $organizationSchema = [
             '@context' => 'https://schema.org',
             '@type' => 'Organization',
@@ -82,16 +96,19 @@
             'url' => $siteUrl,
             'logo' => $logoUrl,
         ];
-        if (!empty($sameAs)) {
+
+        if (! empty($sameAs)) {
             $organizationSchema['sameAs'] = $sameAs;
         }
-        if (!empty($supportEmail)) {
+
+        if (! empty($supportEmail)) {
             $organizationSchema['contactPoint'] = [[
                 '@type' => 'ContactPoint',
                 'email' => $supportEmail,
                 'contactType' => 'customer support',
             ]];
         }
+
         $websiteSchema = [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
@@ -130,12 +147,12 @@
     <meta name="twitter:title" content="{{ $pageTitle }}">
     <meta name="twitter:description" content="{{ $pageDescription }}">
     <meta name="twitter:image" content="{{ $shareImage }}">
-    @if(!empty($domain))
+    @if (! empty($domain))
         <meta name="twitter:domain" content="{{ $domain }}">
     @endif
-    @if ($twitterHandle)
-        <meta name="twitter:site" content="@{{ $twitterHandle }}">
-        <meta name="twitter:creator" content="@{{ $twitterHandle }}">
+    @if ($twitterUsername)
+        <meta name="twitter:site" content="{{ $twitterUsername }}">
+        <meta name="twitter:creator" content="{{ $twitterUsername }}">
     @endif
 
     @if (!empty($organizationSchema['logo']))
@@ -184,7 +201,7 @@
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
-                                <div x-show="open" @click.away="open = false" x-transition
+                                <div x-show="open" @click.outside="open = false" x-transition
                                     class="absolute left-0 z-50 w-48 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
                                     @foreach ($navCategories as $category)
                                         <a href="{{ route('categories.show', $category->slug) }}"
@@ -217,7 +234,7 @@
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
-                                <div x-show="open" @click.away="open = false" x-transition
+                                <div x-show="open" @click.outside="open = false" x-transition
                                     class="absolute left-0 z-50 w-56 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
                                     <a href="{{ route('terms') }}"
                                         class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Terms &amp; Conditions</a>
@@ -233,49 +250,36 @@
                     <!-- Search and User Menu -->
                     <div class="flex items-center space-x-4">
                         <!-- Search -->
-                        <div class="relative hidden md:block" x-data="{ searchOpen: false }">
-                            <button @click="searchOpen = true"
-                                class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <div class="relative hidden md:block" x-data="searchModal()">
+                            <button @click="open" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </button>
 
-                            <!-- Search Modal -->
-                            <div x-cloak x-show="searchOpen" @keydown.escape="searchOpen = false"
-                                class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-                                <div class="flex items-start justify-center min-h-screen px-4 pt-16 pb-20">
-                                    <div x-cloak x-show="searchOpen" @click="searchOpen = false"
-                                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
-                                        x-transition:enter-end="opacity-100"
-                                        class="fixed inset-0 transition-opacity bg-black bg-opacity-50"></div>
-
-                                    <div x-cloak x-show="searchOpen" x-transition:enter="ease-out duration-300"
-                                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                                        class="relative w-full max-w-lg bg-white rounded-lg shadow-xl dark:bg-gray-800">
-                                        <form action="{{ route('search') }}" method="GET" class="p-6">
+                            <template x-teleport="body">
+                                <div x-cloak x-show="isOpen" x-transition.opacity.duration.200ms
+                                    @keydown.escape.window="close" @click.self="close"
+                                    class="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-24 pb-12 overflow-y-auto bg-black/60 backdrop-blur-sm">
+                                    <div class="w-full max-w-lg overflow-hidden bg-white rounded-xl shadow-2xl dark:bg-gray-900"
+                                        x-transition.scale.origin-top @click.outside="close">
+                                        <form action="{{ route('search') }}" method="GET" class="p-6 space-y-4" @submit="close">
                                             <div class="flex items-center">
-                                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                                 </svg>
-                                                <input type="text" name="q" placeholder="Search articles..."
+                                                <input x-ref="searchField" type="text" name="q" placeholder="Search articles..."
                                                     class="flex-1 text-lg text-gray-900 placeholder-gray-500 bg-transparent border-0 dark:text-white focus:ring-0"
-                                                    autofocus>
+                                                    @keydown.escape.stop="close">
                                             </div>
-                                            <div class="flex justify-end mt-4">
-                                                <button type="button" @click="searchOpen = false"
-                                                    class="px-4 py-2 mr-3 text-sm text-gray-600 dark:text-gray-400">Cancel</button>
-                                                <button type="submit"
-                                                    class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">Search</button>
+                                            <div class="flex justify-end space-x-3">
+                                                <button type="button" @click="close" class="px-4 py-2 text-sm text-gray-600 transition-colors rounded-md dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
+                                                <button type="submit" class="px-4 py-2 text-sm font-semibold text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">Search</button>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
-                            </div>
+                            </template>
                         </div>
 
                         <!-- Dark Mode Toggle -->
@@ -306,7 +310,7 @@
                                         class="hidden text-gray-700 md:block dark:text-gray-300">{{ auth()->user()->name }}</span>
                                 </button>
 
-                                <div x-show="open" @click.away="open = false" x-transition
+                                <div x-show="open" @click.outside="open = false" x-transition
                                     class="absolute right-0 z-50 w-48 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
                                     <a href="{{ route('dashboard') }}"
                                         class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
@@ -520,7 +524,7 @@
         <!-- Notification Component -->
         <div id="notification-container" class="fixed z-50 space-y-2 top-4 right-4"></div>
 
-        @livewireScripts
+        @livewireScripts(["assetUrl" => asset("vendor/livewire/livewire.min.js")])
 
         <!-- Analytics -->
         @if (setting('enable_analytics') && setting('google_analytics_id'))
@@ -585,7 +589,7 @@
 
             function themeSwitcher() {
                 return {
-                    darkMode: false,
+                    darkMode: window.Alpine?.store('app')?.darkMode ?? false,
                     init() {
                         const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
                         if (stored) {
@@ -594,9 +598,16 @@
                             this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                         }
 
+                        document.documentElement.classList.toggle('dark', this.darkMode);
+
                         this.$watch('darkMode', (value) => {
+                            document.documentElement.classList.toggle('dark', value);
                             localStorage.setItem('theme', value ? 'dark' : 'light');
                             localStorage.removeItem('darkMode');
+
+                            if (window.Alpine?.store('app')) {
+                                window.Alpine.store('app').darkMode = value;
+                            }
                         });
                     },
                     toggle() {
@@ -604,6 +615,26 @@
                     }
                 }
             }
+            function searchModal() {
+                return {
+                    isOpen: false,
+                    open() {
+                        this.isOpen = true;
+                        this.$nextTick(() => {
+                            this.$refs.searchField?.focus();
+                        });
+                    },
+                    close() {
+                        this.isOpen = false;
+                    }
+                }
+            }
+
+            window.addEventListener('unhandledrejection', (event) => {
+                if (event.reason?.isFromCancelledTransition) {
+                    event.preventDefault();
+                }
+            });
         </script>
     </body>
 

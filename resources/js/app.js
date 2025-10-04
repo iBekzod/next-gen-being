@@ -1,4 +1,4 @@
-﻿
+
 import './bootstrap';
 import Alpine from 'alpinejs';
 
@@ -8,17 +8,22 @@ window.Alpine = Alpine;
 // Alpine.js store for global state
 Alpine.store('app', {
     loading: false,
-    darkMode: localStorage.getItem('darkMode') === 'true',
+    darkMode: (() => {
+        const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
+
+        if (!stored) {
+            return false;
+        }
+
+        return stored === 'dark' || stored === 'true';
+    })(),
 
     toggleDarkMode() {
         this.darkMode = !this.darkMode;
-        localStorage.setItem('darkMode', this.darkMode);
+        localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+        localStorage.removeItem('darkMode');
 
-        if (this.darkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        document.documentElement.classList.toggle('dark', this.darkMode);
     },
 
     showNotification(message, type = 'info') {
