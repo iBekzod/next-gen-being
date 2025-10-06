@@ -48,8 +48,12 @@ class SearchResults extends Component
             return;
         }
 
-        $this->postsCount = Post::search($this->query)
-            ->where('status', 'published')
+        $this->postsCount = Post::where('status', 'published')
+            ->where(function($q) {
+                $q->where('title', 'like', "%{$this->query}%")
+                ->orWhere('excerpt', 'like', "%{$this->query}%")
+                ->orWhere('content', 'like', "%{$this->query}%");
+            })
             ->count();
 
         $this->authorsCount = User::where('name', 'like', "%{$this->query}%")
@@ -63,9 +67,15 @@ class SearchResults extends Component
             return collect();
         }
 
-        return Post::search($this->query)
-            ->where('status', 'published')
-            ->paginate(10, 'page', 'posts-page');
+        return Post::where('status', 'published')
+            ->where(function($q) {
+                $q->where('title', 'like', "%{$this->query}%")
+                ->orWhere('excerpt', 'like', "%{$this->query}%")
+                ->orWhere('content', 'like', "%{$this->query}%");
+            })
+            ->with(['author', 'category'])
+            ->latest('published_at')
+            ->paginate(10, ['*'], 'posts-page');
     }
 
     public function getAuthorsProperty()
@@ -77,7 +87,7 @@ class SearchResults extends Component
         return User::where('name', 'like', "%{$this->query}%")
             ->orWhere('bio', 'like', "%{$this->query}%")
             ->withCount('posts')
-            ->paginate(10, 'page', 'authors-page');
+            ->paginate(10, ['*'], 'authors-page');
     }
 
     public function render()

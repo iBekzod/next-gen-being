@@ -1,4 +1,13 @@
-<article class="max-w-4xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
+<div>
+    <!-- Reading Progress Bar -->
+    <div x-data="readingProgress()"
+         x-init="init()"
+         class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200">
+        <div class="h-full transition-all duration-150 bg-blue-600"
+             :style="`width: ${progress}%`"></div>
+    </div>
+
+    <article class="max-w-4xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
     <!-- Header -->
     <header class="mb-8">
         <div class="flex items-center mb-4 space-x-3">
@@ -25,7 +34,15 @@
                      alt="{{ $post->author->name }}"
                      class="w-12 h-12 rounded-full">
                 <div>
-                    <p class="font-semibold text-gray-900">{{ $post->author->name }}</p>
+                    <div class="flex items-center space-x-3">
+                        <p class="font-semibold text-gray-900">{{ $post->author->name }}</p>
+                        @if(auth()->check() && auth()->id() !== $post->author_id)
+                        <button wire:click="toggleFollow"
+                                class="px-3 py-1 text-xs font-medium rounded-full transition-colors {{ auth()->user()->isFollowing($post->author) ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-blue-600 text-white hover:bg-blue-700' }}">
+                            {{ auth()->user()->isFollowing($post->author) ? 'Following' : '+ Follow' }}
+                        </button>
+                        @endif
+                    </div>
                     <div class="flex items-center space-x-2 text-sm text-gray-500">
                         <span>{{ $post->published_at->format('M j, Y') }}</span>
                         <span>•</span>
@@ -61,15 +78,21 @@
                     <div x-show="open"
                          @click.away="open = false"
                          x-transition
-                         class="absolute right-0 z-10 w-48 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
-                        <button class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
-                            Copy Link
+                         class="absolute right-0 z-10 w-56 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <button @click="copyLink()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                            📋 Copy Link
                         </button>
-                        <button class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
-                            Share on Twitter
+                        <button @click="shareTwitter()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                            🐦 Share on Twitter
                         </button>
-                        <button class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
-                            Share on LinkedIn
+                        <button @click="shareLinkedIn()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                            💼 Share on LinkedIn
+                        </button>
+                        <button @click="shareFacebook()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                            📘 Share on Facebook
+                        </button>
+                        <button @click="shareEmail()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                            ✉️ Share via Email
                         </button>
                     </div>
                 </div>
@@ -181,8 +204,9 @@
                     </div>
 
                     <div class="flex items-center mt-2 space-x-4">
-                        <button class="text-sm text-gray-500 transition-colors hover:text-gray-700">
-                            <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button wire:click="toggleCommentLike({{ $comment->id }})"
+                                class="text-sm transition-colors {{ auth()->user()?->hasLiked($comment) ? 'text-red-600' : 'text-gray-500 hover:text-gray-700' }}">
+                            <svg class="inline w-4 h-4 mr-1" fill="{{ auth()->user()?->hasLiked($comment) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                             </svg>
                             {{ $comment->likes_count }}
@@ -258,4 +282,5 @@
         </div>
     </section>
     @endif
-</article>
+    </article>
+</div>

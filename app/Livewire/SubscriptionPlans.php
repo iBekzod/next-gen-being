@@ -14,12 +14,12 @@ class SubscriptionPlans extends Component
             'price' => 9.99,
             'interval' => 'month',
             'features' => [
-                'Access to premium articles',
-                'Ad-free reading experience',
-                'Basic analytics',
-                'Email support'
+                'Premium articles',
+                'Ad-free experience',
+                'Baseline analytics'
             ],
-            'stripe_price_id' => 'price_basic_monthly'
+            'stripe_price_id' => 'price_basic_monthly',
+            'trial_days' => 7
         ],
         'pro' => [
             'name' => 'Pro',
@@ -27,12 +27,12 @@ class SubscriptionPlans extends Component
             'interval' => 'month',
             'features' => [
                 'Everything in Basic',
-                'Early access to new content',
+                'Early access drops',
                 'Exclusive webinars',
-                'Priority support',
-                'Download articles as PDF'
+                'Downloadable PDF packs'
             ],
-            'stripe_price_id' => 'price_pro_monthly'
+            'stripe_price_id' => 'price_pro_monthly',
+            'trial_days' => 7
         ],
         'enterprise' => [
             'name' => 'Enterprise',
@@ -40,12 +40,13 @@ class SubscriptionPlans extends Component
             'interval' => 'month',
             'features' => [
                 'Everything in Pro',
-                'Team accounts (up to 10 users)',
-                'Custom analytics dashboard',
-                'Dedicated account manager',
-                'API access'
+                'Team seats',
+                'API access',
+                'Dedicated success manager',
+                'Custom analytics'
             ],
-            'stripe_price_id' => 'price_enterprise_monthly'
+            'stripe_price_id' => 'price_enterprise_monthly',
+            'trial_days' => 7
         ]
     ];
 

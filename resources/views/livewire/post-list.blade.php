@@ -61,7 +61,7 @@
     <!-- Filters and Search -->
     <div class="flex flex-col mb-8 space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div class="flex items-center space-x-4">
-            <button @click="$wire.showFilters = !$wire.showFilters"
+            <button wire:click="$toggle('showFilters')"
                     class="flex items-center px-4 py-2 text-sm font-medium transition-colors border border-slate-200 rounded-lg bg-white hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/70">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -98,8 +98,8 @@
     </div>
 
     <!-- Advanced Filters -->
-    <div x-show="$wire.showFilters"
-         x-transition:enter="transition ease-out duration-200"
+    @if($showFilters)
+    <div x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0"
          class="p-6 mb-8 rounded-lg bg-gray-50">
@@ -134,6 +134,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Posts Grid -->
     <div class="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2 lg:grid-cols-3">

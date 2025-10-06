@@ -128,6 +128,60 @@ class PostShow extends Component
         $this->reset(['replyingTo', 'showCommentForm']);
     }
 
+    public function toggleCommentLike($commentId)
+    {
+        if (!Auth::check()) {
+            $this->dispatch('show-auth-modal');
+            return;
+        }
+
+        $comment = Comment::findOrFail($commentId);
+        $user = Auth::user();
+
+        $interaction = $user->interactions()
+            ->where('interactable_type', Comment::class)
+            ->where('interactable_id', $comment->id)
+            ->where('type', 'like')
+            ->first();
+
+        if ($interaction) {
+            $interaction->delete();
+            $comment->decrement('likes_count');
+        } else {
+            $user->interactions()->create([
+                'interactable_type' => Comment::class,
+                'interactable_id' => $comment->id,
+                'type' => 'like',
+            ]);
+            $comment->increment('likes_count');
+        }
+    }
+
+    public function toggleFollow()
+    {
+        if (!Auth::check()) {
+            $this->dispatch('show-auth-modal');
+            return;
+        }
+
+        $user = Auth::user();
+        $author = $this->post->author;
+
+        if ($user->isFollowing($author)) {
+            $user->unfollow($author);
+            $this->dispatch('show-notification', [
+                'type' => 'info',
+                'message' => 'Unfollowed ' . $author->name
+            ]);
+        } else {
+            $user->follow($author);
+            $this->dispatch('show-notification', [
+                'type' => 'success',
+                'message' => 'Now following ' . $author->name
+            ]);
+        }
+    }
+
     public function render()
     {
         return view('livewire.post-show', [

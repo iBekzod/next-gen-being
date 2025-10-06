@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -135,4 +135,3 @@ class SeoController extends Controller
         ];
     }
 }
-

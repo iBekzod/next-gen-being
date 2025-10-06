@@ -1,88 +1,144 @@
 
 import './bootstrap';
-import Alpine from 'alpinejs';
 
-// Make Alpine available globally
-window.Alpine = Alpine;
+// Livewire v3 includes Alpine.js - we'll configure it after Livewire loads
+document.addEventListener('livewire:init', () => {
+    // Access Livewire's Alpine instance
+    const Alpine = window.Alpine || window.Livewire.Alpine;
 
-// Alpine.js store for global state
-Alpine.store('app', {
-    loading: false,
-    darkMode: (() => {
-        const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
+    // Alpine.js store for global state
+    Alpine.store('app', {
+        loading: false,
+        darkMode: (() => {
+            const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
 
-        if (!stored) {
-            return false;
+            if (!stored) {
+                return false;
+            }
+
+            return stored === 'dark' || stored === 'true';
+        })(),
+
+        toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+            localStorage.removeItem('darkMode');
+
+            document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        showNotification(message, type = 'info') {
+            // Trigger notification event
+            window.dispatchEvent(new CustomEvent('show-notification', {
+                detail: { message, type }
+            }));
         }
+    });
 
-        return stored === 'dark' || stored === 'true';
-    })(),
+    // Reading Progress Indicator
+    window.readingProgress = function() {
+        return {
+            progress: 0,
+            init() {
+                this.updateProgress();
+                window.addEventListener('scroll', () => this.updateProgress());
+                window.addEventListener('resize', () => this.updateProgress());
+            },
+            updateProgress() {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                this.progress = (winScroll / height) * 100;
+            }
+        };
+    };
 
-    toggleDarkMode() {
-        this.darkMode = !this.darkMode;
-        localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
-        localStorage.removeItem('darkMode');
+    // Social Sharing Functions
+    window.copyLink = function() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            Alpine.store('app').showNotification('Link copied to clipboard!', 'success');
+        }).catch(() => {
+            Alpine.store('app').showNotification('Failed to copy link', 'error');
+        });
+    };
 
-        document.documentElement.classList.toggle('dark', this.darkMode);
-    },
+    window.shareTwitter = function() {
+        const url = window.location.href;
+        const title = document.querySelector('h1')?.textContent || document.title;
+        const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+        window.open(twitterUrl, '_blank', 'width=550,height=420');
+    };
 
-    showNotification(message, type = 'info') {
-        // Trigger notification event
-        window.dispatchEvent(new CustomEvent('show-notification', {
-            detail: { message, type }
-        }));
+    window.shareLinkedIn = function() {
+        const url = window.location.href;
+        const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+        window.open(linkedInUrl, '_blank', 'width=550,height=420');
+    };
+
+    window.shareFacebook = function() {
+        const url = window.location.href;
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        window.open(facebookUrl, '_blank', 'width=550,height=420');
+    };
+
+    window.shareEmail = function() {
+        const url = window.location.href;
+        const title = document.querySelector('h1')?.textContent || document.title;
+        const subject = encodeURIComponent(`Check out: ${title}`);
+        const body = encodeURIComponent(`I thought you might be interested in this article:\n\n${title}\n\n${url}`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    };
+
+    // Global utilities
+    window.utils = {
+        copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                Alpine.store('app').showNotification('Copied to clipboard!', 'success');
+            }).catch(() => {
+                Alpine.store('app').showNotification('Failed to copy', 'error');
+            });
+        },
+
+        formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        },
+
+        timeAgo(date) {
+            const now = new Date();
+            const diff = Math.floor((now - new Date(date)) / 1000);
+
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 2592000) return Math.floor(diff / 86400) + 'd ago';
+            if (diff < 31536000) return Math.floor(diff / 2592000) + 'mo ago';
+            return Math.floor(diff / 31536000) + 'y ago';
+        },
+
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    };
+
+    // Initialize dark mode on page load
+    if (Alpine.store('app').darkMode) {
+        document.documentElement.classList.add('dark');
     }
 });
-
-// Global utilities
-window.utils = {
-    copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            Alpine.store('app').showNotification('Copied to clipboard!', 'success');
-        }).catch(() => {
-            Alpine.store('app').showNotification('Failed to copy', 'error');
-        });
-    },
-
-    formatNumber(num) {
-        if (num >= 1000000) {
-            return (num / 1000000).toFixed(1) + 'M';
-        }
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'K';
-        }
-        return num.toString();
-    },
-
-    timeAgo(date) {
-        const now = new Date();
-        const diff = Math.floor((now - new Date(date)) / 1000);
-
-        if (diff < 60) return 'just now';
-        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-        if (diff < 2592000) return Math.floor(diff / 86400) + 'd ago';
-        if (diff < 31536000) return Math.floor(diff / 2592000) + 'mo ago';
-        return Math.floor(diff / 31536000) + 'y ago';
-    },
-
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-};
-
-// Initialize dark mode on page load
-if (Alpine.store('app').darkMode) {
-    document.documentElement.classList.add('dark');
-}
 
 // Global notification system
 window.addEventListener('show-notification', (event) => {
@@ -170,7 +226,3 @@ document.addEventListener('click', function(e) {
         }
     }
 });
-
-// Start Alpine
-Alpine.start();
-

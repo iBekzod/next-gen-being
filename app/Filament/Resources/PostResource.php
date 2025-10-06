@@ -6,6 +6,9 @@ use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Tag;
+use Illuminate\Support\Str;
+use App\Filament\Resources\PostResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\PostResource\Widgets\PostStatsOverview;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -265,6 +268,20 @@ class PostResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            CommentsRelationManager::class,
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PostStatsOverview::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
@@ -274,3 +291,9 @@ class PostResource extends Resource
         ];
     }
 }
+
+
+
+
+
+

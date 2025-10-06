@@ -1,18 +1,17 @@
 <div>
     <!-- Help Modal -->
-    <div x-show="$wire.showModal"
-         x-transition:enter="ease-out duration-300"
+    @if($showModal)
+    <div x-transition:enter="ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 overflow-y-auto"
-         style="display: none;">
+         class="fixed inset-0 z-50 overflow-y-auto">
 
         <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
-            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="$wire.closeModal()"></div>
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" wire:click="closeModal"></div>
 
             <!-- Center positioning element -->
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
@@ -107,4 +106,5 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
