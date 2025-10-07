@@ -18,7 +18,7 @@
             </p>
 
             <p>
-                This Refund Policy explains how membership fees for {{ setting('company_name', 'NextGen Being LLC') }} ("{{ setting('site_name') }}", "we", "our") are handled. Because we deliver immediately accessible digital research, resources, and community benefits, refunds are limited to the scenarios described below.
+                This Refund Policy explains how membership fees for {{ setting('company_name', 'NextGenBeing') }} ("{{ setting('site_name') }}", "we", "our"), a sole proprietorship, are handled. Because we deliver immediately accessible digital resources and benefits, we offer refunds as described below.
             </p>
 
             <h2>1. Free Trial</h2>
@@ -26,19 +26,19 @@
                 Every new subscription begins with a 7-day free trial. You can cancel at any time during the trial from your account portal and you will not be charged. If you do not cancel before the trial ends, the first billing cycle will start automatically.
             </p>
 
-            <h2>2. Monthly Memberships</h2>
+            <h2>2. 14-Day Money-Back Guarantee</h2>
             <p>
-                Monthly plans are billed in advance. When you cancel, you will retain premium access until the end of the current billing period. Because all premium issues, playbooks, and downloads become available instantly, we do not pro-rate or refund the remainder of the month once the billing cycle has started.
+                All subscription plans (monthly and annual) are eligible for a full refund within 14 days of the initial purchase. Simply contact us at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }} within 14 days of your purchase, and we will issue a complete refund to your original payment method.
             </p>
 
-            <h2>3. Annual Memberships</h2>
+            <h2>3. After 14 Days</h2>
             <p>
-                Annual subscriptions are eligible for a full refund within the first 14 days of the initial charge if less than three premium issues have been downloaded. After 14 days, cancellations will stop future renewals and you will continue to have access until the end of the paid term. Please reach out to us to initiate an annual refund so we can verify eligibility.
+                After the 14-day refund period, you may cancel your subscription at any time. You will retain access until the end of your current billing period, but no refunds will be provided for the remaining time. Your subscription will not automatically renew after cancellation.
             </p>
 
-            <h2>4. Enterprise Plans</h2>
+            <h2>4. Custom or Enterprise Arrangements</h2>
             <p>
-                Enterprise agreements follow the custom terms documented in the signed order form or enterprise pricing sheet. Unless otherwise agreed in writing, enterprise invoices are non-refundable once onboarding has begun. If you need adjustments to seat counts or billing cadence, contact your account manager before the next renewal date.
+                For custom subscription arrangements negotiated directly with our team, the refund terms will be specified in your agreement. Unless otherwise stated in writing, the standard 14-day refund policy applies.
             </p>
 
             <h2>5. Duplicate Charges or Billing Errors</h2>

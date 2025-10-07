@@ -16,9 +16,9 @@ class AiContentSuggestionResource extends Resource
 {
     protected static ?string $model = AiContentSuggestion::class;
     protected static ?string $navigationIcon = 'heroicon-o-light-bulb';
-    protected static ?string $navigationGroup = 'AI & Analytics';
+    protected static ?string $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'AI Suggestions';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {

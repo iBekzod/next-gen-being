@@ -15,9 +15,9 @@ class HelpReportResource extends Resource
 {
     protected static ?string $model = HelpReport::class;
     protected static ?string $navigationIcon = 'heroicon-o-question-mark-circle';
-    protected static ?string $navigationGroup = 'Support & Reports';
+    protected static ?string $navigationGroup = 'Analytics';
     protected static ?string $navigationLabel = 'Help & Reports';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {

@@ -14,6 +14,10 @@ use Filament\Widgets;
 use App\Filament\Widgets\BlogStatsOverview;
 use App\Filament\Widgets\RecentComments;
 use App\Filament\Widgets\RecentPosts;
+use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\UserInteractionsChart;
+use App\Filament\Widgets\LatestSubscriptions;
+use App\Filament\Widgets\LatestLeads;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -41,10 +45,20 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-                BlogStatsOverview::class,
+                StatsOverview::class,
+                UserInteractionsChart::class,
+                LatestSubscriptions::class,
+                LatestLeads::class,
                 RecentPosts::class,
                 RecentComments::class,
+            ])
+            ->navigationGroups([
+                'Content',
+                'User Management',
+                'Commerce',
+                'Marketing',
+                'Analytics',
+                'Settings',
             ])
             ->middleware([
                 EncryptCookies::class,

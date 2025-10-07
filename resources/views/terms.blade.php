@@ -18,8 +18,8 @@
             </p>
 
             <h2>Company Information</h2>
-            <p>These Terms &amp; Conditions ("Terms") are a legal agreement between you and {{ setting('company_name', 'NextGen Being LLC') }} ("Company", "we", "our") governing your use of the products and services provided through {{ setting('site_name') }}.</p>
-            <p>{{ setting('company_name', 'NextGen Being LLC') }} operates from {{ setting('company_address', '240 Bogishamol Street, Yunusabad District, Tashkent 100058, Uzbekistan') }}. You can reach us at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
+            <p>These Terms &amp; Conditions ("Terms") are a legal agreement between you and {{ setting('company_name', 'NextGenBeing') }} ("Company", "we", "our"), a sole proprietorship, governing your use of the products and services provided through {{ setting('site_name') }}.</p>
+            <p>{{ setting('company_name', 'NextGenBeing') }} operates from {{ setting('company_address', '240 Bogishamol Street, Yunusabad District, Tashkent 100058, Uzbekistan') }}. You can reach us at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
 
             <h2>1. Acceptance of Terms</h2>
             <p>

@@ -50,7 +50,7 @@ class SiteSettingSeeder extends Seeder
             ],
             [
                 'key' => 'company_name',
-                'value' => 'NextGenBeing (Solo Founder)',
+                'value' => 'NextGenBeing',
                 'group' => 'general',
             ],
             [
