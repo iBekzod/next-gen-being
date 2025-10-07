@@ -60,6 +60,7 @@ jobs:
           APP_NAME="NextGenBeing"
           APP_ENV=testing
           APP_DEBUG=true
+          APP_KEY=
           APP_URL=http://localhost
 
           # Testing Database - PostgreSQL (GitHub Actions)
@@ -88,7 +89,7 @@ jobs:
           BCRYPT_ROUNDS=4
           EOF
 
-          # Generate app key
+          # Generate app key for testing
           php artisan key:generate --env=testing
 
       - name: Run database migrations for tests
