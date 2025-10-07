@@ -88,8 +88,9 @@ class PostResource extends Resource
                                 Forms\Components\Select::make('author_id')
                                     ->relationship('author', 'name')
                                     ->required()
-                                    ->default(auth()->id())
-                                    ->searchable(),
+                                    ->default(fn () => auth()->id())
+                                    ->searchable()
+                                    ->preload(),
                             ]),
                         Forms\Components\Select::make('tags')
                             ->relationship('tags', 'name')
@@ -148,28 +149,24 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\SpatieMediaLibraryImageColumn::make('featured_image')
-                    ->collection('featured')
-                    ->size(60)
-                    ->circular(),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable()
                     ->limit(40)
-                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                        $state = $column->getState();
-                        return strlen($state) > 40 ? $state : null;
-                    }),
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('author.name')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->placeholder('No Author'),
                 Tables\Columns\TextColumn::make('category.name')
                     ->badge()
-                    ->color(fn ($record) => $record->category?->color ?? 'primary'),
+                    ->color('primary')
+                    ->placeholder('Uncategorized'),
                 Tables\Columns\TextColumn::make('tags.name')
                     ->badge()
                     ->separator(',')
-                    ->limit(2),
+                    ->limit(2)
+                    ->placeholder('No Tags'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

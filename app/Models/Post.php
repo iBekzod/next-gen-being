@@ -200,10 +200,10 @@ class Post extends Model implements HasMedia
         return [
             'title' => $this->title,
             'excerpt' => $this->excerpt,
-            'content' => strip_tags($this->content),
-            'category' => $this->category->name,
+            'content' => strip_tags($this->content ?? ''),
+            'category' => $this->category?->name ?? '',
             'tags' => $this->tags->pluck('name')->join(' '),
-            'author' => $this->author->name,
+            'author' => $this->author?->name ?? '',
         ];
     }
 }

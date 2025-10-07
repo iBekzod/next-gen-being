@@ -151,11 +151,10 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        // Cancel any active subscriptions
-        if ($user->subscription && $user->subscription->isActive()) {
+        // Cancel any active subscriptions (Paddle will handle this automatically)
+        if ($user->subscribed()) {
             try {
-                app(\App\Services\LemonSqueezyService::class)
-                    ->cancelSubscription($user->subscription->lemonsqueezy_id);
+                $user->subscription()->cancel();
             } catch (\Exception $e) {
                 // Log the error but continue with deletion
                 \Log::error('Failed to cancel subscription during account deletion: ' . $e->getMessage());

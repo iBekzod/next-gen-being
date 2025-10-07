@@ -73,10 +73,10 @@ class UserResource extends Resource
                     ->schema([
                         Forms\Components\CheckboxList::make('roles')
                             ->relationship('roles', 'name')
-                            ->options(Role::pluck('name', 'id'))
-                            ->descriptions(Role::pluck('description', 'id')->toArray())
+                            ->options(fn () => \App\Models\Role::pluck('name', 'id')->toArray())
                             ->columns(2),
-                    ]),
+                    ])
+                    ->hidden(fn () => !\App\Models\Role::exists()),
 
                 Forms\Components\Section::make('Profile Image')
                     ->schema([
