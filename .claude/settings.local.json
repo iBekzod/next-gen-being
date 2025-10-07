@@ -20,7 +20,11 @@
       "Bash(docker inspect:*)",
       "Bash(python:*)",
       "Bash(docker ps:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix GitHub Actions test failures\n\n- Update workflow to create .env.testing for CI environment\n- Configure tests to use PostgreSQL with proper credentials\n- Add .env.testing to .gitignore for local development\n- RefreshDatabase trait and seeding already configured in tests\n\nThis ensures tests pass both locally and in GitHub Actions CI.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
