@@ -183,42 +183,42 @@
                 </p>
             </div>
             <div class="grid gap-8 mt-12 md:grid-cols-2 lg:grid-cols-3">
-                <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
                     <div class="inline-flex items-center justify-center w-10 h-10 text-blue-600 bg-blue-100 rounded-xl">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Curated in the open</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Transparent breakdowns of the stack we use to build, test, and launch products faster.</p>
                 </div>
-                <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
                     <div class="inline-flex items-center justify-center w-10 h-10 text-purple-600 bg-purple-100 rounded-xl">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14s-3 .672-3 1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v1m0 12v1m7-7h1M4 12H3m15.364 5.364l.707.707M5.929 6.343l-.707-.707m12.142 0l.707-.707M5.929 17.657l-.707.707"/></svg>
                     </div>
                     <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Actionable, not theoretical</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Immediate prompts, automations, and agendas you can drop into your operating system within minutes.</p>
                 </div>
-                <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
                     <div class="inline-flex items-center justify-center w-10 h-10 text-emerald-600 bg-emerald-100 rounded-xl">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Designed for momentum</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Save hours of scattered research and unlock a cadence that keeps your team compounding.</p>
                 </div>
-                <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
                     <div class="inline-flex items-center justify-center w-10 h-10 text-amber-600 bg-amber-100 rounded-xl">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-width="2"/></svg>
                     </div>
                     <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Time to value in minutes</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Read in under ten minutes and ship upgrades the same day.</p>
                 </div>
-                <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
                     <div class="inline-flex items-center justify-center w-10 h-10 text-rose-600 bg-rose-100 rounded-xl">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-3-3H8a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v6a2 2 0 01-2 2h-3l-3 3z"/></svg>
                     </div>
                     <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Community sourced insight</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Powered by founders, analysts, and systems thinkers behind breakout products.</p>
                 </div>
-                <div class="p-6 transition bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900/60 dark:border-slate-700">
+                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
                     <div class="inline-flex items-center justify-center w-10 h-10 text-slate-600 bg-slate-100 rounded-xl">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"/></svg>
                     </div>

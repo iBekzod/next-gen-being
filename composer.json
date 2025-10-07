@@ -32,7 +32,8 @@
         "spatie/laravel-schedule-monitor": "^3.0",
         "spatie/laravel-sitemap": "^7.0",
         "spatie/laravel-sluggable": "^3.5",
-        "symfony/dom-crawler": "^7.0"
+        "symfony/dom-crawler": "^7.0",
+        "symfony/http-kernel": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

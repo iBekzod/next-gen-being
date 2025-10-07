@@ -163,7 +163,7 @@
     @stack('structured-data')
 </head>
 
-    <body class="font-sans antialiased text-gray-900 bg-white dark:bg-gray-900 dark:text-gray-100">
+    <body class="font-sans antialiased">
         @php
             $navCategories = collect();
             if (

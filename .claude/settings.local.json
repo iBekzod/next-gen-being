@@ -25,7 +25,9 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nFix GitHub Actions test failures\n\n- Update workflow to create .env.testing for CI environment\n- Configure tests to use PostgreSQL with proper credentials\n- Add .env.testing to .gitignore for local development\n- RefreshDatabase trait and seeding already configured in tests\n\nThis ensures tests pass both locally and in GitHub Actions CI.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(timeout 300 bash -c 'while docker exec ngb-app pgrep -f \"\"composer install\"\" > /dev/null 2>&1; do echo \"\"Waiting for composer...\"\"; sleep 10; done; echo \"\"Composer complete!\"\"')",
+      "Bash(docker-compose up:*)"
     ],
     "deny": [],
     "ask": []

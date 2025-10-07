@@ -62,7 +62,7 @@
     <div class="flex flex-col mb-8 space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div class="flex items-center space-x-4">
             <button wire:click="$toggle('showFilters')"
-                    class="flex items-center px-4 py-2 text-sm font-medium transition-colors border border-slate-200 rounded-lg bg-white hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/70">
+                    class="flex items-center px-4 py-2 text-sm font-medium transition-all duration-200 border-2 border-gray-300 rounded-lg bg-white hover:bg-blue-50 hover:border-blue-500 hover:shadow-md dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/70">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                 </svg>
@@ -71,7 +71,7 @@
 
             @if($search || $category || $selectedTag || $contentType !== 'all')
             <button wire:click="clearFilters"
-                    class="px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                    class="px-4 py-2 text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 rounded-lg hover:shadow-md dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20">
                 Clear all filters
             </button>
             @endif
@@ -139,7 +139,7 @@
     <!-- Posts Grid -->
     <div class="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2 lg:grid-cols-3">
         @forelse($this->posts as $post)
-        <article class="overflow-hidden transition-all duration-200 bg-white border border-gray-100 shadow-sm group rounded-xl hover:shadow-lg">
+        <article class="overflow-hidden transition-all duration-300 bg-white dark:bg-slate-900 border-2 border-gray-300 dark:border-slate-700 shadow-md group rounded-xl hover:shadow-xl hover:border-blue-500 dark:hover:border-blue-500 hover:-translate-y-1">
             <div class="relative overflow-hidden aspect-w-16 aspect-h-9">
                 @if($post->featured_image)
                 <img src="{{ $post->featured_image }}"

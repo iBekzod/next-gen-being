@@ -11,17 +11,18 @@ class Subscription extends Model
 
     protected $fillable = [
         'user_id',
-        'lemonsqueezy_id',
-        'order_id',
+        'paddle_id',
+        'paddle_subscription_id',
+        'paddle_price_id',
         'name',
-        'product_id',
-        'variant_id',
         'status',
+        'quantity',
         'card_brand',
         'card_last_four',
         'trial_ends_at',
         'renews_at',
         'ends_at',
+        'paused_at',
         'created_at',
         'updated_at'
     ];
@@ -30,6 +31,8 @@ class Subscription extends Model
         'trial_ends_at' => 'datetime',
         'renews_at' => 'datetime',
         'ends_at' => 'datetime',
+        'paused_at' => 'datetime',
+        'quantity' => 'integer',
     ];
 
     public function user(): BelongsTo

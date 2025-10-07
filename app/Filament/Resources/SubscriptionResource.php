@@ -38,12 +38,14 @@ class SubscriptionResource extends Resource
                             ]),
                         Forms\Components\Grid::make(3)
                             ->schema([
-                                Forms\Components\TextInput::make('lemonsqueezy_id')
-                                    ->label('LemonSqueezy ID')
+                                Forms\Components\TextInput::make('paddle_id')
+                                    ->label('Paddle Customer ID')
                                     ->maxLength(255),
-                                Forms\Components\TextInput::make('order_id')
+                                Forms\Components\TextInput::make('paddle_subscription_id')
+                                    ->label('Paddle Subscription ID')
                                     ->maxLength(255),
-                                Forms\Components\TextInput::make('product_id')
+                                Forms\Components\TextInput::make('paddle_price_id')
+                                    ->label('Paddle Price ID')
                                     ->maxLength(255),
                             ]),
                         Forms\Components\Grid::make(2)
@@ -178,14 +180,14 @@ class SubscriptionResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('view_lemonsqueezy')
-                    ->label('View in LS')
+                Tables\Actions\Action::make('view_paddle')
+                    ->label('View in Paddle')
                     ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->url(fn ($record) => $record->lemonsqueezy_id
-                        ? "https://app.lemonsqueezy.com/subscriptions/{$record->lemonsqueezy_id}"
+                    ->url(fn ($record) => $record->paddle_subscription_id
+                        ? "https://vendors.paddle.com/subscriptions/{$record->paddle_subscription_id}"
                         : null)
                     ->openUrlInNewTab()
-                    ->visible(fn ($record) => filled($record->lemonsqueezy_id)),
+                    ->visible(fn ($record) => filled($record->paddle_subscription_id)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -235,21 +237,20 @@ class SubscriptionResource extends Resource
                             ]),
                     ]),
 
-                Infolists\Components\Section::make('LemonSqueezy Information')
+                Infolists\Components\Section::make('Paddle Information')
                     ->schema([
                         Infolists\Components\Grid::make(3)
                             ->schema([
-                                Infolists\Components\TextEntry::make('lemonsqueezy_id')
-                                    ->label('LS Subscription ID')
+                                Infolists\Components\TextEntry::make('paddle_id')
+                                    ->label('Paddle Customer ID')
                                     ->copyable(),
-                                Infolists\Components\TextEntry::make('order_id')
-                                    ->label('Order ID')
+                                Infolists\Components\TextEntry::make('paddle_subscription_id')
+                                    ->label('Paddle Subscription ID')
                                     ->copyable(),
-                                Infolists\Components\TextEntry::make('product_id')
-                                    ->label('Product ID'),
+                                Infolists\Components\TextEntry::make('paddle_price_id')
+                                    ->label('Paddle Price ID')
+                                    ->copyable(),
                             ]),
-                        Infolists\Components\TextEntry::make('variant_id')
-                            ->label('Variant ID'),
                     ]),
 
                 Infolists\Components\Section::make('Important Dates')
