@@ -46,7 +46,11 @@ jobs:
           cache: 'npm'
 
       - name: Install Composer dependencies
-        run: composer install --no-progress --no-interaction --prefer-dist
+        run: |
+          composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
+          composer dump-autoload
+          # Verify Paddle Cashier is installed
+          composer show laravel/cashier-paddle
 
       - name: Install NPM dependencies and update lock file
         run: |
