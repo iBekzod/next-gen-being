@@ -19,7 +19,8 @@
       "Bash(docker logs:*)",
       "Bash(docker inspect:*)",
       "Bash(python:*)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(php:*)"
     ],
     "deny": [],
     "ask": []
