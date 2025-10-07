@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Cashier\Exceptions\IncompletePayment;
 
 class SubscriptionPlans extends Component
 {
@@ -18,7 +17,7 @@ class SubscriptionPlans extends Component
                 'Ad-free experience',
                 'Baseline analytics'
             ],
-            'stripe_price_id' => 'price_basic_monthly',
+            'price_id' => null, // Will be set in mount()
             'trial_days' => 7
         ],
         'pro' => [
@@ -31,7 +30,7 @@ class SubscriptionPlans extends Component
                 'Exclusive webinars',
                 'Downloadable PDF packs'
             ],
-            'stripe_price_id' => 'price_pro_monthly',
+            'price_id' => null, // Will be set in mount()
             'trial_days' => 7
         ],
         'enterprise' => [
@@ -45,10 +44,18 @@ class SubscriptionPlans extends Component
                 'Dedicated success manager',
                 'Custom analytics'
             ],
-            'stripe_price_id' => 'price_enterprise_monthly',
+            'price_id' => null, // Will be set in mount()
             'trial_days' => 7
         ]
     ];
+
+    public function mount()
+    {
+        // Set Paddle price IDs from config
+        $this->plans['basic']['price_id'] = config('services.paddle.basic_price_id');
+        $this->plans['pro']['price_id'] = config('services.paddle.pro_price_id');
+        $this->plans['enterprise']['price_id'] = config('services.paddle.enterprise_price_id');
+    }
 
     public function subscribe($planKey)
     {
@@ -60,18 +67,14 @@ class SubscriptionPlans extends Component
         $plan = $this->plans[$planKey];
 
         try {
-            $checkout = $user->newSubscription('default', $plan['stripe_price_id'])
-                ->checkout([
-                    'success_url' => route('subscription.success'),
-                    'cancel_url' => route('subscription.cancel'),
-                ]);
+            $checkout = $user->checkout($plan['price_id'])
+                ->returnTo(route('subscription.success'))
+                ->create();
 
             return redirect($checkout->url);
-        } catch (IncompletePayment $exception) {
-            return redirect()->route('cashier.payment', [
-                $exception->payment->id,
-                'redirect' => route('subscription.success')
-            ]);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to create checkout: ' . $e->getMessage());
+            return;
         }
     }
 

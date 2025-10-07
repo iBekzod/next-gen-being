@@ -100,19 +100,22 @@ class HelpReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\BadgeColumn::make('type')
-                    ->colors([
-                        'info' => 'help',
-                        'warning' => 'report',
-                        'danger' => 'bug',
-                        'success' => 'feature_request',
-                    ])
-                    ->icons([
-                        'heroicon-m-question-mark-circle' => 'help',
-                        'heroicon-m-flag' => 'report',
-                        'heroicon-m-bug-ant' => 'bug',
-                        'heroicon-m-light-bulb' => 'feature_request',
-                    ]),
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'help' => 'info',
+                        'report' => 'warning',
+                        'bug' => 'danger',
+                        'feature_request' => 'success',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'help' => 'heroicon-m-question-mark-circle',
+                        'report' => 'heroicon-m-flag',
+                        'bug' => 'heroicon-m-bug-ant',
+                        'feature_request' => 'heroicon-m-light-bulb',
+                        default => 'heroicon-m-document',
+                    }),
 
                 Tables\Columns\TextColumn::make('subject')
                     ->searchable()
@@ -120,27 +123,32 @@ class HelpReportResource extends Resource
                     ->weight(FontWeight::SemiBold)
                     ->limit(60),
 
-                Tables\Columns\BadgeColumn::make('priority')
-                    ->colors([
-                        'secondary' => 'low',
-                        'primary' => 'normal',
-                        'warning' => 'high',
-                        'danger' => 'urgent',
-                    ]),
+                Tables\Columns\TextColumn::make('priority')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'low' => 'gray',
+                        'normal' => 'primary',
+                        'high' => 'warning',
+                        'urgent' => 'danger',
+                        default => 'gray',
+                    }),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'gray' => 'open',
-                        'warning' => 'in_progress',
-                        'success' => 'resolved',
-                        'secondary' => 'closed',
-                    ])
-                    ->icons([
-                        'heroicon-m-clock' => 'open',
-                        'heroicon-m-play' => 'in_progress',
-                        'heroicon-m-check-circle' => 'resolved',
-                        'heroicon-m-archive-box' => 'closed',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'open' => 'gray',
+                        'in_progress' => 'warning',
+                        'resolved' => 'success',
+                        'closed' => 'secondary',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'open' => 'heroicon-m-clock',
+                        'in_progress' => 'heroicon-m-play',
+                        'resolved' => 'heroicon-m-check-circle',
+                        'closed' => 'heroicon-m-archive-box',
+                        default => 'heroicon-m-document',
+                    }),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Reporter')
@@ -265,16 +273,24 @@ class HelpReportResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereIn('status', ['open', 'in_progress'])->count();
+        try {
+            return static::getModel()::whereIn('status', ['open', 'in_progress'])->count() ?: null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        $urgentCount = static::getModel()::where('priority', 'urgent')
-            ->whereIn('status', ['open', 'in_progress'])
-            ->count();
+        try {
+            $urgentCount = static::getModel()::where('priority', 'urgent')
+                ->whereIn('status', ['open', 'in_progress'])
+                ->count();
 
-        return $urgentCount > 0 ? 'danger' : 'warning';
+            return $urgentCount > 0 ? 'danger' : 'warning';
+        } catch (\Exception $e) {
+            return 'warning';
+        }
     }
 
     public static function getPages(): array

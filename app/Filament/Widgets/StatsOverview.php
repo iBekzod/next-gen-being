@@ -16,92 +16,57 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        return [
-            Stat::make('Total Posts', Post::count())
-                ->description('Published: ' . Post::where('status', 'published')->count())
-                ->descriptionIcon('heroicon-o-document-text')
-                ->color('success')
-                ->chart($this->getPostsChart()),
+        try {
+            $totalPosts = Post::count();
+            $publishedPosts = Post::where('status', 'published')->count();
+            $totalUsers = User::count();
+            $activeUsers = User::where('is_active', true)->count();
+            $activeSubscriptions = Subscription::where('status', 'active')->count();
+            $totalComments = Comment::count();
+            $approvedComments = Comment::where('status', 'approved')->count();
+            $totalLeads = LandingLead::count();
+            $todayLeads = LandingLead::whereDate('created_at', today())->count();
+            $totalViews = Post::sum('views_count') ?? 0;
 
-            Stat::make('Total Users', User::count())
-                ->description(User::where('is_active', true)->count() . ' active users')
-                ->descriptionIcon('heroicon-o-users')
-                ->color('primary')
-                ->chart($this->getUsersChart()),
+            return [
+                Stat::make('Total Posts', $totalPosts)
+                    ->description('Published: ' . $publishedPosts)
+                    ->descriptionIcon('heroicon-o-document-text')
+                    ->color('success'),
 
-            Stat::make('Active Subscriptions', Subscription::where('status', 'active')->count())
-                ->description('Total revenue stream')
-                ->descriptionIcon('heroicon-o-credit-card')
-                ->color('success')
-                ->chart($this->getSubscriptionsChart()),
+                Stat::make('Total Users', $totalUsers)
+                    ->description($activeUsers . ' active users')
+                    ->descriptionIcon('heroicon-o-users')
+                    ->color('primary'),
 
-            Stat::make('Total Comments', Comment::count())
-                ->description(Comment::where('status', 'approved')->count() . ' approved')
-                ->descriptionIcon('heroicon-o-chat-bubble-left-right')
-                ->color('warning')
-                ->chart($this->getCommentsChart()),
+                Stat::make('Active Subscriptions', $activeSubscriptions)
+                    ->description('Total revenue stream')
+                    ->descriptionIcon('heroicon-o-credit-card')
+                    ->color('success'),
 
-            Stat::make('Landing Leads', LandingLead::count())
-                ->description(LandingLead::whereDate('created_at', today())->count() . ' today')
-                ->descriptionIcon('heroicon-o-envelope')
-                ->color('info')
-                ->chart($this->getLeadsChart()),
+                Stat::make('Total Comments', $totalComments)
+                    ->description($approvedComments . ' approved')
+                    ->descriptionIcon('heroicon-o-chat-bubble-left-right')
+                    ->color('warning'),
 
-            Stat::make('Total Views', Post::sum('views_count'))
-                ->description('All time post views')
-                ->descriptionIcon('heroicon-o-eye')
-                ->color('primary'),
-        ];
+                Stat::make('Landing Leads', $totalLeads)
+                    ->description($todayLeads . ' today')
+                    ->descriptionIcon('heroicon-o-envelope')
+                    ->color('info'),
+
+                Stat::make('Total Views', $totalViews)
+                    ->description('All time post views')
+                    ->descriptionIcon('heroicon-o-eye')
+                    ->color('primary'),
+            ];
+        } catch (\Exception $e) {
+            return [
+                Stat::make('Error', 'Unable to load stats')
+                    ->description('Please check database connection')
+                    ->descriptionIcon('heroicon-o-exclamation-triangle')
+                    ->color('danger'),
+            ];
+        }
     }
 
-    protected function getPostsChart(): array
-    {
-        return Post::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count')
-            ->toArray();
-    }
-
-    protected function getUsersChart(): array
-    {
-        return User::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count')
-            ->toArray();
-    }
-
-    protected function getSubscriptionsChart(): array
-    {
-        return Subscription::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->where('status', 'active')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count')
-            ->toArray();
-    }
-
-    protected function getCommentsChart(): array
-    {
-        return Comment::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count')
-            ->toArray();
-    }
-
-    protected function getLeadsChart(): array
-    {
-        return LandingLead::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count')
-            ->toArray();
-    }
 }

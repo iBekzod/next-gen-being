@@ -105,19 +105,22 @@ class AiContentSuggestionResource extends Resource
                         return $record->description;
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => 'rejected',
-                        'info' => 'used',
-                    ])
-                    ->icons([
-                        'heroicon-m-clock' => 'pending',
-                        'heroicon-m-check-circle' => 'approved',
-                        'heroicon-m-x-circle' => 'rejected',
-                        'heroicon-m-star' => 'used',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        'used' => 'info',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'pending' => 'heroicon-m-clock',
+                        'approved' => 'heroicon-m-check-circle',
+                        'rejected' => 'heroicon-m-x-circle',
+                        'used' => 'heroicon-m-star',
+                        default => 'heroicon-m-document',
+                    }),
 
                 Tables\Columns\TextColumn::make('relevance_score')
                     ->label('Score')

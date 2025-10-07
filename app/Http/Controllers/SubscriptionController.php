@@ -1,17 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Services\LemonSqueezyService;
-use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubscriptionController extends Controller
 {
-    public function __construct(
-        private LemonSqueezyService $lemonSqueezy
-    ) {}
-
     public function plans()
     {
         $plans = [
@@ -19,7 +13,7 @@ class SubscriptionController extends Controller
                 'name' => 'Basic',
                 'price' => '$9.99',
                 'interval' => 'month',
-                'variant_id' => config('services.lemonsqueezy.basic_variant_id'),
+                'price_id' => config('services.paddle.basic_price_id'),
                 'features' => [
                     'Access to premium articles',
                     'Ad-free reading experience',
@@ -31,7 +25,7 @@ class SubscriptionController extends Controller
                 'name' => 'Pro',
                 'price' => '$19.99',
                 'interval' => 'month',
-                'variant_id' => config('services.lemonsqueezy.pro_variant_id'),
+                'price_id' => config('services.paddle.pro_price_id'),
                 'features' => [
                     'Everything in Basic',
                     'Early access to new content',
@@ -44,7 +38,7 @@ class SubscriptionController extends Controller
                 'name' => 'Enterprise',
                 'price' => '$49.99',
                 'interval' => 'month',
-                'variant_id' => config('services.lemonsqueezy.enterprise_variant_id'),
+                'price_id' => config('services.paddle.enterprise_price_id'),
                 'features' => [
                     'Everything in Pro',
                     'Team accounts (up to 10 users)',
@@ -61,20 +55,17 @@ class SubscriptionController extends Controller
     public function subscribe(Request $request)
     {
         $request->validate([
-            'variant_id' => 'required|string'
+            'price_id' => 'required|string'
         ]);
 
         $user = Auth::user();
 
         try {
-            $checkout = $this->lemonSqueezy->createCheckout([
-                'variant_id' => $request->variant_id,
-                'email' => $user->email,
-                'name' => $user->name,
-                'user_id' => $user->id,
-            ]);
+            $checkout = $user->checkout($request->price_id)
+                ->returnTo(route('subscription.success'))
+                ->create();
 
-            return redirect($checkout['data']['attributes']['url']);
+            return redirect($checkout->url);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create checkout: ' . $e->getMessage());
         }
@@ -93,25 +84,37 @@ class SubscriptionController extends Controller
     public function manage()
     {
         $user = Auth::user();
-        $subscription = $user->subscription;
 
-        return view('subscriptions.manage', compact('subscription'));
+        // Get the customer's portal session from Paddle
+        if ($user->customer) {
+            try {
+                $session = $user->customer->session([
+                    'return_url' => route('subscription.manage'),
+                ]);
+
+                return redirect($session->url);
+            } catch (\Exception $e) {
+                return back()->with('error', 'Failed to load subscription management: ' . $e->getMessage());
+            }
+        }
+
+        return view('subscriptions.manage', [
+            'subscription' => $user->subscription
+        ]);
     }
 
     public function cancelSubscription()
     {
         $user = Auth::user();
-        $subscription = $user->subscription;
 
-        if (!$subscription || !$subscription->isActive()) {
+        if (!$user->subscription || !$user->subscription->active()) {
             return back()->with('error', 'No active subscription found.');
         }
 
         try {
-            $this->lemonSqueezy->cancelSubscription($subscription->lemonsqueezy_id);
-            $subscription->update(['status' => 'cancelled']);
+            $user->subscription->cancel();
 
-            return back()->with('success', 'Subscription cancelled successfully.');
+            return back()->with('success', 'Subscription will be cancelled at the end of the current billing period.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to cancel subscription: ' . $e->getMessage());
         }
@@ -120,15 +123,13 @@ class SubscriptionController extends Controller
     public function pauseSubscription()
     {
         $user = Auth::user();
-        $subscription = $user->subscription;
 
-        if (!$subscription || !$subscription->isActive()) {
+        if (!$user->subscription || !$user->subscription->active()) {
             return back()->with('error', 'No active subscription found.');
         }
 
         try {
-            $this->lemonSqueezy->pauseSubscription($subscription->lemonsqueezy_id);
-            $subscription->update(['status' => 'paused']);
+            $user->subscription->pause();
 
             return back()->with('success', 'Subscription paused successfully.');
         } catch (\Exception $e) {
@@ -136,58 +137,33 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function resumeSubscription()
+    public function resume()
     {
         $user = Auth::user();
-        $subscription = $user->subscription;
 
-        if (!$subscription || !$subscription->isPaused()) {
-            return back()->with('error', 'No paused subscription found.');
+        if (!$user->subscription) {
+            return back()->with('error', 'No subscription found.');
         }
 
         try {
-            $this->lemonSqueezy->resumeSubscription($subscription->lemonsqueezy_id);
-            $subscription->update(['status' => 'active']);
+            if ($user->subscription->paused()) {
+                $user->subscription->unpause();
+                return back()->with('success', 'Subscription resumed successfully.');
+            }
 
-            return back()->with('success', 'Subscription resumed successfully.');
+            if ($user->subscription->cancelled() && $user->subscription->onGracePeriod()) {
+                $user->subscription->resume();
+                return back()->with('success', 'Subscription resumed successfully.');
+            }
+
+            return back()->with('error', 'Subscription cannot be resumed.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to resume subscription: ' . $e->getMessage());
         }
     }
 
-    public function resume()
+    public function resumeSubscription()
     {
-        $user = Auth::user();
-        $subscription = $user->subscription;
-
-        if (!$subscription) {
-            return back()->with('error', 'No subscription found.');
-        }
-
-        if ($subscription->isPaused()) {
-            try {
-                $this->lemonSqueezy->resumeSubscription($subscription->lemonsqueezy_id);
-                $subscription->update(['status' => 'active']);
-
-                return back()->with('success', 'Subscription resumed successfully.');
-            } catch (\Exception $e) {
-                return back()->with('error', 'Failed to resume subscription: ' . $e->getMessage());
-            }
-        } elseif ($subscription->isCancelled() && $subscription->ends_at && $subscription->ends_at->isFuture()) {
-            // Resume a cancelled subscription that hasn't ended yet
-            try {
-                $this->lemonSqueezy->resumeSubscription($subscription->lemonsqueezy_id);
-                $subscription->update([
-                    'status' => 'active',
-                    'ends_at' => null
-                ]);
-
-                return back()->with('success', 'Subscription resumed successfully.');
-            } catch (\Exception $e) {
-                return back()->with('error', 'Failed to resume subscription: ' . $e->getMessage());
-            }
-        } else {
-            return back()->with('error', 'Subscription cannot be resumed.');
-        }
+        return $this->resume();
     }
 }

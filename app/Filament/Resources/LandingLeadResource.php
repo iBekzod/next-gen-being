@@ -115,7 +115,11 @@ class LandingLeadResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereDate('created_at', today())->count();
+        try {
+            return static::getModel()::whereDate('created_at', today())->count() ?: null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public static function getNavigationBadgeColor(): ?string

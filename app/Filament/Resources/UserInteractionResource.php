@@ -65,23 +65,25 @@ class UserInteractionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
-                    ->sortable()
-                    ->url(fn ($record) => $record->user ? route('filament.admin.resources.users.view', $record->user) : null),
-                Tables\Columns\BadgeColumn::make('type')
-                    ->colors([
-                        'danger' => 'like',
-                        'warning' => 'bookmark',
-                        'success' => 'view',
-                        'primary' => 'share',
-                        'secondary' => 'click',
-                    ])
-                    ->icons([
-                        'heroicon-o-heart' => 'like',
-                        'heroicon-o-bookmark' => 'bookmark',
-                        'heroicon-o-eye' => 'view',
-                        'heroicon-o-share' => 'share',
-                        'heroicon-o-cursor-arrow-rays' => 'click',
-                    ])
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'like' => 'danger',
+                        'bookmark' => 'warning',
+                        'view' => 'success',
+                        'share' => 'primary',
+                        'click' => 'gray',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'like' => 'heroicon-o-heart',
+                        'bookmark' => 'heroicon-o-bookmark',
+                        'view' => 'heroicon-o-eye',
+                        'share' => 'heroicon-o-share',
+                        'click' => 'heroicon-o-cursor-arrow-rays',
+                        default => 'heroicon-o-cursor-arrow-ripple',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('interactable_type')
                     ->label('Content Type')
@@ -170,7 +172,11 @@ class UserInteractionResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereDate('created_at', today())->count();
+        try {
+            return static::getModel()::whereDate('created_at', today())->count() ?: null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public static function getNavigationBadgeColor(): ?string

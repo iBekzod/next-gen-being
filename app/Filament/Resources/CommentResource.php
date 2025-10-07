@@ -95,21 +95,24 @@ class CommentResource extends Resource
                     ->label('Post')
                     ->limit(50)
                     ->searchable()
-                    ->url(fn ($record) => route('posts.show', $record->post->slug), true),
+                    ->url(fn ($record) => $record->post ? route('posts.show', $record->post->slug) : null, true),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => 'rejected',
-                        'gray' => 'spam',
-                    ])
-                    ->icons([
-                        'heroicon-m-clock' => 'pending',
-                        'heroicon-m-check-circle' => 'approved',
-                        'heroicon-m-x-circle' => 'rejected',
-                        'heroicon-m-shield-exclamation' => 'spam',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        'spam' => 'gray',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'pending' => 'heroicon-m-clock',
+                        'approved' => 'heroicon-m-check-circle',
+                        'rejected' => 'heroicon-m-x-circle',
+                        'spam' => 'heroicon-m-shield-exclamation',
+                        default => 'heroicon-m-question-mark-circle',
+                    }),
 
                 Tables\Columns\IconColumn::make('parent_id')
                     ->label('Reply')
@@ -185,8 +188,9 @@ class CommentResource extends Resource
 
                     Tables\Actions\Action::make('view_post')
                         ->icon('heroicon-m-eye')
-                        ->url(fn ($record) => route('posts.show', $record->post->slug))
-                        ->openUrlInNewTab(),
+                        ->url(fn ($record) => $record->post ? route('posts.show', $record->post->slug) : null)
+                        ->openUrlInNewTab()
+                        ->visible(fn ($record) => $record->post !== null),
 
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
@@ -217,7 +221,11 @@ class CommentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count();
+        try {
+            return static::getModel()::where('status', 'pending')->count() ?: null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public static function getNavigationBadgeColor(): string|array|null

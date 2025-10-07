@@ -109,13 +109,7 @@ class UserResource extends Resource
                     ->copyable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->badge()
-                    ->separator(',')
-                    ->colors([
-                        'danger' => 'admin',
-                        'warning' => 'content_manager',
-                        'success' => 'lead',
-                        'primary' => 'blogger',
-                    ]),
+                    ->separator(','),
                 Tables\Columns\TextColumn::make('posts_count')
                     ->counts('posts')
                     ->label('Posts')
@@ -149,8 +143,9 @@ class UserResource extends Resource
                 Tables\Actions\Action::make('impersonate')
                     ->icon('heroicon-o-user-circle')
                     ->color('warning')
-                    ->visible(fn () => auth()->user()->hasRole('admin'))
-                    ->action(fn ($record) => redirect()->route('impersonate', $record)),
+                    ->visible(fn () => auth()->check() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('admin'))
+                    ->action(fn ($record) => redirect()->route('impersonate', $record))
+                    ->hidden(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

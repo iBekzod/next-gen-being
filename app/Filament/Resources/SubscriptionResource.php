@@ -96,8 +96,7 @@ class SubscriptionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
-                    ->sortable()
-                    ->url(fn ($record) => $record->user ? route('filament.admin.resources.users.view', $record->user) : null),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('user.email')
                     ->searchable()
                     ->sortable()
@@ -106,14 +105,16 @@ class SubscriptionResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('medium'),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'paused',
-                        'danger' => 'cancelled',
-                        'secondary' => 'expired',
-                        'danger' => 'past_due',
-                    ])
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'paused' => 'warning',
+                        'cancelled' => 'danger',
+                        'expired' => 'gray',
+                        'past_due' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('product_id')
                     ->label('Product')
@@ -293,7 +294,11 @@ class SubscriptionResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'active')->count();
+        try {
+            return static::getModel()::where('status', 'active')->count() ?: null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public static function getNavigationBadgeColor(): ?string

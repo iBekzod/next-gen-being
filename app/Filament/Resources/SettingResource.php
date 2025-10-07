@@ -79,17 +79,22 @@ class SettingResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('group')
-                    ->colors([
-                        'primary' => 'general',
-                        'success' => 'seo',
-                        'info' => 'social',
-                        'warning' => 'analytics',
-                        'danger' => 'mail',
-                        'secondary' => 'subscription',
-                    ]),
+                Tables\Columns\TextColumn::make('group')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'general' => 'primary',
+                        'seo' => 'success',
+                        'social' => 'info',
+                        'analytics' => 'warning',
+                        'mail' => 'danger',
+                        'subscription' => 'gray',
+                        'content' => 'primary',
+                        'ai' => 'purple',
+                        default => 'gray',
+                    }),
 
-                Tables\Columns\BadgeColumn::make('type'),
+                Tables\Columns\TextColumn::make('type')
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('value')
                     ->limit(50)

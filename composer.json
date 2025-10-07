@@ -3,7 +3,7 @@
     "name": "ibekzod/nextgenbeing-blog",
     "type": "project",
     "description": "NextGenBeing - Professional blog platform with AI, subscriptions, and advanced content management",
-    "keywords": ["laravel", "blog", "filament", "livewire", "lemonsqueezy", "ai", "postgresql"],
+    "keywords": ["laravel", "blog", "filament", "livewire", "paddle", "ai", "postgresql"],
     "license": "MIT",
     "homepage": "https://nextgenbeing.com",
     "authors": [
@@ -26,7 +26,6 @@
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
         "league/commonmark": "^2.4",
-        "lemonsqueezy/laravel": "^1.8.5",
         "livewire/livewire": "^3.0",
         "meilisearch/meilisearch-php": "^1.0",
         "spatie/laravel-backup": "^9.0",

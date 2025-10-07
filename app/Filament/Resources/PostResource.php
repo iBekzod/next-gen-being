@@ -165,19 +165,20 @@ class PostResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
                     ->badge()
-                    ->color(fn ($record) => $record->category->color ?? 'primary'),
+                    ->color(fn ($record) => $record->category?->color ?? 'primary'),
                 Tables\Columns\TextColumn::make('tags.name')
                     ->badge()
                     ->separator(',')
                     ->limit(2),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'secondary' => 'draft',
-                        'success' => 'published',
-                        'warning' => 'scheduled',
-                        'danger' => 'archived',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'published' => 'success',
+                        'scheduled' => 'warning',
+                        'archived' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\IconColumn::make('is_featured')
                     ->boolean()
                     ->label('Featured'),
@@ -241,13 +242,17 @@ class PostResource extends Resource
                     ->action(function ($record) {
                         $newPost = $record->replicate();
                         $newPost->title = $record->title . ' (Copy)';
-                        $newPost->slug = null;
+                        $newPost->slug = Str::slug($newPost->title);
                         $newPost->status = 'draft';
                         $newPost->published_at = null;
                         $newPost->save();
-
-                        return redirect()->route('filament.admin.resources.posts.edit', $newPost);
-                    }),
+                    })
+                    ->successNotification(
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title('Post duplicated')
+                            ->body('The post has been duplicated successfully.')
+                    ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

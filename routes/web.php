@@ -56,10 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/dashboard/settings', [UserDashboardController::class, 'deleteAccount'])->name('dashboard.settings.delete');
 });
 
-// Cashier webhook routes
-Route::post('/stripe/webhook', '\\Laravel\\Cashier\\Http\\Controllers\\WebhookController@handleWebhook');
-
-Route::post('/lemonsqueezy/webhook', [App\Http\Controllers\WebhookController::class, 'lemonSqueezyWebhook'])->name('lemonsqueezy.webhook')->withoutMiddleware([VerifyCsrfToken::class]);
+// Paddle webhook routes (handled automatically by Laravel Cashier Paddle)
 
 Route::get('/feed.xml', [FeedController::class, 'rss'])->name('feed.rss');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');

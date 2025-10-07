@@ -46,9 +46,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 StatsOverview::class,
-                UserInteractionsChart::class,
-                LatestSubscriptions::class,
-                LatestLeads::class,
                 RecentPosts::class,
                 RecentComments::class,
             ])
