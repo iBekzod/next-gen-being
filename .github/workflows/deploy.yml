@@ -55,29 +55,47 @@ jobs:
 
       - name: Create and configure testing environment
         run: |
-          # Copy .env.example to .env for testing
-          cp .env.example .env
+          # Create .env.testing for CI environment
+          cat > .env.testing << 'EOF'
+          APP_NAME="NextGenBeing"
+          APP_ENV=testing
+          APP_DEBUG=true
+          APP_URL=http://localhost
+
+          # Testing Database - PostgreSQL (GitHub Actions)
+          DB_CONNECTION=pgsql
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_DATABASE=nextgenbeing_test
+          DB_USERNAME=postgres
+          DB_PASSWORD=postgres
+          DB_SCHEMA=public
+
+          # Cache & Session - Use array drivers for testing
+          CACHE_DRIVER=array
+          SESSION_DRIVER=array
+          QUEUE_CONNECTION=sync
+
+          # Mail - Use array driver for testing
+          MAIL_MAILER=array
+
+          # Disable external services during testing
+          TELESCOPE_ENABLED=false
+          DEBUGBAR_ENABLED=false
+          HORIZON_ENABLED=false
+
+          # Performance
+          BCRYPT_ROUNDS=4
+          EOF
+
           # Generate app key
-          php artisan key:generate
-          # Configure for testing
-          sed -i 's/APP_ENV=local/APP_ENV=testing/' .env
-          sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env
-          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
-          sed -i 's/DB_HOST=.*/DB_HOST=localhost/' .env
-          sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=nextgenbeing_test/' .env
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=postgres/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
-          # Use array drivers for testing
-          echo "SESSION_DRIVER=array" >> .env
-          echo "CACHE_DRIVER=array" >> .env
-          echo "QUEUE_CONNECTION=sync" >> .env
+          php artisan key:generate --env=testing
 
       - name: Run database migrations for tests
-        run: php artisan migrate --force
+        run: php artisan migrate --env=testing --force
 
       - name: Run tests
-        run: php artisan test
+        run: php artisan test --env=testing
 
   deploy:
     runs-on: ubuntu-latest
