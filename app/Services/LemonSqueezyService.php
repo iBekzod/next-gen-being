@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Log;
 
 class LemonSqueezyService
 {
-    private string $apiKey;
+    private ?string $apiKey;
     private string $baseUrl = 'https://api.lemonsqueezy.com/v1';
-    private string $storeId;
+    private ?string $storeId;
 
     public function __construct()
     {
@@ -19,6 +19,10 @@ class LemonSqueezyService
 
     private function makeRequest(string $method, string $endpoint, array $data = []): array
     {
+        if (empty($this->apiKey)) {
+            throw new \Exception('LemonSqueezy API key is not configured. Please set LEMONSQUEEZY_API_KEY in your .env file.');
+        }
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Accept' => 'application/vnd.api+json',
