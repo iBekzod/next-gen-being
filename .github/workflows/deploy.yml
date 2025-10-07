@@ -143,6 +143,9 @@ jobs:
           # Run database migrations
           sudo -u www-data php artisan migrate --force
 
+          # Update site settings (policies, company name, etc.)
+          sudo -u www-data php artisan db:seed --class=SiteSettingSeeder --force
+
           # Clear and cache config
           sudo -u www-data php artisan config:clear
           sudo -u www-data php artisan config:cache
