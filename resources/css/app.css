@@ -26,12 +26,32 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* ===== LIGHT MODE (Default - Clean & Modern) ===== */
+  /* ===== LIGHT MODE (Default - Clean & Modern with Better Contrast) ===== */
   body {
-    @apply bg-white text-gray-900;
-    background-color: #ffffff;
+    @apply text-gray-900;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  /* Universal smooth transitions for theme switching */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 200ms;
+    transition-timing-function: ease-in-out;
+  }
+
+  /* Navigation improvements for light mode */
+  nav {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.5) !important;
   }
 
   /* ===== DARK MODE (Sophisticated & Elegant) ===== */
@@ -43,6 +63,30 @@
     background: linear-gradient(135deg, #0a0e1a 0%, #0f1419 50%, #0a0e1a 100%);
     background-attachment: fixed;
     color: #e5e7eb;
+  }
+
+  /* Navigation improvements for dark mode */
+  html.dark nav {
+    background: rgba(17, 24, 39, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(71, 85, 105, 0.4) !important;
+  }
+
+  /* Background color mapping for light mode - Enhanced contrast */
+  .bg-white {
+    background-color: #ffffff !important;
+  }
+
+  .bg-gray-50 {
+    background-color: #f9fafb !important;
+  }
+
+  .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+  }
+
+  .bg-gray-200 {
+    background-color: #e5e7eb !important;
   }
 
   /* Background color mapping for dark mode */
@@ -74,6 +118,31 @@
   html.dark .bg-blue-500,
   html.dark .bg-blue-600 {
     background-color: #3b82f6 !important;
+  }
+
+  /* Text color mapping for light mode - Better contrast */
+  .text-gray-400 {
+    color: #9ca3af !important;
+  }
+
+  .text-gray-500 {
+    color: #6b7280 !important;
+  }
+
+  .text-gray-600 {
+    color: #4b5563 !important;
+  }
+
+  .text-gray-700 {
+    color: #374151 !important;
+  }
+
+  .text-gray-800 {
+    color: #1f2937 !important;
+  }
+
+  .text-gray-900 {
+    color: #111827 !important;
   }
 
   /* Text color mapping for dark mode */
@@ -110,6 +179,19 @@
     color: #60a5fa !important;
   }
 
+  /* Border color mapping for light mode - Better visibility */
+  .border-gray-200 {
+    border-color: #e5e7eb !important;
+  }
+
+  .border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+
+  .border-gray-400 {
+    border-color: #9ca3af !important;
+  }
+
   /* Border color mapping for dark mode */
   html.dark .border-gray-200 {
     border-color: rgba(71, 85, 105, 0.3) !important;
@@ -121,6 +203,37 @@
 
   html.dark .border-gray-400 {
     border-color: rgba(71, 85, 105, 0.5) !important;
+  }
+
+  /* Hover states for light mode - Enhanced feedback */
+  .hover\:bg-gray-50:hover {
+    background-color: #f9fafb !important;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  .hover\:bg-gray-100:hover {
+    background-color: #f3f4f6 !important;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  .hover\:bg-gray-200:hover {
+    background-color: #e5e7eb !important;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  .hover\:text-gray-700:hover {
+    color: #374151 !important;
+    transition: color 0.2s ease-in-out;
+  }
+
+  .hover\:text-gray-900:hover {
+    color: #111827 !important;
+    transition: color 0.2s ease-in-out;
+  }
+
+  .hover\:border-gray-300:hover {
+    border-color: #d1d5db !important;
+    transition: border-color 0.2s ease-in-out;
   }
 
   /* Hover states for dark mode */
@@ -197,6 +310,22 @@
     border-color: rgba(71, 85, 105, 0.3);
   }
 
+  /* Shadow adjustments for light mode - more visible */
+  .shadow-sm {
+    --tw-shadow-color: rgba(0, 0, 0, 0.1);
+    --tw-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow {
+    --tw-shadow-color: rgba(0, 0, 0, 0.1);
+    --tw-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08), 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-lg {
+    --tw-shadow-color: rgba(0, 0, 0, 0.15);
+    --tw-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
   /* Shadow adjustments for dark mode */
   html.dark .shadow-sm {
     --tw-shadow-color: rgba(0, 0, 0, 0.5);
@@ -229,21 +358,60 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    box-shadow: 0 2px 4px 0 rgba(37, 99, 235, 0.2);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px 0 rgba(37, 99, 235, 0.3);
+  }
+
+  html.dark .btn-primary {
+    box-shadow: 0 2px 4px 0 rgba(59, 130, 246, 0.3);
+  }
+
+  html.dark .btn-primary:hover {
+    box-shadow: 0 4px 8px 0 rgba(59, 130, 246, 0.4);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+    box-shadow: 0 2px 4px 0 rgba(75, 85, 99, 0.2);
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px 0 rgba(75, 85, 99, 0.3);
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-primary-500;
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 focus:ring-primary-500;
+    border: 1.5px solid;
+    border-color: #d1d5db;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-outline:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  html.dark .btn-outline {
+    border-color: rgba(71, 85, 105, 0.6);
+  }
+
+  html.dark .btn-outline:hover {
+    background-color: #1e2433;
+    border-color: rgba(71, 85, 105, 0.8);
   }
 
   .card {
     @apply overflow-hidden rounded-xl bg-white transition-all duration-300;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08), 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(203, 213, 225, 0.6);
   }
 
   html.dark .card {
@@ -255,7 +423,8 @@
 
   .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.08);
+    border-color: rgba(148, 163, 184, 0.4);
   }
 
   html.dark .card:hover {
@@ -263,11 +432,35 @@
   }
 
   .input {
-    @apply block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white;
+    @apply block w-full rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+    border: 1.5px solid #d1d5db;
+    background-color: #ffffff;
+    color: #111827;
+  }
+
+  .input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  html.dark .input {
+    background-color: #1e2433;
+    border-color: rgba(71, 85, 105, 0.5);
+    color: #f8fafc;
+  }
+
+  html.dark .input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+    @apply block text-sm font-semibold mb-2;
+    color: #374151;
+  }
+
+  html.dark .label {
+    color: #e2e8f0;
   }
 
   .text-muted {
@@ -275,7 +468,24 @@
   }
 
   .divider {
-    @apply border-t border-gray-200 dark:border-gray-700;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  html.dark .divider {
+    border-top: 1px solid rgba(71, 85, 105, 0.4);
+  }
+
+  /* Footer improvements */
+  footer {
+    background: rgba(249, 250, 251, 0.95) !important;
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(203, 213, 225, 0.6) !important;
+  }
+
+  html.dark footer {
+    background: rgba(17, 24, 39, 0.95) !important;
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(71, 85, 105, 0.4) !important;
   }
 
   .loading-spinner {
