@@ -78,7 +78,7 @@ class SubscriptionPlans extends Component
     public function render()
     {
         return view('livewire.subscription-plans', [
-            'currentSubscription' => Auth::user()?->subscription(),
+            'currentSubscription' => Auth::check() ? Auth::user()->subscription : null,
         ]);
     }
 }
