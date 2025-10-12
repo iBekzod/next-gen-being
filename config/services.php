@@ -35,9 +35,9 @@ return [
         ],
     ],
     'gumroad' => [
-        'basic_url' => env('GUMROAD_BASIC_URL', 'https://gumroad.com/l/nextgenbeing-basic'),
-        'pro_url' => env('GUMROAD_PRO_URL', 'https://gumroad.com/l/nextgenbeing-pro'),
-        'team_url' => env('GUMROAD_TEAM_URL', 'https://gumroad.com/l/nextgenbeing-team'),
+        'basic_url' => env('GUMROAD_BASIC_URL', 'https://buy.nextgenbeing.com/l/nextgenbeing-basic'),
+        'pro_url' => env('GUMROAD_PRO_URL', 'https://buy.nextgenbeing.com/l/nextgenbeing-pro'),
+        'team_url' => env('GUMROAD_TEAM_URL', 'https://buy.nextgenbeing.com/l/nextgenbeing-team'),
     ],
 
     'paddle' => [
