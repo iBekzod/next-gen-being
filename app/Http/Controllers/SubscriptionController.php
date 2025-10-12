@@ -15,10 +15,9 @@ class SubscriptionController extends Controller
                 'interval' => 'month',
                 'price_id' => config('services.paddle.basic_price_id'),
                 'features' => [
-                    'Access to premium articles',
+                    'All premium articles & guides',
                     'Ad-free reading experience',
-                    'Basic analytics',
-                    'Email support'
+                    'Weekly newsletter'
                 ]
             ],
             'pro' => [
@@ -29,22 +28,21 @@ class SubscriptionController extends Controller
                 'features' => [
                     'Everything in Basic',
                     'Early access to new content',
-                    'Exclusive webinars',
-                    'Priority support',
-                    'Download articles as PDF'
+                    'Monthly live webinars',
+                    'Downloadable playbook library'
                 ]
             ],
             'enterprise' => [
-                'name' => 'Enterprise',
+                'name' => 'Team',
                 'price' => '$49.99',
                 'interval' => 'month',
                 'price_id' => config('services.paddle.enterprise_price_id'),
                 'features' => [
                     'Everything in Pro',
-                    'Team accounts (up to 10 users)',
-                    'Custom analytics dashboard',
-                    'Dedicated account manager',
-                    'API access'
+                    'Up to 10 team member accounts',
+                    'Shared content library',
+                    'Priority email support',
+                    'Team usage insights'
                 ]
             ]
         ];

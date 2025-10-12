@@ -13,9 +13,9 @@ class SubscriptionPlans extends Component
             'price' => 9.99,
             'interval' => 'month',
             'features' => [
-                'Premium articles',
-                'Ad-free experience',
-                'Baseline analytics'
+                'All premium articles & guides',
+                'Ad-free reading experience',
+                'Weekly newsletter'
             ],
             'price_id' => null, // Will be set in mount()
             'trial_days' => 7
@@ -26,23 +26,23 @@ class SubscriptionPlans extends Component
             'interval' => 'month',
             'features' => [
                 'Everything in Basic',
-                'Early access drops',
-                'Exclusive webinars',
-                'Downloadable PDF packs'
+                'Early access to new content',
+                'Monthly live webinars',
+                'Downloadable playbook library'
             ],
             'price_id' => null, // Will be set in mount()
             'trial_days' => 7
         ],
         'enterprise' => [
-            'name' => 'Enterprise',
+            'name' => 'Team',
             'price' => 49.99,
             'interval' => 'month',
             'features' => [
                 'Everything in Pro',
-                'Team seats',
-                'API access',
-                'Dedicated success manager',
-                'Custom analytics'
+                'Up to 10 team member accounts',
+                'Shared content library',
+                'Priority email support',
+                'Team usage insights'
             ],
             'price_id' => null, // Will be set in mount()
             'trial_days' => 7
