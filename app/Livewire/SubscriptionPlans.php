@@ -63,19 +63,19 @@ class SubscriptionPlans extends Component
             return redirect()->route('login');
         }
 
-        $user = Auth::user();
-        $plan = $this->plans[$planKey];
+        // Get Gumroad product URLs from config
+        $gumroadUrls = [
+            'basic' => config('services.gumroad.basic_url'),
+            'pro' => config('services.gumroad.pro_url'),
+            'enterprise' => config('services.gumroad.team_url'),
+        ];
 
-        try {
-            $checkout = $user->checkout($plan['price_id'])
-                ->returnTo(route('subscription.success'))
-                ->create();
-
-            return redirect($checkout->url);
-        } catch (\Exception $e) {
-            session()->flash('error', 'Failed to create checkout: ' . $e->getMessage());
-            return;
+        // Redirect to Gumroad checkout
+        if (isset($gumroadUrls[$planKey])) {
+            return redirect()->away($gumroadUrls[$planKey]);
         }
+
+        session()->flash('error', 'Invalid subscription plan selected.');
     }
 
     public function render()

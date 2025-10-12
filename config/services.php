@@ -34,6 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'gumroad' => [
+        'basic_url' => env('GUMROAD_BASIC_URL', 'https://gumroad.com/l/nextgenbeing-basic'),
+        'pro_url' => env('GUMROAD_PRO_URL', 'https://gumroad.com/l/nextgenbeing-pro'),
+        'team_url' => env('GUMROAD_TEAM_URL', 'https://gumroad.com/l/nextgenbeing-team'),
+    ],
+
     'paddle' => [
         'api_key' => env('PADDLE_API_KEY'),
         'client_side_token' => env('PADDLE_CLIENT_SIDE_TOKEN'),
