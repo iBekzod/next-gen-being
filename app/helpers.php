@@ -152,3 +152,23 @@ if (!function_exists('generate_meta_tags')) {
     }
 }
 
+if (!function_exists('lemonsqueezy_store_url')) {
+    /**
+     * Get the LemonSqueezy store URL.
+     *
+     * @param string|null $path Optional path to append
+     * @return string
+     */
+    function lemonsqueezy_store_url(?string $path = null): string
+    {
+        $domain = config('services.lemonsqueezy.store_domain', 'store.nextgenbeing.com');
+        $url = 'https://' . $domain;
+
+        if ($path) {
+            $url .= '/' . ltrim($path, '/');
+        }
+
+        return $url;
+    }
+}
+

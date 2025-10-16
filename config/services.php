@@ -37,6 +37,7 @@ return [
     'lemonsqueezy' => [
         'api_key' => env('LEMONSQUEEZY_API_KEY'),
         'store_id' => env('LEMONSQUEEZY_STORE_ID'),
+        'store_domain' => env('LEMONSQUEEZY_STORE_DOMAIN', 'store.nextgenbeing.com'),
         'signing_secret' => env('LEMONSQUEEZY_SIGNING_SECRET'),
         'basic_variant_id' => env('LEMONSQUEEZY_BASIC_VARIANT_ID'),
         'pro_variant_id' => env('LEMONSQUEEZY_PRO_VARIANT_ID'),
