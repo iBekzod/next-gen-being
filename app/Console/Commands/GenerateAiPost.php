@@ -18,6 +18,7 @@ class GenerateAiPost extends Command
                             {--author= : Author user ID (defaults to first admin)}
                             {--draft : Create as draft instead of publishing}
                             {--premium : Mark post as premium content}
+                            {--free : Force free content (default is smart premium strategy)}
                             {--provider= : AI provider (groq, openai) - defaults to config}';
 
     protected $description = 'Generate a complete AI-written blog post using free Groq API';
@@ -65,7 +66,10 @@ class GenerateAiPost extends Command
             // Step 5: Generate tags
             $tags = $this->getOrCreateTags($postData['tags']);
 
-            // Step 6: Create the post
+            // Step 6: Determine premium strategy
+            $isPremium = $this->determinePremiumStrategy();
+
+            // Step 7: Create the post
             $post = Post::create([
                 'title' => $postData['title'],
                 'excerpt' => $postData['excerpt'],
@@ -74,8 +78,8 @@ class GenerateAiPost extends Command
                 'category_id' => $category->id,
                 'status' => $this->option('draft') ? 'draft' : 'published',
                 'published_at' => $this->option('draft') ? null : now(),
-                'is_premium' => $this->option('premium'),
-                'is_featured' => false,
+                'is_premium' => $isPremium,
+                'is_featured' => $isPremium, // Featured premium content gets more visibility
                 'allow_comments' => true,
                 'seo_meta' => [
                     'meta_title' => $postData['meta_title'],
@@ -90,10 +94,14 @@ class GenerateAiPost extends Command
             $post->tags()->attach($tags->pluck('id'));
 
             $status = $this->option('draft') ? 'draft' : 'published';
+            $premiumLabel = $isPremium ? '💎 PREMIUM' : '🆓 FREE';
+
             $this->info("✅ Post created successfully!");
             $this->info("   ID: {$post->id}");
             $this->info("   Title: {$post->title}");
             $this->info("   Status: {$status}");
+            $this->info("   Type: {$premiumLabel}");
+            $this->info("   Featured: " . ($post->is_featured ? 'Yes' : 'No'));
             $this->info("   Category: {$category->name}");
             $this->info("   Author: {$author->name}");
             $this->info("   Tags: " . $tags->pluck('name')->implode(', '));
@@ -162,32 +170,51 @@ class GenerateAiPost extends Command
 
     private function generatePostContent(array $topic): array
     {
-        $prompt = "Write a comprehensive, well-structured blog post about: {$topic['title']}
+        // Determine if this should be premium content
+        $isPremium = $this->option('premium') || (!$this->option('free') && rand(1, 100) <= 70); // 70% premium by default
+
+        $conversionStrategy = $isPremium ? $this->getPremiumContentStrategy() : '';
+
+        $prompt = "Write a high-value, conversion-focused blog post about: {$topic['title']}
+
+CONTENT STRATEGY:
+{$conversionStrategy}
 
 Requirements:
-- 1000-1500 words
-- Include an engaging introduction
+- 1200-1800 words of exceptional quality
+- Start with a compelling hook that highlights reader's pain point
+- Include an engaging introduction that promises transformation
 - Use clear headings and subheadings (use ## for h2, ### for h3)
-- Provide practical examples and insights
-- Include a conclusion with key takeaways
+- Provide actionable insights and practical examples
+- Use psychological triggers (FOMO, authority, social proof, urgency)
+- Include specific numbers, statistics, or case studies
+- Create curiosity gaps that make readers want to learn more
+- End with a strong conclusion that emphasizes the value of deep expertise
 - Use markdown formatting
-- Write in a professional but approachable tone
-- Focus on providing value to readers
+- Professional yet engaging tone
+
+CONTENT STRUCTURE:
+1. Hook (pain point or opportunity)
+2. Promise (what they'll learn)
+3. Context (why this matters now)
+4. Main content (valuable insights)
+5. Advanced section (deeper techniques - hint at premium depth)
+6. Conclusion (emphasize value of expertise, subtle CTA for premium access)
 
 Also provide:
-- A compelling 150-200 character excerpt
-- Meta title (60 characters max)
-- Meta description (155 characters max)
-- 5-7 relevant keywords
+- A compelling 150-200 character excerpt that creates curiosity
+- Meta title (60 characters max) - benefit-driven
+- Meta description (155 characters max) - value proposition
+- 5-7 high-intent keywords
 - 3-5 tags
 
 Return response in this JSON format:
 {
-  \"title\": \"Final polished title\",
-  \"content\": \"Full markdown content\",
-  \"excerpt\": \"Brief excerpt\",
-  \"meta_title\": \"SEO title\",
-  \"meta_description\": \"SEO description\",
+  \"title\": \"Benefit-driven title with numbers or power words\",
+  \"content\": \"Full markdown content with conversion strategy\",
+  \"excerpt\": \"Curiosity-driven excerpt\",
+  \"meta_title\": \"SEO title with benefit\",
+  \"meta_description\": \"Value proposition description\",
   \"keywords\": [\"keyword1\", \"keyword2\"],
   \"tags\": [\"tag1\", \"tag2\"]
 }";
@@ -395,5 +422,65 @@ Return response in this JSON format:
         }
 
         return $tags;
+    }
+
+    private function determinePremiumStrategy(): bool
+    {
+        // If explicitly set, use that
+        if ($this->option('premium')) {
+            return true;
+        }
+
+        if ($this->option('free')) {
+            return false;
+        }
+
+        // Smart strategy: 70% premium, 30% free
+        // This creates FOMO - users see valuable content they can't access
+        // which drives subscriptions
+        $random = rand(1, 100);
+
+        // 70% chance of premium content
+        return $random <= 70;
+    }
+
+    private function getPremiumContentStrategy(): string
+    {
+        return "
+PREMIUM CONTENT STRATEGY:
+This will be PREMIUM content requiring subscription. Your goal is to:
+
+1. **Create High Perceived Value**:
+   - Present advanced techniques and insider knowledge
+   - Include implementation details and code examples
+   - Share real-world case studies and results
+   - Provide step-by-step frameworks
+
+2. **Strategic Teaser (First 30%)**:
+   - First few paragraphs are engaging and valuable
+   - Hook them with a compelling problem statement
+   - Show what's possible (the transformation)
+   - Build credibility with initial insights
+
+3. **Premium Content Markers**:
+   - Use phrases like: 'Advanced techniques', 'Deep dive', 'Complete guide'
+   - Include: 'Production-ready code', 'Battle-tested strategies'
+   - Mention: 'Step-by-step implementation', 'Avoiding common pitfalls'
+
+4. **Psychological Triggers**:
+   - FOMO: 'Most developers miss this critical step...'
+   - Authority: 'From years of production experience...'
+   - Social Proof: 'Used by leading tech companies...'
+   - Urgency: 'Essential for modern applications...'
+   - Exclusivity: 'Advanced techniques not found elsewhere...'
+
+5. **Content Depth Indicators**:
+   - Promise specific, actionable outcomes
+   - Include technical depth that shows expertise
+   - Reference advanced concepts and optimizations
+   - Provide complete, copy-paste solutions
+
+The content should make free users think: 'This looks incredibly valuable, I need full access!'
+";
     }
 }
