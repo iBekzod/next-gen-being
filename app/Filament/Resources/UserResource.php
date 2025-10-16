@@ -127,10 +127,16 @@ class UserResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('roles')
-                    ->relationship('roles', 'name')
+                    ->options(fn () => \App\Models\Role::pluck('name', 'id')->toArray())
+                    ->query(function (Builder $query, array $data) {
+                        if (filled($data['values'])) {
+                            $query->whereHas('roles', function (Builder $query) use ($data) {
+                                $query->whereIn('roles.id', $data['values']);
+                            });
+                        }
+                    })
                     ->multiple()
-                    ->preload()
-                    ->modifyQueryUsing(fn ($query) => $query->select(['roles.id', 'roles.name'])),
+                    ->preload(),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active Status'),
                 Tables\Filters\Filter::make('has_subscription')
