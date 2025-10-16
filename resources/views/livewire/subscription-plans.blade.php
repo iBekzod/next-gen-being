@@ -24,7 +24,7 @@
                     </p>
                     <div class="mt-4">
                         <span
-                            class="text-4xl font-bold text-gray-900 dark:text-white">${{ number_format($plan['price'], 0) }}</span>
+                            class="text-4xl font-bold text-gray-900 dark:text-white">${{ number_format($plan['price'], 2) }}</span>
                         <span class="text-gray-500 dark:text-gray-400">/ {{ $plan['interval'] }}</span>
                     </div>
                 </div>
