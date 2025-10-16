@@ -5,8 +5,8 @@ namespace App\Filament\Widgets;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Comment;
-use App\Models\Subscription;
 use App\Models\LandingLead;
+use LemonSqueezy\Laravel\Subscription;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -21,7 +21,8 @@ class StatsOverview extends BaseWidget
             $publishedPosts = Post::where('status', 'published')->count();
             $totalUsers = User::count();
             $activeUsers = User::where('is_active', true)->count();
-            $activeSubscriptions = Subscription::where('status', 'active')->count();
+            // LemonSqueezy uses 'active' status for active subscriptions
+            $activeSubscriptions = Subscription::whereIn('status', ['active', 'on_trial'])->count();
             $totalComments = Comment::count();
             $approvedComments = Comment::where('status', 'approved')->count();
             $totalLeads = LandingLead::count();
