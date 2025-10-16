@@ -35,13 +35,15 @@ class RecentPosts extends BaseWidget
                 ->label('Author')
                 ->badge()
                 ->toggleable(),
-            Tables\Columns\BadgeColumn::make('status')
-                ->colors([
-                    'success' => 'published',
-                    'warning' => 'scheduled',
-                    'secondary' => 'draft',
-                    'danger' => 'archived',
-                ]),
+            Tables\Columns\TextColumn::make('status')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'published' => 'success',
+                    'scheduled' => 'warning',
+                    'draft' => 'gray',
+                    'archived' => 'danger',
+                    default => 'gray',
+                }),
             Tables\Columns\TextColumn::make('published_at')
                 ->label('Published')
                 ->since()

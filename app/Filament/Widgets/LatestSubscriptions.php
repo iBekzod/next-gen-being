@@ -27,12 +27,14 @@ class LatestSubscriptions extends BaseWidget
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'paused',
-                        'danger' => 'cancelled',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'paused' => 'warning',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('renews_at')
                     ->dateTime()
                     ->since(),

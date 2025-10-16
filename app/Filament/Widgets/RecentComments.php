@@ -33,13 +33,15 @@ class RecentComments extends BaseWidget
                 ->label('Comment')
                 ->limit(50)
                 ->wrap(),
-            Tables\Columns\BadgeColumn::make('status')
-                ->colors([
-                    'warning' => 'pending',
-                    'success' => 'approved',
-                    'danger' => 'rejected',
-                    'gray' => 'spam',
-                ]),
+            Tables\Columns\TextColumn::make('status')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'pending' => 'warning',
+                    'approved' => 'success',
+                    'rejected' => 'danger',
+                    'spam' => 'gray',
+                    default => 'gray',
+                }),
             Tables\Columns\TextColumn::make('created_at')
                 ->since()
                 ->label('Submitted'),

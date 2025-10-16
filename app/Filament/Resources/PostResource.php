@@ -15,7 +15,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use FilamentTiptapEditor\TiptapEditor;
 
 class PostResource extends Resource
@@ -58,17 +57,19 @@ class PostResource extends Resource
 
                 Forms\Components\Section::make('Media')
                     ->schema([
-                        SpatieMediaLibraryFileUpload::make('featured_image')
-                            ->collection('featured')
+                        Forms\Components\FileUpload::make('featured_image')
                             ->image()
                             ->imageEditor()
-                            ->directory('posts/featured'),
-                        SpatieMediaLibraryFileUpload::make('gallery')
-                            ->collection('gallery')
+                            ->directory('posts/featured')
+                            ->visibility('public')
+                            ->maxSize(2048),
+                        Forms\Components\FileUpload::make('gallery')
                             ->multiple()
                             ->image()
                             ->reorderable()
-                            ->directory('posts/gallery'),
+                            ->directory('posts/gallery')
+                            ->visibility('public')
+                            ->maxSize(2048),
                     ]),
 
                 Forms\Components\Section::make('Classification')

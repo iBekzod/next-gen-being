@@ -73,7 +73,6 @@ class UserResource extends Resource
                     ->schema([
                         Forms\Components\CheckboxList::make('roles')
                             ->relationship('roles', 'name')
-                            ->options(fn () => \App\Models\Role::pluck('name', 'id')->toArray())
                             ->columns(2),
                     ])
                     ->hidden(fn () => !\App\Models\Role::exists()),
