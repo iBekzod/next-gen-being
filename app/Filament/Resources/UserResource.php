@@ -129,7 +129,8 @@ class UserResource extends Resource
                 Tables\Filters\SelectFilter::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()
-                    ->preload(),
+                    ->preload()
+                    ->modifyQueryUsing(fn ($query) => $query->select(['roles.id', 'roles.name'])),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active Status'),
                 Tables\Filters\Filter::make('has_subscription')
