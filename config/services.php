@@ -69,4 +69,14 @@ return [
         'model' => env('OPENAI_MODEL', 'gpt-4'),
     ],
 
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'llama-3.1-70b-versatile'),
+        'base_url' => 'https://api.groq.com/openai/v1',
+    ],
+
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'groq'), // groq, openai, or anthropic
+    ],
+
 ];

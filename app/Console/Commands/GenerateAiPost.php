@@ -17,23 +17,31 @@ class GenerateAiPost extends Command
                             {--category= : Specific category slug to generate post for}
                             {--author= : Author user ID (defaults to first admin)}
                             {--draft : Create as draft instead of publishing}
-                            {--premium : Mark post as premium content}';
+                            {--premium : Mark post as premium content}
+                            {--provider= : AI provider (groq, openai) - defaults to config}';
 
-    protected $description = 'Generate a complete AI-written blog post';
+    protected $description = 'Generate a complete AI-written blog post using free Groq API';
 
     private string $apiKey;
-    private string $baseUrl = 'https://api.openai.com/v1';
+    private string $baseUrl;
+    private string $model;
+    private string $provider;
 
     public function __construct()
     {
         parent::__construct();
-        $this->apiKey = config('services.openai.api_key');
     }
 
     public function handle(): int
     {
+        // Determine provider
+        $this->provider = $this->option('provider') ?? config('ai.provider', 'groq');
+
+        // Set up API credentials based on provider
+        $this->setupProvider();
+
         if (!$this->apiKey) {
-            $this->error('OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file.');
+            $this->error("AI API key not configured. Please set {$this->getApiKeyEnvName()} in your .env file.");
             return self::FAILURE;
         }
 
@@ -217,22 +225,59 @@ Return response in this JSON format:
         return $postData;
     }
 
+    private function setupProvider(): void
+    {
+        switch ($this->provider) {
+            case 'groq':
+                $this->apiKey = config('services.groq.api_key');
+                $this->baseUrl = config('services.groq.base_url');
+                $this->model = config('services.groq.model', 'llama-3.1-70b-versatile');
+                break;
+
+            case 'openai':
+                $this->apiKey = config('services.openai.api_key');
+                $this->baseUrl = 'https://api.openai.com/v1';
+                $this->model = config('services.openai.model', 'gpt-4');
+                break;
+
+            default:
+                throw new \Exception("Unsupported AI provider: {$this->provider}");
+        }
+    }
+
+    private function getApiKeyEnvName(): string
+    {
+        return match ($this->provider) {
+            'groq' => 'GROQ_API_KEY',
+            'openai' => 'OPENAI_API_KEY',
+            default => 'AI_API_KEY',
+        };
+    }
+
     private function callOpenAI(array $messages, int $maxTokens = 2000, float $temperature = 0.7): string
     {
+        $payload = [
+            'model' => $this->model,
+            'messages' => $messages,
+            'temperature' => $temperature,
+        ];
+
+        // Groq uses max_tokens, some models use max_completion_tokens
+        if ($this->provider === 'groq') {
+            $payload['max_tokens'] = $maxTokens;
+        } else {
+            $payload['max_tokens'] = $maxTokens;
+        }
+
         $response = Http::timeout(60)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
             ])
-            ->post($this->baseUrl . '/chat/completions', [
-                'model' => config('services.openai.model', 'gpt-4'),
-                'messages' => $messages,
-                'max_tokens' => $maxTokens,
-                'temperature' => $temperature,
-            ]);
+            ->post($this->baseUrl . '/chat/completions', $payload);
 
         if (!$response->successful()) {
-            throw new \Exception('OpenAI API request failed: ' . $response->body());
+            throw new \Exception("{$this->provider} API request failed: " . $response->body());
         }
 
         return $response->json()['choices'][0]['message']['content'];

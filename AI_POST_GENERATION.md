@@ -1,9 +1,12 @@
 # AI Post Generation
 
-This application includes automated AI-powered blog post generation using OpenAI's GPT-4 model.
+This application includes automated AI-powered blog post generation using **Groq API (100% FREE!)** with Llama 3.1 70B model.
 
 ## Features
 
+- **Completely FREE** - No API costs with Groq
+- **Lightning Fast** - Groq provides the fastest inference speed
+- **High Quality** - Uses Meta's Llama 3.1 70B model
 - Generates complete, SEO-optimized blog posts automatically
 - Analyzes trending topics to avoid duplicates
 - Creates proper markdown-formatted content (1000-1500 words)
@@ -12,14 +15,27 @@ This application includes automated AI-powered blog post generation using OpenAI
 
 ## Configuration
 
-### 1. Environment Variables
+### 1. Get Your Free Groq API Key
 
-Make sure these are set in your `.env` file:
+1. Visit https://console.groq.com/
+2. Sign up for a free account
+3. Go to API Keys section
+4. Create a new API key
+5. Copy the key
+
+### 2. Environment Variables
+
+Add these to your `.env` file:
 
 ```env
+# Groq Configuration (FREE!)
+AI_PROVIDER=groq
+GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_MODEL=llama-3.1-70b-versatile
+
+# Optional: OpenAI (if you want to switch)
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_ORGANIZATION=your_organization_id  # Optional
-OPENAI_MODEL=gpt-4  # or gpt-4-turbo-preview, gpt-3.5-turbo
+OPENAI_MODEL=gpt-4
 ```
 
 ### 2. Schedule Setup
@@ -68,6 +84,11 @@ Generate as premium content:
 php artisan ai:generate-post --premium
 ```
 
+Use a different AI provider:
+```bash
+php artisan ai:generate-post --provider=openai
+```
+
 Combine options:
 ```bash
 php artisan ai:generate-post --category=technology --author=1 --draft
@@ -102,14 +123,21 @@ Schedule::command('ai:generate-post')
     ->timezone('America/New_York');  // Set timezone
 ```
 
-### Change AI Model
+### Change AI Provider
 
 In `.env`:
 
 ```env
-OPENAI_MODEL=gpt-3.5-turbo  # Cheaper, faster but less quality
-OPENAI_MODEL=gpt-4          # Better quality, more expensive
-OPENAI_MODEL=gpt-4-turbo-preview  # Good balance
+# Use Groq (Free, Fast)
+AI_PROVIDER=groq
+GROQ_MODEL=llama-3.1-70b-versatile  # Best quality
+GROQ_MODEL=llama-3.1-8b-instant     # Faster, good quality
+GROQ_MODEL=mixtral-8x7b-32768       # Alternative
+
+# Or use OpenAI
+AI_PROVIDER=openai
+OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_MODEL=gpt-4
 ```
 
 ### Adjust Content Length
@@ -151,25 +179,37 @@ AI post generated successfully
 php artisan schedule:list
 ```
 
-## Cost Estimation
+## Cost Comparison
 
+### Groq (Default - FREE!) ⭐
+- **Cost per post**: $0.00
+- **Monthly cost**: $0.00
+- **Speed**: Fastest (tokens/sec)
+- **Model**: Llama 3.1 70B
+- **Rate Limit**: Very generous free tier
+
+### OpenAI (Optional)
 With GPT-4:
-- ~$0.10-0.20 per post (depending on length and API pricing)
+- ~$0.10-0.20 per post
 - ~$3-6 per month for daily posts
 
 With GPT-3.5-turbo:
 - ~$0.01-0.02 per post
 - ~$0.30-0.60 per month for daily posts
 
+**Recommendation: Stick with Groq - it's free and produces excellent content!**
+
 ## Troubleshooting
 
 ### API Key Not Working
 
 ```bash
-# Test your API key
+# Test Groq API key
 php artisan tinker
->>> \Illuminate\Support\Facades\Http::withHeaders(['Authorization' => 'Bearer ' . config('services.openai.api_key')])->get('https://api.openai.com/v1/models');
+>>> \Illuminate\Support\Facades\Http::withHeaders(['Authorization' => 'Bearer ' . config('services.groq.api_key')])->get('https://api.groq.com/openai/v1/models');
 ```
+
+Get your free Groq API key at: https://console.groq.com/keys
 
 ### Command Not Found
 
