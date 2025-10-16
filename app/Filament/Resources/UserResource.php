@@ -72,7 +72,8 @@ class UserResource extends Resource
                 Forms\Components\Section::make('Roles & Permissions')
                     ->schema([
                         Forms\Components\CheckboxList::make('roles')
-                            ->relationship('roles', 'name')
+                            ->options(fn () => \App\Models\Role::pluck('name', 'id')->toArray())
+                            ->relationship('roles')
                             ->columns(2),
                     ])
                     ->hidden(fn () => !\App\Models\Role::exists()),
