@@ -78,20 +78,16 @@ class CommentsRelationManager extends RelationManager
                     ->limit(70)
                     ->wrap()
                     ->tooltip(fn (Comment $record): string => $record->content),
-                Tables\Columns\SelectColumn::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                        'spam' => 'Spam',
-                    ])
+                Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => 'rejected',
-                        'gray' => 'spam',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        'spam' => 'gray',
+                        default => 'gray',
+                    })
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('likes_count')
                     ->label('Likes')
                     ->badge()
