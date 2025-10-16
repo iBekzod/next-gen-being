@@ -110,8 +110,8 @@
     @endif
 
     <!-- Content -->
-    <div class="mb-12 prose prose-lg max-w-none">
-        {!! $post->content !!}
+    <div class="mb-12 prose prose-lg max-w-none dark:prose-invert">
+        {!! str($post->content)->markdown() !!}
     </div>
 
     <!-- Tags -->
