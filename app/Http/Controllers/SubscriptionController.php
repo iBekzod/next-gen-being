@@ -13,7 +13,7 @@ class SubscriptionController extends Controller
                 'name' => 'Basic',
                 'price' => '$9.99',
                 'interval' => 'month',
-                'price_id' => config('services.paddle.basic_price_id'),
+                'price_id' => config('services.lemonsqueezy.basic_variant_id'),
                 'features' => [
                     'All premium articles & guides',
                     'Ad-free reading experience',
@@ -24,7 +24,7 @@ class SubscriptionController extends Controller
                 'name' => 'Pro',
                 'price' => '$19.99',
                 'interval' => 'month',
-                'price_id' => config('services.paddle.pro_price_id'),
+                'price_id' => config('services.lemonsqueezy.pro_variant_id'),
                 'features' => [
                     'Everything in Basic',
                     'Early access to new content',
@@ -36,7 +36,7 @@ class SubscriptionController extends Controller
                 'name' => 'Team',
                 'price' => '$49.99',
                 'interval' => 'month',
-                'price_id' => config('services.paddle.enterprise_price_id'),
+                'price_id' => config('services.lemonsqueezy.team_variant_id'),
                 'features' => [
                     'Everything in Pro',
                     'Up to 10 team member accounts',
@@ -53,17 +53,21 @@ class SubscriptionController extends Controller
     public function subscribe(Request $request)
     {
         $request->validate([
-            'price_id' => 'required|string'
+            'variant_id' => 'required|string'
         ]);
 
         $user = Auth::user();
 
         try {
-            $checkout = $user->checkout($request->price_id)
-                ->returnTo(route('subscription.success'))
-                ->create();
+            // Create LemonSqueezy checkout
+            $checkout = $user->checkout($request->variant_id, [
+                'checkout_data' => [
+                    'email' => $user->email,
+                    'name' => $user->name,
+                ]
+            ]);
 
-            return redirect($checkout->url);
+            return redirect($checkout);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create checkout: ' . $e->getMessage());
         }
@@ -83,16 +87,13 @@ class SubscriptionController extends Controller
     {
         $user = Auth::user();
 
-        // Get the customer's portal session from Paddle
-        if ($user->customer) {
-            try {
-                $session = $user->customer->session([
-                    'return_url' => route('subscription.manage'),
-                ]);
+        // Get the customer portal URL from LemonSqueezy
+        if ($user->subscription && $user->subscription->lemon_squeezy_id) {
+            $service = new \App\Services\LemonSqueezyService();
+            $portalUrl = $service->getCustomerPortalUrl($user->subscription->lemon_squeezy_id);
 
-                return redirect($session->url);
-            } catch (\Exception $e) {
-                return back()->with('error', 'Failed to load subscription management: ' . $e->getMessage());
+            if ($portalUrl) {
+                return redirect($portalUrl);
             }
         }
 

@@ -50,9 +50,9 @@
                                 $subscription = $currentSubscription;
                                 $isCurrentPlan =
                                     $subscription &&
-                                    $subscription->active() &&
+                                    $subscription->valid() &&
                                     isset($plan['price_id']) &&
-                                    $subscription->paddle_price_id == $plan['price_id'];
+                                    $subscription->variant_id == $plan['price_id'];
                             @endphp
 
                             @if ($isCurrentPlan)
@@ -244,7 +244,7 @@
                 </button>
                 <div x-show="open" x-transition class="px-6 pb-4 text-gray-600 dark:text-gray-400">
                     We accept all major credit cards (Visa, Mastercard, American Express), debit cards, and digital wallets. All payments
-                    are processed securely through Paddle.
+                    are processed securely through LemonSqueezy.
                 </div>
             </div>
 

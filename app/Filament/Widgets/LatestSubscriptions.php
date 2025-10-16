@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\SubscriptionResource;
-use App\Models\Subscription;
+use LemonSqueezy\Laravel\Subscription;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;

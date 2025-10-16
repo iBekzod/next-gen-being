@@ -51,10 +51,10 @@ class SubscriptionPlans extends Component
 
     public function mount()
     {
-        // Set Paddle price IDs from config
-        $this->plans['basic']['price_id'] = config('services.paddle.basic_price_id');
-        $this->plans['pro']['price_id'] = config('services.paddle.pro_price_id');
-        $this->plans['enterprise']['price_id'] = config('services.paddle.enterprise_price_id');
+        // Set LemonSqueezy variant IDs from config
+        $this->plans['basic']['price_id'] = config('services.lemonsqueezy.basic_variant_id');
+        $this->plans['pro']['price_id'] = config('services.lemonsqueezy.pro_variant_id');
+        $this->plans['enterprise']['price_id'] = config('services.lemonsqueezy.team_variant_id');
     }
 
     public function subscribe($planKey)
@@ -63,19 +63,22 @@ class SubscriptionPlans extends Component
             return redirect()->route('login');
         }
 
-        // Get Gumroad product URLs from config
-        $gumroadUrls = [
-            'basic' => config('services.gumroad.basic_url'),
-            'pro' => config('services.gumroad.pro_url'),
-            'enterprise' => config('services.gumroad.team_url'),
-        ];
+        $plan = $this->plans[$planKey] ?? null;
 
-        // Redirect to Gumroad checkout
-        if (isset($gumroadUrls[$planKey])) {
-            return redirect()->away($gumroadUrls[$planKey]);
+        if (!$plan || !$plan['price_id']) {
+            session()->flash('error', 'Invalid subscription plan selected.');
+            return;
         }
 
-        session()->flash('error', 'Invalid subscription plan selected.');
+        // Create LemonSqueezy checkout
+        $checkout = Auth::user()->checkout($plan['price_id'], [
+            'checkout_data' => [
+                'email' => Auth::user()->email,
+                'name' => Auth::user()->name,
+            ]
+        ]);
+
+        return redirect($checkout);
     }
 
     public function render()

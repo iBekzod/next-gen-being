@@ -49,8 +49,8 @@ jobs:
         run: |
           composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
           composer dump-autoload
-          # Verify Paddle Cashier is installed
-          composer show laravel/cashier-paddle
+          # Verify LemonSqueezy is installed
+          composer show lemonsqueezy/laravel
 
       - name: Install NPM dependencies and update lock file
         run: |

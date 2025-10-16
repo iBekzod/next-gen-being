@@ -30,7 +30,7 @@
                                 </h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
                                     Status:
-                                    <span class="font-medium text-{{ $subscription->isActive() ? 'green' : ($subscription->isPaused() ? 'yellow' : 'red') }}-600 dark:text-{{ $subscription->isActive() ? 'green' : ($subscription->isPaused() ? 'yellow' : 'red') }}-400">
+                                    <span class="font-medium text-{{ $subscription->valid() ? 'green' : ($subscription->paused() ? 'yellow' : 'red') }}-600 dark:text-{{ $subscription->valid() ? 'green' : ($subscription->paused() ? 'yellow' : 'red') }}-400">
                                         {{ ucfirst($subscription->status) }}
                                     </span>
                                 </p>
@@ -71,7 +71,7 @@
                         </div>
                         @endif
 
-                        @if($subscription->renews_at && $subscription->isActive())
+                        @if($subscription->renews_at && $subscription->valid())
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Next Billing Date</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
@@ -83,7 +83,7 @@
                         @if($subscription->ends_at)
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ $subscription->isActive() ? 'Cancels On' : 'Ended On' }}
+                                {{ $subscription->valid() ? 'Cancels On' : 'Ended On' }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 {{ $subscription->ends_at->format('F j, Y') }}
@@ -108,7 +108,7 @@
                         Subscription Actions
                     </h2>
                     <div class="space-y-4">
-                        @if($subscription->isActive() && !$subscription->ends_at)
+                        @if($subscription->valid() && !$subscription->ends_at)
                         <div class="flex items-center justify-between p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
                             <div>
                                 <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
@@ -125,7 +125,7 @@
                                 </button>
                             </form>
                         </div>
-                        @elseif($subscription->isActive() && $subscription->ends_at)
+                        @elseif($subscription->valid() && $subscription->ends_at)
                         <div class="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
                             <div>
                                 <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
@@ -144,7 +144,7 @@
                         </div>
                         @endif
 
-                        @if($subscription->isPaused())
+                        @if($subscription->paused())
                         <div class="flex items-center justify-between p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                             <div>
                                 <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">

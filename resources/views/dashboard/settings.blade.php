@@ -229,7 +229,7 @@
                                                 {{ $subscription->name }} Plan
                                             </p>
                                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                Status: <span class="font-medium text-{{ $subscription->isActive() ? 'green' : 'red' }}-600">
+                                                Status: <span class="font-medium text-{{ $subscription->valid() ? 'green' : 'red' }}-600">
                                                     {{ ucfirst($subscription->status) }}
                                                 </span>
                                             </p>

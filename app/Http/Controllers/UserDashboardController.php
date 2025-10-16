@@ -151,7 +151,7 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        // Cancel any active subscriptions (Paddle will handle this automatically)
+        // Cancel any active subscriptions (LemonSqueezy will handle this automatically)
         if ($user->subscribed()) {
             try {
                 $user->subscription()->cancel();

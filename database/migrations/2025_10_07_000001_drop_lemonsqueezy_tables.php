@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop old LemonSqueezy tables to make way for Paddle Cashier tables
+        // Drop old subscription tables from previous payment provider
         Schema::dropIfExists('subscription_items');
         Schema::dropIfExists('subscriptions');
-
-        // Note: customer_columns was added by old migration,
-        // Paddle will create its own customers table
     }
 
     /**

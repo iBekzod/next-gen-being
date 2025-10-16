@@ -2,7 +2,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SubscriptionResource\Pages;
-use App\Models\Subscription;
+use LemonSqueezy\Laravel\Subscription;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -36,16 +36,13 @@ class SubscriptionResource extends Resource
                                     ->required()
                                     ->maxLength(255),
                             ]),
-                        Forms\Components\Grid::make(3)
+                        Forms\Components\Grid::make(2)
                             ->schema([
-                                Forms\Components\TextInput::make('paddle_id')
-                                    ->label('Paddle Customer ID')
+                                Forms\Components\TextInput::make('lemon_squeezy_id')
+                                    ->label('LemonSqueezy Subscription ID')
                                     ->maxLength(255),
-                                Forms\Components\TextInput::make('paddle_subscription_id')
-                                    ->label('Paddle Subscription ID')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('paddle_price_id')
-                                    ->label('Paddle Price ID')
+                                Forms\Components\TextInput::make('product_id')
+                                    ->label('Product ID')
                                     ->maxLength(255),
                             ]),
                         Forms\Components\Grid::make(2)
@@ -180,14 +177,14 @@ class SubscriptionResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('view_paddle')
-                    ->label('View in Paddle')
+                Tables\Actions\Action::make('view_lemonsqueezy')
+                    ->label('View in LemonSqueezy')
                     ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->url(fn ($record) => $record->paddle_subscription_id
-                        ? "https://vendors.paddle.com/subscriptions/{$record->paddle_subscription_id}"
+                    ->url(fn ($record) => $record->lemon_squeezy_id
+                        ? "https://app.lemonsqueezy.com/subscriptions/{$record->lemon_squeezy_id}"
                         : null)
                     ->openUrlInNewTab()
-                    ->visible(fn ($record) => filled($record->paddle_subscription_id)),
+                    ->visible(fn ($record) => filled($record->lemon_squeezy_id)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -237,18 +234,18 @@ class SubscriptionResource extends Resource
                             ]),
                     ]),
 
-                Infolists\Components\Section::make('Paddle Information')
+                Infolists\Components\Section::make('LemonSqueezy Information')
                     ->schema([
                         Infolists\Components\Grid::make(3)
                             ->schema([
-                                Infolists\Components\TextEntry::make('paddle_id')
-                                    ->label('Paddle Customer ID')
+                                Infolists\Components\TextEntry::make('lemon_squeezy_id')
+                                    ->label('LemonSqueezy Subscription ID')
                                     ->copyable(),
-                                Infolists\Components\TextEntry::make('paddle_subscription_id')
-                                    ->label('Paddle Subscription ID')
+                                Infolists\Components\TextEntry::make('product_id')
+                                    ->label('Product ID')
                                     ->copyable(),
-                                Infolists\Components\TextEntry::make('paddle_price_id')
-                                    ->label('Paddle Price ID')
+                                Infolists\Components\TextEntry::make('variant_id')
+                                    ->label('Variant ID')
                                     ->copyable(),
                             ]),
                     ]),

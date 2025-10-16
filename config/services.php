@@ -34,20 +34,13 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    'gumroad' => [
-        'basic_url' => env('GUMROAD_BASIC_URL', 'https://buy.nextgenbeing.com/l/nextgenbeing-basic'),
-        'pro_url' => env('GUMROAD_PRO_URL', 'https://buy.nextgenbeing.com/l/nextgenbeing-pro'),
-        'team_url' => env('GUMROAD_TEAM_URL', 'https://buy.nextgenbeing.com/l/nextgenbeing-team'),
-    ],
-
-    'paddle' => [
-        'api_key' => env('PADDLE_API_KEY'),
-        'client_side_token' => env('PADDLE_CLIENT_SIDE_TOKEN'),
-        'webhook_secret' => env('PADDLE_WEBHOOK_SECRET'),
-        'sandbox' => env('PADDLE_SANDBOX', true),
-        'basic_price_id' => env('PADDLE_BASIC_PRICE_ID'),
-        'pro_price_id' => env('PADDLE_PRO_PRICE_ID'),
-        'enterprise_price_id' => env('PADDLE_ENTERPRISE_PRICE_ID'),
+    'lemonsqueezy' => [
+        'api_key' => env('LEMONSQUEEZY_API_KEY'),
+        'store_id' => env('LEMONSQUEEZY_STORE_ID'),
+        'signing_secret' => env('LEMONSQUEEZY_SIGNING_SECRET'),
+        'basic_variant_id' => env('LEMONSQUEEZY_BASIC_VARIANT_ID'),
+        'pro_variant_id' => env('LEMONSQUEEZY_PRO_VARIANT_ID'),
+        'team_variant_id' => env('LEMONSQUEEZY_TEAM_VARIANT_ID'),
     ],
 
     'github' => [

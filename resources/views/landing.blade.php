@@ -315,7 +315,7 @@
             <div class="max-w-3xl">
                 <p class="text-sm font-semibold tracking-wide text-blue-500 uppercase">Trust &amp; compliance</p>
                 <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Clear policies and secure billing.</h2>
-                <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">All purchases are processed over HTTPS with Paddle. Review our policies any time or reach the team directly at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
+                <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">All purchases are processed securely over HTTPS with LemonSqueezy. Review our policies any time or reach the team directly at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
             </div>
             <div class="grid gap-6 mt-10 md:grid-cols-3">
                 <a href="{{ route('terms') }}" class="group block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">

@@ -5,7 +5,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Paddle\Billable;
+use LemonSqueezy\Laravel\Billable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Filament\Models\Contracts\FilamentUser;
@@ -105,31 +105,29 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $query->whereHas('roles', fn($q) => $q->where('slug', $role));
     }
 
-        public function subscription()
+    public function subscription()
     {
-        return $this->hasOne(Subscription::class)->latest();
+        return $this->morphOne(\LemonSqueezy\Laravel\Subscription::class, 'billable')->latest();
     }
 
     public function subscriptions()
     {
-        return $this->hasMany(Subscription::class);
+        return $this->morphMany(\LemonSqueezy\Laravel\Subscription::class, 'billable');
     }
 
     public function isPremium(): bool
     {
-        $subscription = $this->subscription;
-        return $subscription && $subscription->isActive();
+        return $this->subscribed();
     }
 
     public function isOnTrial(): bool
     {
-        $subscription = $this->subscription;
-        return $subscription && $subscription->onTrial();
+        return $this->onTrial();
     }
 
     public function hasActiveSubscription(): bool
     {
-        return $this->isPremium();
+        return $this->subscribed();
     }
 
     // Follow/Follower relationships

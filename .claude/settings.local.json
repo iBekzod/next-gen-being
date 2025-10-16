@@ -28,7 +28,8 @@
       "Bash(gh run list:*)",
       "Bash(timeout 300 bash -c 'while docker exec ngb-app pgrep -f \"\"composer install\"\" > /dev/null 2>&1; do echo \"\"Waiting for composer...\"\"; sleep 10; done; echo \"\"Composer complete!\"\"')",
       "Bash(docker-compose up:*)",
-      "Bash(docker-compose:*)"
+      "Bash(docker-compose:*)",
+      "Bash(composer update:*)"
     ],
     "deny": [],
     "ask": []
