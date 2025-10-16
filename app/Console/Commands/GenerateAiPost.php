@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Services\ImageGenerationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -69,11 +70,16 @@ class GenerateAiPost extends Command
             // Step 6: Determine premium strategy
             $isPremium = $this->determinePremiumStrategy();
 
-            // Step 7: Create the post
+            // Step 7: Generate featured image
+            $this->info('🎨 Generating featured image...');
+            $featuredImage = $this->generateFeaturedImage($postData['title'], $category->name);
+
+            // Step 8: Create the post
             $post = Post::create([
                 'title' => $postData['title'],
                 'excerpt' => $postData['excerpt'],
                 'content' => $postData['content'],
+                'featured_image' => $featuredImage,
                 'author_id' => $author->id,
                 'category_id' => $category->id,
                 'status' => $this->option('draft') ? 'draft' : 'published',
@@ -87,6 +93,7 @@ class GenerateAiPost extends Command
                     'meta_keywords' => $postData['keywords'],
                     'og_title' => $postData['title'],
                     'og_description' => $postData['excerpt'],
+                    'og_image' => $featuredImage,
                 ],
             ]);
 
@@ -482,5 +489,35 @@ This will be PREMIUM content requiring subscription. Your goal is to:
 
 The content should make free users think: 'This looks incredibly valuable, I need full access!'
 ";
+    }
+
+    private function generateFeaturedImage(string $title, string $category): ?string
+    {
+        try {
+            $imageService = app(ImageGenerationService::class);
+
+            if (!$imageService->isAvailable()) {
+                $this->warn('   ⚠️  No image generation service configured. Skipping image.');
+                return null;
+            }
+
+            $this->info('   🎨 Using: ' . $imageService->getProvider());
+            $imageUrl = $imageService->generateFeaturedImage($title, $category);
+
+            if ($imageUrl) {
+                $this->info('   ✅ Image generated successfully!');
+                return $imageUrl;
+            }
+
+            $this->warn('   ⚠️  Failed to generate image.');
+            return null;
+        } catch (\Exception $e) {
+            $this->warn('   ⚠️  Image generation error: ' . $e->getMessage());
+            Log::warning('Featured image generation failed', [
+                'title' => $title,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 }

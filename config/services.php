@@ -79,4 +79,12 @@ return [
         'provider' => env('AI_PROVIDER', 'groq'), // groq, openai, or anthropic
     ],
 
+    'stability' => [
+        'api_key' => env('STABILITY_API_KEY'),
+    ],
+
+    'unsplash' => [
+        'access_key' => env('UNSPLASH_ACCESS_KEY'),
+    ],
+
 ];
