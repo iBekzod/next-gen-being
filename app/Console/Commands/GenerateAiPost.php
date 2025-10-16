@@ -195,24 +195,16 @@ Return response in this JSON format:
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are an expert tech blogger who writes engaging, informative articles about technology, programming, and web development.'
+                'content' => 'You are an expert tech blogger who writes engaging, informative articles about technology, programming, and web development. You MUST return valid JSON with properly escaped strings.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 3000, 0.7);
+        ], 3000, 0.7, true); // Enable JSON mode
 
-        // Parse JSON response
-        preg_match('/\{.*\}/s', $response, $matches);
-        if (empty($matches)) {
-            throw new \Exception('Failed to parse AI response - no JSON found');
-        }
-
-        $postData = json_decode($matches[0], true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Invalid JSON in AI response: ' . json_last_error_msg());
-        }
+        // Parse JSON response - try multiple approaches
+        $postData = $this->parseAIResponse($response);
 
         // Validate required fields
         $required = ['title', 'content', 'excerpt', 'meta_title', 'meta_description', 'keywords', 'tags'];
@@ -220,6 +212,58 @@ Return response in this JSON format:
             if (!isset($postData[$field])) {
                 throw new \Exception("Missing required field: {$field}");
             }
+        }
+
+        return $postData;
+    }
+
+    private function parseAIResponse(string $response): array
+    {
+        // Try 1: Extract JSON block (between ```json and ``` or just curly braces)
+        if (preg_match('/```json\s*(\{.*?\})\s*```/s', $response, $matches)) {
+            $jsonStr = $matches[1];
+        } elseif (preg_match('/\{.*\}/s', $response, $matches)) {
+            $jsonStr = $matches[0];
+        } else {
+            throw new \Exception('No JSON found in AI response');
+        }
+
+        // Try 2: Decode with error handling
+        $postData = json_decode($jsonStr, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $postData;
+        }
+
+        // Try 3: If JSON has control character errors, try to fix common issues
+        // Remove BOM and zero-width characters
+        $jsonStr = preg_replace('/[\x00-\x1F\x7F]/u', '', $jsonStr);
+
+        $postData = json_decode($jsonStr, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $postData;
+        }
+
+        // Try 4: Use JSON_INVALID_UTF8_IGNORE flag
+        $postData = json_decode($jsonStr, true, 512, JSON_INVALID_UTF8_IGNORE);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $postData;
+        }
+
+        // Log the problematic response for debugging
+        Log::error('Failed to parse AI JSON response', [
+            'error' => json_last_error_msg(),
+            'response_preview' => substr($response, 0, 500)
+        ]);
+
+        throw new \Exception('Invalid JSON in AI response: ' . json_last_error_msg() . '. Check logs for details.');
+    }
+
+    private function cleanupPostData(array $postData): array
+    {
+        // Clean up the content to ensure it's valid
+        if (isset($postData['content'])) {
+            $postData['content'] = trim($postData['content']);
         }
 
         return $postData;
@@ -254,19 +298,18 @@ Return response in this JSON format:
         };
     }
 
-    private function callOpenAI(array $messages, int $maxTokens = 2000, float $temperature = 0.7): string
+    private function callOpenAI(array $messages, int $maxTokens = 2000, float $temperature = 0.7, bool $jsonMode = false): string
     {
         $payload = [
             'model' => $this->model,
             'messages' => $messages,
             'temperature' => $temperature,
+            'max_tokens' => $maxTokens,
         ];
 
-        // Groq uses max_tokens, some models use max_completion_tokens
-        if ($this->provider === 'groq') {
-            $payload['max_tokens'] = $maxTokens;
-        } else {
-            $payload['max_tokens'] = $maxTokens;
+        // Enable JSON mode for supported providers
+        if ($jsonMode && $this->provider === 'groq') {
+            $payload['response_format'] = ['type' => 'json_object'];
         }
 
         $response = Http::timeout(60)
