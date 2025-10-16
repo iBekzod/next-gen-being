@@ -71,10 +71,17 @@ class UserResource extends Resource
 
                 Forms\Components\Section::make('Roles & Permissions')
                     ->schema([
-                        Forms\Components\CheckboxList::make('roles')
-                            ->options(fn () => \App\Models\Role::pluck('name', 'id')->toArray())
-                            ->relationship('roles')
-                            ->columns(2),
+                        Forms\Components\CheckboxList::make('role_ids')
+                            ->label('Roles')
+                            ->options(fn () => \App\Models\Role::orderBy('name')->pluck('name', 'id')->toArray())
+                            ->columns(2)
+                            ->afterStateHydrated(function ($component, $state, $record) {
+                                if ($record) {
+                                    $component->state($record->roles->pluck('id')->toArray());
+                                }
+                            })
+                            ->dehydrated(false)
+                            ->reactive(),
                     ])
                     ->hidden(fn () => !\App\Models\Role::exists()),
 
