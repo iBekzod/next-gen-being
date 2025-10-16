@@ -75,7 +75,7 @@ class HelpReportResource extends Resource
                             ->preload(),
 
                         Forms\Components\Select::make('assigned_to')
-                            ->relationship('assignee', 'name')
+                            ->relationship('assignedTo', 'name')
                             ->label('Assigned To')
                             ->searchable()
                             ->preload(),
@@ -155,7 +155,7 @@ class HelpReportResource extends Resource
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('assignee.name')
+                Tables\Columns\TextColumn::make('assignedTo.name')
                     ->label('Assigned To')
                     ->searchable()
                     ->toggleable(),
