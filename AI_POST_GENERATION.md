@@ -1,12 +1,12 @@
 # AI Post Generation
 
-This application includes automated AI-powered blog post generation using **Groq API (100% FREE!)** with Llama 3.1 70B model.
+This application includes automated AI-powered blog post generation using **Groq API (100% FREE!)** with Llama 3.3 70B model.
 
 ## Features
 
 - **Completely FREE** - No API costs with Groq
 - **Lightning Fast** - Groq provides the fastest inference speed
-- **High Quality** - Uses Meta's Llama 3.1 70B model
+- **High Quality** - Uses Meta's Llama 3.3 70B model (upgraded!)
 - Generates complete, SEO-optimized blog posts automatically
 - Analyzes trending topics to avoid duplicates
 - Creates proper markdown-formatted content (1000-1500 words)
@@ -31,7 +31,7 @@ Add these to your `.env` file:
 # Groq Configuration (FREE!)
 AI_PROVIDER=groq
 GROQ_API_KEY=gsk_your_groq_api_key_here
-GROQ_MODEL=llama-3.1-70b-versatile
+GROQ_MODEL=llama-3.3-70b-versatile
 
 # Optional: OpenAI (if you want to switch)
 OPENAI_API_KEY=your_openai_api_key
@@ -130,9 +130,9 @@ In `.env`:
 ```env
 # Use Groq (Free, Fast)
 AI_PROVIDER=groq
-GROQ_MODEL=llama-3.1-70b-versatile  # Best quality
+GROQ_MODEL=llama-3.3-70b-versatile  # Best quality (NEW!)
 GROQ_MODEL=llama-3.1-8b-instant     # Faster, good quality
-GROQ_MODEL=mixtral-8x7b-32768       # Alternative
+GROQ_MODEL=openai/gpt-oss-120b      # OpenAI OSS (large)
 
 # Or use OpenAI
 AI_PROVIDER=openai
@@ -185,7 +185,7 @@ php artisan schedule:list
 - **Cost per post**: $0.00
 - **Monthly cost**: $0.00
 - **Speed**: Fastest (tokens/sec)
-- **Model**: Llama 3.1 70B
+- **Model**: Llama 3.3 70B (upgraded!)
 - **Rate Limit**: Very generous free tier
 
 ### OpenAI (Optional)

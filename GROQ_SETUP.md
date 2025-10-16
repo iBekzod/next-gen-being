@@ -19,7 +19,7 @@ Add these lines to your `.env` file:
 ```env
 AI_PROVIDER=groq
 GROQ_API_KEY=gsk_your_actual_key_here
-GROQ_MODEL=llama-3.1-70b-versatile
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
 ## Step 3: Test It
@@ -62,13 +62,14 @@ You now have:
 
 All models are **100% FREE** with generous rate limits:
 
-### Recommended: Llama 3.1 70B Versatile
+### Recommended: Llama 3.3 70B Versatile (NEW!)
 ```env
-GROQ_MODEL=llama-3.1-70b-versatile
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
-- Best quality
+- **Best quality** (upgraded from 3.1!)
 - Great for long-form content
 - Excellent instruction following
+- Improved performance over 3.1
 
 ### Fast: Llama 3.1 8B Instant
 ```env
@@ -78,13 +79,13 @@ GROQ_MODEL=llama-3.1-8b-instant
 - Good quality
 - Perfect for quick content
 
-### Alternative: Mixtral 8x7B
+### Alternative: OpenAI OSS Models
 ```env
-GROQ_MODEL=mixtral-8x7b-32768
+GROQ_MODEL=openai/gpt-oss-120b  # Large, high quality
+GROQ_MODEL=openai/gpt-oss-20b   # Smaller, faster
 ```
-- 32k context window
-- Good for complex topics
-- Balanced speed/quality
+- Open source GPT models
+- Good balance of speed/quality
 
 ## Manual Commands
 
