@@ -120,6 +120,14 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $this->subscribed();
     }
 
+    /**
+     * Get the LemonSqueezy store ID for this user.
+     */
+    public function lemonSqueezyStore(): string
+    {
+        return config('services.lemonsqueezy.store_id');
+    }
+
     // Follow/Follower relationships
     public function followers()
     {
