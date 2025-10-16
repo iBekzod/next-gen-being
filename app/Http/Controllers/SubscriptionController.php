@@ -61,13 +61,11 @@ class SubscriptionController extends Controller
         try {
             // Create LemonSqueezy checkout
             $checkout = $user->checkout($request->variant_id, [
-                'checkout_data' => [
-                    'email' => $user->email,
-                    'name' => $user->name,
-                ]
+                'name' => $user->name,
+                'email' => $user->email,
             ]);
 
-            return redirect($checkout);
+            return $checkout;
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create checkout: ' . $e->getMessage());
         }
@@ -86,11 +84,12 @@ class SubscriptionController extends Controller
     public function manage()
     {
         $user = Auth::user();
+        $subscription = $user->subscription();
 
         // Get the customer portal URL from LemonSqueezy
-        if ($user->subscription && $user->subscription->lemon_squeezy_id) {
+        if ($subscription && $subscription->lemon_squeezy_id) {
             $service = new \App\Services\LemonSqueezyService();
-            $portalUrl = $service->getCustomerPortalUrl($user->subscription->lemon_squeezy_id);
+            $portalUrl = $service->getCustomerPortalUrl($subscription->lemon_squeezy_id);
 
             if ($portalUrl) {
                 return redirect($portalUrl);
@@ -98,20 +97,21 @@ class SubscriptionController extends Controller
         }
 
         return view('subscriptions.manage', [
-            'subscription' => $user->subscription
+            'subscription' => $subscription
         ]);
     }
 
     public function cancelSubscription()
     {
         $user = Auth::user();
+        $subscription = $user->subscription();
 
-        if (!$user->subscription || !$user->subscription->active()) {
+        if (!$subscription || !$subscription->active()) {
             return back()->with('error', 'No active subscription found.');
         }
 
         try {
-            $user->subscription->cancel();
+            $subscription->cancel();
 
             return back()->with('success', 'Subscription will be cancelled at the end of the current billing period.');
         } catch (\Exception $e) {
@@ -122,13 +122,14 @@ class SubscriptionController extends Controller
     public function pauseSubscription()
     {
         $user = Auth::user();
+        $subscription = $user->subscription();
 
-        if (!$user->subscription || !$user->subscription->active()) {
+        if (!$subscription || !$subscription->active()) {
             return back()->with('error', 'No active subscription found.');
         }
 
         try {
-            $user->subscription->pause();
+            $subscription->pause();
 
             return back()->with('success', 'Subscription paused successfully.');
         } catch (\Exception $e) {
@@ -139,19 +140,20 @@ class SubscriptionController extends Controller
     public function resume()
     {
         $user = Auth::user();
+        $subscription = $user->subscription();
 
-        if (!$user->subscription) {
+        if (!$subscription) {
             return back()->with('error', 'No subscription found.');
         }
 
         try {
-            if ($user->subscription->paused()) {
-                $user->subscription->unpause();
+            if ($subscription->paused()) {
+                $subscription->unpause();
                 return back()->with('success', 'Subscription resumed successfully.');
             }
 
-            if ($user->subscription->cancelled() && $user->subscription->onGracePeriod()) {
-                $user->subscription->resume();
+            if ($subscription->cancelled() && $subscription->onGracePeriod()) {
+                $subscription->resume();
                 return back()->with('success', 'Subscription resumed successfully.');
             }
 

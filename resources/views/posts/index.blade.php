@@ -12,14 +12,14 @@
                 <h1 class="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Curated intelligence for builders, operators, and creators.</h1>
                 <p class="mt-4 text-base text-slate-300">Filter by category, explore premium drops, or search the archive to get exactly the blueprint you need.</p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-                <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M5 7h14M5 11h14M5 15h14M5 19h14"/></svg>
-                    Weekly drops, zero fluff
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-slate-100">
+                    <svg class="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M5 7h14M5 11h14M5 15h14M5 19h14"/></svg>
+                    <span>Weekly drops, zero fluff</span>
                 </div>
-                <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-width="2"/></svg>
-                    Read in under 10 minutes
+                <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-slate-100">
+                    <svg class="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-width="2"/></svg>
+                    <span>Read in under 10 minutes</span>
                 </div>
             </div>
         </div>

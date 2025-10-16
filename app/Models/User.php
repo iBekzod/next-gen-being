@@ -105,16 +105,6 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $query->whereHas('roles', fn($q) => $q->where('slug', $role));
     }
 
-    public function subscription()
-    {
-        return $this->morphOne(\LemonSqueezy\Laravel\Subscription::class, 'billable')->latest();
-    }
-
-    public function subscriptions()
-    {
-        return $this->morphMany(\LemonSqueezy\Laravel\Subscription::class, 'billable');
-    }
-
     public function isPremium(): bool
     {
         return $this->subscribed();

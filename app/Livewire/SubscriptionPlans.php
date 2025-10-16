@@ -72,19 +72,17 @@ class SubscriptionPlans extends Component
 
         // Create LemonSqueezy checkout
         $checkout = Auth::user()->checkout($plan['price_id'], [
-            'checkout_data' => [
-                'email' => Auth::user()->email,
-                'name' => Auth::user()->name,
-            ]
+            'name' => Auth::user()->name,
+            'email' => Auth::user()->email,
         ]);
 
-        return redirect($checkout);
+        return $checkout;
     }
 
     public function render()
     {
         return view('livewire.subscription-plans', [
-            'currentSubscription' => Auth::check() ? Auth::user()->subscription : null,
+            'currentSubscription' => Auth::check() ? Auth::user()->subscription() : null,
         ]);
     }
 }

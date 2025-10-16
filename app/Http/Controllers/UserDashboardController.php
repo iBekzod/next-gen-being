@@ -59,7 +59,7 @@ class UserDashboardController extends Controller
 
         return view('dashboard.settings', [
             'user' => $user,
-            'subscription' => $user->subscription,
+            'subscription' => $user->subscription(),
         ]);
     }
 
