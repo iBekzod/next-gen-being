@@ -41,6 +41,7 @@ return [
         'basic_variant_id' => env('LEMONSQUEEZY_BASIC_VARIANT_ID'),
         'pro_variant_id' => env('LEMONSQUEEZY_PRO_VARIANT_ID'),
         'team_variant_id' => env('LEMONSQUEEZY_TEAM_VARIANT_ID'),
+        'test_mode' => env('LEMONSQUEEZY_TEST_MODE', true), // Set to false after verification
     ],
 
     'github' => [

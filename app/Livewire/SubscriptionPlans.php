@@ -70,13 +70,31 @@ class SubscriptionPlans extends Component
             return;
         }
 
-        // Create LemonSqueezy checkout
-        $checkout = Auth::user()->checkout($plan['price_id'], [
-            'name' => Auth::user()->name,
-            'email' => Auth::user()->email,
-        ]);
+        // Check if LemonSqueezy is verified and ready
+        if (config('services.lemonsqueezy.test_mode', false)) {
+            session()->flash('info', '🚀 Premium subscriptions launching soon! We\'re finalizing payment processing. Check back within 24-48 hours.');
+            return;
+        }
 
-        return $checkout;
+        try {
+            // Create LemonSqueezy checkout
+            $checkout = Auth::user()->checkout($plan['price_id'], [
+                'name' => Auth::user()->name,
+                'email' => Auth::user()->email,
+            ]);
+
+            return $checkout;
+        } catch (\Exception $e) {
+            // If API key is not verified yet, show coming soon message
+            if (str_contains($e->getMessage(), 'API key') || str_contains($e->getMessage(), 'not configured')) {
+                session()->flash('info', '🚀 Premium subscriptions launching soon! We\'re finalizing payment processing. Check back within 24-48 hours.');
+                return;
+            }
+
+            session()->flash('error', 'Unable to start checkout. Please try again later.');
+            \Log::error('Subscription checkout error: ' . $e->getMessage());
+            return;
+        }
     }
 
     public function render()
