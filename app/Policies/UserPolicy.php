@@ -1,67 +1,70 @@
 <?php
 namespace App\Policies;
 
-use App\Models\Post;
 use App\Models\User;
 
 class UserPolicy
 {
     public function viewAny(?User $user): bool
     {
-        return true;
+        // Admins and user managers can view the user list
+        return $user && $user->hasAnyRole(['admin', 'user_manager']);
     }
 
-    public function view(?User $user, Post $post): bool
+    public function view(?User $user, User $model): bool
     {
-        if (!$post->isPublished()) {
-            return $user && ($user->id === $post->author_id || $user->hasAnyRole(['admin', 'content_manager']));
-        }
-
-        if ($post->is_premium) {
-            return $user && $user->isPremium();
-        }
-
-        return true;
+        // Admins and user managers can view any user
+        // Users can view their own profile
+        return $user && ($user->hasAnyRole(['admin', 'user_manager']) || $user->id === $model->id);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'content_manager', 'blogger']);
+        // Only admins and user managers can create users
+        return $user->hasAnyRole(['admin', 'user_manager']);
     }
 
-    public function update(User $user, Post $post): bool
+    public function update(User $user, User $model): bool
     {
-        if ($user->hasAnyRole(['admin', 'content_manager'])) {
-            return true;
-        }
-
-        return $user->id === $post->author_id;
-    }
-
-    public function delete(User $user, Post $post): bool
-    {
+        // Admins can update any user
         if ($user->hasRole('admin')) {
             return true;
         }
 
-        if ($user->hasRole('content_manager')) {
+        // User managers can update non-admin users
+        if ($user->hasRole('user_manager') && !$model->hasRole('admin')) {
             return true;
         }
 
-        return $user->id === $post->author_id;
+        // Users can update their own profile
+        return $user->id === $model->id;
     }
 
-    public function publish(User $user, Post $post): bool
+    public function delete(User $user, User $model): bool
     {
-        if ($user->hasAnyRole(['admin', 'content_manager'])) {
+        // Can't delete yourself
+        if ($user->id === $model->id) {
+            return false;
+        }
+
+        // Only admins can delete users
+        if ($user->hasRole('admin')) {
             return true;
         }
 
-        return $user->id === $post->author_id && $user->hasRole('blogger');
+        // User managers can delete non-admin users
+        return $user->hasRole('user_manager') && !$model->hasRole('admin');
     }
 
-    public function feature(User $user, Post $post): bool
+    public function restore(User $user, User $model): bool
     {
-        return $user->hasAnyRole(['admin', 'content_manager']);
+        // Only admins can restore deleted users
+        return $user->hasRole('admin');
+    }
+
+    public function forceDelete(User $user, User $model): bool
+    {
+        // Only admins can permanently delete users
+        return $user->hasRole('admin');
     }
 }
