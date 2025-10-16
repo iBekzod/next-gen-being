@@ -26,7 +26,11 @@ class PostPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'content_manager', 'blogger']);
+        // Allow all authenticated users to create posts
+        return true;
+
+        // Or keep role restriction:
+        // return $user->hasAnyRole(['admin', 'content_manager', 'blogger']);
     }
 
     public function update(User $user, Post $post): bool
