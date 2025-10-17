@@ -52,36 +52,109 @@ document.addEventListener('livewire:init', () => {
         };
     };
 
-    // Social Sharing Functions
-    window.copyLink = function() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            Alpine.store('app').showNotification('Link copied to clipboard!', 'success');
-        }).catch(() => {
-            Alpine.store('app').showNotification('Failed to copy link', 'error');
-        });
+    // Social Sharing Functions with Tracking
+    window.trackShare = async function(platform, postId = null) {
+        // Get post ID from data attribute if not provided
+        if (!postId) {
+            const postElement = document.querySelector('[data-post-id]');
+            postId = postElement ? postElement.getAttribute('data-post-id') : null;
+        }
+
+        if (!postId) {
+            console.warn('Post ID not found for share tracking');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/social-share/track', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                },
+                body: JSON.stringify({
+                    platform: platform,
+                    post_id: postId,
+                    url: window.location.href
+                })
+            });
+
+            const data = await response.json();
+
+            // Track in GA4 if available
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'share', {
+                    method: platform,
+                    content_type: 'article',
+                    content_id: postId
+                });
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Share tracking failed:', error);
+        }
     };
 
-    window.shareTwitter = function() {
+    window.copyLink = async function() {
+        const url = window.location.href;
+        try {
+            await navigator.clipboard.writeText(url);
+            await window.trackShare('copy');
+            Alpine.store('app').showNotification('Link copied to clipboard!', 'success');
+        } catch (error) {
+            Alpine.store('app').showNotification('Failed to copy link', 'error');
+        }
+    };
+
+    window.shareTwitter = async function() {
+        await window.trackShare('twitter');
+
         const url = window.location.href;
         const title = document.querySelector('h1')?.textContent || document.title;
         const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
         window.open(twitterUrl, '_blank', 'width=550,height=420');
     };
 
-    window.shareLinkedIn = function() {
+    window.shareLinkedIn = async function() {
+        await window.trackShare('linkedin');
+
         const url = window.location.href;
         const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
         window.open(linkedInUrl, '_blank', 'width=550,height=420');
     };
 
-    window.shareFacebook = function() {
+    window.shareFacebook = async function() {
+        await window.trackShare('facebook');
+
         const url = window.location.href;
         const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         window.open(facebookUrl, '_blank', 'width=550,height=420');
     };
 
-    window.shareEmail = function() {
+    window.shareWhatsApp = async function() {
+        await window.trackShare('whatsapp');
+
+        const url = window.location.href;
+        const title = document.querySelector('h1')?.textContent || document.title;
+        const text = encodeURIComponent(`${title} ${url}`);
+        const whatsappUrl = `https://wa.me/?text=${text}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
+    window.shareTelegram = async function() {
+        await window.trackShare('telegram');
+
+        const url = window.location.href;
+        const title = document.querySelector('h1')?.textContent || document.title;
+        const text = encodeURIComponent(title);
+        const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${text}`;
+        window.open(telegramUrl, '_blank');
+    };
+
+    window.shareEmail = async function() {
+        await window.trackShare('email');
+
         const url = window.location.href;
         const title = document.querySelector('h1')?.textContent || document.title;
         const subject = encodeURIComponent(`Check out: ${title}`);

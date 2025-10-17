@@ -88,3 +88,13 @@ Route::prefix('newsletter')->name('newsletter.')->group(function () {
     Route::get('/track/click/{engagement}', [NewsletterController::class, 'trackClick'])->name('track.click');
     Route::post('/subscribe', [NewsletterController::class, 'subscribe'])->name('subscribe');
 });
+
+// Social Sharing Routes
+Route::prefix('api/social-share')->name('social-share.')->group(function () {
+    Route::post('/track', [App\Http\Controllers\SocialShareController::class, 'track'])->name('track');
+    Route::get('/count/{postId}', [App\Http\Controllers\SocialShareController::class, 'getShareCount'])->name('count');
+    Route::get('/breakdown/{postId}', [App\Http\Controllers\SocialShareController::class, 'getPlatformBreakdown'])->name('breakdown');
+    Route::get('/top-shared', [App\Http\Controllers\SocialShareController::class, 'getTopShared'])->name('top-shared');
+    Route::post('/generate-utm-url', [App\Http\Controllers\SocialShareController::class, 'generateUtmUrl'])->name('generate-utm-url');
+})->middleware('throttle:60,1');
+

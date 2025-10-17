@@ -86,6 +86,11 @@ class Post extends Model implements HasMedia
         return $this->interactions()->where('type', 'view');
     }
 
+    public function socialShares()
+    {
+        return $this->hasMany(SocialShare::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {
