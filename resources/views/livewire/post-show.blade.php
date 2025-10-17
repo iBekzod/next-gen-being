@@ -106,6 +106,11 @@
         <img src="{{ $post->featured_image }}"
              alt="{{ $post->title }}"
              class="object-cover w-full h-96 rounded-2xl">
+        @if($post->image_attribution && isset($post->image_attribution['source']) && $post->image_attribution['source'] === 'unsplash')
+        <div class="mt-2 text-sm text-gray-500">
+            Photo by <a href="{{ $post->image_attribution['photographer_url'] }}?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-blue-600 transition-colors">{{ $post->image_attribution['photographer_name'] }}</a> on <a href="https://unsplash.com?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-blue-600 transition-colors">Unsplash</a>
+        </div>
+        @endif
     </div>
     @endif
 

@@ -72,14 +72,15 @@ class GenerateAiPost extends Command
 
             // Step 7: Generate featured image
             $this->info('🎨 Generating featured image...');
-            $featuredImage = $this->generateFeaturedImage($postData['title'], $category->name);
+            $imageData = $this->generateFeaturedImage($postData['title'], $category->name);
 
             // Step 8: Create the post
             $post = Post::create([
                 'title' => $postData['title'],
                 'excerpt' => $postData['excerpt'],
                 'content' => $postData['content'],
-                'featured_image' => $featuredImage,
+                'featured_image' => $imageData['url'] ?? null,
+                'image_attribution' => $imageData['attribution'] ?? null,
                 'author_id' => $author->id,
                 'category_id' => $category->id,
                 'status' => $this->option('draft') ? 'draft' : 'published',
@@ -93,7 +94,7 @@ class GenerateAiPost extends Command
                     'meta_keywords' => $postData['keywords'],
                     'og_title' => $postData['title'],
                     'og_description' => $postData['excerpt'],
-                    'og_image' => $featuredImage,
+                    'og_image' => $imageData['url'] ?? null,
                 ],
             ]);
 
@@ -491,7 +492,7 @@ The content should make free users think: 'This looks incredibly valuable, I nee
 ";
     }
 
-    private function generateFeaturedImage(string $title, string $category): ?string
+    private function generateFeaturedImage(string $title, string $category): ?array
     {
         try {
             $imageService = app(ImageGenerationService::class);
@@ -502,11 +503,14 @@ The content should make free users think: 'This looks incredibly valuable, I nee
             }
 
             $this->info('   🎨 Using: ' . $imageService->getProvider());
-            $imageUrl = $imageService->generateFeaturedImage($title, $category);
+            $imageData = $imageService->generateFeaturedImage($title, $category);
 
-            if ($imageUrl) {
+            if ($imageData && isset($imageData['url'])) {
                 $this->info('   ✅ Image generated successfully!');
-                return $imageUrl;
+                if ($imageData['attribution']) {
+                    $this->info('   📸 Photo by: ' . $imageData['attribution']['photographer_name']);
+                }
+                return $imageData;
             }
 
             $this->warn('   ⚠️  Failed to generate image.');

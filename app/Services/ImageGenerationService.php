@@ -23,9 +23,9 @@ class ImageGenerationService
      *
      * @param string $title Post title
      * @param string $topic Main topic/category
-     * @return string|null Path to stored image
+     * @return array|null ['url' => string, 'attribution' => array|null]
      */
-    public function generateFeaturedImage(string $title, string $topic): ?string
+    public function generateFeaturedImage(string $title, string $topic): ?array
     {
         // Try Stability AI first (if configured)
         if ($this->stabilityApiKey) {
@@ -57,7 +57,7 @@ class ImageGenerationService
     /**
      * Generate image using Stability AI
      */
-    private function generateWithStabilityAI(string $title, string $topic): string
+    private function generateWithStabilityAI(string $title, string $topic): array
     {
         $prompt = $this->createImagePrompt($title, $topic);
 
@@ -104,13 +104,16 @@ class ImageGenerationService
         $filename = 'posts/featured/' . Str::random(40) . '.png';
         Storage::disk('public')->put($filename, $imageData);
 
-        return Storage::disk('public')->url($filename);
+        return [
+            'url' => asset('storage/' . $filename),
+            'attribution' => null, // AI-generated images don't need attribution
+        ];
     }
 
     /**
      * Fetch relevant image from Unsplash
      */
-    private function fetchFromUnsplash(string $topic): string
+    private function fetchFromUnsplash(string $topic): array
     {
         // Extract keywords from topic
         $keywords = $this->extractKeywords($topic);
@@ -152,7 +155,17 @@ class ImageGenerationService
             ])->get($photo['links']['download_location']);
         }
 
-        return Storage::disk('public')->url($filename);
+        // Return image URL with attribution data
+        return [
+            'url' => asset('storage/' . $filename),
+            'attribution' => [
+                'photographer_name' => $photo['user']['name'],
+                'photographer_username' => $photo['user']['username'],
+                'photographer_url' => $photo['user']['links']['html'],
+                'photo_url' => $photo['links']['html'],
+                'source' => 'unsplash',
+            ],
+        ];
     }
 
     /**
