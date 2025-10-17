@@ -18,6 +18,7 @@ class Post extends Model implements HasMedia
         'title', 'slug', 'excerpt', 'content', 'content_json',
         'featured_image', 'image_attribution', 'gallery', 'status', 'published_at',
         'scheduled_at', 'is_featured', 'allow_comments', 'is_premium',
+        'premium_tier', 'preview_percentage', 'paywall_message',
         'read_time', 'views_count', 'likes_count', 'comments_count',
         'bookmarks_count', 'seo_meta', 'author_id', 'category_id'
     ];
@@ -91,6 +92,16 @@ class Post extends Model implements HasMedia
         return $this->hasMany(SocialShare::class);
     }
 
+    public function contentViews()
+    {
+        return $this->hasMany(ContentView::class);
+    }
+
+    public function paywallInteractions()
+    {
+        return $this->hasMany(PaywallInteraction::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {
@@ -157,7 +168,53 @@ class Post extends Model implements HasMedia
             return true;
         }
 
-        return $user && $user->isPremium();
+        if (!$user) {
+            return false;
+        }
+
+        return $this->userHasRequiredTier($user);
+    }
+
+    public function userHasRequiredTier(?User $user): bool
+    {
+        if (!$user || (!$user->subscribed() && !$user->onTrial())) {
+            return false;
+        }
+
+        if ($this->premium_tier === null) {
+            return true;
+        }
+
+        $userTier = $user->getSubscriptionTier();
+        if (!$userTier) {
+            return false;
+        }
+
+        $tierHierarchy = ['basic' => 1, 'pro' => 2, 'team' => 3];
+        $userLevel = $tierHierarchy[$userTier] ?? 0;
+        $requiredLevel = $tierHierarchy[$this->premium_tier] ?? 0;
+
+        return $userLevel >= $requiredLevel;
+    }
+
+    public function getTierDisplayName(): string
+    {
+        return match($this->premium_tier) {
+            'basic' => 'Basic',
+            'pro' => 'Pro',
+            'team' => 'Team',
+            default => 'Premium',
+        };
+    }
+
+    public function getMinimumTierPrice(): string
+    {
+        return match($this->premium_tier) {
+            'basic' => '$9.99',
+            'pro' => '$19.99',
+            'team' => '$49.99',
+            default => '$9.99',
+        };
     }
 
     public function recordView(?User $user = null): void
