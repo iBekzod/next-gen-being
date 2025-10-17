@@ -30,7 +30,9 @@
       "Bash(docker-compose up:*)",
       "Bash(docker-compose:*)",
       "Bash(composer update:*)",
-      "Read(//d/var/www/**)"
+      "Read(//d/var/www/**)",
+      "Bash(dir:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

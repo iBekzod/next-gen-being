@@ -119,6 +119,19 @@
         {!! str($post->content)->markdown() !!}
     </div>
 
+    <!-- Newsletter CTA -->
+    <div class="my-12 p-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+        <div class="max-w-2xl mx-auto text-center">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Never Miss an Article
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                Get our best content delivered to your inbox weekly. No spam, unsubscribe anytime.
+            </p>
+            @livewire('newsletter-subscribe', ['compact' => true])
+        </div>
+    </div>
+
     <!-- Tags -->
     @if($post->tags->count() > 0)
     <div class="flex items-center mb-8 space-x-2">

@@ -75,3 +75,16 @@ Route::view('/refund-policy', 'refund')->name('refund');
 
 
 
+
+// Newsletter Routes
+use App\Http\Controllers\NewsletterController;
+
+Route::prefix('newsletter')->name('newsletter.')->group(function () {
+    Route::get('/verify/{token}', [NewsletterController::class, 'verify'])->name('verify');
+    Route::get('/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe'])->name('unsubscribe');
+    Route::get('/preferences/{token}', [NewsletterController::class, 'preferences'])->name('preferences');
+    Route::post('/preferences/{token}', [NewsletterController::class, 'updatePreferences'])->name('preferences.update');
+    Route::get('/track/open/{engagement}', [NewsletterController::class, 'trackOpen'])->name('track.open');
+    Route::get('/track/click/{engagement}', [NewsletterController::class, 'trackClick'])->name('track.click');
+    Route::post('/subscribe', [NewsletterController::class, 'subscribe'])->name('subscribe');
+});

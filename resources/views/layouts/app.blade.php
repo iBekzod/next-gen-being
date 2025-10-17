@@ -412,6 +412,11 @@
         <footer class="border-t border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
             <div class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-4">
+                    <!-- Newsletter Widget -->
+                    <div class="col-span-1 md:col-span-2 mb-8">
+                        @livewire('newsletter-subscribe')
+                    </div>
+
                     <!-- Company Info -->
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center mb-4">

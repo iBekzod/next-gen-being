@@ -18,3 +18,11 @@ Schedule::command('ai:generate-post')
     ->onFailure(function () {
         \Illuminate\Support\facades\Log::error('Daily AI post generation failed');
     });
+
+// Newsletter Automation
+Schedule::command('newsletter:send-weekly')
+    ->weeklyOn(1, '9:00')
+    ->timezone(config('app.timezone'));
+
+Schedule::command('newsletter:cleanup')
+    ->monthly();
