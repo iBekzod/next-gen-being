@@ -1,0 +1,34 @@
+
+    /**
+     * Get user's subscription tier
+     */
+    public function getSubscriptionTier(): ?string
+    {
+        if (!$this->subscribed() && !$this->onTrial()) {
+            return null;
+        }
+
+        $subscription = $this->subscription();
+        return $subscription?->type; // 'basic', 'pro', or 'team'
+    }
+
+    /**
+     * Check if user has any of the specified plans
+     */
+    public function hasAnyPlan(array $plans): bool
+    {
+        if (!$this->subscribed() && !$this->onTrial()) {
+            return false;
+        }
+
+        $currentPlan = $this->getSubscriptionTier();
+        return in_array($currentPlan, $plans);
+    }
+
+    /**
+     * Check if user has specific plan
+     */
+    public function hasPlan(string $plan): bool
+    {
+        return $this->subscribed() && $this->getSubscriptionTier() === $plan;
+    }
