@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 class GenerateAiPost extends Command
 {
     protected $signature = 'ai:generate-post
+                            {--count=1 : Number of posts to generate}
                             {--category= : Specific category slug to generate post for}
                             {--author= : Author user ID (defaults to first admin)}
                             {--draft : Create as draft instead of publishing}
@@ -22,7 +23,7 @@ class GenerateAiPost extends Command
                             {--free : Force free content (default is smart premium strategy)}
                             {--provider= : AI provider (groq, openai) - defaults to config}';
 
-    protected $description = 'Generate a complete AI-written blog post using free Groq API';
+    protected $description = 'Generate AI-written blog posts using free Groq API';
 
     private string $apiKey;
     private string $baseUrl;
@@ -47,94 +48,142 @@ class GenerateAiPost extends Command
             return self::FAILURE;
         }
 
-        $this->info('🤖 Starting AI post generation...');
+        // Get the number of posts to generate
+        $count = (int) $this->option('count');
 
-        try {
-            // Step 1: Get trending topic
-            $this->info('📊 Analyzing trending topics...');
-            $topic = $this->selectTrendingTopic();
-
-            // Step 2: Generate post content
-            $this->info("✍️  Generating content for: {$topic['title']}");
-            $postData = $this->generatePostContent($topic);
-
-            // Step 3: Get or create category
-            $category = $this->getCategory();
-
-            // Step 4: Get author
-            $author = $this->getAuthor();
-
-            // Step 5: Generate tags
-            $tags = $this->getOrCreateTags($postData['tags']);
-
-            // Step 6: Determine premium strategy
-            $isPremium = $this->determinePremiumStrategy();
-
-            // Step 7: Generate featured image
-            $this->info('🎨 Generating featured image...');
-            $imageData = $this->generateFeaturedImage($postData['title'], $category->name);
-
-            // Step 8: Create the post
-            $post = Post::create([
-                'title' => $postData['title'],
-                'excerpt' => $postData['excerpt'],
-                'content' => $postData['content'],
-                'featured_image' => $imageData['url'] ?? null,
-                'image_attribution' => $imageData['attribution'] ?? null,
-                'author_id' => $author->id,
-                'category_id' => $category->id,
-                'status' => $this->option('draft') ? 'draft' : 'published',
-                'published_at' => $this->option('draft') ? null : now(),
-                'is_premium' => $isPremium,
-                'is_featured' => $isPremium, // Featured premium content gets more visibility
-                'allow_comments' => true,
-                'seo_meta' => [
-                    'meta_title' => $postData['meta_title'],
-                    'meta_description' => $postData['meta_description'],
-                    'meta_keywords' => $postData['keywords'],
-                    'og_title' => $postData['title'],
-                    'og_description' => $postData['excerpt'],
-                    'og_image' => $imageData['url'] ?? null,
-                ],
-            ]);
-
-            // Attach tags
-            $post->tags()->attach($tags->pluck('id'));
-
-            $status = $this->option('draft') ? 'draft' : 'published';
-            $premiumLabel = $isPremium ? '💎 PREMIUM' : '🆓 FREE';
-
-            $this->info("✅ Post created successfully!");
-            $this->info("   ID: {$post->id}");
-            $this->info("   Title: {$post->title}");
-            $this->info("   Status: {$status}");
-            $this->info("   Type: {$premiumLabel}");
-            $this->info("   Featured: " . ($post->is_featured ? 'Yes' : 'No'));
-            $this->info("   Category: {$category->name}");
-            $this->info("   Author: {$author->name}");
-            $this->info("   Tags: " . $tags->pluck('name')->implode(', '));
-
-            if (!$this->option('draft')) {
-                $url = config('app.url') . '/posts/' . $post->slug;
-                $this->info("   URL: {$url}");
-            }
-
-            Log::info('AI post generated successfully', [
-                'post_id' => $post->id,
-                'title' => $post->title,
-                'topic' => $topic['title']
-            ]);
-
-            return self::SUCCESS;
-
-        } catch (\Exception $e) {
-            $this->error('❌ Failed to generate post: ' . $e->getMessage());
-            Log::error('AI post generation failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+        if ($count < 1) {
+            $this->error('Count must be at least 1');
             return self::FAILURE;
         }
+
+        $this->info("🤖 Starting AI post generation... (generating {$count} post(s))");
+        $this->newLine();
+
+        $generatedPosts = [];
+        $failedCount = 0;
+
+        for ($i = 1; $i <= $count; $i++) {
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->info("📝 Generating Post {$i} of {$count}");
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->newLine();
+
+            try {
+                $post = $this->generateSinglePost();
+                $generatedPosts[] = $post;
+                $this->newLine();
+            } catch (\Exception $e) {
+                $failedCount++;
+                $this->error("❌ Failed to generate post {$i}: " . $e->getMessage());
+                Log::error("AI post generation failed for post {$i}", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->newLine();
+
+                // Continue to next post
+                continue;
+            }
+        }
+
+        // Summary
+        $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("📊 Generation Summary");
+        $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("Total requested: {$count}");
+        $this->info("Successfully generated: " . count($generatedPosts));
+        $this->info("Failed: {$failedCount}");
+
+        if (count($generatedPosts) > 0) {
+            $this->newLine();
+            $this->info("Generated Posts:");
+            foreach ($generatedPosts as $index => $post) {
+                $num = $index + 1;
+                $this->info("  {$num}. {$post->title} (ID: {$post->id})");
+            }
+        }
+
+        return $failedCount === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    private function generateSinglePost(): Post
+    {
+        // Step 1: Get trending topic
+        $this->info('📊 Analyzing trending topics...');
+        $topic = $this->selectTrendingTopic();
+
+        // Step 2: Generate post content
+        $this->info("✍️  Generating content for: {$topic['title']}");
+        $postData = $this->generatePostContent($topic);
+
+        // Step 3: Get or create category
+        $category = $this->getCategory();
+
+        // Step 4: Get author
+        $author = $this->getAuthor();
+
+        // Step 5: Generate tags
+        $tags = $this->getOrCreateTags($postData['tags']);
+
+        // Step 6: Determine premium strategy
+        $isPremium = $this->determinePremiumStrategy();
+
+        // Step 7: Generate featured image
+        $this->info('🎨 Generating featured image...');
+        $imageData = $this->generateFeaturedImage($postData['title'], $category->name);
+
+        // Step 8: Create the post
+        $post = Post::create([
+            'title' => $postData['title'],
+            'excerpt' => $postData['excerpt'],
+            'content' => $postData['content'],
+            'featured_image' => $imageData['url'] ?? null,
+            'image_attribution' => $imageData['attribution'] ?? null,
+            'author_id' => $author->id,
+            'category_id' => $category->id,
+            'status' => $this->option('draft') ? 'draft' : 'published',
+            'published_at' => $this->option('draft') ? null : now(),
+            'is_premium' => $isPremium,
+            'is_featured' => $isPremium, // Featured premium content gets more visibility
+            'allow_comments' => true,
+            'seo_meta' => [
+                'meta_title' => $postData['meta_title'],
+                'meta_description' => $postData['meta_description'],
+                'meta_keywords' => $postData['keywords'],
+                'og_title' => $postData['title'],
+                'og_description' => $postData['excerpt'],
+                'og_image' => $imageData['url'] ?? null,
+            ],
+        ]);
+
+        // Attach tags
+        $post->tags()->attach($tags->pluck('id'));
+
+        $status = $this->option('draft') ? 'draft' : 'published';
+        $premiumLabel = $isPremium ? '💎 PREMIUM' : '🆓 FREE';
+
+        $this->info("✅ Post created successfully!");
+        $this->info("   ID: {$post->id}");
+        $this->info("   Title: {$post->title}");
+        $this->info("   Status: {$status}");
+        $this->info("   Type: {$premiumLabel}");
+        $this->info("   Featured: " . ($post->is_featured ? 'Yes' : 'No'));
+        $this->info("   Category: {$category->name}");
+        $this->info("   Author: {$author->name}");
+        $this->info("   Tags: " . $tags->pluck('name')->implode(', '));
+
+        if (!$this->option('draft')) {
+            $url = config('app.url') . '/posts/' . $post->slug;
+            $this->info("   URL: {$url}");
+        }
+
+        Log::info('AI post generated successfully', [
+            'post_id' => $post->id,
+            'title' => $post->title,
+            'topic' => $topic['title']
+        ]);
+
+        return $post;
     }
 
     private function selectTrendingTopic(): array
