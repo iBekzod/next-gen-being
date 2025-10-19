@@ -116,7 +116,108 @@
 
     <!-- Content -->
     <div class="mb-12 prose prose-lg max-w-none dark:prose-invert">
-        {!! str($post->content)->markdown() !!}
+        @if($post->shouldShowPaywall(auth()->user()))
+            <!-- Preview Content (First 30%) -->
+            <div class="relative">
+                {!! str($post->getPreviewContent())->markdown() !!}
+
+                <!-- Fade Overlay -->
+                <div class="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95 pointer-events-none"></div>
+            </div>
+
+            <!-- Premium Paywall -->
+            <div class="relative -mt-32 mb-12">
+                <div class="relative z-10 max-w-2xl p-8 mx-auto bg-white border-2 border-blue-500 shadow-2xl dark:bg-slate-800 dark:border-blue-400 rounded-2xl">
+                    <div class="mb-6 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 mb-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </div>
+                        <h3 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                            Unlock Premium Content
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            You've read <span class="font-bold text-blue-600 dark:text-blue-400">{{ $post->preview_percentage ?? 30 }}%</span> of this article
+                        </p>
+                    </div>
+
+                    <!-- What You'll Get -->
+                    <div class="p-6 mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                        <h4 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                            🎯 What's in the full article:
+                        </h4>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <svg class="flex-shrink-0 w-5 h-5 mt-0.5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">Complete step-by-step implementation guide</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="flex-shrink-0 w-5 h-5 mt-0.5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">Working code examples you can copy-paste</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="flex-shrink-0 w-5 h-5 mt-0.5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">Advanced techniques and pro tips</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="flex-shrink-0 w-5 h-5 mt-0.5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">Common mistakes to avoid</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="flex-shrink-0 w-5 h-5 mt-0.5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">Real-world examples and metrics</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- CTA Buttons -->
+                    <div class="space-y-3">
+                        @auth
+                            <a href="{{ route('subscription.plans') }}"
+                               class="block w-full py-4 text-lg font-bold text-center text-white transition-all transform bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-xl hover:scale-105">
+                                Upgrade to Premium
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}"
+                               class="block w-full py-4 text-lg font-bold text-center text-white transition-all transform bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-xl hover:scale-105">
+                                Sign In to Continue Reading
+                            </a>
+                            <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+                                Don't have an account? <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">Start your free trial</a>
+                            </p>
+                        @endauth
+                    </div>
+
+                    <!-- Social Proof -->
+                    <div class="pt-6 mt-6 text-center border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-center mb-2 space-x-1">
+                            @for($i = 0; $i < 5; $i++)
+                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            @endfor
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Join <span class="font-bold">10,000+ developers</span> who love our premium content
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @else
+            <!-- Full Content for Free or Premium Subscribers -->
+            {!! str($post->content)->markdown() !!}
+        @endif
     </div>
 
     <!-- Newsletter CTA -->

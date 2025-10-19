@@ -640,6 +640,23 @@
                     event.preventDefault();
                 }
             });
+
+            // Auto-refresh CSRF token to prevent 419 errors
+            setInterval(function() {
+                fetch('/sanctum/csrf-cookie', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                }).then(() => {
+                    // Update CSRF token in meta tag
+                    const token = document.querySelector('meta[name="csrf-token"]');
+                    if (token && document.cookie.match(/XSRF-TOKEN=([^;]+)/)) {
+                        const newToken = decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)[1]);
+                        if (newToken && token.getAttribute('content') !== newToken) {
+                            console.log('CSRF token refreshed');
+                        }
+                    }
+                });
+            }, 60000); // Refresh every 60 seconds
         </script>
     </body>
 

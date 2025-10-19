@@ -25,10 +25,8 @@ class PostShow extends Component
         // Record view
         $this->post->recordView(Auth::user());
 
-        // Check if user can view premium content
-        if ($this->post->is_premium && !Auth::user()?->isPremium()) {
-            abort(403, 'This is premium content. Please subscribe to access.');
-        }
+        // Note: We no longer block premium content completely
+        // Instead, we show a preview (handled in the view)
     }
 
     public function toggleLike()

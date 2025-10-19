@@ -21,7 +21,9 @@ class GenerateAiPost extends Command
                             {--draft : Create as draft instead of publishing}
                             {--premium : Mark post as premium content}
                             {--free : Force free content (default is smart premium strategy)}
-                            {--provider= : AI provider (groq, openai) - defaults to config}';
+                            {--provider= : AI provider (groq, openai) - defaults to config}
+                            {--series= : Generate tutorial series with specified number of parts (e.g., --series=5)}
+                            {--series-title= : Custom title for the tutorial series}';
 
     protected $description = 'Generate AI-written blog posts using free Groq API';
 
@@ -46,6 +48,14 @@ class GenerateAiPost extends Command
         if (!$this->apiKey) {
             $this->error("AI API key not configured. Please set {$this->getApiKeyEnvName()} in your .env file.");
             return self::FAILURE;
+        }
+
+        // Check if generating a series
+        $seriesParts = (int) $this->option('series');
+        $isGeneratingSeries = $seriesParts > 0;
+
+        if ($isGeneratingSeries) {
+            return $this->generateSeries($seriesParts);
         }
 
         // Get the number of posts to generate
@@ -395,6 +405,8 @@ Return ONLY a JSON object:
         $isPremium = $this->option('premium') || (!$this->option('free') && rand(1, 100) <= 70); // 70% premium by default
 
         $conversionStrategy = $isPremium ? $this->getPremiumContentStrategy() : '';
+        $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
+        $conclusionExtra = $isPremium ? '- Subtle mention of deeper expertise available' : '';
 
         $prompt = "Write an EXCEPTIONALLY engaging, practical, and useful blog post about: {$topic['title']}
 
@@ -484,13 +496,13 @@ Example structure:
 - Edge cases and gotchas
 - Performance considerations
 - Common mistakes to avoid
-{$isPremium ? '- Hint at deeper premium content' : ''}
+{$advancedTipsExtra}
 
 ## Conclusion (100-150 words)
 - Recap key takeaways (3-5 bullets)
 - Next steps or action items
 - Inspirational close
-{$isPremium ? '- Subtle mention of deeper expertise available' : ''}
+{$conclusionExtra}
 
 FORMATTING RULES:
 - Use ## for main headings, ### for subheadings
@@ -590,16 +602,6 @@ Return ONLY this JSON (ensure proper escaping):
         ]);
 
         throw new \Exception('Invalid JSON in AI response: ' . json_last_error_msg() . '. Check logs for details.');
-    }
-
-    private function cleanupPostData(array $postData): array
-    {
-        // Clean up the content to ensure it's valid
-        if (isset($postData['content'])) {
-            $postData['content'] = trim($postData['content']);
-        }
-
-        return $postData;
     }
 
     private function setupProvider(): void
@@ -821,5 +823,411 @@ The content should make free users think: 'This looks incredibly valuable, I nee
             ]);
             return null;
         }
+    }
+
+    private function generateSeries(int $parts): int
+    {
+        if ($parts < 2) {
+            $this->error('Series must have at least 2 parts');
+            return self::FAILURE;
+        }
+
+        if ($parts > 10) {
+            $this->error('Series cannot have more than 10 parts (to avoid rate limits)');
+            return self::FAILURE;
+        }
+
+        $this->info("📚 Starting AI Tutorial Series generation... (generating {$parts} part series)");
+        $this->newLine();
+
+        // Reset and load recently used images to prevent duplicates
+        ImageGenerationService::resetUsedImages();
+        $imageService = app(ImageGenerationService::class);
+        $imageService->loadRecentlyUsedImages(30);
+
+        // Step 1: Generate series outline
+        $this->info('📝 Generating series outline and topic...');
+        $seriesOutline = $this->generateSeriesOutline($parts);
+
+        if (!$seriesOutline) {
+            $this->error('Failed to generate series outline');
+            return self::FAILURE;
+        }
+
+        $this->info("✅ Series Topic: {$seriesOutline['title']}");
+        $this->newLine();
+
+        $generatedPosts = [];
+        $failedCount = 0;
+        $seriesSlug = Str::slug($seriesOutline['title']);
+
+        // Step 2: Generate each part
+        for ($i = 1; $i <= $parts; $i++) {
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->info("📖 Generating Part {$i} of {$parts}: {$seriesOutline['parts'][$i-1]['title']}");
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->newLine();
+
+            try {
+                $post = $this->generateSeriesPart($seriesOutline, $i, $parts);
+                $generatedPosts[] = $post;
+                $this->newLine();
+
+                // Add delay between posts
+                if ($i < $parts) {
+                    $delay = $this->provider === 'groq' ? 5 : 2;
+                    $this->info("⏳ Waiting {$delay} seconds...");
+                    sleep($delay);
+                    $this->newLine();
+                }
+            } catch (\Exception $e) {
+                $failedCount++;
+                $this->error("❌ Failed to generate part {$i}: " . $e->getMessage());
+
+                if (str_contains($e->getMessage(), 'rate_limit_exceeded')) {
+                    preg_match('/try again in (\d+\.?\d*)s/i', $e->getMessage(), $matches);
+                    $waitTime = isset($matches[1]) ? ceil((float)$matches[1]) + 1 : 10;
+                    $this->warn("⏸️  Rate limit hit. Waiting {$waitTime} seconds...");
+                    sleep($waitTime);
+
+                    try {
+                        $this->info("🔄 Retrying part {$i}...");
+                        $post = $this->generateSeriesPart($seriesOutline, $i, $parts);
+                        $generatedPosts[] = $post;
+                        $failedCount--;
+                        $this->info("✅ Retry successful!");
+                    } catch (\Exception $retryError) {
+                        $this->error("❌ Retry failed: " . $retryError->getMessage());
+                    }
+                }
+                $this->newLine();
+            }
+        }
+
+        // Summary
+        $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("📊 Series Generation Summary");
+        $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("Series: {$seriesOutline['title']}");
+        $this->info("Total parts: {$parts}");
+        $this->info("Successfully generated: " . count($generatedPosts));
+        $this->info("Failed: {$failedCount}");
+
+        if (count($generatedPosts) > 0) {
+            $this->newLine();
+            $this->info("Generated Series Parts:");
+            foreach ($generatedPosts as $index => $post) {
+                $partNum = $index + 1;
+                $this->info("  Part {$partNum}. {$post->title} (ID: {$post->id})");
+            }
+        }
+
+        return $failedCount === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    private function generateSeriesOutline(int $parts): ?array
+    {
+        $currentYear = now()->year;
+        $customTitle = $this->option('series-title');
+
+        $prompt = $customTitle
+            ? "Create a detailed {$parts}-part tutorial series outline for: \"{$customTitle}\""
+            : "Create a detailed {$parts}-part tutorial series outline for a trending tech topic in {$currentYear}";
+
+        $prompt .= "
+
+Create a comprehensive tutorial series that takes readers from beginner to advanced level.
+
+Requirements:
+- Series must be practical and hands-on
+- Each part builds on the previous one
+- Include a clear learning progression
+- Focus on real-world applications
+- Specific technologies with version numbers
+
+Return ONLY this JSON:
+{
+  \"title\": \"Series title (e.g., 'Building Production-Ready Microservices with Docker & Kubernetes')\",
+  \"description\": \"2-3 sentence series description\",
+  \"category\": \"Main category\",
+  \"parts\": [
+    {
+      \"part\": 1,
+      \"title\": \"Part 1 title (e.g., 'Setting Up Your Development Environment')\",
+      \"focus\": \"What this part teaches\"
+    },
+    ... ({$parts} parts total)
+  ]
+}";
+
+        try {
+            $response = $this->callOpenAI([
+                ['role' => 'system', 'content' => 'You are an expert technical educator who creates comprehensive, hands-on tutorial series. You MUST return valid JSON.'],
+                ['role' => 'user', 'content' => $prompt]
+            ], 1000, 0.8, true);
+
+            $outline = json_decode($response, true);
+            if (!$outline && preg_match('/\{.*\}/s', $response, $matches)) {
+                $outline = json_decode($matches[0], true);
+            }
+
+            if ($outline && isset($outline['title']) && isset($outline['parts']) && count($outline['parts']) === $parts) {
+                return $outline;
+            }
+        } catch (\Exception $e) {
+            Log::error('Series outline generation failed', ['error' => $e->getMessage()]);
+        }
+
+        return null;
+    }
+
+    private function generateSeriesPart(array $seriesOutline, int $partNumber, int $totalParts): Post
+    {
+        $partInfo = $seriesOutline['parts'][$partNumber - 1];
+        $seriesSlug = Str::slug($seriesOutline['title']);
+
+        // Build context from previous parts
+        $previousPartsContext = '';
+        if ($partNumber > 1) {
+            $previousPartsContext = "\n\nPREVIOUS PARTS COVERED:\n";
+            for ($i = 0; $i < $partNumber - 1; $i++) {
+                $previousPartsContext .= "Part " . ($i + 1) . ": " . $seriesOutline['parts'][$i]['title'] . " - " . $seriesOutline['parts'][$i]['focus'] . "\n";
+            }
+        }
+
+        // Modified topic for series context
+        $topic = [
+            'title' => "Part {$partNumber}/{$totalParts}: {$partInfo['title']} | {$seriesOutline['title']}",
+            'category' => $seriesOutline['category'] ?? 'Technology'
+        ];
+
+        // Generate content with series context
+        $this->info("📊 Analyzing part {$partNumber} requirements...");
+        $isPremium = $this->option('premium') || (!$this->option('free') && rand(1, 100) <= 70);
+
+        $postData = $this->generateSeriesPartContent($topic, $partInfo, $partNumber, $totalParts, $previousPartsContext, $isPremium);
+
+        // Get other required data
+        $category = $this->getCategory();
+        $author = $this->getAuthor();
+        $tags = $this->getOrCreateTags($postData['tags']);
+
+        // Generate image
+        $this->info('🎨 Generating featured image...');
+        $imageData = $this->generateFeaturedImage($postData['title'], $category->name);
+
+        // Create post with series data
+        $post = Post::create([
+            'title' => $postData['title'],
+            'excerpt' => $postData['excerpt'],
+            'content' => $postData['content'],
+            'featured_image' => $imageData['url'] ?? null,
+            'image_attribution' => $imageData['attribution'] ?? null,
+            'author_id' => $author->id,
+            'category_id' => $category->id,
+            'status' => $this->option('draft') ? 'draft' : 'published',
+            'published_at' => $this->option('draft') ? null : now(),
+            'is_premium' => $isPremium,
+            'is_featured' => $partNumber === 1, // Feature first part
+            'allow_comments' => true,
+            'seo_meta' => [
+                'meta_title' => $postData['meta_title'],
+                'meta_description' => $postData['meta_description'],
+                'meta_keywords' => $postData['keywords'],
+                'og_title' => $postData['title'],
+                'og_description' => $postData['excerpt'],
+                'og_image' => $imageData['url'] ?? null,
+            ],
+            'series_title' => $seriesOutline['title'],
+            'series_slug' => $seriesSlug,
+            'series_part' => $partNumber,
+            'series_total_parts' => $totalParts,
+            'series_description' => $seriesOutline['description'] ?? null,
+        ]);
+
+        $post->tags()->attach($tags->pluck('id'));
+
+        $status = $this->option('draft') ? 'draft' : 'published';
+        $premiumLabel = $isPremium ? '💎 PREMIUM' : '🆓 FREE';
+
+        $this->info("✅ Part {$partNumber} created successfully!");
+        $this->info("   ID: {$post->id}");
+        $this->info("   Title: {$post->title}");
+        $this->info("   Status: {$status}");
+        $this->info("   Type: {$premiumLabel}");
+        $this->info("   Series: {$seriesOutline['title']} ({$partNumber}/{$totalParts})");
+
+        return $post;
+    }
+
+    private function generateSeriesPartContent(array $topic, array $partInfo, int $partNumber, int $totalParts, string $previousPartsContext, bool $isPremium): array
+    {
+        $conversionStrategy = $isPremium ? $this->getPremiumContentStrategy() : '';
+        $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
+        $conclusionExtra = $isPremium ? '- Subtle mention of deeper expertise available' : '';
+
+        $seriesContext = $partNumber === 1
+            ? "This is PART 1 - the foundation. Introduce the series and set up readers for success."
+            : "This is PART {$partNumber} of {$totalParts}. Build on previous knowledge.{$previousPartsContext}";
+
+        $nextPartTeaser = $partNumber < $totalParts
+            ? "\nEnd with a teaser for the next part in the series."
+            : "\nThis is the FINAL part - wrap up the entire series with a complete working example.";
+
+        $prompt = "Write Part {$partNumber} of a {$totalParts}-part tutorial series about: {$topic['title']}
+
+SERIES CONTEXT:
+{$seriesContext}
+
+THIS PART FOCUSES ON: {$partInfo['focus']}
+
+{$nextPartTeaser}
+
+" . substr($this->getBaseContentPrompt($conversionStrategy, $advancedTipsExtra, $conclusionExtra, $isPremium), strpos($this->getBaseContentPrompt($conversionStrategy, $advancedTipsExtra, $conclusionExtra, $isPremium), '🎯 ENGAGEMENT PRINCIPLES'));
+
+        $response = $this->callOpenAI([
+            [
+                'role' => 'system',
+                'content' => 'You are a senior software engineer and technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. You MUST return valid JSON with properly escaped strings.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ]
+        ], 4000, 0.8, true);
+
+        return $this->parseAIResponse($response);
+    }
+
+    private function getBaseContentPrompt(string $conversionStrategy, string $advancedTipsExtra, string $conclusionExtra, bool $isPremium): string
+    {
+        return "Write an EXCEPTIONALLY engaging, practical, and useful blog post
+
+CONTENT STRATEGY:
+{$conversionStrategy}
+
+🎯 ENGAGEMENT PRINCIPLES (CRITICAL):
+
+1. **START WITH A STORY OR REAL SCENARIO**
+   - Open with a relatable developer problem or real-world scenario
+   - Use \"You\" language to connect personally
+   - Example: \"You've just deployed your app. 2 AM. Your phone buzzes. The database is on fire...\"
+
+2. **BE EXTREMELY PRACTICAL**
+   - Every section must have actionable takeaways
+   - Include real code examples (working, copy-pasteable code)
+   - Add \"Quick Win\" boxes with immediate actions
+   - Include \"⚡ Quick Win:\", \"💡 Pro Tip:\", \"⚠️ Common Mistake:\" callouts
+
+3. **USE STORYTELLING**
+   - Share real scenarios, case studies, or experiences
+   - Include before/after comparisons with metrics
+   - Add relatable developer pain points
+   - Example: \"When Airbnb faced this, they reduced load time by 43%\"
+
+4. **MAKE IT SCANNABLE**
+   - Use short paragraphs (2-4 sentences max)
+   - Add bullet points and numbered lists frequently
+   - Include visual breaks with emojis for key points (sparingly)
+   - Clear, benefit-driven subheadings
+
+5. **PROVIDE REAL VALUE**
+   - Code snippets that actually work
+   - Specific numbers, metrics, benchmarks
+   - Links to tools, libraries, documentation
+   - Step-by-step walkthroughs
+   - Comparison tables when relevant
+
+6. **BE CONVERSATIONAL**
+   - Write like talking to a friend over coffee
+   - Use contractions (you'll, don't, can't)
+   - Ask rhetorical questions
+   - Share opinions and recommendations
+   - Inject personality (but stay professional)
+
+CONTENT STRUCTURE (1500-2000 words):
+
+## Opening Hook (100-150 words)
+- Start with a relatable scenario or shocking stat
+- Identify the pain point or opportunity
+- Promise specific, tangible outcomes
+- Make it personal and engaging
+
+## Why This Matters (150-200 words)
+- Current state of the problem
+- Why NOW is the right time
+- What you'll learn (specific benefits)
+- Who this is for
+
+## The Problem/Context (200-300 words)
+- Deep dive into the challenge
+- Real-world examples or case studies
+- Show the impact (costs, time, mistakes)
+- Build urgency and relevance
+
+## The Solution (800-1000 words) - MAIN CONTENT
+Break into 3-5 clear sections with:
+- Specific techniques/approaches
+- **Working code examples** (properly formatted)
+- Step-by-step implementations
+- Real metrics and results
+- Comparisons and trade-offs
+- **Quick Win boxes** for immediate value
+
+Example structure:
+### Solution Part 1: [Specific Technique]
+[Explanation]
+```language
+// Working code example
+```
+💡 **Pro Tip:** [Insider insight]
+
+⚡ **Quick Win:** [Immediate action they can take]
+
+## Advanced Tips (200-300 words)
+- Pro-level optimizations
+- Edge cases and gotchas
+- Performance considerations
+- Common mistakes to avoid
+{$advancedTipsExtra}
+
+## Conclusion (100-150 words)
+- Recap key takeaways (3-5 bullets)
+- Next steps or action items
+- Inspirational close
+{$conclusionExtra}
+
+FORMATTING RULES:
+- Use ## for main headings, ### for subheadings
+- Add code blocks with language specification: ```javascript, ```python, etc.
+- Use **bold** for key terms, *italics* for emphasis
+- Add > blockquotes for important notes
+- Use tables for comparisons
+- Keep paragraphs short and punchy
+
+TONE:
+- Conversational but authoritative
+- Helpful and supportive
+- Excited about the tech
+- Honest about trade-offs
+- Like a senior developer mentoring a peer
+
+Also provide:
+- **Excerpt**: Curiosity-driven, specific benefit (150-200 chars)
+- **Meta title**: Includes numbers/benefit (60 chars max)
+- **Meta description**: Specific value prop with outcome (155 chars max)
+- **Keywords**: 5-7 high-intent, searchable terms
+- **Tags**: 3-5 relevant topic tags
+
+Return ONLY this JSON (ensure proper escaping):
+{
+  \"title\": \"[Compelling title with numbers/specifics]\",
+  \"content\": \"[Full markdown content with stories, code, tips]\",
+  \"excerpt\": \"[Specific benefit that creates curiosity]\",
+  \"meta_title\": \"[SEO title with benefit]\",
+  \"meta_description\": \"[Value proposition with outcome]\",
+  \"keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],
+  \"tags\": [\"tag1\", \"tag2\", \"tag3\"]
+}";
     }
 }

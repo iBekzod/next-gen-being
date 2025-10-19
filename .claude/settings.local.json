@@ -32,7 +32,8 @@
       "Bash(composer update:*)",
       "Read(//d/var/www/**)",
       "Bash(dir:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(timeout 300 bash -c 'while docker exec ngb-app pgrep -f \"\"composer dump-autoload\"\" > /dev/null 2>&1; do echo \"\"Waiting for composer...\"\"; sleep 10; done; echo \"\"Composer complete!\"\"')"
     ],
     "deny": [],
     "ask": []

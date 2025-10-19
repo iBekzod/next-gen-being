@@ -75,6 +75,16 @@
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to discoveries
         </a>
+
+        @if($post->isPartOfSeries())
+        <div class="inline-flex items-center gap-2 px-3 py-1 mt-4 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500/20 text-blue-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+            </svg>
+            Part {{ $post->series_part }} of {{ $post->series_total_parts }}
+        </div>
+        @endif
+
         <h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl max-w-3xl">{{ $post->title }}</h1>
         <p class="mt-4 text-base text-slate-300 max-w-2xl">{{ $post->excerpt }}</p>
     </div>
@@ -82,6 +92,9 @@
 
 <section class="bg-gray-50 dark:bg-slate-900">
     <div class="px-4 py-12 mx-auto max-w-6xl sm:px-6 lg:px-8">
+        <!-- Series Navigation -->
+        <x-post.series-navigation :post="$post" />
+
         @livewire('post-show', ['post' => $post])
     </div>
 </section>

@@ -20,7 +20,8 @@ class Post extends Model implements HasMedia
         'scheduled_at', 'is_featured', 'allow_comments', 'is_premium',
         'premium_tier', 'preview_percentage', 'paywall_message',
         'read_time', 'views_count', 'likes_count', 'comments_count',
-        'bookmarks_count', 'seo_meta', 'author_id', 'category_id'
+        'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
+        'series_title', 'series_slug', 'series_part', 'series_total_parts', 'series_description'
     ];
 
     protected $casts = [
@@ -102,6 +103,81 @@ class Post extends Model implements HasMedia
         return $this->hasMany(PaywallInteraction::class);
     }
 
+    // Series relationships
+    public function seriesPosts()
+    {
+        return $this->hasMany(Post::class, 'series_slug', 'series_slug')
+            ->orderBy('series_part');
+    }
+
+    public function nextInSeries()
+    {
+        if (!$this->series_slug) {
+            return null;
+        }
+
+        return Post::published()
+            ->where('series_slug', $this->series_slug)
+            ->where('series_part', $this->series_part + 1)
+            ->first();
+    }
+
+    public function previousInSeries()
+    {
+        if (!$this->series_slug) {
+            return null;
+        }
+
+        return Post::published()
+            ->where('series_slug', $this->series_slug)
+            ->where('series_part', $this->series_part - 1)
+            ->first();
+    }
+
+    public function isPartOfSeries(): bool
+    {
+        return !empty($this->series_slug);
+    }
+
+    public function getSeriesProgress(): ?int
+    {
+        if (!$this->isPartOfSeries() || !$this->series_total_parts) {
+            return null;
+        }
+
+        return round(($this->series_part / $this->series_total_parts) * 100);
+    }
+
+    // Premium content helpers
+    public function getPreviewContent(): string
+    {
+        if (!$this->is_premium) {
+            return $this->content;
+        }
+
+        $previewPercentage = $this->preview_percentage ?? 30;
+
+        // Split content by paragraphs (## headings and blank lines)
+        $paragraphs = preg_split('/\n\n+/', trim($this->content));
+        $totalParagraphs = count($paragraphs);
+        $previewCount = max(1, (int) ceil($totalParagraphs * ($previewPercentage / 100)));
+
+        return implode("\n\n", array_slice($paragraphs, 0, $previewCount));
+    }
+
+    public function shouldShowPaywall($user = null): bool
+    {
+        if (!$this->is_premium) {
+            return false;
+        }
+
+        if (!$user) {
+            return true;
+        }
+
+        return !$user->isPremium();
+    }
+
     // Scopes
     public function scopePublished($query)
     {
@@ -127,6 +203,11 @@ class Post extends Model implements HasMedia
     public function scopeByCategory($query, $categorySlug)
     {
         return $query->whereHas('category', fn($q) => $q->where('slug', $categorySlug));
+    }
+
+    public function scopeInSeries($query, $seriesSlug)
+    {
+        return $query->where('series_slug', $seriesSlug)->orderBy('series_part');
     }
 
     public function scopeByTag($query, $tagSlug)
