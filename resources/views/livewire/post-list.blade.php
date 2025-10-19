@@ -4,9 +4,8 @@
     <section class="mb-12">
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
             @foreach($this->featuredPosts as $index => $post)
-            <article class="group cursor-pointer {{ $index === 0 ? 'lg:col-span-2' : '' }}"
-                     wire:click="$dispatch('navigate', { url: '{{ route('posts.show', $post->slug) }}' })">
-                <div class="relative overflow-hidden rounded-2xl bg-gray-900 {{ $index === 0 ? 'h-96' : 'h-64' }}">
+            <a href="{{ route('posts.show', $post->slug) }}" class="group block {{ $index === 0 ? 'lg:col-span-2' : '' }}">
+                <div class="relative overflow-hidden rounded-2xl bg-gray-900 {{ $index === 0 ? 'h-96' : 'h-64' }} cursor-pointer">
                     @if($post->featured_image)
                     <img src="{{ $post->featured_image }}"
                          alt="{{ $post->title }}"
@@ -52,7 +51,7 @@
                         </div>
                     </div>
                 </div>
-            </article>
+            </a>
             @endforeach
         </div>
     </section>

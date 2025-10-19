@@ -77,17 +77,56 @@ class GenerateAiPost extends Command
                 $post = $this->generateSinglePost();
                 $generatedPosts[] = $post;
                 $this->newLine();
+
+                // Add delay between posts to avoid rate limiting (except for last post)
+                if ($i < $count) {
+                    $delay = $this->provider === 'groq' ? 5 : 2; // Longer delay for Groq
+                    $this->info("⏳ Waiting {$delay} seconds to avoid rate limits...");
+                    sleep($delay);
+                    $this->newLine();
+                }
             } catch (\Exception $e) {
                 $failedCount++;
-                $this->error("❌ Failed to generate post {$i}: " . $e->getMessage());
-                Log::error("AI post generation failed for post {$i}", [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                $this->newLine();
+                $errorMessage = $e->getMessage();
+                $this->error("❌ Failed to generate post {$i}: " . $errorMessage);
 
-                // Continue to next post
-                continue;
+                // Check if it's a rate limit error
+                if (str_contains($errorMessage, 'rate_limit_exceeded') || str_contains($errorMessage, 'Rate limit')) {
+                    // Extract wait time from error message if available
+                    preg_match('/try again in (\d+\.?\d*)s/i', $errorMessage, $matches);
+                    $waitTime = isset($matches[1]) ? ceil((float)$matches[1]) + 1 : 10;
+
+                    $this->warn("⏸️  Rate limit hit. Waiting {$waitTime} seconds before retrying...");
+                    sleep($waitTime);
+
+                    // Retry this post
+                    try {
+                        $this->info("🔄 Retrying post {$i}...");
+                        $post = $this->generateSinglePost();
+                        $generatedPosts[] = $post;
+                        $failedCount--; // Decrement since retry succeeded
+                        $this->info("✅ Retry successful!");
+                        $this->newLine();
+
+                        // Add delay after successful retry
+                        if ($i < $count) {
+                            $delay = $this->provider === 'groq' ? 5 : 2;
+                            $this->info("⏳ Waiting {$delay} seconds to avoid rate limits...");
+                            sleep($delay);
+                            $this->newLine();
+                        }
+                    } catch (\Exception $retryError) {
+                        $this->error("❌ Retry failed: " . $retryError->getMessage());
+                    }
+                } else {
+                    // Log non-rate-limit errors
+                    Log::error("AI post generation failed for post {$i}", [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+
+                $this->newLine();
             }
         }
 
