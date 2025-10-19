@@ -118,13 +118,16 @@ class ImageGenerationService
         // Extract keywords from topic
         $keywords = $this->extractKeywords($topic);
 
+        // Fetch multiple results and pick a random one to add variety
+        $perPage = rand(5, 15);
+
         $response = Http::timeout(30)
             ->withHeaders([
                 'Authorization' => 'Client-ID ' . $this->unsplashApiKey,
             ])
             ->get('https://api.unsplash.com/search/photos', [
                 'query' => $keywords,
-                'per_page' => 1,
+                'per_page' => $perPage,
                 'orientation' => 'landscape',
                 'content_filter' => 'high',
             ]);
@@ -140,7 +143,9 @@ class ImageGenerationService
             return $this->fetchFromUnsplash('technology abstract');
         }
 
-        $photo = $result['results'][0];
+        // Pick a random photo from results to add variety
+        $randomIndex = rand(0, count($result['results']) - 1);
+        $photo = $result['results'][$randomIndex];
         $imageUrl = $photo['urls']['regular'];
 
         // Download and store image
@@ -173,21 +178,40 @@ class ImageGenerationService
      */
     private function createImagePrompt(string $title, string $topic): string
     {
-        // Create a professional, relevant prompt
-        $basePrompt = "Professional digital illustration for a blog post about {$topic}. ";
+        // Add variety with random style elements
+        $styles = [
+            'minimalist', 'modern', 'futuristic', 'vibrant', 'sleek', 'dynamic',
+            'elegant', 'bold', 'professional', 'artistic'
+        ];
+        $colors = [
+            'blue and purple gradients', 'neon accents', 'warm tones',
+            'cool tones', 'vibrant colors', 'monochromatic palette',
+            'gradient colors', 'tech blue highlights'
+        ];
+        $compositions = [
+            'centered composition', 'dynamic angles', 'layered design',
+            'geometric patterns', 'flowing elements', 'structured layout'
+        ];
+
+        $randomStyle = $styles[array_rand($styles)];
+        $randomColor = $colors[array_rand($colors)];
+        $randomComposition = $compositions[array_rand($compositions)];
+
+        // Create a professional, relevant prompt with variety
+        $basePrompt = "Professional {$randomStyle} digital illustration for a blog post about {$topic}. ";
 
         // Add style based on topic
         if (stripos($topic, 'programming') !== false || stripos($topic, 'code') !== false) {
-            $basePrompt .= "Modern tech aesthetic with code elements, clean design, vibrant colors. ";
+            $basePrompt .= "Modern tech aesthetic with code elements, clean design, {$randomColor}. ";
         } elseif (stripos($topic, 'AI') !== false || stripos($topic, 'machine learning') !== false) {
-            $basePrompt .= "Futuristic AI theme with neural networks, abstract tech patterns, glowing elements. ";
+            $basePrompt .= "Futuristic AI theme with neural networks, abstract tech patterns, glowing elements, {$randomColor}. ";
         } elseif (stripos($topic, 'web') !== false) {
-            $basePrompt .= "Modern web design aesthetic, browser interface, responsive layouts, gradient colors. ";
+            $basePrompt .= "Modern web design aesthetic, browser interface, responsive layouts, {$randomColor}. ";
         } else {
-            $basePrompt .= "Abstract technology concept, modern digital design, professional look. ";
+            $basePrompt .= "Abstract technology concept, modern digital design, {$randomColor}. ";
         }
 
-        $basePrompt .= "High quality, sharp focus, professional blog header image, 16:9 aspect ratio, trending on artstation.";
+        $basePrompt .= "{$randomComposition}, high quality, sharp focus, professional blog header image, 16:9 aspect ratio, trending on artstation.";
 
         return $basePrompt;
     }
