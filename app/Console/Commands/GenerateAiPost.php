@@ -396,60 +396,145 @@ Return ONLY a JSON object:
 
         $conversionStrategy = $isPremium ? $this->getPremiumContentStrategy() : '';
 
-        $prompt = "Write a high-value, conversion-focused blog post about: {$topic['title']}
+        $prompt = "Write an EXCEPTIONALLY engaging, practical, and useful blog post about: {$topic['title']}
 
 CONTENT STRATEGY:
 {$conversionStrategy}
 
-Requirements:
-- 1200-1800 words of exceptional quality
-- Start with a compelling hook that highlights reader's pain point
-- Include an engaging introduction that promises transformation
-- Use clear headings and subheadings (use ## for h2, ### for h3)
-- Provide actionable insights and practical examples
-- Use psychological triggers (FOMO, authority, social proof, urgency)
-- Include specific numbers, statistics, or case studies
-- Create curiosity gaps that make readers want to learn more
-- End with a strong conclusion that emphasizes the value of deep expertise
-- Use markdown formatting
-- Professional yet engaging tone
+🎯 ENGAGEMENT PRINCIPLES (CRITICAL):
 
-CONTENT STRUCTURE:
-1. Hook (pain point or opportunity)
-2. Promise (what they'll learn)
-3. Context (why this matters now)
-4. Main content (valuable insights)
-5. Advanced section (deeper techniques - hint at premium depth)
-6. Conclusion (emphasize value of expertise, subtle CTA for premium access)
+1. **START WITH A STORY OR REAL SCENARIO**
+   - Open with a relatable developer problem or real-world scenario
+   - Use \"You\" language to connect personally
+   - Example: \"You've just deployed your app. 2 AM. Your phone buzzes. The database is on fire...\"
+
+2. **BE EXTREMELY PRACTICAL**
+   - Every section must have actionable takeaways
+   - Include real code examples (working, copy-pasteable code)
+   - Add \"Quick Win\" boxes with immediate actions
+   - Include \"⚡ Quick Win:\", \"💡 Pro Tip:\", \"⚠️ Common Mistake:\" callouts
+
+3. **USE STORYTELLING**
+   - Share real scenarios, case studies, or experiences
+   - Include before/after comparisons with metrics
+   - Add relatable developer pain points
+   - Example: \"When Airbnb faced this, they reduced load time by 43%\"
+
+4. **MAKE IT SCANNABLE**
+   - Use short paragraphs (2-4 sentences max)
+   - Add bullet points and numbered lists frequently
+   - Include visual breaks with emojis for key points (sparingly)
+   - Clear, benefit-driven subheadings
+
+5. **PROVIDE REAL VALUE**
+   - Code snippets that actually work
+   - Specific numbers, metrics, benchmarks
+   - Links to tools, libraries, documentation
+   - Step-by-step walkthroughs
+   - Comparison tables when relevant
+
+6. **BE CONVERSATIONAL**
+   - Write like talking to a friend over coffee
+   - Use contractions (you'll, don't, can't)
+   - Ask rhetorical questions
+   - Share opinions and recommendations
+   - Inject personality (but stay professional)
+
+CONTENT STRUCTURE (1500-2000 words):
+
+## Opening Hook (100-150 words)
+- Start with a relatable scenario or shocking stat
+- Identify the pain point or opportunity
+- Promise specific, tangible outcomes
+- Make it personal and engaging
+
+## Why This Matters (150-200 words)
+- Current state of the problem
+- Why NOW is the right time
+- What you'll learn (specific benefits)
+- Who this is for
+
+## The Problem/Context (200-300 words)
+- Deep dive into the challenge
+- Real-world examples or case studies
+- Show the impact (costs, time, mistakes)
+- Build urgency and relevance
+
+## The Solution (800-1000 words) - MAIN CONTENT
+Break into 3-5 clear sections with:
+- Specific techniques/approaches
+- **Working code examples** (properly formatted)
+- Step-by-step implementations
+- Real metrics and results
+- Comparisons and trade-offs
+- **Quick Win boxes** for immediate value
+
+Example structure:
+### Solution Part 1: [Specific Technique]
+[Explanation]
+```language
+// Working code example
+```
+💡 **Pro Tip:** [Insider insight]
+
+⚡ **Quick Win:** [Immediate action they can take]
+
+## Advanced Tips (200-300 words)
+- Pro-level optimizations
+- Edge cases and gotchas
+- Performance considerations
+- Common mistakes to avoid
+{$isPremium ? '- Hint at deeper premium content' : ''}
+
+## Conclusion (100-150 words)
+- Recap key takeaways (3-5 bullets)
+- Next steps or action items
+- Inspirational close
+{$isPremium ? '- Subtle mention of deeper expertise available' : ''}
+
+FORMATTING RULES:
+- Use ## for main headings, ### for subheadings
+- Add code blocks with language specification: ```javascript, ```python, etc.
+- Use **bold** for key terms, *italics* for emphasis
+- Add > blockquotes for important notes
+- Use tables for comparisons
+- Keep paragraphs short and punchy
+
+TONE:
+- Conversational but authoritative
+- Helpful and supportive
+- Excited about the tech
+- Honest about trade-offs
+- Like a senior developer mentoring a peer
 
 Also provide:
-- A compelling 150-200 character excerpt that creates curiosity
-- Meta title (60 characters max) - benefit-driven
-- Meta description (155 characters max) - value proposition
-- 5-7 high-intent keywords
-- 3-5 tags
+- **Excerpt**: Curiosity-driven, specific benefit (150-200 chars)
+- **Meta title**: Includes numbers/benefit (60 chars max)
+- **Meta description**: Specific value prop with outcome (155 chars max)
+- **Keywords**: 5-7 high-intent, searchable terms
+- **Tags**: 3-5 relevant topic tags
 
-Return response in this JSON format:
+Return ONLY this JSON (ensure proper escaping):
 {
-  \"title\": \"Benefit-driven title with numbers or power words\",
-  \"content\": \"Full markdown content with conversion strategy\",
-  \"excerpt\": \"Curiosity-driven excerpt\",
-  \"meta_title\": \"SEO title with benefit\",
-  \"meta_description\": \"Value proposition description\",
-  \"keywords\": [\"keyword1\", \"keyword2\"],
-  \"tags\": [\"tag1\", \"tag2\"]
+  \"title\": \"[Compelling title with numbers/specifics]\",
+  \"content\": \"[Full markdown content with stories, code, tips]\",
+  \"excerpt\": \"[Specific benefit that creates curiosity]\",
+  \"meta_title\": \"[SEO title with benefit]\",
+  \"meta_description\": \"[Value proposition with outcome]\",
+  \"keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],
+  \"tags\": [\"tag1\", \"tag2\", \"tag3\"]
 }";
 
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are an expert tech blogger who writes engaging, informative articles about technology, programming, and web development. You MUST return valid JSON with properly escaped strings.'
+                'content' => 'You are a senior software engineer and tech blogger known for writing EXCEPTIONALLY engaging, practical, and useful content. Your articles are filled with real stories, working code examples, and actionable insights. Developers love your content because it\'s conversational yet authoritative, packed with quick wins, and always delivers real value. You write like a mentor sharing battle-tested knowledge over coffee. You MUST return valid JSON with properly escaped strings.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 3000, 0.7, true); // Enable JSON mode
+        ], 4000, 0.8, true); // Enable JSON mode, higher tokens and temperature for engaging content
 
         // Parse JSON response - try multiple approaches
         $postData = $this->parseAIResponse($response);
