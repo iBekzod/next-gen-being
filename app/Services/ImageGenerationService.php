@@ -11,6 +11,7 @@ class ImageGenerationService
 {
     private ?string $stabilityApiKey;
     private ?string $unsplashApiKey;
+    private static array $usedImageIds = [];
 
     public function __construct()
     {
@@ -118,8 +119,8 @@ class ImageGenerationService
         // Extract keywords from topic
         $keywords = $this->extractKeywords($topic);
 
-        // Fetch multiple results and pick a random one to add variety
-        $perPage = rand(5, 15);
+        // Fetch multiple results to have options
+        $perPage = 30; // Get more results to filter from
 
         $response = Http::timeout(30)
             ->withHeaders([
@@ -143,9 +144,31 @@ class ImageGenerationService
             return $this->fetchFromUnsplash('technology abstract');
         }
 
-        // Pick a random photo from results to add variety
-        $randomIndex = rand(0, count($result['results']) - 1);
-        $photo = $result['results'][$randomIndex];
+        // Filter out already used images
+        $availablePhotos = array_filter($result['results'], function($photo) {
+            return !in_array($photo['id'], self::$usedImageIds);
+        });
+
+        // If all photos have been used, try a broader search or reset the used images for this session
+        if (empty($availablePhotos)) {
+            Log::info('All Unsplash images for query used, trying broader search', ['query' => $keywords]);
+            // Try with a more generic query
+            if ($keywords !== 'technology abstract digital') {
+                return $this->fetchFromUnsplash('technology abstract digital');
+            }
+            // If still no luck, reset used images for this batch
+            self::$usedImageIds = [];
+            $availablePhotos = $result['results'];
+        }
+
+        // Pick a random photo from available results
+        $availablePhotos = array_values($availablePhotos); // Re-index array
+        $randomIndex = rand(0, count($availablePhotos) - 1);
+        $photo = $availablePhotos[$randomIndex];
+
+        // Mark this image as used
+        self::$usedImageIds[] = $photo['id'];
+
         $imageUrl = $photo['urls']['regular'];
 
         // Download and store image
@@ -164,6 +187,7 @@ class ImageGenerationService
         return [
             'url' => asset('storage/' . $filename),
             'attribution' => [
+                'photo_id' => $photo['id'], // Store photo ID to track usage
                 'photographer_name' => $photo['user']['name'],
                 'photographer_username' => $photo['user']['username'],
                 'photographer_url' => $photo['user']['links']['html'],
@@ -257,5 +281,40 @@ class ImageGenerationService
         }
 
         return 'None';
+    }
+
+    /**
+     * Reset the used images tracking (call at start of batch generation)
+     */
+    public static function resetUsedImages(): void
+    {
+        self::$usedImageIds = [];
+    }
+
+    /**
+     * Load recently used Unsplash image IDs from database to avoid reusing them
+     */
+    public function loadRecentlyUsedImages(int $days = 30): void
+    {
+        try {
+            $recentPosts = \App\Models\Post::where('created_at', '>=', now()->subDays($days))
+                ->whereNotNull('featured_image')
+                ->get();
+
+            foreach ($recentPosts as $post) {
+                // Extract Unsplash photo ID from attribution if available
+                if (isset($post->image_attribution['source']) &&
+                    $post->image_attribution['source'] === 'unsplash' &&
+                    isset($post->image_attribution['photo_id'])) {
+                    self::$usedImageIds[] = $post->image_attribution['photo_id'];
+                }
+            }
+
+            if (count(self::$usedImageIds) > 0) {
+                Log::info('Loaded recently used Unsplash images', ['count' => count(self::$usedImageIds)]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to load recently used images', ['error' => $e->getMessage()]);
+        }
     }
 }

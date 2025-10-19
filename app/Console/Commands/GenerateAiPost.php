@@ -59,6 +59,11 @@ class GenerateAiPost extends Command
         $this->info("🤖 Starting AI post generation... (generating {$count} post(s))");
         $this->newLine();
 
+        // Reset and load recently used images to prevent duplicates
+        ImageGenerationService::resetUsedImages();
+        $imageService = app(ImageGenerationService::class);
+        $imageService->loadRecentlyUsedImages(30); // Check last 30 days
+
         $generatedPosts = [];
         $failedCount = 0;
 
@@ -193,36 +198,156 @@ class GenerateAiPost extends Command
             ->pluck('title')
             ->toArray();
 
-        // Generate topic ideas using AI
-        $prompt = "Generate a trending tech blog post topic. Recent topics to avoid: " .
-                  implode(', ', array_slice($recentTopics, 0, 10)) . ". " .
-                  "Return only a JSON object with: {\"title\": \"topic title\", \"category\": \"suggested category\"}";
+        $currentYear = now()->year;
+        $currentMonth = now()->format('F');
 
-        $response = $this->callOpenAI([
-            [
-                'role' => 'system',
-                'content' => 'You are a tech blog content strategist. Generate trending, engaging topics about technology, programming, AI, web development, or related fields.'
+        // Create comprehensive trending topics prompt with current context
+        $trendingCategories = [
+            'AI & Machine Learning' => [
+                'Large Language Models (LLMs) like GPT, Claude, Gemini',
+                'AI Agents and Autonomous Systems',
+                'Generative AI for images, video, and code',
+                'AI Ethics and Safety',
+                'Fine-tuning and Prompt Engineering',
+                'RAG (Retrieval Augmented Generation)',
+                'AI in Production and MLOps',
             ],
-            [
-                'role' => 'user',
-                'content' => $prompt
-            ]
-        ], 150, 0.8);
+            'Web Development' => [
+                'React Server Components and Next.js 14+',
+                'TypeScript best practices',
+                'Modern CSS (Container Queries, CSS Grid, Tailwind)',
+                'Web Performance Optimization',
+                'Progressive Web Apps (PWA)',
+                'WebAssembly and Edge Computing',
+                'Jamstack and Static Site Generators',
+            ],
+            'DevOps & Cloud' => [
+                'Kubernetes and Container Orchestration',
+                'Infrastructure as Code (Terraform, Pulumi)',
+                'CI/CD Pipelines and GitHub Actions',
+                'Serverless Architecture',
+                'Microservices vs Monoliths',
+                'Cloud Security Best Practices',
+                'Docker and Containerization',
+            ],
+            'Programming Languages' => [
+                'Rust for Systems Programming',
+                'Go for Backend Development',
+                'Python for Data Science and AI',
+                'Modern JavaScript/TypeScript features',
+                'Functional Programming paradigms',
+                'WebAssembly and WASI',
+            ],
+            'Software Architecture' => [
+                'Domain-Driven Design (DDD)',
+                'Event-Driven Architecture',
+                'CQRS and Event Sourcing',
+                'Clean Architecture patterns',
+                'API Design and GraphQL',
+                'System Design at Scale',
+            ],
+            'Mobile Development' => [
+                'React Native and Cross-platform development',
+                'Flutter best practices',
+                'Mobile App Performance',
+                'Native vs Hybrid approaches',
+            ],
+            'Data & Analytics' => [
+                'Real-time Data Pipelines',
+                'Data Warehousing strategies',
+                'Stream Processing (Kafka, Flink)',
+                'Data Visualization best practices',
+            ],
+            'Security' => [
+                'Zero Trust Architecture',
+                'API Security and OAuth 2.0',
+                'Secure Coding Practices',
+                'Vulnerability Management',
+                'Privacy-First Development',
+            ],
+            'Emerging Tech' => [
+                'WebGPU and Graphics Programming',
+                'Edge Computing and IoT',
+                'Blockchain and Web3 developments',
+                'Quantum Computing basics',
+            ],
+        ];
 
-        // Parse response
-        preg_match('/\{.*\}/s', $response, $matches);
-        if (!empty($matches)) {
-            $topic = json_decode($matches[0], true);
-            if ($topic && isset($topic['title'])) {
+        // Pick random category for variety
+        $categoryKeys = array_keys($trendingCategories);
+        $randomCategory = $categoryKeys[array_rand($categoryKeys)];
+        $categoryTopics = $trendingCategories[$randomCategory];
+
+        $recentTopicsList = !empty($recentTopics)
+            ? "Topics to AVOID (already covered): " . implode(', ', array_slice($recentTopics, 0, 15))
+            : "No recent topics to avoid.";
+
+        $prompt = "You are a tech blog content strategist tracking current trends in {$currentMonth} {$currentYear}.
+
+Generate ONE highly specific, trending blog post topic from the category: {$randomCategory}
+
+Trending areas in this category:
+" . implode("\n", array_map(fn($t) => "- $t", $categoryTopics)) . "
+
+{$recentTopicsList}
+
+Requirements:
+1. Topic must be CURRENT and TRENDING in {$currentYear}
+2. Be SPECIFIC - include version numbers, specific technologies, or frameworks
+3. Focus on practical, actionable content developers want NOW
+4. Use engaging titles with numbers, power words, or specific outcomes
+5. Avoid generic or evergreen topics
+6. Make it newsworthy or address current pain points
+
+Examples of GOOD titles:
+- \"Building Production-Ready RAG Applications with LangChain and Pinecone in 2024\"
+- \"Next.js 14 Server Actions: Complete Guide to Type-Safe Server Mutations\"
+- \"Migrating 100K Users from REST to GraphQL: Lessons Learned\"
+- \"Rust vs Go for Microservices: Performance Benchmarks and Real-World Trade-offs\"
+
+Return ONLY a JSON object:
+{
+  \"title\": \"Specific, trending, actionable title with technology/version\",
+  \"category\": \"{$randomCategory}\"
+}";
+
+        try {
+            $response = $this->callOpenAI([
+                [
+                    'role' => 'system',
+                    'content' => 'You are an expert tech content strategist who identifies trending, high-value topics that developers are actively searching for. You stay current with latest tech trends and focus on practical, specific content.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $prompt
+                ]
+            ], 200, 0.9, true); // Higher temperature for creativity, JSON mode
+
+            // Parse response
+            $topic = json_decode($response, true);
+            if (!$topic && preg_match('/\{.*\}/s', $response, $matches)) {
+                $topic = json_decode($matches[0], true);
+            }
+
+            if ($topic && isset($topic['title']) && isset($topic['category'])) {
                 return $topic;
             }
+        } catch (\Exception $e) {
+            Log::warning('Trending topic generation failed, using fallback', [
+                'error' => $e->getMessage()
+            ]);
         }
 
-        // Fallback topic
-        return [
-            'title' => 'The Evolution of Modern Web Development',
-            'category' => 'Web Development'
+        // Improved fallback topics with variety
+        $fallbackTopics = [
+            ['title' => 'Building Scalable Microservices with Kubernetes in 2024', 'category' => 'DevOps & Cloud'],
+            ['title' => 'Modern React Patterns: Server Components and Suspense Deep Dive', 'category' => 'Web Development'],
+            ['title' => 'Production-Ready LLM Applications: From Prototype to Scale', 'category' => 'AI & Machine Learning'],
+            ['title' => 'TypeScript 5.0: Advanced Type Patterns for Better Code Safety', 'category' => 'Programming Languages'],
+            ['title' => 'API Security in 2024: OAuth 2.1 and Beyond', 'category' => 'Security'],
         ];
+
+        return $fallbackTopics[array_rand($fallbackTopics)];
     }
 
     private function generatePostContent(array $topic): array
