@@ -105,6 +105,41 @@ class PostResource extends Resource
                             ]),
                     ]),
 
+                Forms\Components\Section::make('Tutorial Series')
+                    ->description('Configure if this post is part of a tutorial series')
+                    ->schema([
+                        Forms\Components\TextInput::make('series_title')
+                            ->label('Series Title')
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('series_slug', Str::slug($state)))
+                            ->helperText('Leave empty if this is not part of a series'),
+                        Forms\Components\TextInput::make('series_slug')
+                            ->label('Series Slug')
+                            ->maxLength(255)
+                            ->helperText('Auto-generated from series title'),
+                        Forms\Components\Textarea::make('series_description')
+                            ->label('Series Description')
+                            ->rows(2)
+                            ->maxLength(500)
+                            ->helperText('Brief description of what the series covers'),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('series_part')
+                                    ->label('Part Number')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->helperText('e.g., 1 for Part 1'),
+                                Forms\Components\TextInput::make('series_total_parts')
+                                    ->label('Total Parts')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->helperText('Total number of parts in series'),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+
                 Forms\Components\Section::make('Publishing')
                     ->schema([
                         Forms\Components\Grid::make(3)
@@ -183,6 +218,13 @@ class PostResource extends Resource
                 Tables\Columns\IconColumn::make('is_premium')
                     ->boolean()
                     ->label('Premium'),
+                Tables\Columns\TextColumn::make('series_title')
+                    ->label('Series')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(30)
+                    ->placeholder('-')
+                    ->tooltip(fn ($record) => $record->series_title ? "Part {$record->series_part}/{$record->series_total_parts}" : null),
                 Tables\Columns\TextColumn::make('views_count')
                     ->numeric()
                     ->sortable()
@@ -212,6 +254,16 @@ class PostResource extends Resource
                     ->preload(),
                 Tables\Filters\TernaryFilter::make('is_featured'),
                 Tables\Filters\TernaryFilter::make('is_premium'),
+                Tables\Filters\Filter::make('is_series')
+                    ->label('Tutorial Series')
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('series_slug'))
+                    ->toggle(),
+                Tables\Filters\SelectFilter::make('series_slug')
+                    ->label('Specific Series')
+                    ->options(fn () => Post::whereNotNull('series_slug')
+                        ->pluck('series_title', 'series_slug')
+                        ->unique()
+                        ->sort()),
                 Tables\Filters\Filter::make('published_at')
                     ->form([
                         Forms\Components\DatePicker::make('published_from'),

@@ -192,6 +192,10 @@
                                 class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
                                 Articles
                             </a>
+                            <a href="{{ route('tutorials.index') }}"
+                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                                Tutorials
+                            </a>
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open"
                                     class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
@@ -367,6 +371,8 @@
                 <div class="pt-2 pb-3 space-y-1">
                     <a href="{{ route('posts.index') }}"
                         class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Articles</a>
+                    <a href="{{ route('tutorials.index') }}"
+                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Tutorials</a>
                     @foreach ($navCategories->take(5) as $category)
                         <a href="{{ route('categories.show', $category->slug) }}"
                             class="block py-2 pl-6 pr-4 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">{{ $category->name }}</a>
@@ -479,7 +485,10 @@
                             <li><a href="{{ route('posts.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">All
                                     Articles</a></li>
-                            @foreach ($navCategories->take(4) as $category)
+                            <li><a href="{{ route('tutorials.index') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Tutorial
+                                    Series</a></li>
+                            @foreach ($navCategories->take(3) as $category)
                                 <li><a href="{{ route('categories.show', $category->slug) }}"
                                         class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">{{ $category->name }}</a>
                                 </li>

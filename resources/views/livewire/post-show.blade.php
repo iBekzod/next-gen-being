@@ -114,6 +114,9 @@
     </div>
     @endif
 
+    <!-- Audio Player -->
+    <x-post.audio-player :post="$post" />
+
     <!-- Content -->
     <div class="mb-12 prose prose-lg max-w-none dark:prose-invert">
         @if($post->shouldShowPaywall(auth()->user()))

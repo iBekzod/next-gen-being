@@ -159,4 +159,64 @@ class PostController extends Controller
         return redirect()->route('posts.index')
             ->with('success', 'Post deleted successfully!');
     }
+
+    public function tutorials()
+    {
+        // Get all unique series
+        $series = Post::published()
+            ->whereNotNull('series_slug')
+            ->select('series_slug', 'series_title', 'series_description', 'series_total_parts')
+            ->selectRaw('MIN(series_part) as first_part')
+            ->selectRaw('MAX(published_at) as last_updated')
+            ->selectRaw('COUNT(*) as published_parts')
+            ->with(['category'])
+            ->groupBy('series_slug', 'series_title', 'series_description', 'series_total_parts')
+            ->orderByDesc('last_updated')
+            ->get();
+
+        // For each series, get the first post for the image and category
+        $series = $series->map(function ($item) {
+            $firstPost = Post::published()
+                ->where('series_slug', $item->series_slug)
+                ->where('series_part', $item->first_part)
+                ->with(['category', 'author'])
+                ->first();
+
+            return [
+                'slug' => $item->series_slug,
+                'title' => $item->series_title,
+                'description' => $item->series_description,
+                'total_parts' => $item->series_total_parts,
+                'published_parts' => $item->published_parts,
+                'last_updated' => $item->last_updated,
+                'featured_image' => $firstPost->featured_image ?? null,
+                'category' => $firstPost->category ?? null,
+                'author' => $firstPost->author ?? null,
+                'is_complete' => $item->published_parts == $item->series_total_parts,
+            ];
+        });
+
+        return view('tutorials.index', compact('series'));
+    }
+
+    public function series($seriesSlug)
+    {
+        $posts = Post::published()
+            ->inSeries($seriesSlug)
+            ->with(['author', 'category', 'tags'])
+            ->get();
+
+        if ($posts->isEmpty()) {
+            abort(404, 'Series not found');
+        }
+
+        $seriesInfo = [
+            'title' => $posts->first()->series_title,
+            'description' => $posts->first()->series_description,
+            'total_parts' => $posts->first()->series_total_parts,
+            'slug' => $seriesSlug,
+        ];
+
+        return view('tutorials.series', compact('posts', 'seriesInfo'));
+    }
 }

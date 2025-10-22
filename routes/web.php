@@ -18,6 +18,8 @@ Route::get('/health', HealthCheckController::class)->name('health.check');
 // Public routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/tutorials', [PostController::class, 'tutorials'])->name('tutorials.index');
+Route::get('/series/{seriesSlug}', [PostController::class, 'series'])->name('series.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/categories/{category:slug}', [PostController::class, 'index'])->name('categories.show');
 Route::get('/tags/{tag:slug}', [PostController::class, 'index'])->name('tags.show');
