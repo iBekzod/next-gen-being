@@ -19,6 +19,7 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
     <script>
+        // Pre-load dark mode to prevent flash
         (function() {
             const stored = localStorage.getItem("theme") ?? localStorage.getItem("darkMode");
             const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -26,6 +27,51 @@
                 document.documentElement.classList.add("dark");
             }
         })();
+
+        // Define Alpine.js data functions before Alpine loads
+        window.themeSwitcher = function() {
+            return {
+                darkMode: false,
+                init() {
+                    const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
+                    if (stored) {
+                        this.darkMode = stored === 'dark' || stored === 'true';
+                    } else {
+                        this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    }
+
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+
+                    this.$watch('darkMode', (value) => {
+                        document.documentElement.classList.toggle('dark', value);
+                        localStorage.setItem('theme', value ? 'dark' : 'light');
+                        localStorage.removeItem('darkMode');
+
+                        if (window.Alpine?.store('app')) {
+                            window.Alpine.store('app').darkMode = value;
+                        }
+                    });
+                },
+                toggle() {
+                    this.darkMode = !this.darkMode;
+                }
+            }
+        };
+
+        window.searchModal = function() {
+            return {
+                isOpen: false,
+                open() {
+                    this.isOpen = true;
+                    this.$nextTick(() => {
+                        this.$refs.searchField?.focus();
+                    });
+                },
+                close() {
+                    this.isOpen = false;
+                }
+            }
+        };
     </script>
     <!-- Scripts -->
     <style>
@@ -601,48 +647,7 @@
                 }, 5000);
             }
 
-            function themeSwitcher() {
-                return {
-                    darkMode: window.Alpine?.store('app')?.darkMode ?? false,
-                    init() {
-                        const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
-                        if (stored) {
-                            this.darkMode = stored === 'dark' || stored === 'true';
-                        } else {
-                            this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                        }
-
-                        document.documentElement.classList.toggle('dark', this.darkMode);
-
-                        this.$watch('darkMode', (value) => {
-                            document.documentElement.classList.toggle('dark', value);
-                            localStorage.setItem('theme', value ? 'dark' : 'light');
-                            localStorage.removeItem('darkMode');
-
-                            if (window.Alpine?.store('app')) {
-                                window.Alpine.store('app').darkMode = value;
-                            }
-                        });
-                    },
-                    toggle() {
-                        this.darkMode = !this.darkMode;
-                    }
-                }
-            }
-            function searchModal() {
-                return {
-                    isOpen: false,
-                    open() {
-                        this.isOpen = true;
-                        this.$nextTick(() => {
-                            this.$refs.searchField?.focus();
-                        });
-                    },
-                    close() {
-                        this.isOpen = false;
-                    }
-                }
-            }
+            // Theme switcher and search modal functions are now defined in the <head> section
 
             window.addEventListener('unhandledrejection', (event) => {
                 if (event.reason?.isFromCancelledTransition) {
