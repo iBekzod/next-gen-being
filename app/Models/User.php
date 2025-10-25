@@ -125,7 +125,34 @@ class User extends Authenticatable implements HasMedia, FilamentUser
      */
     public function lemonSqueezyStore(): string
     {
-        return config('services.lemonsqueezy.store_id');
+        return config('lemon-squeezy.store');
+    }
+
+    /**
+     * Get the user's subscription tier (basic, pro, team)
+     */
+    public function getSubscriptionTier(): ?string
+    {
+        if (!$this->subscribed()) {
+            return null;
+        }
+
+        $subscription = $this->subscription();
+        if (!$subscription) {
+            return null;
+        }
+
+        // Map variant IDs to tier names
+        $variantTiers = [
+            config('services.lemonsqueezy.basic_variant_id') => 'basic',
+            config('services.lemonsqueezy.pro_variant_id') => 'pro',
+            config('services.lemonsqueezy.team_variant_id') => 'team',
+        ];
+
+        // Get the variant ID from the subscription
+        $variantId = $subscription->variant_id ?? $subscription->lemon_squeezy_variant_id;
+
+        return $variantTiers[$variantId] ?? 'basic';
     }
 
     // Follow/Follower relationships
