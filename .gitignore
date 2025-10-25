@@ -27,3 +27,9 @@ Thumbs.db
 yarn-error.log
 ngb-db-data
 supervisord.pid
+
+# Credential files
+*_CREDENTIALS.md
+*_SECRETS.md
+credentials.json
+secrets.json

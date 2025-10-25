@@ -36,11 +36,11 @@ Add/update these lines:
 MAIL_MAILER=smtp
 MAIL_HOST=email-smtp.us-east-1.amazonaws.com  # Change region if needed
 MAIL_PORT=587
-MAIL_USERNAME=AKIAYLO3YEF5OJBYHG43
-MAIL_PASSWORD=BPGojHRPzjBgWdRkGHLSPJQh47PhdYAFgNLkEn7Qdq0S
+MAIL_USERNAME=YOUR_SMTP_USERNAME_HERE
+MAIL_PASSWORD=YOUR_SMTP_PASSWORD_HERE
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@nextgenbeing.com
-MAIL_FROM_NAME="NextGenBeing"
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+MAIL_FROM_NAME="YourAppName"
 
 # Remove or comment out these if present:
 # AWS_ACCESS_KEY_ID=
@@ -50,8 +50,8 @@ MAIL_FROM_NAME="NextGenBeing"
 
 **Important Notes:**
 - Replace `us-east-1` with your actual SES region
-- Make sure `noreply@nextgenbeing.com` is verified in SES
-- If using a different from address, verify it in SES first
+- Make sure your sender email is verified in SES
+- Get your SMTP credentials from AWS IAM Console
 
 ## Step 3: Clear Configuration Cache
 
@@ -66,7 +66,7 @@ sudo -u www-data php artisan config:cache
 sudo -u www-data php artisan tinker
 
 # In tinker:
-Mail::raw('Test email from NextGenBeing', function($message) {
+Mail::raw('Test email', function($message) {
     $message->to('your-email@example.com')
             ->subject('Test Email');
 });
@@ -90,7 +90,7 @@ If nothing appears when you trigger newsletter sending, you're good!
 1. Go to AWS Console → SES → Verified identities
 2. Click "Create identity"
 3. Choose "Email address"
-4. Enter `noreply@nextgenbeing.com`
+4. Enter your sender email
 5. Check your inbox and click verification link
 
 ### Error: "Connection timed out"
@@ -117,13 +117,12 @@ If nothing appears when you trigger newsletter sending, you're good!
 - [ ] Test email sent successfully
 - [ ] No errors in logs
 
-## Your Current Credentials
+## How to Get Your SMTP Credentials
 
-```
-IAM User: ses-smtp-user.nextgenbeing
-SMTP Username: AKIAYLO3YEF5OJBYHG43
-SMTP Password: BPGojHRPzjBgWdRkGHLSPJQh47PhdYAFgNLkEn7Qdq0S
-```
+1. Log into AWS Console
+2. Go to IAM → Users → Your SES user
+3. Security credentials tab
+4. Create SMTP credentials button
+5. Save the username and password
 
-**Security Note:** These credentials are already committed to this file.
-Consider rotating them after setup for security.
+**Security Note:** Never commit credentials to git. Keep them in `.env` files only.
