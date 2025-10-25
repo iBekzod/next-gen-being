@@ -438,7 +438,7 @@ Return ONLY a JSON object:
         $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
         $conclusionExtra = $isPremium ? '- Subtle mention of deeper expertise available' : '';
 
-        $prompt = "Write a comprehensive, professional, and highly educational blog post about: {$topic['title']}
+        $prompt = "Write a comprehensive, professional blog post about: {$topic['title']}
 
 CONTENT STRATEGY:
 {$conversionStrategy}
@@ -450,8 +450,27 @@ CONTENT STRATEGY:
 4. Be EDUCATIONAL first, promotional never
 5. Provide REAL working code examples with explanations
 6. Cite actual tools, versions, and documentation
+7. VARY YOUR WRITING STYLE - Don't use the same structure as other articles
+8. Write like a REAL HUMAN developer sharing knowledge, not a template-following robot
 
-🎯 ENGAGEMENT PRINCIPLES (CRITICAL):
+🎯 WRITING STYLE VARIATION (CRITICAL - Pick ONE randomly):
+
+Style 1 - Story/Experience Based:
+\"I ran into this problem last week on our production app...\" Share real experiences, what failed, what worked, lessons learned. Natural flow without rigid structure.
+
+Style 2 - Direct Technical Deep Dive:
+Skip the fluff. Jump right into the technical details. Code-heavy. Explain WHY things work. Debug tips. Short intro, no formal conclusion.
+
+Style 3 - Step-by-Step Tutorial:
+\"Let's build X together.\" Conversational guide. Show outputs. Explain errors. Feel like pair programming with a friend.
+
+Style 4 - Comparative/Analysis:
+\"I tested 3 approaches...\" Compare options. Real benchmarks. When to use each. Honest pros/cons. Make a recommendation.
+
+Style 5 - Opinion/Best Practices:
+\"After 5 years with this tech...\" Strong opinions. What docs don't say. Mistakes to avoid. Your workflow. Opinionated but fair.
+
+🎯 NATURAL WRITING PRINCIPLES:
 
 1. **START WITH A STORY OR REAL SCENARIO**
    - Open with a relatable developer problem or real-world scenario
@@ -490,79 +509,90 @@ CONTENT STRATEGY:
    - Share opinions and recommendations
    - Inject personality (but stay professional)
 
-CONTENT STRUCTURE (2000-3000 words for comprehensive, in-depth coverage):
+FLEXIBLE STRUCTURE (2000-3000 words - adapt based on chosen style):
 
-## Opening Hook (150-200 words)
-- Start with a relatable scenario or real-world context (NO shocking stats unless verified)
-- Identify the pain point or opportunity clearly
-- Promise specific, realistic, achievable learning outcomes
-- Make it personal and engaging without hype
+⚠️ DO NOT use same headings every time. Be natural and varied.
 
-## Why This Matters (200-250 words)
-- Current state of the problem in the industry
-- Why this topic is relevant NOW (with context)
-- What you'll learn (specific, achievable benefits)
-- Who this is for and what prerequisites exist
-- Set realistic expectations
+SAMPLE NATURAL INTRO (vary based on style):
+- Story style: \"Last month, our team ran into...\"
+- Technical: \"Here's how X actually works under the hood...\"
+- Tutorial: \"Today we're building... Here's what you need...\"
+- Comparative: \"I benchmarked 3 solutions...\"
+- Opinion: \"After working with X for 2 years, here's what I learned...\"
 
-## Background/Context (250-350 words)
-- Technical background and relevant history
-- How this technology/approach evolved
-- Current ecosystem, tools, and frameworks
-- Real-world examples with specific contexts
-- Industry adoption level and maturity
+MAIN CONTENT (distribute 1500-2500 words naturally):
+- Use NATURAL headings based on your content, NOT templated ones
+- Examples of good headings:
+  * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
+  * \"How It Works\", \"Implementation\", \"Gotchas and Edge Cases\"
+  * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\"
+  * \"Option A: Using Library X\", \"Option B: Rolling Your Own\"
+  * \"What the Docs Don't Tell You\", \"Common Mistakes\", \"My Workflow\"
 
-## Core Concepts (400-600 words)
-- Fundamental principles explained clearly
-- Key terminology and definitions
-- Architecture overview and design patterns
-- How components fit together
-- Important trade-offs to understand
+AVOID rigid templates like:
+❌ \"Opening Hook\"
+❌ \"Why This Matters\"
+❌ \"Background/Context\"
+❌ \"Core Concepts\"
+❌ \"Conclusion\"
 
-## Practical Implementation (1000-1400 words) - MAIN CONTENT
-Break into 4-6 comprehensive sections with:
-- Detailed step-by-step approach with reasoning
-- **Complete working code examples** (properly formatted with thorough comments)
-- Real configuration examples and setup instructions
-- Realistic metrics and benchmarks (NO exaggeration)
-- Honest comparisons and trade-offs
-- Common pitfalls and how to avoid them
+Instead use natural, content-specific headings
+CONTENT SECTIONS - Choose natural headings:
 
-Example structure:
-### Step 1: [Specific Technique/Setup]
-[Thorough explanation with context and reasoning]
-```language
-// Complete working code example
-// with detailed comments explaining each part
-```
-💡 **Pro Tip:** [Insider insight based on real experience]
+Story Style Example:
+## The Problem We Faced
+## What We Tried First (and why it failed)
+## The Solution That Actually Worked
+## Lessons Learned
 
-⚡ **Quick Win:** [Immediate, actionable step they can take]
+Technical Style Example:
+## How It Works Under the Hood
+## Implementation Details
+[code blocks with explanations]
+## Performance Characteristics
+## Gotchas and Edge Cases
 
-⚠️ **Common Mistake:** [Real pitfall with explanation]
+Tutorial Style Example:
+## What We're Building
+## Setup and Prerequisites
+## Step 1: [First Task]
+## Step 2: [Second Task]
+## Testing and Debugging
+## What's Next
 
-## Advanced Considerations (300-400 words)
-- Production-ready optimizations
-- Scaling considerations and limitations
-- Security implications
-- Edge cases from real experience
-- Performance tuning with measurable results
-- Monitoring and debugging strategies
+CODE EXAMPLES:
+- Include REAL working code with comments
+- Show actual output/results
+- Explain WHY, not just WHAT
+- Common errors and fixes
+- Use callouts sparingly, not in every section
+
+CALLOUTS (use naturally, not everywhere):
+💡 **Worth Knowing:** [Something non-obvious]
+⚠️ **Watch Out:** [Common mistake]
+🔧 **Quick Fix:** [Immediate solution]
+
+ADVANCED TOPICS (optional, based on content):
+- Can be separate section or woven throughout
+- Performance considerations
+- Edge cases
+- Debugging tips
+- When NOT to use this approach
 {$advancedTipsExtra}
 
-## Real-World Application (200-300 words)
-- How companies use this in production
-- Success stories with realistic metrics
-- When to use vs when NOT to use
-- Alternative solutions and trade-offs
-- Cost and resource considerations
+WRAP-UP (200-400 words - optional, vary by style):
+- Story style: \"Here's what we learned\" or \"This solved our problem by...\"
+- Technical: Brief summary or just end after last technical point
+- Tutorial: \"What's next\" or \"Further improvements\"
+- Comparative: \"My recommendation\" or \"When to use each\"
+- Opinion: \"TL;DR\" or personal recommendations
 
-## Conclusion (150-200 words)
-- Recap key takeaways (5-7 clear bullets)
-- Clear, actionable next steps
-- Resources for further learning
-- Honest assessment of difficulty and time
-- Realistic expectations for mastery
+AVOID formal \"Conclusion\" heading. Instead:
+- End naturally based on your content
+- Some posts just end after the last point
+- Others have \"Key Takeaways\" or \"What I'd Do Differently\"
+- Can include next steps, resources, or warnings
+- Don't force a conclusion if the content speaks for itself
 {$conclusionExtra}
 
 FORMATTING RULES:
@@ -1286,79 +1316,90 @@ CONTENT STRATEGY:
    - Share opinions and recommendations
    - Inject personality (but stay professional)
 
-CONTENT STRUCTURE (2000-3000 words for comprehensive, in-depth coverage):
+FLEXIBLE STRUCTURE (2000-3000 words - adapt based on chosen style):
 
-## Opening Hook (150-200 words)
-- Start with a relatable scenario or real-world context (NO shocking stats unless verified)
-- Identify the pain point or opportunity clearly
-- Promise specific, realistic, achievable learning outcomes
-- Make it personal and engaging without hype
+⚠️ DO NOT use same headings every time. Be natural and varied.
 
-## Why This Matters (200-250 words)
-- Current state of the problem in the industry
-- Why this topic is relevant NOW (with context)
-- What you'll learn (specific, achievable benefits)
-- Who this is for and what prerequisites exist
-- Set realistic expectations
+SAMPLE NATURAL INTRO (vary based on style):
+- Story style: \"Last month, our team ran into...\"
+- Technical: \"Here's how X actually works under the hood...\"
+- Tutorial: \"Today we're building... Here's what you need...\"
+- Comparative: \"I benchmarked 3 solutions...\"
+- Opinion: \"After working with X for 2 years, here's what I learned...\"
 
-## Background/Context (250-350 words)
-- Technical background and relevant history
-- How this technology/approach evolved
-- Current ecosystem, tools, and frameworks
-- Real-world examples with specific contexts
-- Industry adoption level and maturity
+MAIN CONTENT (distribute 1500-2500 words naturally):
+- Use NATURAL headings based on your content, NOT templated ones
+- Examples of good headings:
+  * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
+  * \"How It Works\", \"Implementation\", \"Gotchas and Edge Cases\"
+  * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\"
+  * \"Option A: Using Library X\", \"Option B: Rolling Your Own\"
+  * \"What the Docs Don't Tell You\", \"Common Mistakes\", \"My Workflow\"
 
-## Core Concepts (400-600 words)
-- Fundamental principles explained clearly
-- Key terminology and definitions
-- Architecture overview and design patterns
-- How components fit together
-- Important trade-offs to understand
+AVOID rigid templates like:
+❌ \"Opening Hook\"
+❌ \"Why This Matters\"
+❌ \"Background/Context\"
+❌ \"Core Concepts\"
+❌ \"Conclusion\"
 
-## Practical Implementation (1000-1400 words) - MAIN CONTENT
-Break into 4-6 comprehensive sections with:
-- Detailed step-by-step approach with reasoning
-- **Complete working code examples** (properly formatted with thorough comments)
-- Real configuration examples and setup instructions
-- Realistic metrics and benchmarks (NO exaggeration)
-- Honest comparisons and trade-offs
-- Common pitfalls and how to avoid them
+Instead use natural, content-specific headings
+CONTENT SECTIONS - Choose natural headings:
 
-Example structure:
-### Step 1: [Specific Technique/Setup]
-[Thorough explanation with context and reasoning]
-```language
-// Complete working code example
-// with detailed comments explaining each part
-```
-💡 **Pro Tip:** [Insider insight based on real experience]
+Story Style Example:
+## The Problem We Faced
+## What We Tried First (and why it failed)
+## The Solution That Actually Worked
+## Lessons Learned
 
-⚡ **Quick Win:** [Immediate, actionable step they can take]
+Technical Style Example:
+## How It Works Under the Hood
+## Implementation Details
+[code blocks with explanations]
+## Performance Characteristics
+## Gotchas and Edge Cases
 
-⚠️ **Common Mistake:** [Real pitfall with explanation]
+Tutorial Style Example:
+## What We're Building
+## Setup and Prerequisites
+## Step 1: [First Task]
+## Step 2: [Second Task]
+## Testing and Debugging
+## What's Next
 
-## Advanced Considerations (300-400 words)
-- Production-ready optimizations
-- Scaling considerations and limitations
-- Security implications
-- Edge cases from real experience
-- Performance tuning with measurable results
-- Monitoring and debugging strategies
+CODE EXAMPLES:
+- Include REAL working code with comments
+- Show actual output/results
+- Explain WHY, not just WHAT
+- Common errors and fixes
+- Use callouts sparingly, not in every section
+
+CALLOUTS (use naturally, not everywhere):
+💡 **Worth Knowing:** [Something non-obvious]
+⚠️ **Watch Out:** [Common mistake]
+🔧 **Quick Fix:** [Immediate solution]
+
+ADVANCED TOPICS (optional, based on content):
+- Can be separate section or woven throughout
+- Performance considerations
+- Edge cases
+- Debugging tips
+- When NOT to use this approach
 {$advancedTipsExtra}
 
-## Real-World Application (200-300 words)
-- How companies use this in production
-- Success stories with realistic metrics
-- When to use vs when NOT to use
-- Alternative solutions and trade-offs
-- Cost and resource considerations
+WRAP-UP (200-400 words - optional, vary by style):
+- Story style: \"Here's what we learned\" or \"This solved our problem by...\"
+- Technical: Brief summary or just end after last technical point
+- Tutorial: \"What's next\" or \"Further improvements\"
+- Comparative: \"My recommendation\" or \"When to use each\"
+- Opinion: \"TL;DR\" or personal recommendations
 
-## Conclusion (150-200 words)
-- Recap key takeaways (5-7 clear bullets)
-- Clear, actionable next steps
-- Resources for further learning
-- Honest assessment of difficulty and time
-- Realistic expectations for mastery
+AVOID formal \"Conclusion\" heading. Instead:
+- End naturally based on your content
+- Some posts just end after the last point
+- Others have \"Key Takeaways\" or \"What I'd Do Differently\"
+- Can include next steps, resources, or warnings
+- Don't force a conclusion if the content speaks for itself
 {$conclusionExtra}
 
 FORMATTING RULES:
