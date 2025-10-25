@@ -608,9 +608,12 @@ Return ONLY this JSON (ensure proper escaping):
     private function parseAIResponse(string $response): array
     {
         // Try 1: Extract JSON block (between ```json and ``` or just curly braces)
-        if (preg_match('/```json\s*(\{.*?\})\s*```/s', $response, $matches)) {
+        // Use non-greedy matching and handle multiline properly
+        if (preg_match('/```json\s*(\{.+?\})\s*```/s', $response, $matches)) {
             $jsonStr = $matches[1];
-        } elseif (preg_match('/\{.*\}/s', $response, $matches)) {
+        } elseif (preg_match('/```\s*(\{.+?\})\s*```/s', $response, $matches)) {
+            $jsonStr = $matches[1];
+        } elseif (preg_match('/\{.+\}/s', $response, $matches)) {
             $jsonStr = $matches[0];
         } else {
             throw new \Exception('No JSON found in AI response');
@@ -623,17 +626,44 @@ Return ONLY this JSON (ensure proper escaping):
             return $postData;
         }
 
-        // Try 3: If JSON has control character errors, try to fix common issues
-        // Remove BOM and zero-width characters
-        $jsonStr = preg_replace('/[\x00-\x1F\x7F]/u', '', $jsonStr);
+        // Try 3: Fix control character issues
+        // Replace literal \n in strings with actual newlines, then encode properly
+        $jsonStr = str_replace(['\n', '\r', '\t'], ['\\n', '\\r', '\\t'], $jsonStr);
 
         $postData = json_decode($jsonStr, true);
         if (json_last_error() === JSON_ERROR_NONE) {
             return $postData;
         }
 
-        // Try 4: Use JSON_INVALID_UTF8_IGNORE flag
+        // Try 4: More aggressive cleanup - remove control characters but preserve escaped ones
+        $jsonStr = preg_replace('/(?<!\\\\)[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/u', '', $jsonStr);
+
+        $postData = json_decode($jsonStr, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $postData;
+        }
+
+        // Try 5: Use JSON_INVALID_UTF8_IGNORE flag
         $postData = json_decode($jsonStr, true, 512, JSON_INVALID_UTF8_IGNORE);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $postData;
+        }
+
+        // Try 6: Last resort - manually fix common JSON issues in content field
+        // Replace unescaped newlines in content strings
+        $jsonStr = preg_replace_callback(
+            '/"content":\s*"(.*?)"/s',
+            function($matches) {
+                $content = $matches[1];
+                // Escape unescaped newlines
+                $content = preg_replace('/(?<!\\\\)\n/', '\\n', $content);
+                $content = preg_replace('/(?<!\\\\)\r/', '\\r', $content);
+                return '"content": "' . $content . '"';
+            },
+            $jsonStr
+        );
+
+        $postData = json_decode($jsonStr, true);
         if (json_last_error() === JSON_ERROR_NONE) {
             return $postData;
         }
