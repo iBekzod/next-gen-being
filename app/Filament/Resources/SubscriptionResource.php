@@ -27,11 +27,12 @@ class SubscriptionResource extends Resource
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
-                                Forms\Components\Select::make('user_id')
-                                    ->relationship('user', 'name')
+                                Forms\Components\Select::make('billable_id')
+                                    ->relationship('billable', 'name')
                                     ->searchable()
                                     ->preload()
-                                    ->required(),
+                                    ->required()
+                                    ->label('User'),
                                 Forms\Components\TextInput::make('name')
                                     ->required()
                                     ->maxLength(255),
@@ -93,10 +94,12 @@ class SubscriptionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
+                Tables\Columns\TextColumn::make('billable.name')
+                    ->label('User')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.email')
+                Tables\Columns\TextColumn::make('billable.email')
+                    ->label('Email')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -202,7 +205,7 @@ class SubscriptionResource extends Resource
                     ->schema([
                         Infolists\Components\Grid::make(3)
                             ->schema([
-                                Infolists\Components\TextEntry::make('user.name')
+                                Infolists\Components\TextEntry::make('billable.name')
                                     ->label('Customer'),
                                 Infolists\Components\TextEntry::make('name')
                                     ->label('Plan Name'),
