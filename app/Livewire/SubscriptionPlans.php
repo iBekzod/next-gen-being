@@ -83,7 +83,15 @@ class SubscriptionPlans extends Component
                 'email' => Auth::user()->email,
             ]);
 
-            return $checkout;
+            // Get the checkout URL and redirect using Livewire's redirect method
+            $checkoutUrl = $checkout->url();
+
+            if ($checkoutUrl) {
+                return $this->redirect($checkoutUrl, navigate: false);
+            }
+
+            session()->flash('error', 'Unable to create checkout session.');
+            return;
         } catch (\Exception $e) {
             // If API key is not verified yet, show coming soon message
             if (str_contains($e->getMessage(), 'API key') || str_contains($e->getMessage(), 'not configured')) {

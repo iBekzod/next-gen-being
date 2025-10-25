@@ -65,7 +65,14 @@ class SubscriptionController extends Controller
                 'email' => $user->email,
             ]);
 
-            return $checkout;
+            // Get the checkout URL and redirect
+            $checkoutUrl = $checkout->url();
+
+            if ($checkoutUrl) {
+                return redirect()->away($checkoutUrl);
+            }
+
+            return back()->with('error', 'Unable to create checkout session.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create checkout: ' . $e->getMessage());
         }
