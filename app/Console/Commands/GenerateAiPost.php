@@ -242,10 +242,23 @@ class GenerateAiPost extends Command
 
     private function selectTrendingTopic(): array
     {
-        // Get recent topics to avoid duplication
-        $recentTopics = Post::where('created_at', '>=', now()->subDays(30))
-            ->pluck('title')
-            ->toArray();
+        // Get recent topics to avoid duplication - include keywords for better matching
+        $recentPosts = Post::where('created_at', '>=', now()->subDays(30))
+            ->select('title', 'content')
+            ->get();
+
+        $recentTopics = $recentPosts->pluck('title')->toArray();
+
+        // Extract key technologies/keywords from recent posts to avoid repetition
+        $recentKeywords = [];
+        foreach ($recentPosts as $post) {
+            // Extract technology names from title (e.g., "Apache Kafka", "React Native", etc.)
+            preg_match_all('/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/', $post->title, $matches);
+            if (!empty($matches[0])) {
+                $recentKeywords = array_merge($recentKeywords, $matches[0]);
+            }
+        }
+        $recentKeywords = array_unique($recentKeywords);
 
         $currentYear = now()->year;
         $currentMonth = now()->format('F');
@@ -331,6 +344,10 @@ class GenerateAiPost extends Command
             ? "Topics to AVOID (already covered): " . implode(', ', array_slice($recentTopics, 0, 15))
             : "No recent topics to avoid.";
 
+        $recentKeywordsList = !empty($recentKeywords)
+            ? "Technologies RECENTLY USED (pick DIFFERENT technologies): " . implode(', ', array_slice($recentKeywords, 0, 20))
+            : "No recent technology keywords.";
+
         $prompt = "You are a tech blog content strategist tracking current trends in {$currentMonth} {$currentYear}.
 
 Generate ONE highly specific, practical blog post topic from the category: {$randomCategory}
@@ -339,6 +356,10 @@ Trending areas in this category:
 " . implode("\n", array_map(fn($t) => "- $t", $categoryTopics)) . "
 
 {$recentTopicsList}
+
+{$recentKeywordsList}
+
+⚠️ CRITICAL: Choose DIFFERENT technologies/frameworks than those recently used above. Provide variety and avoid repetition!
 
 Requirements:
 1. Topic must be CURRENT and RELEVANT in {$currentYear}

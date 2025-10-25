@@ -178,6 +178,9 @@ class PostShow extends Component
                 'message' => 'Now following ' . $author->name
             ]);
         }
+
+        // Force refresh to update the button state
+        $this->post->refresh();
     }
 
     public function render()
