@@ -677,21 +677,37 @@ Return ONLY this JSON (ensure proper escaping):
 
         // Try 3: Fix the most common issue - literal newlines in JSON strings
         // This handles cases where AI outputs actual newlines instead of \n
-        $jsonStr = preg_replace_callback(
-            '/"(title|content|excerpt|meta_title|meta_description)":\s*"(.+?)(?<!\\\\)"/s',
-            function($matches) {
-                $field = $matches[1];
-                $value = $matches[2];
-                // Escape actual newlines and other control characters
-                $value = addcslashes($value, "\n\r\t\"\\");
-                return '"' . $field . '": "' . $value . '"';
-            },
-            $jsonStr
-        );
+        // We need to manually extract and rebuild to ensure proper encoding
+        $fields = [];
 
-        $postData = json_decode($jsonStr, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $postData;
+        // Extract simple string fields with proper newline handling
+        foreach (['title', 'excerpt', 'meta_title', 'meta_description'] as $field) {
+            if (preg_match('/"' . $field . '":\s*"(.*?)"\s*[,}]/s', $jsonStr, $match)) {
+                // The value already has newlines - keep them as-is for markdown
+                $fields[$field] = $match[1];
+            }
+        }
+
+        // Extract content separately (it's large and has newlines)
+        if (preg_match('/"content":\s*"(.*?)"\s*,\s*"excerpt"/s', $jsonStr, $match)) {
+            $fields['content'] = $match[1];
+        }
+
+        // Extract array fields
+        if (preg_match('/"keywords":\s*\[(.*?)\]/s', $jsonStr, $match)) {
+            preg_match_all('/"([^"]+)"/', $match[1], $keywords);
+            $fields['keywords'] = $keywords[1];
+        }
+
+        if (preg_match('/"tags":\s*\[(.*?)\]/s', $jsonStr, $match)) {
+            preg_match_all('/"([^"]+)"/', $match[1], $tags);
+            $fields['tags'] = $tags[1];
+        }
+
+        // If we successfully extracted all fields, use them
+        $required = ['title', 'content', 'excerpt', 'meta_title', 'meta_description', 'keywords', 'tags'];
+        if (count(array_intersect_key(array_flip($required), $fields)) === count($required)) {
+            return $fields;
         }
 
         // Try 4: More aggressive - escape all control characters in all string values
