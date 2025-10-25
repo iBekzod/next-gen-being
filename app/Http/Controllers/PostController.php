@@ -18,24 +18,25 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        // Check if post can be viewed by current user
-        if (!$post->canBeViewedBy(Auth::user())) {
-            if (!Auth::check()) {
-                return redirect()->route('login')
-                    ->with('message', 'Please log in to access this content.');
-            }
-
-            if ($post->is_premium) {
-                return redirect()->route('subscription.plans')
-                    ->with('message', 'This is premium content. Please subscribe to access.');
-            }
-
-            abort(403);
-        }
-
         $post->loadMissing(['author', 'category', 'tags']);
 
-        return view('posts.show', compact('post'));
+        // Determine if user should see paywall
+        $showPaywall = $post->shouldShowPaywall(Auth::user());
+
+        // Get content based on user access
+        $content = $showPaywall ? $post->getPreviewContent() : $post->content;
+
+        // Track view (only for public or subscribed users)
+        if (!$showPaywall) {
+            $post->increment('views_count');
+        }
+
+        return view('posts.show', [
+            'post' => $post,
+            'content' => $content,
+            'showPaywall' => $showPaywall,
+            'paywallMessage' => $post->getPaywallMessage(),
+        ]);
     }
 
     public function create(Request $request)

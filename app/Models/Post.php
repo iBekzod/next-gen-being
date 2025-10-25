@@ -147,37 +147,6 @@ class Post extends Model implements HasMedia
 
         return round(($this->series_part / $this->series_total_parts) * 100);
     }
-
-    // Premium content helpers
-    public function getPreviewContent(): string
-    {
-        if (!$this->is_premium) {
-            return $this->content;
-        }
-
-        $previewPercentage = $this->preview_percentage ?? 30;
-
-        // Split content by paragraphs (## headings and blank lines)
-        $paragraphs = preg_split('/\n\n+/', trim($this->content));
-        $totalParagraphs = count($paragraphs);
-        $previewCount = max(1, (int) ceil($totalParagraphs * ($previewPercentage / 100)));
-
-        return implode("\n\n", array_slice($paragraphs, 0, $previewCount));
-    }
-
-    public function shouldShowPaywall($user = null): bool
-    {
-        if (!$this->is_premium) {
-            return false;
-        }
-
-        if (!$user) {
-            return true;
-        }
-
-        return !$user->isPremium();
-    }
-
     // Scopes
     public function scopePublished($query)
     {
@@ -254,6 +223,56 @@ class Post extends Model implements HasMedia
         }
 
         return $this->userHasRequiredTier($user);
+    }
+
+    /**
+     * Get the preview content for non-premium users (30% by default)
+     */
+    public function getPreviewContent(): string
+    {
+        if (!$this->is_premium) {
+            return $this->content;
+        }
+
+        $percentage = $this->preview_percentage ?? 30;
+        $content = strip_tags($this->content, '<p><br><h1><h2><h3><h4><h5><h6><strong><em><ul><ol><li><a><blockquote><code><pre>');
+
+        // Calculate character count for preview
+        $totalLength = strlen($content);
+        $previewLength = (int) ($totalLength * ($percentage / 100));
+
+        // Try to break at a sentence or paragraph
+        $preview = substr($content, 0, $previewLength);
+
+        // Find the last sentence ending
+        $lastPeriod = max(
+            strrpos($preview, '.'),
+            strrpos($preview, '!'),
+            strrpos($preview, '?'),
+            strrpos($preview, '</p>')
+        );
+
+        if ($lastPeriod !== false && $lastPeriod > ($previewLength * 0.8)) {
+            $preview = substr($content, 0, $lastPeriod + 1);
+        }
+
+        return $preview;
+    }
+
+    /**
+     * Check if user should see the paywall
+     */
+    public function shouldShowPaywall(?User $user): bool
+    {
+        return $this->is_premium && !$this->canBeViewedBy($user);
+    }
+
+    /**
+     * Get the paywall message
+     */
+    public function getPaywallMessage(): string
+    {
+        return $this->paywall_message ?? 'This is premium content. Subscribe to read the full article and unlock all premium features.';
     }
 
     public function userHasRequiredTier(?User $user): bool
