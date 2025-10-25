@@ -36,9 +36,15 @@
                                 </p>
                             </div>
                             <div class="text-right">
+                                @if(isset($subscription->product) && $subscription->product)
                                 <p class="text-2xl font-bold text-gray-900 dark:text-white">
                                     {{ $subscription->product->price }}
                                 </p>
+                                @elseif($subscription->price ?? null)
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                                    ${{ number_format($subscription->price / 100, 2) }}
+                                </p>
+                                @endif
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
                                     per month
                                 </p>
