@@ -32,24 +32,24 @@ class TestLemonSqueezyConnection extends Command
 
         // Check configuration
         $this->info('📋 Configuration Check:');
-        $apiKey = config('lemonsqueezy.api_key') ?? config('services.lemonsqueezy.api_key');
-        $storeId = config('lemonsqueezy.store_id') ?? config('services.lemonsqueezy.store_id');
-        $testMode = config('lemonsqueezy.test_mode') ?? config('services.lemonsqueezy.test_mode');
+        $apiKey = config('lemon-squeezy.api_key');
+        $storeId = config('lemon-squeezy.store');
+        $testMode = config('services.lemonsqueezy.test_mode', false);
 
         $this->line('  API Key: ' . ($apiKey ? '✅ Set (' . substr($apiKey, 0, 20) . '...)' : '❌ Not set'));
         $this->line('  Store ID: ' . ($storeId ? "✅ {$storeId}" : '❌ Not set'));
         $this->line('  Test Mode: ' . ($testMode ? '✅ Enabled' : '⚠️  Disabled (Production)'));
 
-        $basicVariant = config('lemonsqueezy.variants.basic') ?? config('services.lemonsqueezy.basic_variant_id');
-        $proVariant = config('lemonsqueezy.variants.pro') ?? config('services.lemonsqueezy.pro_variant_id');
-        $teamVariant = config('lemonsqueezy.variants.team') ?? config('services.lemonsqueezy.team_variant_id');
+        $basicVariant = config('services.lemonsqueezy.basic_variant_id');
+        $proVariant = config('services.lemonsqueezy.pro_variant_id');
+        $teamVariant = config('services.lemonsqueezy.team_variant_id');
 
         $this->line('  Basic Variant: ' . ($basicVariant ?: '❌ Not set'));
         $this->line('  Pro Variant: ' . ($proVariant ?: '❌ Not set'));
         $this->line('  Team Variant: ' . ($teamVariant ?: '❌ Not set'));
 
         if (!$apiKey || !$storeId) {
-            $this->error('❌ Configuration incomplete. Please set LEMONSQUEEZY_API_KEY and LEMONSQUEEZY_STORE_ID in .env');
+            $this->error('❌ Configuration incomplete. Please set LEMON_SQUEEZY_API_KEY and LEMON_SQUEEZY_STORE in .env');
             return 1;
         }
 

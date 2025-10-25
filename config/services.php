@@ -35,10 +35,13 @@ return [
         ],
     ],
     'lemonsqueezy' => [
-        'api_key' => env('LEMONSQUEEZY_API_KEY'),
-        'store_id' => env('LEMONSQUEEZY_STORE_ID'),
+        // API credentials (read from official package config)
+        'api_key' => env('LEMON_SQUEEZY_API_KEY'),
+        'store_id' => env('LEMON_SQUEEZY_STORE'),
         'store_domain' => env('LEMONSQUEEZY_STORE_DOMAIN', 'store.nextgenbeing.com'),
-        'signing_secret' => env('LEMONSQUEEZY_SIGNING_SECRET'),
+        'signing_secret' => env('LEMON_SQUEEZY_SIGNING_SECRET'),
+
+        // Product variant IDs (custom for our app)
         'basic_variant_id' => env('LEMONSQUEEZY_BASIC_VARIANT_ID'),
         'pro_variant_id' => env('LEMONSQUEEZY_PRO_VARIANT_ID'),
         'team_variant_id' => env('LEMONSQUEEZY_TEAM_VARIANT_ID'),

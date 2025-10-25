@@ -11,7 +11,7 @@ class LemonSqueezyService
 
     public function __construct()
     {
-        $this->apiKey = config('services.lemonsqueezy.api_key');
+        $this->apiKey = config('lemon-squeezy.api_key');
     }
 
     /**
@@ -26,7 +26,7 @@ class LemonSqueezyService
             ])
             ->get("{$this->baseUrl}/customers", [
                 'filter[email]' => $email,
-                'filter[store_id]' => config('services.lemonsqueezy.store_id'),
+                'filter[store_id]' => config('lemon-squeezy.store'),
             ]);
 
         if ($response->successful()) {
@@ -140,7 +140,7 @@ class LemonSqueezyService
                         'store' => [
                             'data' => [
                                 'type' => 'stores',
-                                'id' => (string) config('services.lemonsqueezy.store_id'),
+                                'id' => (string) config('lemon-squeezy.store'),
                             ],
                         ],
                         'variant' => [
