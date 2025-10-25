@@ -332,7 +332,7 @@
                             </p>
 
                             <p style="font-size: 12px; color: #a0aec0;">
-                                © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+                                &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
                             </p>
 
                             @yield('footer')
