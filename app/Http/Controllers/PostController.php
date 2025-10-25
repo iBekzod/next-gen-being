@@ -189,7 +189,7 @@ class PostController extends Controller
                 'description' => $item->series_description,
                 'total_parts' => $item->series_total_parts,
                 'published_parts' => $item->published_parts,
-                'last_updated' => $item->last_updated,
+                'last_updated' => \Carbon\Carbon::parse($item->last_updated),
                 'featured_image' => $firstPost->featured_image ?? null,
                 'category' => $firstPost->category ?? null,
                 'author' => $firstPost->author ?? null,
