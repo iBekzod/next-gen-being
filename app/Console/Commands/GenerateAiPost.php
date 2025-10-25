@@ -373,13 +373,13 @@ Return ONLY a JSON object:
             $response = $this->callOpenAI([
                 [
                     'role' => 'system',
-                    'content' => 'You are an expert tech content strategist who identifies trending, high-value topics that developers are actively searching for. You stay current with latest tech trends and focus on practical, specific content.'
+                    'content' => 'You are an expert tech content strategist who identifies trending, high-value topics that developers are actively searching for. You stay current with latest tech trends and focus on practical, specific content. Return ONLY valid JSON wrapped in ```json code blocks.'
                 ],
                 [
                     'role' => 'user',
                     'content' => $prompt
                 ]
-            ], 200, 0.9, true); // Higher temperature for creativity, JSON mode
+            ], 200, 0.9, false); // Higher temperature for creativity, no strict JSON mode
 
             // Parse response
             $topic = json_decode($response, true);
@@ -547,10 +547,12 @@ Example structure:
 FORMATTING RULES:
 - Use ## for main headings, ### for subheadings
 - Add code blocks with language specification: ```javascript, ```python, etc.
+- CRITICAL: Keep code examples clear and simple for JSON compatibility
 - Use **bold** for key terms, *italics* for emphasis
 - Add > blockquotes for important notes
 - Use tables for comparisons
 - Keep paragraphs short and punchy
+- When in JSON mode, ensure proper escaping of all special characters
 
 TONE:
 - Professional and educational
@@ -581,13 +583,13 @@ Return ONLY this JSON (ensure proper escaping):
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, professional, and highly practical content. Your articles are educational, honest, and packed with real working code examples and actionable insights. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. You MUST return valid JSON with properly escaped strings.'
+                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, professional, and highly practical content. Your articles are educational, honest, and packed with real working code examples and actionable insights. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 5000, 0.7, true); // Enable JSON mode, higher tokens for comprehensive content, lower temp for professionalism
+        ], 5000, 0.7, false); // Disable strict JSON mode due to Groq limitations with large content
 
         // Parse JSON response - try multiple approaches
         $postData = $this->parseAIResponse($response);
@@ -1015,9 +1017,9 @@ Return ONLY this JSON:
 
         try {
             $response = $this->callOpenAI([
-                ['role' => 'system', 'content' => 'You are an expert technical educator who creates comprehensive, realistic tutorial series. You NEVER use clickbait or exaggerated claims. You focus on practical, professional, educational content. You MUST return valid JSON.'],
+                ['role' => 'system', 'content' => 'You are an expert technical educator who creates comprehensive, realistic tutorial series. You NEVER use clickbait or exaggerated claims. You focus on practical, professional, educational content. You MUST return ONLY valid JSON wrapped in ```json code blocks.'],
                 ['role' => 'user', 'content' => $prompt]
-            ], 1000, 0.7, true); // Lower temperature for more consistent, professional output
+            ], 1000, 0.7, false); // Lower temperature for more consistent, professional output, no strict JSON mode
 
             $outline = json_decode($response, true);
             if (!$outline && preg_match('/\{.*\}/s', $response, $matches)) {
@@ -1141,13 +1143,13 @@ THIS PART FOCUSES ON: {$partInfo['focus']}
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. You NEVER use clickbait or exaggerated performance claims. You write professional, realistic, educational content. You MUST return valid JSON with properly escaped strings.'
+                'content' => 'You are a senior software engineer and technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. You NEVER use clickbait or exaggerated performance claims. You write professional, realistic, educational content. You MUST return ONLY valid JSON wrapped in ```json code blocks with properly escaped strings.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 5000, 0.7, true); // Higher tokens for depth, lower temp for consistency
+        ], 5000, 0.7, false); // Higher tokens for depth, lower temp for consistency, no strict JSON mode
 
         return $this->parseAIResponse($response);
     }
@@ -1284,10 +1286,12 @@ Example structure:
 FORMATTING RULES:
 - Use ## for main headings, ### for subheadings
 - Add code blocks with language specification: ```javascript, ```python, etc.
+- CRITICAL: Keep code examples clear and simple for JSON compatibility
 - Use **bold** for key terms, *italics* for emphasis
 - Add > blockquotes for important notes
 - Use tables for comparisons
 - Keep paragraphs short and punchy
+- When in JSON mode, ensure proper escaping of all special characters
 
 TONE:
 - Professional and educational
