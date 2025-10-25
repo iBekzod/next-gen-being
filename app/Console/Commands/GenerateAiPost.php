@@ -608,10 +608,9 @@ Return ONLY this JSON (ensure proper escaping):
     private function parseAIResponse(string $response): array
     {
         // Try 1: Extract JSON block (between ```json and ``` or just curly braces)
-        // Use non-greedy matching and handle multiline properly
-        if (preg_match('/```json\s*(\{.+?\})\s*```/s', $response, $matches)) {
+        if (preg_match('/```json\s*(\{.+\})\s*```/s', $response, $matches)) {
             $jsonStr = $matches[1];
-        } elseif (preg_match('/```\s*(\{.+?\})\s*```/s', $response, $matches)) {
+        } elseif (preg_match('/```\s*(\{.+\})\s*```/s', $response, $matches)) {
             $jsonStr = $matches[1];
         } elseif (preg_match('/\{.+\}/s', $response, $matches)) {
             $jsonStr = $matches[0];
@@ -619,46 +618,22 @@ Return ONLY this JSON (ensure proper escaping):
             throw new \Exception('No JSON found in AI response');
         }
 
-        // Try 2: Decode with error handling
-        $postData = json_decode($jsonStr, true);
-
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $postData;
-        }
-
-        // Try 3: Fix control character issues
-        // Replace literal \n in strings with actual newlines, then encode properly
-        $jsonStr = str_replace(['\n', '\r', '\t'], ['\\n', '\\r', '\\t'], $jsonStr);
-
+        // Try 2: Direct decode
         $postData = json_decode($jsonStr, true);
         if (json_last_error() === JSON_ERROR_NONE) {
             return $postData;
         }
 
-        // Try 4: More aggressive cleanup - remove control characters but preserve escaped ones
-        $jsonStr = preg_replace('/(?<!\\\\)[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/u', '', $jsonStr);
-
-        $postData = json_decode($jsonStr, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $postData;
-        }
-
-        // Try 5: Use JSON_INVALID_UTF8_IGNORE flag
-        $postData = json_decode($jsonStr, true, 512, JSON_INVALID_UTF8_IGNORE);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $postData;
-        }
-
-        // Try 6: Last resort - manually fix common JSON issues in content field
-        // Replace unescaped newlines in content strings
+        // Try 3: Fix the most common issue - literal newlines in JSON strings
+        // This handles cases where AI outputs actual newlines instead of \n
         $jsonStr = preg_replace_callback(
-            '/"content":\s*"(.*?)"/s',
+            '/"(title|content|excerpt|meta_title|meta_description)":\s*"(.+?)(?<!\\\\)"/s',
             function($matches) {
-                $content = $matches[1];
-                // Escape unescaped newlines
-                $content = preg_replace('/(?<!\\\\)\n/', '\\n', $content);
-                $content = preg_replace('/(?<!\\\\)\r/', '\\r', $content);
-                return '"content": "' . $content . '"';
+                $field = $matches[1];
+                $value = $matches[2];
+                // Escape actual newlines and other control characters
+                $value = addcslashes($value, "\n\r\t\"\\");
+                return '"' . $field . '": "' . $value . '"';
             },
             $jsonStr
         );
@@ -668,9 +643,61 @@ Return ONLY this JSON (ensure proper escaping):
             return $postData;
         }
 
+        // Try 4: More aggressive - escape all control characters in all string values
+        $jsonStr = preg_replace_callback(
+            '/"([^"]+)":\s*"([^"]*(?:\\.[^"]*)*)"/s',
+            function($matches) {
+                $key = $matches[1];
+                $value = $matches[2];
+                // Only process string fields, not array fields
+                if (!in_array($key, ['keywords', 'tags'])) {
+                    $value = addcslashes($value, "\n\r\t\"\\");
+                }
+                return '"' . $key . '": "' . $value . '"';
+            },
+            $jsonStr
+        );
+
+        $postData = json_decode($jsonStr, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $postData;
+        }
+
+        // Try 5: Nuclear option - manually parse and rebuild JSON
+        // Extract each field individually and rebuild
+        $fields = [];
+
+        // Extract simple string fields
+        foreach (['title', 'content', 'excerpt', 'meta_title', 'meta_description'] as $field) {
+            if (preg_match('/"' . $field . '":\s*"(.+?)"\s*[,}]/s', $jsonStr, $match)) {
+                $value = $match[1];
+                $value = str_replace(["\n", "\r", "\t", "\\"], ["\\n", "\\r", "\\t", "\\\\"], $value);
+                $fields[$field] = $value;
+            }
+        }
+
+        // Extract array fields
+        if (preg_match('/"keywords":\s*\[(.*?)\]/s', $jsonStr, $match)) {
+            preg_match_all('/"([^"]+)"/', $match[1], $keywords);
+            $fields['keywords'] = $keywords[1];
+        }
+
+        if (preg_match('/"tags":\s*\[(.*?)\]/s', $jsonStr, $match)) {
+            preg_match_all('/"([^"]+)"/', $match[1], $tags);
+            $fields['tags'] = $tags[1];
+        }
+
+        // Validate we got all required fields
+        $required = ['title', 'content', 'excerpt', 'meta_title', 'meta_description', 'keywords', 'tags'];
+        $missing = array_diff($required, array_keys($fields));
+        if (empty($missing)) {
+            return $fields;
+        }
+
         // Log the problematic response for debugging
         Log::error('Failed to parse AI JSON response', [
             'error' => json_last_error_msg(),
+            'missing_fields' => $missing,
             'response_preview' => substr($response, 0, 500)
         ]);
 
