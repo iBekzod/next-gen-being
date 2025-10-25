@@ -333,7 +333,7 @@ class GenerateAiPost extends Command
 
         $prompt = "You are a tech blog content strategist tracking current trends in {$currentMonth} {$currentYear}.
 
-Generate ONE highly specific, trending blog post topic from the category: {$randomCategory}
+Generate ONE highly specific, practical blog post topic from the category: {$randomCategory}
 
 Trending areas in this category:
 " . implode("\n", array_map(fn($t) => "- $t", $categoryTopics)) . "
@@ -341,22 +341,31 @@ Trending areas in this category:
 {$recentTopicsList}
 
 Requirements:
-1. Topic must be CURRENT and TRENDING in {$currentYear}
-2. Be SPECIFIC - include version numbers, specific technologies, or frameworks
-3. Focus on practical, actionable content developers want NOW
-4. Use engaging titles with numbers, power words, or specific outcomes
-5. Avoid generic or evergreen topics
-6. Make it newsworthy or address current pain points
+1. Topic must be CURRENT and RELEVANT in {$currentYear}
+2. Be SPECIFIC - include actual version numbers and technologies when applicable
+3. Focus on practical, educational content developers need
+4. Use REALISTIC, professional titles - NO clickbait or exaggerated claims
+5. AVOID phrases like: '10x Faster', '20x Better', '99.99% Uptime', 'Turbocharge', 'Unlock'
+6. Focus on learning, understanding, and practical implementation
+7. Make it educational and actionable
 
 Examples of GOOD titles:
-- \"Building Production-Ready RAG Applications with LangChain and Pinecone in 2024\"
-- \"Next.js 14 Server Actions: Complete Guide to Type-Safe Server Mutations\"
-- \"Migrating 100K Users from REST to GraphQL: Lessons Learned\"
-- \"Rust vs Go for Microservices: Performance Benchmarks and Real-World Trade-offs\"
+- \"Building Production-Ready RAG Applications with LangChain and Pinecone\"
+- \"Understanding Next.js 14 Server Actions: A Complete Guide\"
+- \"Migrating from REST to GraphQL: Practical Lessons and Trade-offs\"
+- \"Comparing Rust and Go for Microservices: Real-World Considerations\"
+- \"Implementing Event-Driven Architecture with Apache Kafka\"
+- \"A Practical Guide to Domain-Driven Design in .NET\"
+
+Examples of BAD titles (AVOID):
+- \"10x Faster Performance with [Technology]\" (unrealistic claims)
+- \"Turbocharge Your App with [Tool]\" (clickbait language)
+- \"Unlock 99.99% Uptime\" (exaggerated guarantees)
+- \"Master [Complex Topic] in 10 Minutes\" (unrealistic timeframes)
 
 Return ONLY a JSON object:
 {
-  \"title\": \"Specific, trending, actionable title with technology/version\",
+  \"title\": \"Professional, educational, specific title without clickbait\",
   \"category\": \"{$randomCategory}\"
 }";
 
@@ -408,10 +417,18 @@ Return ONLY a JSON object:
         $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
         $conclusionExtra = $isPremium ? '- Subtle mention of deeper expertise available' : '';
 
-        $prompt = "Write an EXCEPTIONALLY engaging, practical, and useful blog post about: {$topic['title']}
+        $prompt = "Write a comprehensive, professional, and highly educational blog post about: {$topic['title']}
 
 CONTENT STRATEGY:
 {$conversionStrategy}
+
+⚠️ CRITICAL RULES - MUST FOLLOW:
+1. NO clickbait or exaggerated claims (avoid: '10x faster', 'turbocharge', 'unlock', '99.99%')
+2. NO unrealistic performance numbers without real benchmarks
+3. Focus on REALISTIC expectations and honest trade-offs
+4. Be EDUCATIONAL first, promotional never
+5. Provide REAL working code examples with explanations
+6. Cite actual tools, versions, and documentation
 
 🎯 ENGAGEMENT PRINCIPLES (CRITICAL):
 
@@ -452,56 +469,79 @@ CONTENT STRATEGY:
    - Share opinions and recommendations
    - Inject personality (but stay professional)
 
-CONTENT STRUCTURE (1500-2000 words):
+CONTENT STRUCTURE (2000-3000 words for comprehensive, in-depth coverage):
 
-## Opening Hook (100-150 words)
-- Start with a relatable scenario or shocking stat
-- Identify the pain point or opportunity
-- Promise specific, tangible outcomes
-- Make it personal and engaging
+## Opening Hook (150-200 words)
+- Start with a relatable scenario or real-world context (NO shocking stats unless verified)
+- Identify the pain point or opportunity clearly
+- Promise specific, realistic, achievable learning outcomes
+- Make it personal and engaging without hype
 
-## Why This Matters (150-200 words)
-- Current state of the problem
-- Why NOW is the right time
-- What you'll learn (specific benefits)
-- Who this is for
+## Why This Matters (200-250 words)
+- Current state of the problem in the industry
+- Why this topic is relevant NOW (with context)
+- What you'll learn (specific, achievable benefits)
+- Who this is for and what prerequisites exist
+- Set realistic expectations
 
-## The Problem/Context (200-300 words)
-- Deep dive into the challenge
-- Real-world examples or case studies
-- Show the impact (costs, time, mistakes)
-- Build urgency and relevance
+## Background/Context (250-350 words)
+- Technical background and relevant history
+- How this technology/approach evolved
+- Current ecosystem, tools, and frameworks
+- Real-world examples with specific contexts
+- Industry adoption level and maturity
 
-## The Solution (800-1000 words) - MAIN CONTENT
-Break into 3-5 clear sections with:
-- Specific techniques/approaches
-- **Working code examples** (properly formatted)
-- Step-by-step implementations
-- Real metrics and results
-- Comparisons and trade-offs
-- **Quick Win boxes** for immediate value
+## Core Concepts (400-600 words)
+- Fundamental principles explained clearly
+- Key terminology and definitions
+- Architecture overview and design patterns
+- How components fit together
+- Important trade-offs to understand
+
+## Practical Implementation (1000-1400 words) - MAIN CONTENT
+Break into 4-6 comprehensive sections with:
+- Detailed step-by-step approach with reasoning
+- **Complete working code examples** (properly formatted with thorough comments)
+- Real configuration examples and setup instructions
+- Realistic metrics and benchmarks (NO exaggeration)
+- Honest comparisons and trade-offs
+- Common pitfalls and how to avoid them
 
 Example structure:
-### Solution Part 1: [Specific Technique]
-[Explanation]
+### Step 1: [Specific Technique/Setup]
+[Thorough explanation with context and reasoning]
 ```language
-// Working code example
+// Complete working code example
+// with detailed comments explaining each part
 ```
-💡 **Pro Tip:** [Insider insight]
+💡 **Pro Tip:** [Insider insight based on real experience]
 
-⚡ **Quick Win:** [Immediate action they can take]
+⚡ **Quick Win:** [Immediate, actionable step they can take]
 
-## Advanced Tips (200-300 words)
-- Pro-level optimizations
-- Edge cases and gotchas
-- Performance considerations
-- Common mistakes to avoid
+⚠️ **Common Mistake:** [Real pitfall with explanation]
+
+## Advanced Considerations (300-400 words)
+- Production-ready optimizations
+- Scaling considerations and limitations
+- Security implications
+- Edge cases from real experience
+- Performance tuning with measurable results
+- Monitoring and debugging strategies
 {$advancedTipsExtra}
 
-## Conclusion (100-150 words)
-- Recap key takeaways (3-5 bullets)
-- Next steps or action items
-- Inspirational close
+## Real-World Application (200-300 words)
+- How companies use this in production
+- Success stories with realistic metrics
+- When to use vs when NOT to use
+- Alternative solutions and trade-offs
+- Cost and resource considerations
+
+## Conclusion (150-200 words)
+- Recap key takeaways (5-7 clear bullets)
+- Clear, actionable next steps
+- Resources for further learning
+- Honest assessment of difficulty and time
+- Realistic expectations for mastery
 {$conclusionExtra}
 
 FORMATTING RULES:
@@ -513,22 +553,23 @@ FORMATTING RULES:
 - Keep paragraphs short and punchy
 
 TONE:
-- Conversational but authoritative
+- Professional and educational
 - Helpful and supportive
-- Excited about the tech
-- Honest about trade-offs
-- Like a senior developer mentoring a peer
+- Enthusiastic but realistic about technology
+- ALWAYS honest about trade-offs and limitations
+- Like a senior developer mentoring with real-world experience
+- NO hype, NO clickbait, NO exaggeration
 
 Also provide:
-- **Excerpt**: Curiosity-driven, specific benefit (150-200 chars)
-- **Meta title**: Includes numbers/benefit (60 chars max)
-- **Meta description**: Specific value prop with outcome (155 chars max)
-- **Keywords**: 5-7 high-intent, searchable terms
-- **Tags**: 3-5 relevant topic tags
+- **Excerpt**: Educational hook with specific benefit (150-200 chars, NO clickbait)
+- **Meta title**: Professional title with specifics (60 chars max, NO hype)
+- **Meta description**: Clear value prop with realistic expectations (155 chars max)
+- **Keywords**: 5-7 high-intent, searchable technical terms
+- **Tags**: 3-5 relevant, specific topic tags
 
 Return ONLY this JSON (ensure proper escaping):
 {
-  \"title\": \"[Compelling title with numbers/specifics]\",
+  \"title\": \"[Professional, educational title - NO clickbait phrases like '10x', 'turbocharge', 'unlock']\",
   \"content\": \"[Full markdown content with stories, code, tips]\",
   \"excerpt\": \"[Specific benefit that creates curiosity]\",
   \"meta_title\": \"[SEO title with benefit]\",
@@ -540,13 +581,13 @@ Return ONLY this JSON (ensure proper escaping):
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and tech blogger known for writing EXCEPTIONALLY engaging, practical, and useful content. Your articles are filled with real stories, working code examples, and actionable insights. Developers love your content because it\'s conversational yet authoritative, packed with quick wins, and always delivers real value. You write like a mentor sharing battle-tested knowledge over coffee. You MUST return valid JSON with properly escaped strings.'
+                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, professional, and highly practical content. Your articles are educational, honest, and packed with real working code examples and actionable insights. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. You MUST return valid JSON with properly escaped strings.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 4000, 0.8, true); // Enable JSON mode, higher tokens and temperature for engaging content
+        ], 5000, 0.7, true); // Enable JSON mode, higher tokens for comprehensive content, lower temp for professionalism
 
         // Parse JSON response - try multiple approaches
         $postData = $this->parseAIResponse($response);
@@ -932,18 +973,30 @@ The content should make free users think: 'This looks incredibly valuable, I nee
 
         $prompt = $customTitle
             ? "Create a detailed {$parts}-part tutorial series outline for: \"{$customTitle}\""
-            : "Create a detailed {$parts}-part tutorial series outline for a trending tech topic in {$currentYear}";
+            : "Create a detailed {$parts}-part tutorial series outline for a practical, trending tech topic in {$currentYear}";
 
         $prompt .= "
 
-Create a comprehensive tutorial series that takes readers from beginner to advanced level.
+Create a comprehensive, realistic tutorial series that takes readers from fundamentals to production-ready implementation.
 
-Requirements:
-- Series must be practical and hands-on
-- Each part builds on the previous one
-- Include a clear learning progression
-- Focus on real-world applications
-- Specific technologies with version numbers
+CRITICAL REQUIREMENTS:
+- Series title must be PROFESSIONAL and EDUCATIONAL (NO clickbait like '10x Faster', 'Turbocharge', 'Unlock')
+- Each part builds logically on the previous one
+- Clear learning progression from basics to advanced
+- Focus on real-world, production-ready applications
+- Specific technologies with actual version numbers
+- Realistic time and complexity expectations
+- Each part should be substantial (2000-3000 words worth of content)
+
+GOOD series examples:
+- \"Building Production-Ready Microservices with Docker and Kubernetes\"
+- \"Complete Guide to Real-Time Data Pipelines with Apache Kafka\"
+- \"Understanding Domain-Driven Design: A Practical Implementation Guide\"
+
+BAD series examples (AVOID):
+- \"10x Your App Performance\" (unrealistic claims)
+- \"Turbocharge Your Development\" (clickbait)
+- \"Unlock Ultimate Productivity\" (vague and hypey)
 
 Return ONLY this JSON:
 {
@@ -962,9 +1015,9 @@ Return ONLY this JSON:
 
         try {
             $response = $this->callOpenAI([
-                ['role' => 'system', 'content' => 'You are an expert technical educator who creates comprehensive, hands-on tutorial series. You MUST return valid JSON.'],
+                ['role' => 'system', 'content' => 'You are an expert technical educator who creates comprehensive, realistic tutorial series. You NEVER use clickbait or exaggerated claims. You focus on practical, professional, educational content. You MUST return valid JSON.'],
                 ['role' => 'user', 'content' => $prompt]
-            ], 1000, 0.8, true);
+            ], 1000, 0.7, true); // Lower temperature for more consistent, professional output
 
             $outline = json_decode($response, true);
             if (!$outline && preg_match('/\{.*\}/s', $response, $matches)) {
@@ -1088,23 +1141,31 @@ THIS PART FOCUSES ON: {$partInfo['focus']}
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. You MUST return valid JSON with properly escaped strings.'
+                'content' => 'You are a senior software engineer and technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. You NEVER use clickbait or exaggerated performance claims. You write professional, realistic, educational content. You MUST return valid JSON with properly escaped strings.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 4000, 0.8, true);
+        ], 5000, 0.7, true); // Higher tokens for depth, lower temp for consistency
 
         return $this->parseAIResponse($response);
     }
 
     private function getBaseContentPrompt(string $conversionStrategy, string $advancedTipsExtra, string $conclusionExtra, bool $isPremium): string
     {
-        return "Write an EXCEPTIONALLY engaging, practical, and useful blog post
+        return "Write a comprehensive, professional, and highly educational blog post
 
 CONTENT STRATEGY:
 {$conversionStrategy}
+
+⚠️ CRITICAL RULES - MUST FOLLOW:
+1. NO clickbait or exaggerated claims (avoid: '10x faster', 'turbocharge', 'unlock', '99.99%')
+2. NO unrealistic performance numbers without real benchmarks
+3. Focus on REALISTIC expectations and honest trade-offs
+4. Be EDUCATIONAL first, promotional never
+5. Provide REAL working code examples with explanations
+6. Cite actual tools, versions, and documentation
 
 🎯 ENGAGEMENT PRINCIPLES (CRITICAL):
 
@@ -1145,56 +1206,79 @@ CONTENT STRATEGY:
    - Share opinions and recommendations
    - Inject personality (but stay professional)
 
-CONTENT STRUCTURE (1500-2000 words):
+CONTENT STRUCTURE (2000-3000 words for comprehensive, in-depth coverage):
 
-## Opening Hook (100-150 words)
-- Start with a relatable scenario or shocking stat
-- Identify the pain point or opportunity
-- Promise specific, tangible outcomes
-- Make it personal and engaging
+## Opening Hook (150-200 words)
+- Start with a relatable scenario or real-world context (NO shocking stats unless verified)
+- Identify the pain point or opportunity clearly
+- Promise specific, realistic, achievable learning outcomes
+- Make it personal and engaging without hype
 
-## Why This Matters (150-200 words)
-- Current state of the problem
-- Why NOW is the right time
-- What you'll learn (specific benefits)
-- Who this is for
+## Why This Matters (200-250 words)
+- Current state of the problem in the industry
+- Why this topic is relevant NOW (with context)
+- What you'll learn (specific, achievable benefits)
+- Who this is for and what prerequisites exist
+- Set realistic expectations
 
-## The Problem/Context (200-300 words)
-- Deep dive into the challenge
-- Real-world examples or case studies
-- Show the impact (costs, time, mistakes)
-- Build urgency and relevance
+## Background/Context (250-350 words)
+- Technical background and relevant history
+- How this technology/approach evolved
+- Current ecosystem, tools, and frameworks
+- Real-world examples with specific contexts
+- Industry adoption level and maturity
 
-## The Solution (800-1000 words) - MAIN CONTENT
-Break into 3-5 clear sections with:
-- Specific techniques/approaches
-- **Working code examples** (properly formatted)
-- Step-by-step implementations
-- Real metrics and results
-- Comparisons and trade-offs
-- **Quick Win boxes** for immediate value
+## Core Concepts (400-600 words)
+- Fundamental principles explained clearly
+- Key terminology and definitions
+- Architecture overview and design patterns
+- How components fit together
+- Important trade-offs to understand
+
+## Practical Implementation (1000-1400 words) - MAIN CONTENT
+Break into 4-6 comprehensive sections with:
+- Detailed step-by-step approach with reasoning
+- **Complete working code examples** (properly formatted with thorough comments)
+- Real configuration examples and setup instructions
+- Realistic metrics and benchmarks (NO exaggeration)
+- Honest comparisons and trade-offs
+- Common pitfalls and how to avoid them
 
 Example structure:
-### Solution Part 1: [Specific Technique]
-[Explanation]
+### Step 1: [Specific Technique/Setup]
+[Thorough explanation with context and reasoning]
 ```language
-// Working code example
+// Complete working code example
+// with detailed comments explaining each part
 ```
-💡 **Pro Tip:** [Insider insight]
+💡 **Pro Tip:** [Insider insight based on real experience]
 
-⚡ **Quick Win:** [Immediate action they can take]
+⚡ **Quick Win:** [Immediate, actionable step they can take]
 
-## Advanced Tips (200-300 words)
-- Pro-level optimizations
-- Edge cases and gotchas
-- Performance considerations
-- Common mistakes to avoid
+⚠️ **Common Mistake:** [Real pitfall with explanation]
+
+## Advanced Considerations (300-400 words)
+- Production-ready optimizations
+- Scaling considerations and limitations
+- Security implications
+- Edge cases from real experience
+- Performance tuning with measurable results
+- Monitoring and debugging strategies
 {$advancedTipsExtra}
 
-## Conclusion (100-150 words)
-- Recap key takeaways (3-5 bullets)
-- Next steps or action items
-- Inspirational close
+## Real-World Application (200-300 words)
+- How companies use this in production
+- Success stories with realistic metrics
+- When to use vs when NOT to use
+- Alternative solutions and trade-offs
+- Cost and resource considerations
+
+## Conclusion (150-200 words)
+- Recap key takeaways (5-7 clear bullets)
+- Clear, actionable next steps
+- Resources for further learning
+- Honest assessment of difficulty and time
+- Realistic expectations for mastery
 {$conclusionExtra}
 
 FORMATTING RULES:
@@ -1206,22 +1290,23 @@ FORMATTING RULES:
 - Keep paragraphs short and punchy
 
 TONE:
-- Conversational but authoritative
+- Professional and educational
 - Helpful and supportive
-- Excited about the tech
-- Honest about trade-offs
-- Like a senior developer mentoring a peer
+- Enthusiastic but realistic about technology
+- ALWAYS honest about trade-offs and limitations
+- Like a senior developer mentoring with real-world experience
+- NO hype, NO clickbait, NO exaggeration
 
 Also provide:
-- **Excerpt**: Curiosity-driven, specific benefit (150-200 chars)
-- **Meta title**: Includes numbers/benefit (60 chars max)
-- **Meta description**: Specific value prop with outcome (155 chars max)
-- **Keywords**: 5-7 high-intent, searchable terms
-- **Tags**: 3-5 relevant topic tags
+- **Excerpt**: Educational hook with specific benefit (150-200 chars, NO clickbait)
+- **Meta title**: Professional title with specifics (60 chars max, NO hype)
+- **Meta description**: Clear value prop with realistic expectations (155 chars max)
+- **Keywords**: 5-7 high-intent, searchable technical terms
+- **Tags**: 3-5 relevant, specific topic tags
 
 Return ONLY this JSON (ensure proper escaping):
 {
-  \"title\": \"[Compelling title with numbers/specifics]\",
+  \"title\": \"[Professional, educational title - NO clickbait phrases like '10x', 'turbocharge', 'unlock']\",
   \"content\": \"[Full markdown content with stories, code, tips]\",
   \"excerpt\": \"[Specific benefit that creates curiosity]\",
   \"meta_title\": \"[SEO title with benefit]\",
