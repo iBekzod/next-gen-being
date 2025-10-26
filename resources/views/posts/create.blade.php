@@ -167,7 +167,7 @@
                 <input name="tags"
                        id="tags"
                        placeholder="Add tags..."
-                       value="{{ old('tags') ? implode(',', old('tags')) : '' }}"
+                       value="{{ old('tags') ? (is_array(old('tags')) ? implode(',', old('tags')) : old('tags')) : '' }}"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Start typing to see suggestions or create new tags
