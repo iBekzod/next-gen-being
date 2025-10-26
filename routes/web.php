@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\LandingPageController;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SubscriptionController;
@@ -15,6 +14,16 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
 Route::post('/landing/subscribe', [LandingPageController::class, 'store'])->name('landing.subscribe');
 Route::get('/health', HealthCheckController::class)->name('health.check');
+
+// Post creation route (must come before posts.show to avoid slug conflict)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+    Route::get('/posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
+    Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+});
+
 // Public routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');
@@ -36,13 +45,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/posts', [UserDashboardController::class, 'posts'])->name('dashboard.posts');
     Route::get('/dashboard/bookmarks', [UserDashboardController::class, 'bookmarks'])->name('dashboard.bookmarks');
     Route::get('/dashboard/settings', [UserDashboardController::class, 'settings'])->name('dashboard.settings');
-
-    // Post management
-    Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-    Route::get('/posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
-    Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
     // Subscription management
     Route::post('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
