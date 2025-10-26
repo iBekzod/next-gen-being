@@ -64,8 +64,7 @@ class PostController extends Controller
             'excerpt' => 'required|string|max:500',
             'content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'tags' => 'array',
-            'tags.*' => 'exists:tags,id',
+            'tags' => 'nullable|string',
             'featured_image' => 'nullable|image|max:2048',
             'status' => 'required|in:draft,published,scheduled',
             'published_at' => 'nullable|date|after:now',
@@ -91,10 +90,29 @@ class PostController extends Controller
             $path = $request->file('featured_image')->store('posts', 'public');
             $validated['featured_image'] = Storage::url($path);
         }
+
+        // Handle tags: convert comma-separated string to tag names
+        $tagNames = [];
+        if (!empty($validated['tags'])) {
+            $tagNames = array_map('trim', explode(',', $validated['tags']));
+        }
+        unset($validated['tags']); // Remove from validated data
+
         $post = Post::create($validated);
 
-        if (isset($validated['tags'])) {
-            $post->tags()->sync($validated['tags']);
+        // Attach tags by finding or creating them
+        if (!empty($tagNames)) {
+            $tagIds = [];
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = Tag::firstOrCreate(
+                        ['name' => $tagName],
+                        ['slug' => \Illuminate\Support\Str::slug($tagName), 'is_active' => true]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+            }
+            $post->tags()->sync($tagIds);
         }
 
         return redirect()->route('posts.show', $post->slug)
