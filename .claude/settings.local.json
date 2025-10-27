@@ -40,7 +40,8 @@
       "Bash(timeout 300 docker exec:*)",
       "Bash(ssh:*)",
       "Bash(git rm:*)",
-      "Bash(nslookup:*)"
+      "Bash(nslookup:*)",
+      "Bash(zero-downtime deployments, and monitoring strategies\"\n\nThis ensures content is valuable for experienced Laravel developers who need\nadvanced, production-tested patterns not found in basic documentation.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
