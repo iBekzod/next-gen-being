@@ -578,11 +578,25 @@ Tutorial Style Example:
 ## Testing and Debugging
 ## What's Next
 
-CODE EXAMPLES:
+CODE EXAMPLES (CRITICAL - MUST INCLUDE OUTPUTS):
 - Include REAL working code with comments
-- Show actual output/results
+- **ALWAYS show actual command/code outputs** after code blocks
+- Show terminal sessions with commands AND their results
+- Include error outputs when relevant (and how to fix them)
+- Example format:
+  ```bash
+  php artisan queue:work --tries=3
+  ```
+  Output:
+  ```
+  [2024-01-15 10:23:45] Processing: App\\Jobs\\ProcessOrder
+  [2024-01-15 10:23:47] Processed:  App\\Jobs\\ProcessOrder
+  ```
+- Show database query results, API responses, log outputs, dd() dumps
+- For SQL queries, show EXPLAIN output or query execution time
+- For API calls, show actual JSON responses
 - Explain WHY, not just WHAT
-- Common errors and fixes
+- Common errors with actual error messages and fixes
 - Use callouts sparingly, not in every section
 
 CALLOUTS (use naturally, not everywhere):
@@ -1419,11 +1433,25 @@ Tutorial Style Example:
 ## Testing and Debugging
 ## What's Next
 
-CODE EXAMPLES:
+CODE EXAMPLES (CRITICAL - MUST INCLUDE OUTPUTS):
 - Include REAL working code with comments
-- Show actual output/results
+- **ALWAYS show actual command/code outputs** after code blocks
+- Show terminal sessions with commands AND their results
+- Include error outputs when relevant (and how to fix them)
+- Example format:
+  ```bash
+  php artisan queue:work --tries=3
+  ```
+  Output:
+  ```
+  [2024-01-15 10:23:45] Processing: App\\Jobs\\ProcessOrder
+  [2024-01-15 10:23:47] Processed:  App\\Jobs\\ProcessOrder
+  ```
+- Show database query results, API responses, log outputs, dd() dumps
+- For SQL queries, show EXPLAIN output or query execution time
+- For API calls, show actual JSON responses
 - Explain WHY, not just WHAT
-- Common errors and fixes
+- Common errors with actual error messages and fixes
 - Use callouts sparingly, not in every section
 
 CALLOUTS (use naturally, not everywhere):
