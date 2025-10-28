@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Models\ContentPlan;
 use App\Services\ImageGenerationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -235,6 +236,20 @@ class GenerateAiPost extends Command
             $this->info("   URL: {$url}");
         }
 
+        // Track in content plan if this was from a plan
+        if (isset($topic['from_plan']) && $topic['from_plan'] && isset($topic['plan_id'])) {
+            $plan = ContentPlan::find($topic['plan_id']);
+            if ($plan) {
+                $plan->markTopicGenerated($topic['title'], $post->id);
+                $this->info("✅ Marked topic as generated in content plan");
+
+                if ($plan->fresh()->isComplete()) {
+                    $plan->update(['status' => 'completed']);
+                    $this->info("🎉 Monthly content plan completed!");
+                }
+            }
+        }
+
         Log::info('AI post generated successfully', [
             'post_id' => $post->id,
             'title' => $post->title,
@@ -246,6 +261,28 @@ class GenerateAiPost extends Command
 
     private function selectTrendingTopic(): array
     {
+        // Check if there's a monthly content plan
+        $contentPlan = ContentPlan::getCurrentPlan();
+
+        if ($contentPlan && !$contentPlan->isComplete()) {
+            $this->info("📅 Using monthly content plan: {$contentPlan->theme}");
+            // Get a random ungenerated topic from the plan
+            $generated = collect($contentPlan->generated_topics ?? [])->pluck('topic')->toArray();
+            $remaining = array_diff($contentPlan->planned_topics, $generated);
+
+            if (!empty($remaining)) {
+                $selectedTopic = $remaining[array_rand($remaining)];
+                $this->info("📝 Selected from plan: {$selectedTopic}");
+
+                return [
+                    'title' => $selectedTopic,
+                    'category' => $contentPlan->theme,
+                    'from_plan' => true,
+                    'plan_id' => $contentPlan->id,
+                ];
+            }
+        }
+
         // Get recent topics to avoid duplication - include keywords for better matching
         $recentPosts = Post::where('created_at', '>=', now()->subDays(60)) // Extended to 60 days
             ->select('title', 'content', 'created_at')
@@ -294,74 +331,115 @@ class GenerateAiPost extends Command
         $currentMonth = now()->format('F');
 
         // Create comprehensive trending topics prompt with current context
+        // EXPANDED: Not just programming - emerging tech, next-gen concepts, innovative solutions
         $trendingCategories = [
             'AI & Machine Learning' => [
-                'Large Language Models (LLMs) like GPT, Claude, Gemini',
-                'AI Agents and Autonomous Systems',
-                'Generative AI for images, video, and code',
-                'AI Ethics and Safety',
-                'Fine-tuning and Prompt Engineering',
-                'RAG (Retrieval Augmented Generation)',
-                'AI in Production and MLOps',
+                'Multimodal AI (vision + language models)',
+                'AI Agents & Autonomous Systems',
+                'Neural Architecture Search (NAS)',
+                'Federated Learning & Privacy-Preserving ML',
+                'Diffusion Models & Generative AI',
+                'LLM Fine-tuning & RLHF',
+                'Vector Databases (Pinecone, Weaviate, Qdrant)',
+                'AI Safety & Alignment',
             ],
-            'Web Development' => [
-                'React Server Components and Next.js 14+',
-                'TypeScript best practices',
-                'Modern CSS (Container Queries, CSS Grid, Tailwind)',
-                'Web Performance Optimization',
-                'Progressive Web Apps (PWA)',
-                'WebAssembly and Edge Computing',
-                'Jamstack and Static Site Generators',
+            'Quantum Computing' => [
+                'Quantum Algorithms (Shor, Grover, VQE)',
+                'Quantum Cryptography & Post-Quantum Security',
+                'Quantum Machine Learning',
+                'IBM Qiskit, Google Cirq, Amazon Braket',
+                'Quantum Supremacy Applications',
+                'Quantum Error Correction',
             ],
-            'DevOps & Cloud' => [
-                'Kubernetes and Container Orchestration',
-                'Infrastructure as Code (Terraform, Pulumi)',
-                'CI/CD Pipelines and GitHub Actions',
-                'Serverless Architecture',
-                'Microservices vs Monoliths',
-                'Cloud Security Best Practices',
-                'Docker and Containerization',
+            'Blockchain & Web3' => [
+                'Zero-Knowledge Proofs (zkSNARKs, zkSTARKs)',
+                'Layer 2 Scaling Solutions (Optimism, Arbitrum)',
+                'Decentralized Identity (DIDs, Verifiable Credentials)',
+                'Smart Contract Security & Auditing',
+                'DAOs & Decentralized Governance',
+                'NFT Utility Beyond Art',
+                'Cross-Chain Interoperability',
             ],
-            'Programming Languages' => [
+            'Extended Reality (XR)' => [
+                'WebXR & Spatial Computing',
+                'Digital Twins in Manufacturing',
+                'AR for E-commerce & Retail',
+                'VR Training & Simulations',
+                'Mixed Reality for Healthcare',
+                'Metaverse Infrastructure',
+            ],
+            'Edge Computing & IoT' => [
+                'Edge AI & TinyML',
+                'LoRaWAN & LPWAN Networks',
+                '5G-Enabled IoT Applications',
+                'Digital Twin Technology',
+                'Industrial IoT (IIoT) & Industry 4.0',
+                'Smart Cities Infrastructure',
+                'Edge Analytics & Real-time Processing',
+            ],
+            'Biotechnology & HealthTech' => [
+                'CRISPR & Gene Editing Software',
+                'AI-Driven Drug Discovery',
+                'Wearable Health Monitoring',
+                'Brain-Computer Interfaces (Neuralink, OpenBCI)',
+                'Synthetic Biology & Bioinformatics',
+                'Telemedicine Platforms',
+            ],
+            'Energy & CleanTech' => [
+                'Smart Grid Technology',
+                'Battery Management Systems',
+                'Carbon Capture & Monitoring',
+                'Renewable Energy Optimization',
+                'EV Charging Infrastructure',
+                'Energy Trading Platforms',
+            ],
+            'Space Technology' => [
+                'Satellite Data Analytics',
+                'Space Mission Planning Software',
+                'CubeSat Development',
+                'Space Communication Protocols',
+                'Orbital Debris Tracking',
+            ],
+            'Advanced Software Engineering' => [
+                'WebAssembly & WASI',
                 'Rust for Systems Programming',
-                'Go for Backend Development',
-                'Python for Data Science and AI',
-                'Modern JavaScript/TypeScript features',
-                'Functional Programming paradigms',
-                'WebAssembly and WASI',
-            ],
-            'Software Architecture' => [
-                'Domain-Driven Design (DDD)',
+                'eBPF & Kernel Programming',
                 'Event-Driven Architecture',
-                'CQRS and Event Sourcing',
-                'Clean Architecture patterns',
-                'API Design and GraphQL',
-                'System Design at Scale',
+                'CQRS & Event Sourcing',
+                'Service Mesh (Istio, Linkerd)',
+                'Chaos Engineering',
             ],
-            'Mobile Development' => [
-                'React Native and Cross-platform development',
-                'Flutter best practices',
-                'Mobile App Performance',
-                'Native vs Hybrid approaches',
+            'Next-Gen Databases' => [
+                'Vector Databases for AI',
+                'Time-Series Databases (InfluxDB, TimescaleDB)',
+                'Graph Databases (Neo4j, ArangoDB)',
+                'NewSQL Databases (CockroachDB, YugabyteDB)',
+                'Database Sharding Strategies',
+                'Multi-Model Databases',
             ],
-            'Data & Analytics' => [
-                'Real-time Data Pipelines',
-                'Data Warehousing strategies',
-                'Stream Processing (Kafka, Flink)',
-                'Data Visualization best practices',
-            ],
-            'Security' => [
+            'Cybersecurity Innovation' => [
                 'Zero Trust Architecture',
-                'API Security and OAuth 2.0',
-                'Secure Coding Practices',
-                'Vulnerability Management',
-                'Privacy-First Development',
+                'AI-Powered Threat Detection',
+                'Homomorphic Encryption',
+                'Supply Chain Security',
+                'DevSecOps Automation',
+                'Behavioral Biometrics',
             ],
-            'Emerging Tech' => [
-                'WebGPU and Graphics Programming',
-                'Edge Computing and IoT',
-                'Blockchain and Web3 developments',
-                'Quantum Computing basics',
+            'Robotics & Automation' => [
+                'ROS 2 & Robotic Middleware',
+                'Computer Vision for Robotics',
+                'Autonomous Navigation Systems',
+                'Collaborative Robots (Cobots)',
+                'Drone Programming & Control',
+                'Robotic Process Automation (RPA)',
+            ],
+            'FinTech & DeFi' => [
+                'Algorithmic Trading Systems',
+                'Open Banking APIs',
+                'Central Bank Digital Currencies (CBDCs)',
+                'RegTech & Compliance Automation',
+                'Decentralized Finance Protocols',
+                'Payment Processing Innovation',
             ],
         ];
 
@@ -1177,16 +1255,39 @@ The content should make free users think: 'This looks incredibly valuable, I nee
 
         $prompt .= "
 
-Create a comprehensive, realistic tutorial series that takes readers from fundamentals to production-ready implementation.
+Create a comprehensive, in-depth tutorial series like you'd find on Medium or high-quality tech blogs.
 
-CRITICAL REQUIREMENTS:
+CRITICAL REQUIREMENTS - MEDIUM-QUALITY STANDARDS:
 - Series title must be PROFESSIONAL and EDUCATIONAL (NO clickbait like '10x Faster', 'Turbocharge', 'Unlock')
-- Each part builds logically on the previous one
-- Clear learning progression from basics to advanced
-- Focus on real-world, production-ready applications
-- Specific technologies with actual version numbers
-- Realistic time and complexity expectations
-- Each part should be substantial (2000-3000 words worth of content)
+- Each part should be SUBSTANTIAL - not simple commands, but real solutions to real problems
+- Each part must be comprehensive enough to stand alone as a valuable article (3000-5000 words)
+- Parts should cover DIFFERENT aspects/technologies - NOT repetitive patterns
+- Focus on real-world, production-ready implementations with actual code and outputs
+- Include architecture decisions, trade-offs, gotchas, and best practices
+- Show problem → solution → results with real metrics
+- Each part covers a DISTINCT topic/technology within the overall theme
+
+VARIETY IN PARTS - Each section should explore DIFFERENT angles:
+✅ GOOD (varied parts):
+  Part 1: Setting up infrastructure (Docker, Kubernetes basics)
+  Part 2: Implementing service mesh (Istio/Linkerd)
+  Part 3: Observability stack (Prometheus, Grafana, Jaeger)
+  Part 4: CI/CD automation (GitHub Actions, ArgoCD)
+  Part 5: Production hardening (security, backups, disaster recovery)
+
+❌ BAD (repetitive):
+  Part 1: Basic setup
+  Part 2: Configuration
+  Part 3: Advanced configuration
+  Part 4: More configuration
+  Part 5: Final configuration
+
+CONTENT DEPTH - Like Medium articles:
+- Don\'t just show \"run this command\" - explain WHY, show outputs, discuss alternatives
+- Include real code examples with proper error handling
+- Show terminal outputs, logs, query results
+- Discuss what went wrong and how you fixed it
+- Share production lessons learned
 
 GOOD series examples:
 - \"Building Production-Ready Microservices with Docker and Kubernetes\"
@@ -1333,6 +1434,23 @@ SERIES CONTEXT:
 {$seriesContext}
 
 THIS PART FOCUSES ON: {$partInfo['focus']}
+
+⚠️ CRITICAL - MEDIUM-STYLE QUALITY:
+- This part must be SUBSTANTIAL (3000-5000 words) - a complete article, not a simple command list
+- Provide DEEP technical content like Medium\'s best engineering articles
+- Cover ONE distinct aspect thoroughly rather than multiple topics superficially
+- Show REAL problem-solving: what you tried, what failed, what worked, with actual outputs
+- Include architecture diagrams, code examples with explanations, terminal outputs
+- Each part should explore DIFFERENT technologies/approaches from other parts
+- Don\'t just say \"configure X\" - show actual config files, explain each option, show results
+
+CONTENT REQUIREMENTS:
+1. **Start with WHY**: Explain the problem this part solves in production scenarios
+2. **Show the JOURNEY**: What alternatives exist? Why choose this approach?
+3. **Detailed IMPLEMENTATION**: Complete code with comments, configs, and actual file structures
+4. **OUTPUTS Matter**: After every command/code block, show what actually happens
+5. **GOTCHAS**: Share the bugs you hit, errors you got, how you debugged them
+6. **RESULTS**: Show metrics, before/after comparisons, actual performance data
 
 {$nextPartTeaser}
 
