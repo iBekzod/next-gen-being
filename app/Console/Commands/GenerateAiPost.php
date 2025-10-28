@@ -182,11 +182,15 @@ class GenerateAiPost extends Command
         // Step 6: Determine premium strategy
         $isPremium = $this->determinePremiumStrategy();
 
-        // Step 7: Generate featured image
+        // Step 7: Load recently used images to prevent duplicates
+        $imageService = app(ImageGenerationService::class);
+        $imageService->loadRecentlyUsedImages(30);
+
+        // Step 8: Generate featured image
         $this->info('🎨 Generating featured image...');
         $imageData = $this->generateFeaturedImage($postData['title'], $category->name);
 
-        // Step 8: Create the post
+        // Step 9: Create the post
         $post = Post::create([
             'title' => $postData['title'],
             'excerpt' => $postData['excerpt'],
@@ -243,22 +247,48 @@ class GenerateAiPost extends Command
     private function selectTrendingTopic(): array
     {
         // Get recent topics to avoid duplication - include keywords for better matching
-        $recentPosts = Post::where('created_at', '>=', now()->subDays(30))
-            ->select('title', 'content')
+        $recentPosts = Post::where('created_at', '>=', now()->subDays(60)) // Extended to 60 days
+            ->select('title', 'content', 'created_at')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $recentTopics = $recentPosts->pluck('title')->toArray();
 
-        // Extract key technologies/keywords from recent posts to avoid repetition
+        // Extract ALL technology keywords from recent posts (comprehensive)
         $recentKeywords = [];
+        $commonTechKeywords = [
+            'Laravel', 'React', 'Vue', 'Angular', 'Node', 'Python', 'Django', 'Flask',
+            'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'Redis', 'PostgreSQL', 'MySQL',
+            'MongoDB', 'GraphQL', 'REST', 'API', 'Microservices', 'Serverless',
+            'TypeScript', 'JavaScript', 'PHP', 'Java', 'Go', 'Rust', 'Ruby',
+            'Kafka', 'RabbitMQ', 'Nginx', 'Apache', 'Elasticsearch', 'Terraform',
+            'CI/CD', 'GitHub', 'GitLab', 'Jenkins', 'Next.js', 'Nuxt', 'Gatsby',
+            'TailwindCSS', 'Bootstrap', 'Sass', 'Webpack', 'Vite', 'Rollup'
+        ];
+
         foreach ($recentPosts as $post) {
-            // Extract technology names from title (e.g., "Apache Kafka", "React Native", etc.)
-            preg_match_all('/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/', $post->title, $matches);
+            $text = $post->title . ' ' . substr($post->content, 0, 500);
+
+            // Extract technology names (capital letter words/phrases)
+            preg_match_all('/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/', $text, $matches);
             if (!empty($matches[0])) {
                 $recentKeywords = array_merge($recentKeywords, $matches[0]);
             }
+
+            // Also check for common tech keywords (case-insensitive)
+            foreach ($commonTechKeywords as $tech) {
+                if (stripos($text, $tech) !== false) {
+                    $recentKeywords[] = $tech;
+                }
+            }
         }
+
         $recentKeywords = array_unique($recentKeywords);
+        $recentKeywords = array_values(array_filter($recentKeywords, function($keyword) {
+            // Filter out common words that aren't technologies
+            $excludeWords = ['The', 'This', 'That', 'With', 'From', 'Your', 'How', 'Why', 'What', 'When', 'Where', 'Using', 'Build', 'Creating'];
+            return !in_array($keyword, $excludeWords) && strlen($keyword) > 2;
+        }));
 
         $currentYear = now()->year;
         $currentMonth = now()->format('F');
@@ -345,7 +375,7 @@ class GenerateAiPost extends Command
             : "No recent topics to avoid.";
 
         $recentKeywordsList = !empty($recentKeywords)
-            ? "Technologies RECENTLY USED (pick DIFFERENT technologies): " . implode(', ', array_slice($recentKeywords, 0, 20))
+            ? "🚫 AVOID THESE TECHNOLOGIES (already covered): " . implode(', ', array_slice($recentKeywords, 0, 30))
             : "No recent technology keywords.";
 
         $prompt = "You are a tech blog content strategist tracking current trends in {$currentMonth} {$currentYear}.
@@ -355,11 +385,23 @@ Generate ONE highly specific, practical blog post topic from the category: {$ran
 Trending areas in this category:
 " . implode("\n", array_map(fn($t) => "- $t", $categoryTopics)) . "
 
+📋 RECENT POSTS TO AVOID DUPLICATING:
 {$recentTopicsList}
 
 {$recentKeywordsList}
 
-⚠️ CRITICAL: Choose DIFFERENT technologies/frameworks than those recently used above. Provide variety and avoid repetition!
+⚠️ CRITICAL DUPLICATE PREVENTION:
+1. Choose COMPLETELY DIFFERENT technologies/frameworks than those listed above
+2. If a technology was used recently (e.g., Kafka, Laravel, React), pick something ELSE
+3. Provide MAXIMUM VARIETY - explore underutilized technologies
+4. NEVER generate similar topics to recent posts
+5. If you're unsure, pick from a different subcategory entirely
+
+Examples of GOOD variety:
+- If recent posts covered Kafka → try RabbitMQ, NATS, or Pulsar instead
+- If recent posts covered React → try Svelte, Solid.js, or Qwik instead
+- If recent posts covered Laravel → try Symfony, Lumen, or FastAPI instead
+- If recent posts covered Docker → try Podman, LXC, or containerd instead
 
 Requirements:
 1. Topic must be CURRENT and RELEVANT in {$currentYear}
