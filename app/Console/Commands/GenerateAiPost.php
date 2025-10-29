@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Tag;
 use App\Models\ContentPlan;
 use App\Services\ImageGenerationService;
+use App\Services\ContentModerationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -191,7 +192,27 @@ class GenerateAiPost extends Command
         $this->info('🎨 Generating featured image...');
         $imageData = $this->generateFeaturedImage($postData['title'], $category->name);
 
-        // Step 9: Create the post
+        // Step 9: Run AI moderation check
+        $this->info('🔍 Running content moderation check...');
+        $moderationService = new ContentModerationService();
+        $moderationResult = $moderationService->moderateContent(
+            $postData['title'],
+            $postData['content'],
+            $postData['excerpt']
+        );
+
+        // AI-generated content gets auto-approved if high quality
+        $moderation_status = ($moderationResult['passed'] && $moderationResult['score'] >= 85)
+            ? 'approved'
+            : 'pending';
+
+        if ($moderation_status === 'approved') {
+            $this->info("✅ Content passed moderation (score: {$moderationResult['score']})");
+        } else {
+            $this->warn("⚠️  Content flagged for manual review (score: {$moderationResult['score']})");
+        }
+
+        // Step 10: Create the post
         $post = Post::create([
             'title' => $postData['title'],
             'excerpt' => $postData['excerpt'],
@@ -203,8 +224,14 @@ class GenerateAiPost extends Command
             'status' => $this->option('draft') ? 'draft' : 'published',
             'published_at' => $this->option('draft') ? null : now(),
             'is_premium' => $isPremium,
-            'is_featured' => $isPremium, // Featured premium content gets more visibility
+            'is_featured' => $isPremium,
             'allow_comments' => true,
+            'moderation_status' => $moderation_status,
+            'moderated_at' => $moderation_status === 'approved' ? now() : null,
+            'moderation_notes' => $moderation_status === 'approved'
+                ? "Auto-approved by AI (score: {$moderationResult['score']})"
+                : null,
+            'ai_moderation_check' => $moderationResult,
             'seo_meta' => [
                 'meta_title' => $postData['meta_title'],
                 'meta_description' => $postData['meta_description'],

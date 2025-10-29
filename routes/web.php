@@ -9,6 +9,7 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\Admin\ModerationController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
@@ -58,6 +59,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/dashboard/settings', [UserDashboardController::class, 'updateSettings'])->name('dashboard.settings.update');
     Route::put('/dashboard/settings/password', [UserDashboardController::class, 'updatePassword'])->name('dashboard.settings.password');
     Route::delete('/dashboard/settings', [UserDashboardController::class, 'deleteAccount'])->name('dashboard.settings.delete');
+
+    // Admin moderation routes (add role check middleware later)
+    Route::prefix('admin/moderation')->name('admin.moderation.')->group(function () {
+        Route::get('/', [ModerationController::class, 'index'])->name('index');
+        Route::get('/{post}', [ModerationController::class, 'show'])->name('show');
+        Route::post('/{post}/approve', [ModerationController::class, 'approve'])->name('approve');
+        Route::post('/{post}/reject', [ModerationController::class, 'reject'])->name('reject');
+        Route::post('/{post}/recheck', [ModerationController::class, 'recheck'])->name('recheck');
+        Route::post('/bulk-approve', [ModerationController::class, 'bulkApprove'])->name('bulk-approve');
+        Route::post('/bulk-reject', [ModerationController::class, 'bulkReject'])->name('bulk-reject');
+    });
 });
 
 // LemonSqueezy webhook routes (handled automatically by LemonSqueezy Laravel package)

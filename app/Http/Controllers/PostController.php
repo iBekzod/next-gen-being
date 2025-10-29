@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Services\ContentModerationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -98,6 +99,33 @@ class PostController extends Controller
         }
         unset($validated['tags']); // Remove from validated data
 
+        // Run AI moderation check before creating post
+        $moderationService = new ContentModerationService();
+        $moderationResult = $moderationService->moderateContent(
+            $validated['title'],
+            $validated['content'],
+            $validated['excerpt']
+        );
+
+        // Store moderation result
+        $validated['ai_moderation_check'] = $moderationResult;
+
+        // Set moderation status based on AI result and post status
+        if ($validated['status'] === 'draft') {
+            // Drafts don't need moderation yet
+            $validated['moderation_status'] = 'pending';
+        } elseif ($moderationResult['passed'] && $moderationResult['score'] >= 80) {
+            // High-quality content can auto-approve
+            $validated['moderation_status'] = 'approved';
+            $validated['moderated_by'] = null; // Auto-approved by AI
+            $validated['moderated_at'] = now();
+            $validated['moderation_notes'] = 'Auto-approved by AI (score: ' . $moderationResult['score'] . ')';
+        } else {
+            // Everything else needs manual review
+            $validated['moderation_status'] = 'pending';
+            $validated['status'] = 'draft'; // Keep as draft until approved
+        }
+
         $post = Post::create($validated);
 
         // Attach tags by finding or creating them
@@ -115,8 +143,15 @@ class PostController extends Controller
             $post->tags()->sync($tagIds);
         }
 
+        // Different messages based on moderation status
+        if ($post->moderation_status === 'approved') {
+            $message = 'Post created and published successfully!';
+        } else {
+            $message = 'Post created and submitted for moderation. You will be notified once it is reviewed.';
+        }
+
         return redirect()->route('posts.show', $post->slug)
-            ->with('success', 'Post created successfully!');
+            ->with('success', $message);
     }
 
     public function edit(Post $post)

@@ -21,18 +21,21 @@ class Post extends Model implements HasMedia
         'premium_tier', 'preview_percentage', 'paywall_message',
         'read_time', 'views_count', 'likes_count', 'comments_count',
         'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
-        'series_title', 'series_slug', 'series_part', 'series_total_parts', 'series_description'
+        'series_title', 'series_slug', 'series_part', 'series_total_parts', 'series_description',
+        'moderation_status', 'moderated_by', 'moderated_at', 'moderation_notes', 'ai_moderation_check'
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'scheduled_at' => 'datetime',
+        'moderated_at' => 'datetime',
         'is_featured' => 'boolean',
         'allow_comments' => 'boolean',
         'is_premium' => 'boolean',
         'gallery' => 'array',
         'seo_meta' => 'array',
         'image_attribution' => 'array',
+        'ai_moderation_check' => 'array',
     ];
 
     public function getSlugOptions(): SlugOptions
@@ -66,6 +69,11 @@ class Post extends Model implements HasMedia
     public function approvedComments()
     {
         return $this->comments()->approved();
+    }
+
+    public function moderator()
+    {
+        return $this->belongsTo(User::class, 'moderated_by');
     }
 
     public function interactions()
@@ -200,12 +208,65 @@ class Post extends Model implements HasMedia
         return $query->orderByDesc('published_at');
     }
 
+    // Moderation scopes
+    public function scopePendingModeration($query)
+    {
+        return $query->where('moderation_status', 'pending');
+    }
+
+    public function scopeModeratedApproved($query)
+    {
+        return $query->where('moderation_status', 'approved');
+    }
+
+    public function scopeModeratedRejected($query)
+    {
+        return $query->where('moderation_status', 'rejected');
+    }
+
     // Methods
     public function isPublished(): bool
     {
         return $this->status === 'published' &&
                $this->published_at &&
                $this->published_at->isPast();
+    }
+
+    // Moderation methods
+    public function isPendingModeration(): bool
+    {
+        return $this->moderation_status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->moderation_status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->moderation_status === 'rejected';
+    }
+
+    public function approve(User $moderator, ?string $notes = null): bool
+    {
+        $this->moderation_status = 'approved';
+        $this->moderated_by = $moderator->id;
+        $this->moderated_at = now();
+        $this->moderation_notes = $notes;
+
+        return $this->save();
+    }
+
+    public function reject(User $moderator, string $reason): bool
+    {
+        $this->moderation_status = 'rejected';
+        $this->moderated_by = $moderator->id;
+        $this->moderated_at = now();
+        $this->moderation_notes = $reason;
+        $this->status = 'draft'; // Move back to draft
+
+        return $this->save();
     }
 
     public function canBeViewedBy(?User $user): bool
