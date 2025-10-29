@@ -170,6 +170,50 @@ class PostResource extends Resource
                             ]),
                     ]),
 
+                Forms\Components\Section::make('Moderation')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('moderation_status')
+                                    ->label('Moderation Status')
+                                    ->options([
+                                        'pending' => 'Pending Review',
+                                        'approved' => 'Approved',
+                                        'rejected' => 'Rejected',
+                                    ])
+                                    ->default('pending')
+                                    ->required()
+                                    ->disabled(fn ($record) => $record && $record->isApproved())
+                                    ->helperText('Status can only be changed via Approve/Reject actions'),
+                                Forms\Components\Select::make('moderated_by')
+                                    ->relationship('moderator', 'name')
+                                    ->disabled()
+                                    ->helperText('Auto-set when moderation action is taken'),
+                            ]),
+                        Forms\Components\Textarea::make('moderation_notes')
+                            ->label('Moderation Notes')
+                            ->rows(2)
+                            ->disabled()
+                            ->helperText('Feedback from moderator or AI'),
+                        Forms\Components\Placeholder::make('ai_moderation_info')
+                            ->label('AI Moderation Check')
+                            ->content(function ($record) {
+                                if (!$record || !$record->ai_moderation_check) {
+                                    return 'No AI check performed yet';
+                                }
+                                $check = $record->ai_moderation_check;
+                                $score = $check['score'] ?? 'N/A';
+                                $passed = $check['passed'] ?? false;
+                                $flags = $check['flags'] ?? [];
+
+                                return "Score: {$score}/100 | " .
+                                       ($passed ? '✅ Passed' : '⚠️ Needs Review') .
+                                       (!empty($flags) ? ' | Flags: ' . implode(', ', $flags) : '');
+                            }),
+                    ])
+                    ->collapsible()
+                    ->collapsed(fn ($record) => !$record || $record->moderation_status === 'approved'),
+
                 Forms\Components\Section::make('SEO')
                     ->schema([
                         Forms\Components\KeyValue::make('seo_meta')
@@ -212,6 +256,22 @@ class PostResource extends Resource
                         'archived' => 'danger',
                         default => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('moderation_status')
+                    ->label('Moderation')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                        default => $state,
+                    })
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_featured')
                     ->boolean()
                     ->label('Featured'),
@@ -252,6 +312,14 @@ class PostResource extends Resource
                     ->relationship('author', 'name')
                     ->searchable()
                     ->preload(),
+                Tables\Filters\SelectFilter::make('moderation_status')
+                    ->label('Moderation')
+                    ->options([
+                        'pending' => 'Pending Review',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->placeholder('All Moderation States'),
                 Tables\Filters\TernaryFilter::make('is_featured'),
                 Tables\Filters\TernaryFilter::make('is_premium'),
                 Tables\Filters\Filter::make('is_series')
@@ -282,6 +350,57 @@ class PostResource extends Resource
                     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->isPendingModeration() || $record->isRejected())
+                    ->requiresConfirmation()
+                    ->modalHeading('Approve Post')
+                    ->modalDescription('This will approve and publish the post.')
+                    ->form([
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Approval Notes (Optional)')
+                            ->rows(2)
+                            ->placeholder('Add any feedback or comments...'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->approve(auth()->user(), $data['notes'] ?? null);
+                        if ($record->status === 'draft') {
+                            $record->update([
+                                'status' => 'published',
+                                'published_at' => now(),
+                            ]);
+                        }
+                    })
+                    ->successNotification(
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title('Post Approved')
+                            ->body('The post has been approved and published.')
+                    ),
+                Tables\Actions\Action::make('reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) => $record->isPendingModeration())
+                    ->requiresConfirmation()
+                    ->modalHeading('Reject Post')
+                    ->modalDescription('This will reject the post and move it back to draft.')
+                    ->form([
+                        Forms\Components\Textarea::make('reason')
+                            ->label('Rejection Reason')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('Explain why this post is being rejected...'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->reject(auth()->user(), $data['reason']);
+                    })
+                    ->successNotification(
+                        \Filament\Notifications\Notification::make()
+                            ->warning()
+                            ->title('Post Rejected')
+                            ->body('The post has been rejected and moved to draft.')
+                    ),
                 Tables\Actions\Action::make('view')
                     ->icon('heroicon-o-eye')
                     ->url(fn ($record) => route('posts.show', $record->slug))
@@ -295,6 +414,7 @@ class PostResource extends Resource
                         $newPost->slug = Str::slug($newPost->title);
                         $newPost->status = 'draft';
                         $newPost->published_at = null;
+                        $newPost->moderation_status = 'pending';
                         $newPost->save();
                     })
                     ->successNotification(
@@ -306,6 +426,59 @@ class PostResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('bulkApprove')
+                        ->label('Approve Selected')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Approve Selected Posts')
+                        ->modalDescription('This will approve all selected pending posts.')
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                if ($record->isPendingModeration()) {
+                                    $record->approve(auth()->user(), 'Bulk approved');
+                                    if ($record->status === 'draft') {
+                                        $record->update([
+                                            'status' => 'published',
+                                            'published_at' => now(),
+                                        ]);
+                                    }
+                                }
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotification(
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title('Posts Approved')
+                                ->body('Selected posts have been approved.')
+                        ),
+                    Tables\Actions\BulkAction::make('bulkReject')
+                        ->label('Reject Selected')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Reject Selected Posts')
+                        ->form([
+                            Forms\Components\Textarea::make('reason')
+                                ->label('Rejection Reason')
+                                ->required()
+                                ->rows(3),
+                        ])
+                        ->action(function ($records, array $data) {
+                            foreach ($records as $record) {
+                                if ($record->isPendingModeration()) {
+                                    $record->reject(auth()->user(), $data['reason']);
+                                }
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotification(
+                            \Filament\Notifications\Notification::make()
+                                ->warning()
+                                ->title('Posts Rejected')
+                                ->body('Selected posts have been rejected.')
+                        ),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('publish')
                         ->icon('heroicon-o-check-circle')
