@@ -47,14 +47,25 @@ class GenerateContentPlan extends Command
             'status' => 'active',
         ]);
 
+        // Count free vs premium
+        $freeCount = count(array_filter($plan->planned_topics, fn($t) => ($t['type'] ?? 'free') === 'free'));
+        $premiumCount = count($plan->planned_topics) - $freeCount;
+
         $this->info("✅ Content plan created successfully!");
         $this->info("   Month: {$plan->month}");
         $this->info("   Theme: {$plan->theme}");
-        $this->info("   Topics: " . count($plan->planned_topics));
+        $this->info("   Total Topics: " . count($plan->planned_topics));
+        $this->info("   FREE: {$freeCount} (80%)");
+        $this->info("   PREMIUM: {$premiumCount} (20%)");
         $this->newLine();
         $this->info("📋 Planned Topics:");
+
         foreach ($plan->planned_topics as $index => $topic) {
-            $this->line("   " . ($index + 1) . ". {$topic}");
+            $title = is_array($topic) ? $topic['title'] : $topic;
+            $type = is_array($topic) ? ($topic['type'] ?? 'free') : 'free';
+            $week = is_array($topic) ? ($topic['week'] ?? '?') : '?';
+            $badge = $type === 'premium' ? '💎 PREMIUM' : '🆓 FREE';
+            $this->line("   " . ($index + 1) . ". [{$badge}] [Week {$week}] {$title}");
         }
 
         return self::SUCCESS;
@@ -76,64 +87,94 @@ class GenerateContentPlan extends Command
 
         $prompt .= "
 
-Generate a cohesive monthly content plan that explores ONE major theme from multiple angles.
+Generate a STRATEGIC monthly content plan designed to BUILD AUDIENCE → ESTABLISH TRUST → DRIVE SUBSCRIPTIONS.
+
+🎯 CONVERSION FUNNEL STRATEGY (CRITICAL):
+
+**MONTH STRUCTURE (30 posts total):**
+- Week 1-2: 15 posts (100% FREE) - \"Discovery & Value Proof\"
+- Week 3: 8 posts (75% FREE, 25% PREMIUM) - \"Trust Building\"
+- Week 4: 7 posts (60% FREE, 40% PREMIUM) - \"Conversion Push\"
+
+**FREE Content Strategy (24 posts - 80%):**
+Purpose: Attract traffic, prove expertise, build trust
+- High-value tutorials that solve REAL problems
+- Comparisons & benchmarks (drive search traffic)
+- Complete project builds (showcase depth)
+- Feature deep-dives (demonstrate expertise)
+Examples: \"ChatGPT vs Claude\", \"Building E-commerce with Laravel\", \"PostgreSQL Hidden Features\"
+
+**PREMIUM Content Strategy (6 posts - 20%):**
+Purpose: Create FOMO, demonstrate exclusive value
+- Advanced architecture patterns (production-scale solutions)
+- Complete SaaS templates with full source code
+- Performance optimization secrets (10x improvements)
+- Security deep-dives with real vulnerability examples
+- Insider knowledge from high-scale applications
+- Automation scripts & deployment strategies
+Examples: \"Multi-Tenant SaaS Architecture\", \"Scaling to 100M Requests/Day\", \"Complete Stripe Integration Template\"
 
 THEME SELECTION (if not specified):
 Choose from:
-- AI & Machine Learning Evolution
-- Quantum Computing Fundamentals
-- Blockchain & Web3 Innovation
-- Extended Reality (XR) Development
-- Edge Computing & IoT
-- Biotechnology & HealthTech
-- Clean Energy Technology
-- Space Technology
-- Advanced Software Architecture
-- Next-Gen Databases
-- Cybersecurity Innovation
-- Robotics & Automation
-- FinTech & DeFi
+- Full-Stack Development Mastery (Laravel, React, Next.js)
+- AI Integration & LLM Applications
+- Cloud Architecture & DevOps
+- Performance Optimization & Scaling
+- Modern Frontend Frameworks
+- API Design & Microservices
+- Database Optimization & Design
+- Security & Authentication
+- Testing & CI/CD Automation
+- SaaS Development from Scratch
 
-CONTENT PLANNING PRINCIPLES:
-1. Pick ONE cohesive theme for the month
-2. Generate 20-25 diverse topics within that theme
-3. Each topic should explore a DIFFERENT aspect/technology
-4. Mix of: fundamentals, practical implementations, case studies, comparisons, trends
-5. Avoid repetitive patterns (don't make all topics \"How to...\")
+⚠️ CRITICAL RULES FOR SUBSCRIPTIONS:
+1. **Value Ladder**: Free content must be GOOD, premium must be EXCEPTIONAL
+2. **Specificity**: Premium topics must promise concrete, actionable solutions
+3. **Exclusivity**: Premium should offer something NOT easily found elsewhere
+4. **Urgency**: Create content series where free posts lead to premium conclusions
+5. **Social Proof**: Include success metrics (\"Used by 10k+ developers\")
 
-TOPIC VARIETY EXAMPLES:
-✅ GOOD (varied approaches):
-- \"Understanding Quantum Algorithms: Shor vs Grover\"
-- \"Building Your First Quantum Circuit with Qiskit\"
-- \"Post-Quantum Cryptography: Preparing for the Future\"
-- \"Quantum Machine Learning: Current State and Limitations\"
-- \"IBM Q vs Google Cirq: Platform Comparison\"
+TOPIC VARIETY (AVOID REPETITION):
+✅ GOOD (varied, specific, valuable):
+- \"ChatGPT vs Claude vs Gemini: Real Performance Benchmarks\" (FREE)
+- \"Building a Complete Multi-Tenant SaaS with Laravel 11\" (PREMIUM)
+- \"Laravel Octane: 10x Performance Without Infrastructure Changes\" (FREE)
+- \"Production-Ready Authentication: JWT, OAuth2, and Session Security\" (PREMIUM)
+- \"React Server Components: When to Use vs Client Components\" (FREE)
 
-❌ BAD (repetitive):
-- \"How to Use Quantum Computing\"
-- \"How to Build Quantum Apps\"
-- \"How to Learn Quantum\"
-- \"How to Start Quantum Development\"
+❌ BAD (generic, repetitive):
+- \"Introduction to Laravel\"
+- \"Getting Started with React\"
+- \"How to Install Docker\"
 
-TOPIC TYPES TO INCLUDE:
-- Fundamentals (2-3 topics)
-- Practical implementations (8-10 topics)
-- Tool/platform comparisons (2-3 topics)
-- Case studies/real-world examples (3-4 topics)
-- Future trends/predictions (2-3 topics)
-- Best practices/patterns (3-4 topics)
-- Security/performance/scalability (2-3 topics)
+CONTENT DISTRIBUTION:
+Week 1-2 (100% FREE - 15 posts):
+- 5x Comparison/Benchmarks (drive search traffic)
+- 5x Complete Tutorials (prove expertise)
+- 3x Feature Deep-Dives (show depth)
+- 2x Best Practices Lists (easy engagement)
+
+Week 3 (75% FREE, 25% PREMIUM - 8 posts):
+- 6x FREE Advanced Tutorials (build trust)
+- 2x PREMIUM Architecture/Scaling (create interest)
+
+Week 4 (60% FREE, 40% PREMIUM - 7 posts):
+- 4x FREE Quick Wins (maintain traffic)
+- 3x PREMIUM Complete Solutions (drive conversions)
 
 Return ONLY this JSON:
 {
   \"theme\": \"Monthly theme name\",
-  \"description\": \"2-3 sentence description of what this month covers\",
+  \"description\": \"2-3 sentence description of what this month covers and the conversion strategy\",
   \"topics\": [
-    \"Specific topic title 1\",
-    \"Specific topic title 2\",
-    ... (20-25 topics total)
+    {\"title\": \"Specific topic 1\", \"type\": \"free\", \"week\": 1, \"category\": \"comparison\"},
+    {\"title\": \"Specific topic 2\", \"type\": \"free\", \"week\": 1, \"category\": \"tutorial\"},
+    {\"title\": \"Premium topic 1\", \"type\": \"premium\", \"week\": 3, \"category\": \"architecture\"},
+    ... (30 topics total: 24 free, 6 premium)
   ]
-}";
+}
+
+Categories: comparison, tutorial, deep-dive, best-practices, architecture, scaling, security, complete-project";
 
         try {
             $response = Http::timeout(60)
@@ -170,8 +211,15 @@ Return ONLY this JSON:
                 $data = json_decode($matches[0], true);
             }
 
-            if ($data && isset($data['theme']) && isset($data['topics']) && count($data['topics']) >= 15) {
-                return $data;
+            if ($data && isset($data['theme']) && isset($data['topics']) && count($data['topics']) >= 25) {
+                // Validate topic structure
+                $validTopics = array_filter($data['topics'], function($topic) {
+                    return isset($topic['title']) && isset($topic['type']) && in_array($topic['type'], ['free', 'premium']);
+                });
+
+                if (count($validTopics) >= 25) {
+                    return $data;
+                }
             }
 
             $this->error('Invalid response format from AI');

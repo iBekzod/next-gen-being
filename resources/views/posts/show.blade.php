@@ -91,11 +91,24 @@
 </section>
 
 <section class="bg-gray-50 dark:bg-slate-900">
-    <div class="px-4 py-12 mx-auto max-w-6xl sm:px-6 lg:px-8">
-        <!-- Series Navigation -->
-        <x-post.series-navigation :post="$post" />
+    <div class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        @if($post->isPartOfSeries())
+        <!-- Two-column layout for series posts -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Main Content (Left) -->
+            <div class="flex-1 min-w-0 lg:max-w-3xl">
+                @livewire('post-show', ['post' => $post])
+            </div>
 
+            <!-- Sticky Series Navigation (Right) -->
+            <div class="lg:w-80 xl:w-96">
+                <x-post.series-navigation-sidebar :post="$post" />
+            </div>
+        </div>
+        @else
+        <!-- Single post layout -->
         @livewire('post-show', ['post' => $post])
+        @endif
     </div>
 </section>
 @endsection

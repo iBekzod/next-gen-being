@@ -295,17 +295,29 @@ class GenerateAiPost extends Command
             $this->info("📅 Using monthly content plan: {$contentPlan->theme}");
             // Get a random ungenerated topic from the plan
             $generated = collect($contentPlan->generated_topics ?? [])->pluck('topic')->toArray();
-            $remaining = array_diff($contentPlan->planned_topics, $generated);
+
+            // Filter out already generated topics
+            $remaining = array_filter($contentPlan->planned_topics, function($topic) use ($generated) {
+                $title = is_array($topic) ? $topic['title'] : $topic;
+                return !in_array($title, $generated);
+            });
 
             if (!empty($remaining)) {
                 $selectedTopic = $remaining[array_rand($remaining)];
-                $this->info("📝 Selected from plan: {$selectedTopic}");
+                $title = is_array($selectedTopic) ? $selectedTopic['title'] : $selectedTopic;
+                $type = is_array($selectedTopic) ? ($selectedTopic['type'] ?? 'free') : 'free';
+                $week = is_array($selectedTopic) ? ($selectedTopic['week'] ?? 1) : 1;
+
+                $badge = $type === 'premium' ? '💎 PREMIUM' : '🆓 FREE';
+                $this->info("📝 Selected from plan: [{$badge}] [Week {$week}] {$title}");
 
                 return [
-                    'title' => $selectedTopic,
+                    'title' => $title,
                     'category' => $contentPlan->theme,
                     'from_plan' => true,
                     'plan_id' => $contentPlan->id,
+                    'is_premium' => $type === 'premium',
+                    'week' => $week,
                 ];
             }
         }
@@ -508,6 +520,51 @@ Examples of GOOD variety:
 - If recent posts covered Laravel → try Symfony, Lumen, or FastAPI instead
 - If recent posts covered Docker → try Podman, LXC, or containerd instead
 
+🎯 CONTENT TYPE STRATEGY (Pick ONE of these valuable formats):
+
+**1. COMPARISON & BENCHMARKS** (30% of topics)
+Users want to know WHICH technology to choose, not just HOW to use one.
+Examples:
+- \"ChatGPT vs Claude 3.5 Sonnet: Performance, Cost, and Use Cases Compared\"
+- \"PHP 8.3 vs Python 3.12: Real-World Web Performance Benchmarks\"
+- \"Laravel vs Django vs Ruby on Rails: Building the Same App in All Three\"
+- \"PostgreSQL vs MySQL vs MongoDB: When to Use Each Database\"
+- \"React vs Vue vs Svelte: Bundle Size, Performance, and Developer Experience\"
+- \"AWS vs Azure vs GCP: Cost Analysis for a Real Production App\"
+- \"Top 10 Laravel Packages for Modern Web Development in {$currentYear}\"
+- \"5 Best Redis Alternatives for Caching and Session Management\"
+
+**2. FASCINATING FEATURES & DEEP DIVES** (30% of topics)
+NOT basic installation/usage guides. Focus on UNIQUE, powerful features that make tech special.
+Examples:
+- \"Laravel's Service Container: The Hidden Power Behind Dependency Injection\"
+- \"React Concurrent Features: How Time Slicing Actually Works\"
+- \"PostgreSQL's JSONB: When Your Relational Database Becomes NoSQL\"
+- \"Rust's Ownership System: Why It Prevents Memory Leaks Without Garbage Collection\"
+- \"Docker's BuildKit: The Secret to 5x Faster Container Builds\"
+- \"Kafka's Exactly-Once Semantics: How It Actually Guarantees Message Delivery\"
+- \"TypeScript's Template Literal Types: Building Type-Safe APIs\"
+
+**3. COMPLETE PROJECT BUILDS** (25% of topics)
+Build FULL, production-ready applications from scratch. This is UNIQUE and valuable.
+Examples:
+- \"Building a Complete E-commerce Platform with Laravel 11, Stripe, and Vue 3\"
+- \"Full-Stack Blog with Next.js 14, Prisma, and PostgreSQL: From Zero to Deploy\"
+- \"Real-Time Chat Application using NestJS, WebSockets, and Redis\"
+- \"Building a SaaS Starter Kit with Django, Celery, and Stripe Integration\"
+- \"Complete API Platform with FastAPI, PostgreSQL, and JWT Authentication\"
+- \"Building a Social Media Dashboard with React, Node.js, and MongoDB\"
+- \"Full-Stack Task Management App using MERN Stack (MongoDB, Express, React, Node)\"
+
+**4. ARCHITECTURE & PATTERNS** (15% of topics)
+How to SCALE and structure applications properly.
+Examples:
+- \"Microservices with Laravel: Breaking Down a Monolith Step-by-Step\"
+- \"Event-Driven Architecture: Building Scalable Systems with Kafka and Go\"
+- \"CQRS and Event Sourcing in .NET: A Practical Implementation\"
+- \"Domain-Driven Design: Refactoring a Legacy PHP Application\"
+- \"Building Multi-Tenant SaaS Architecture with PostgreSQL Row-Level Security\"
+
 Requirements:
 1. Topic must be CURRENT and RELEVANT in {$currentYear}
 2. Be SPECIFIC - include actual version numbers and technologies when applicable
@@ -516,20 +573,24 @@ Requirements:
 5. AVOID phrases like: '10x Faster', '20x Better', '99.99% Uptime', 'Turbocharge', 'Unlock'
 6. Focus on learning, understanding, and practical implementation
 7. Make it educational and actionable
+8. ⚠️ AVOID basic installation/setup guides - users can find those anywhere
+9. ⚠️ AVOID simple \"Getting Started\" tutorials - go DEEPER
+10. Focus on UNIQUE insights, comparisons, or complete builds
 
 Examples of GOOD titles:
-- \"Building Production-Ready RAG Applications with LangChain and Pinecone\"
-- \"Understanding Next.js 14 Server Actions: A Complete Guide\"
-- \"Migrating from REST to GraphQL: Practical Lessons and Trade-offs\"
-- \"Comparing Rust and Go for Microservices: Real-World Considerations\"
-- \"Implementing Event-Driven Architecture with Apache Kafka\"
-- \"A Practical Guide to Domain-Driven Design in .NET\"
+- \"ChatGPT vs Claude vs Gemini: Which LLM is Best for Code Generation?\"
+- \"Building a Complete Multi-Tenant SaaS with Laravel 11 and Filament\"
+- \"PostgreSQL's Most Underrated Features: CTEs, Window Functions, and LISTEN/NOTIFY\"
+- \"Laravel Octane vs FrankenPHP: Real Benchmarks and Production Experience\"
+- \"Building a Real-Time Analytics Dashboard with ClickHouse and React\"
+- \"Top 8 Node.js Frameworks Beyond Express in {$currentYear}\"
 
 Examples of BAD titles (AVOID):
+- \"Getting Started with Laravel\" (too basic, found everywhere)
+- \"How to Install Docker\" (basic installation guide)
+- \"Introduction to React Hooks\" (too introductory)
 - \"10x Faster Performance with [Technology]\" (unrealistic claims)
 - \"Turbocharge Your App with [Tool]\" (clickbait language)
-- \"Unlock 99.99% Uptime\" (exaggerated guarantees)
-- \"Master [Complex Topic] in 10 Minutes\" (unrealistic timeframes)
 
 Return ONLY a JSON object:
 {
@@ -541,7 +602,7 @@ Return ONLY a JSON object:
             $response = $this->callOpenAI([
                 [
                     'role' => 'system',
-                    'content' => 'You are an expert tech content strategist who identifies trending, high-value topics that developers are actively searching for. You stay current with latest tech trends and focus on practical, specific content. Return ONLY valid JSON wrapped in ```json code blocks.'
+                    'content' => 'You are an expert tech content strategist who identifies trending, high-value topics that developers are actively searching for. You focus on UNIQUE content: comparisons/benchmarks, fascinating feature deep-dives, complete project builds, and architecture patterns - NOT basic installation guides. Return ONLY valid JSON wrapped in ```json code blocks.'
                 ],
                 [
                     'role' => 'user',
@@ -579,7 +640,13 @@ Return ONLY a JSON object:
     private function generatePostContent(array $topic): array
     {
         // Determine if this should be premium content
-        $isPremium = $this->option('premium') || (!$this->option('free') && rand(1, 100) <= 70); // 70% premium by default
+        // If topic is from content plan, respect its premium designation
+        if (isset($topic['is_premium'])) {
+            $isPremium = $topic['is_premium'];
+        } else {
+            // Otherwise use command options or 70% premium by default
+            $isPremium = $this->option('premium') || (!$this->option('free') && rand(1, 100) <= 70);
+        }
 
         $conversionStrategy = $isPremium ? $this->getPremiumContentStrategy() : '';
         $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
@@ -624,11 +691,17 @@ Skip the fluff. Jump right into the technical details. Code-heavy. Explain WHY t
 Style 3 - Step-by-Step Tutorial:
 \"Let's build X together.\" Conversational guide. Show outputs. Explain errors. Feel like pair programming with a friend.
 
-Style 4 - Comparative/Analysis:
-\"I tested 3 approaches...\" Compare options. Real benchmarks. When to use each. Honest pros/cons. Make a recommendation.
+Style 4 - Comparative/Analysis (USE FOR: comparison topics):
+\"I tested 3 approaches...\" Compare options with REAL benchmarks (latency, throughput, cost, bundle size). When to use each. Honest pros/cons. Make a clear recommendation based on use cases. Include comparison tables, performance graphs, cost breakdowns.
 
-Style 5 - Opinion/Best Practices:
-\"After 5 years with this tech...\" Strong opinions. What docs don't say. Mistakes to avoid. Your workflow. Opinionated but fair.
+Style 5 - Opinion/Best Practices (USE FOR: ranking/list topics):
+\"After 5 years with this tech...\" Strong opinions. What docs don't say. Mistakes to avoid. Your workflow. Opinionated but fair. Rank options clearly with reasoning.
+
+Style 6 - Complete Project Build (USE FOR: full project topics):
+\"Let's build a production-ready project from scratch.\" Full implementation - database design, backend API, frontend, auth, deployment. Complete, working code for every step. Commit-by-commit progression. Real outputs from commands. End with deployed, working app.
+
+Style 7 - Feature Deep Dive (USE FOR: specific feature topics):
+\"Let's explore a specific feature that most developers overlook.\" Focus on ONE powerful feature. Show unique use cases. Code examples demonstrating the feature. When to use it vs alternatives. Performance implications. Real-world scenarios where it shines.
 
 🎯 NATURAL WRITING PRINCIPLES:
 
@@ -674,9 +747,11 @@ Style 5 - Opinion/Best Practices:
    - Share strong opinions and recommendations based on experience
    - Inject personality (but stay professional)
 
-FLEXIBLE STRUCTURE (2000-3000 words - adapt based on chosen style):
+FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
 
+⚠️ DO NOT limit yourself - write as much as needed to FULLY explain the topic.
 ⚠️ DO NOT use same headings every time. Be natural and varied.
+⚠️ WRITE THE COMPLETE TUTORIAL - not a teaser or overview.
 
 SAMPLE NATURAL INTRO (vary based on style):
 - Story style: \"Last month, our team ran into...\"
@@ -685,7 +760,7 @@ SAMPLE NATURAL INTRO (vary based on style):
 - Comparative: \"I benchmarked 3 solutions...\"
 - Opinion: \"After working with X for 2 years, here's what I learned...\"
 
-MAIN CONTENT (distribute 1500-2500 words naturally):
+MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
 - Examples of good headings:
   * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
@@ -1288,7 +1363,7 @@ Create a comprehensive, in-depth tutorial series like you'd find on Medium or hi
 CRITICAL REQUIREMENTS - MEDIUM-QUALITY STANDARDS:
 - Series title must be PROFESSIONAL and EDUCATIONAL (NO clickbait like '10x Faster', 'Turbocharge', 'Unlock')
 - Each part should be SUBSTANTIAL - not simple commands, but real solutions to real problems
-- Each part must be comprehensive enough to stand alone as a valuable article (3000-5000 words)
+- Each part must be comprehensive enough to stand alone as a valuable article (4000-6000+ words)
 - Parts should cover DIFFERENT aspects/technologies - NOT repetitive patterns
 - Focus on real-world, production-ready implementations with actual code and outputs
 - Include architecture decisions, trade-offs, gotchas, and best practices
@@ -1464,7 +1539,7 @@ SERIES CONTEXT:
 THIS PART FOCUSES ON: {$partInfo['focus']}
 
 ⚠️ CRITICAL - MEDIUM-STYLE QUALITY:
-- This part must be SUBSTANTIAL (3000-5000 words) - a complete article, not a simple command list
+- This part must be SUBSTANTIAL (4000-6000+ words) - a complete article, not a simple command list
 - Provide DEEP technical content like Medium\'s best engineering articles
 - Cover ONE distinct aspect thoroughly rather than multiple topics superficially
 - Show REAL problem-solving: what you tried, what failed, what worked, with actual outputs
@@ -1493,14 +1568,21 @@ CONTENT REQUIREMENTS:
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 5000, 0.7, false); // Higher tokens for depth, lower temp for consistency, no strict JSON mode
+        ], 8000, 0.7, false); // Max tokens for comprehensive tutorials, lower temp for consistency
 
         return $this->parseAIResponse($response);
     }
 
     private function getBaseContentPrompt(string $conversionStrategy, string $advancedTipsExtra, string $conclusionExtra, bool $isPremium): string
     {
-        return "Write a comprehensive, professional, and highly educational blog post
+        return "Write a COMPLETE, IN-DEPTH tutorial - NOT a summary or overview.
+
+⚠️ CRITICAL: This is a TUTORIAL, not a blog post. Write the FULL content.
+- DO NOT write \"In the next section...\" - WRITE THE FULL SECTION NOW
+- DO NOT say \"We'll cover...\" - COVER IT COMPLETELY NOW
+- DO NOT summarize or give overviews - PROVIDE FULL IMPLEMENTATIONS
+- Think Medium.com's LONGEST technical articles - that's your target
+- COMPLETE code examples, COMPLETE explanations, COMPLETE walkthroughs
 
 CONTENT STRATEGY:
 {$conversionStrategy}
@@ -1511,6 +1593,7 @@ CONTENT STRATEGY:
 - Looking for production-grade, battle-tested solutions
 - Need ADVANCED patterns, not beginner tutorials
 - Want to learn things NOT commonly found in documentation
+- Want COMPLETE tutorials they can follow end-to-end
 
 ⚠️ CRITICAL RULES - MUST FOLLOW:
 1. NO clickbait or exaggerated claims (avoid: '10x faster', 'turbocharge', 'unlock', '99.99%')
@@ -1570,9 +1653,11 @@ CONTENT STRATEGY:
    - Share strong opinions and recommendations based on experience
    - Inject personality (but stay professional)
 
-FLEXIBLE STRUCTURE (2000-3000 words - adapt based on chosen style):
+FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
 
+⚠️ DO NOT limit yourself - write as much as needed to FULLY explain the topic.
 ⚠️ DO NOT use same headings every time. Be natural and varied.
+⚠️ WRITE THE COMPLETE TUTORIAL - not a teaser or overview.
 
 SAMPLE NATURAL INTRO (vary based on style):
 - Story style: \"Last month, our team ran into...\"
@@ -1581,7 +1666,7 @@ SAMPLE NATURAL INTRO (vary based on style):
 - Comparative: \"I benchmarked 3 solutions...\"
 - Opinion: \"After working with X for 2 years, here's what I learned...\"
 
-MAIN CONTENT (distribute 1500-2500 words naturally):
+MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
 - Examples of good headings:
   * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
