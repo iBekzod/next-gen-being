@@ -74,3 +74,86 @@ Schedule::command('newsletter:send-weekly')
 
 Schedule::command('newsletter:cleanup')
     ->monthly();
+
+// ========================================
+// SEO & SEARCH ENGINE OPTIMIZATION
+// ========================================
+// Update sitemap after new posts are published
+Schedule::command('sitemap:generate')
+    ->dailyAt('23:00')
+    ->timezone(config('app.timezone'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Sitemap generated successfully');
+    });
+
+// Update RSS feed after new posts
+Schedule::command('rss:generate')
+    ->dailyAt('23:15')
+    ->timezone(config('app.timezone'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('RSS feed generated successfully');
+    });
+
+// Ping search engines about sitemap updates (weekly)
+Schedule::command('seo:ping-search-engines')
+    ->weeklyOn(1, '10:00')
+    ->timezone(config('app.timezone'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Search engines pinged about sitemap updates');
+    });
+
+// ========================================
+// MAINTENANCE & CLEANUP
+// ========================================
+// Clean orphaned media files (weekly)
+Schedule::command('media-library:clean', ['--delete-orphaned'])
+    ->weeklyOn(7, '03:00')
+    ->timezone(config('app.timezone'));
+
+// Prune old failed jobs (weekly)
+Schedule::command('queue:prune-failed', ['--hours=168'])
+    ->weekly()
+    ->sundays()
+    ->at('02:00');
+
+// Clear expired password reset tokens (daily)
+Schedule::command('auth:clear-resets')
+    ->daily();
+
+// Prune expired Sanctum tokens (if using API tokens)
+Schedule::command('sanctum:prune-expired', ['--hours=24'])
+    ->daily();
+
+// ========================================
+// BACKUPS (IMPORTANT!)
+// ========================================
+// Daily database backup
+Schedule::command('backup:run', ['--only-db'])
+    ->dailyAt('01:00')
+    ->timezone(config('app.timezone'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Database backup completed');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Database backup failed');
+    });
+
+// Weekly full backup (database + files)
+Schedule::command('backup:run')
+    ->weeklyOn(1, '02:00')
+    ->timezone(config('app.timezone'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Full backup completed');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Full backup failed');
+    });
+
+// Monitor backup health (daily)
+Schedule::command('backup:monitor')
+    ->dailyAt('04:00')
+    ->timezone(config('app.timezone'));
+
+// Clean old backups (monthly)
+Schedule::command('backup:clean')
+    ->monthly();
