@@ -862,14 +862,15 @@ Return ONLY this JSON (ensure proper escaping):
         // Extract simple string fields with proper newline handling
         foreach (['title', 'excerpt', 'meta_title', 'meta_description'] as $field) {
             if (preg_match('/"' . $field . '":\s*"(.*?)"\s*[,}]/s', $jsonStr, $match)) {
-                // The value already has newlines - keep them as-is for markdown
-                $fields[$field] = $match[1];
+                // Unescape JSON escape sequences (quotes, backslashes, etc.)
+                $fields[$field] = stripcslashes($match[1]);
             }
         }
 
         // Extract content separately (it's large and has newlines)
         if (preg_match('/"content":\s*"(.*?)"\s*,\s*"excerpt"/s', $jsonStr, $match)) {
-            $fields['content'] = $match[1];
+            // Unescape JSON escape sequences
+            $fields['content'] = stripcslashes($match[1]);
         }
 
         // Extract array fields
