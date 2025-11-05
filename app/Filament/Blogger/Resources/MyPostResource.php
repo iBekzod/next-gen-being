@@ -3,6 +3,7 @@
 namespace App\Filament\Blogger\Resources;
 
 use App\Filament\Blogger\Resources\MyPostResource\Pages;
+use App\Filament\Blogger\Resources\MyPostResource\RelationManagers;
 use App\Models\Post;
 use App\Models\Category;
 use App\Services\EnhancedAIGenerationService;
@@ -472,7 +473,9 @@ class MyPostResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\CommentsRelationManager::class,
+            RelationManagers\VideoGenerationsRelationManager::class,
+            RelationManagers\SocialMediaPostsRelationManager::class,
         ];
     }
 

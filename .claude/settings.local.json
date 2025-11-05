@@ -6,7 +6,8 @@
       "Bash(git log:*)",
       "Bash(php artisan:*)",
       "Bash(docker exec:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
