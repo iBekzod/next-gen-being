@@ -37,7 +37,9 @@ class BloggerPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Blogger/Widgets'), for: 'App\\Filament\\Blogger\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                \App\Filament\Blogger\Widgets\BloggerStatsOverview::class,
+                \App\Filament\Blogger\Widgets\QuickActionsWidget::class,
+                \App\Filament\Blogger\Widgets\RecentActivityWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -55,7 +57,6 @@ class BloggerPanelProvider extends PanelProvider
             ])
             ->authGuard('web')
             // Only allow users with 'blogger' role
-            ->authPasswordReset()
             ->navigationGroups([
                 'Content',
                 'Analytics',

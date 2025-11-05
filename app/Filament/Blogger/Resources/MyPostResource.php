@@ -316,6 +316,50 @@ class MyPostResource extends Resource
                     ->alignRight()
                     ->icon('heroicon-o-eye'),
 
+                Tables\Columns\TextColumn::make('video_status')
+                    ->label('Video')
+                    ->badge()
+                    ->getStateUsing(function (Post $record) {
+                        $video = \App\Models\VideoGeneration::where('post_id', $record->id)
+                            ->latest()
+                            ->first();
+
+                        if (!$video) return 'No video';
+                        return ucfirst($video->status);
+                    })
+                    ->colors([
+                        'gray' => 'No video',
+                        'warning' => 'processing',
+                        'success' => 'completed',
+                        'danger' => 'failed',
+                    ])
+                    ->icon(fn (string $state): string => match($state) {
+                        'No video' => 'heroicon-o-x-mark',
+                        'processing' => 'heroicon-o-arrow-path',
+                        'completed' => 'heroicon-o-check-circle',
+                        'failed' => 'heroicon-o-exclamation-circle',
+                        default => 'heroicon-o-video-camera',
+                    })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('social_status')
+                    ->label('Social Media')
+                    ->badge()
+                    ->getStateUsing(function (Post $record) {
+                        $publishedCount = \App\Models\SocialMediaPost::where('post_id', $record->id)
+                            ->where('status', 'published')
+                            ->count();
+
+                        if ($publishedCount === 0) return 'Not published';
+                        return "{$publishedCount} platforms";
+                    })
+                    ->colors([
+                        'gray' => 'Not published',
+                        'success' => fn ($state) => $state !== 'Not published',
+                    ])
+                    ->icon(fn (string $state): string => $state === 'Not published' ? 'heroicon-o-x-mark' : 'heroicon-o-share')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable()
@@ -340,9 +384,82 @@ class MyPostResource extends Resource
                     ->url(fn (Post $record): string => route('posts.show', $record->slug))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('generate_video')
+                    ->label('Generate Video')
+                    ->icon('heroicon-o-video-camera')
+                    ->color('success')
+                    ->visible(fn (Post $record) => $record->status === 'published')
+                    ->requiresConfirmation()
+                    ->modalHeading('Generate Video from Post')
+                    ->modalDescription(fn (Post $record) => "Generate a video blog from: {$record->title}")
+                    ->form([
+                        Forms\Components\Select::make('video_type')
+                            ->label('Video Type')
+                            ->options([
+                                'short' => 'Short (60 seconds) - Quick overview',
+                                'medium' => 'Medium (3-5 minutes) - Standard format',
+                                'long' => 'Long (10+ minutes) - In-depth coverage',
+                            ])
+                            ->default('medium')
+                            ->required()
+                            ->helperText('Choose the length and depth of your video'),
+                    ])
+                    ->action(function (Post $record, array $data) {
+                        \App\Jobs\GenerateVideoJob::dispatch(
+                            $record,
+                            $data['video_type'],
+                            Auth::id()
+                        );
 
-                Tables\Actions\DeleteAction::make(),
+                        Notification::make()
+                            ->title('Video Generation Started!')
+                            ->body('Your video is being generated in the background. Check Job Queue for progress.')
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('publish_social')
+                    ->label('Publish to Social Media')
+                    ->icon('heroicon-o-share')
+                    ->color('info')
+                    ->visible(function (Post $record) {
+                        // Check if there's at least one completed video
+                        $hasVideo = \App\Models\VideoGeneration::where('post_id', $record->id)
+                            ->where('status', 'completed')
+                            ->exists();
+
+                        // Check if user has connected social media accounts
+                        $hasAccounts = \App\Models\SocialMediaAccount::where('user_id', Auth::id())
+                            ->exists();
+
+                        return $hasVideo && $hasAccounts;
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Publish to Social Media')
+                    ->modalDescription('This will publish your video to all connected social media accounts.')
+                    ->action(function (Post $record) {
+                        \App\Jobs\PublishToSocialMediaJob::dispatch($record);
+
+                        Notification::make()
+                            ->title('Publishing Started!')
+                            ->body('Your video is being published to social media. Check Job Queue for progress.')
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+
+                    Tables\Actions\Action::make('view_jobs')
+                        ->label('View Jobs')
+                        ->icon('heroicon-o-queue-list')
+                        ->color('gray')
+                        ->url(fn () => route('filament.blogger.resources.job-statuses.index'))
+                        ->visible(fn (Post $record) => \App\Models\JobStatus::where('trackable_type', Post::class)
+                            ->where('trackable_id', $record->id)
+                            ->exists()),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
