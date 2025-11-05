@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
+use LemonSqueezy\Laravel\Events\WebhookHandled;
+use App\Listeners\HandleLemonSqueezyWebhook;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register LemonSqueezy webhook listener for AI subscriptions
+        Event::listen(
+            WebhookHandled::class,
+            HandleLemonSqueezyWebhook::class
+        );
     }
 }

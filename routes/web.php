@@ -10,6 +10,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\Admin\ModerationController;
+use App\Http\Controllers\BloggerProfileController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
@@ -33,6 +34,14 @@ Route::get('/series/{seriesSlug}', [PostController::class, 'series'])->name('ser
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/categories/{category:slug}', [PostController::class, 'index'])->name('categories.show');
 Route::get('/tags/{tag:slug}', [PostController::class, 'index'])->name('tags.show');
+
+// Feed routes
+Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
+Route::get('/explore', [FeedController::class, 'global'])->name('feed.global');
+
+// Blogger routes
+Route::get('/bloggers', [BloggerProfileController::class, 'index'])->name('bloggers.index');
+Route::get('/blogger/{username}', [BloggerProfileController::class, 'show'])->name('bloggers.profile');
 
 // Subscription routes
 Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('subscription.plans');

@@ -17,7 +17,11 @@ class User extends Authenticatable implements HasMedia, FilamentUser
 
     protected $fillable = [
         'name', 'email', 'password', 'avatar', 'bio', 'website',
-        'twitter', 'linkedin', 'is_active', 'last_seen_at'
+        'twitter', 'linkedin', 'is_active', 'last_seen_at',
+        'ai_tier', 'groq_api_key', 'openai_api_key', 'unsplash_api_key',
+        'ai_posts_generated', 'ai_images_generated', 'ai_tier_starts_at',
+        'ai_tier_expires_at', 'monthly_ai_posts_limit', 'monthly_ai_images_limit',
+        'ai_usage_reset_date'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -26,11 +30,27 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         'email_verified_at' => 'datetime',
         'last_seen_at' => 'datetime',
         'is_active' => 'boolean',
+        'groq_api_key' => 'encrypted',
+        'openai_api_key' => 'encrypted',
+        'unsplash_api_key' => 'encrypted',
+        'ai_tier_starts_at' => 'datetime',
+        'ai_tier_expires_at' => 'datetime',
+        'ai_usage_reset_date' => 'date',
     ];
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasAnyRole(['admin', 'content_manager', 'lead']);
+        // Admin panel access
+        if ($panel->getId() === 'admin') {
+            return $this->hasAnyRole(['admin', 'content_manager', 'lead']);
+        }
+
+        // Blogger panel access
+        if ($panel->getId() === 'blogger') {
+            return $this->hasRole('blogger');
+        }
+
+        return false;
     }
 
     // Relationships
@@ -57,6 +77,16 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     public function helpReports()
     {
         return $this->hasMany(HelpReport::class);
+    }
+
+    public function earnings()
+    {
+        return $this->hasMany(BloggerEarning::class);
+    }
+
+    public function payoutRequests()
+    {
+        return $this->hasMany(PayoutRequest::class);
     }
 
     // Role Methods
@@ -177,11 +207,139 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     {
         if (!$this->isFollowing($user) && $this->id !== $user->id) {
             $this->following()->attach($user->id);
+
+            // Dispatch event for milestone detection
+            event(new \App\Events\UserFollowed($this, $user));
         }
     }
 
     public function unfollow(User $user): void
     {
         $this->following()->detach($user->id);
+    }
+
+    // AI Subscription Methods
+    public function hasAISubscription(): bool
+    {
+        return in_array($this->ai_tier, ['basic', 'premium', 'enterprise']);
+    }
+
+    public function isAITierExpired(): bool
+    {
+        if (!$this->ai_tier_expires_at) {
+            return false;
+        }
+
+        return now()->greaterThan($this->ai_tier_expires_at);
+    }
+
+    public function canGenerateAIContent(): bool
+    {
+        // Free tier requires API key
+        if ($this->ai_tier === 'free') {
+            return !empty($this->groq_api_key);
+        }
+
+        // Paid tiers check expiration
+        if ($this->isAITierExpired()) {
+            return false;
+        }
+
+        // Check quota
+        if ($this->monthly_ai_posts_limit === null) {
+            return true; // Unlimited
+        }
+
+        return $this->ai_posts_generated < $this->monthly_ai_posts_limit;
+    }
+
+    public function canGenerateAIImage(): bool
+    {
+        // Free tier requires API key
+        if ($this->ai_tier === 'free') {
+            return !empty($this->unsplash_api_key);
+        }
+
+        // Paid tiers check expiration
+        if ($this->isAITierExpired()) {
+            return false;
+        }
+
+        // Check quota
+        if ($this->monthly_ai_images_limit === null) {
+            return true; // Unlimited
+        }
+
+        return $this->ai_images_generated < $this->monthly_ai_images_limit;
+    }
+
+    public function getAIContentQuotaRemaining(): int|string
+    {
+        if ($this->monthly_ai_posts_limit === null) {
+            return 'unlimited';
+        }
+
+        return max(0, $this->monthly_ai_posts_limit - $this->ai_posts_generated);
+    }
+
+    public function getAIImageQuotaRemaining(): int|string
+    {
+        if ($this->monthly_ai_images_limit === null) {
+            return 'unlimited';
+        }
+
+        return max(0, $this->monthly_ai_images_limit - $this->ai_images_generated);
+    }
+
+    public function getAITierName(): string
+    {
+        return match($this->ai_tier) {
+            'free' => 'Free',
+            'basic' => 'Basic ($9.99/mo)',
+            'premium' => 'Premium ($29.99/mo)',
+            'enterprise' => 'Enterprise ($99.99/mo)',
+            default => 'Free',
+        };
+    }
+
+    public function resetAIQuota(): void
+    {
+        $this->update([
+            'ai_posts_generated' => 0,
+            'ai_images_generated' => 0,
+            'ai_usage_reset_date' => now()->addMonth()->startOfMonth(),
+        ]);
+    }
+
+    public function upgradeAITier(string $tier, int $months = 1): void
+    {
+        $limits = [
+            'free' => ['posts' => 5, 'images' => 10],
+            'basic' => ['posts' => 50, 'images' => 100],
+            'premium' => ['posts' => null, 'images' => null],
+            'enterprise' => ['posts' => null, 'images' => null],
+        ];
+
+        $tierLimits = $limits[$tier] ?? $limits['free'];
+
+        $this->update([
+            'ai_tier' => $tier,
+            'monthly_ai_posts_limit' => $tierLimits['posts'],
+            'monthly_ai_images_limit' => $tierLimits['images'],
+            'ai_tier_starts_at' => now(),
+            'ai_tier_expires_at' => now()->addMonths($months),
+            'ai_usage_reset_date' => now()->addMonth()->startOfMonth(),
+        ]);
+    }
+
+    public function downgradeAITier(): void
+    {
+        $this->update([
+            'ai_tier' => 'free',
+            'monthly_ai_posts_limit' => 5,
+            'monthly_ai_images_limit' => 10,
+            'ai_tier_starts_at' => null,
+            'ai_tier_expires_at' => null,
+        ]);
     }
 }

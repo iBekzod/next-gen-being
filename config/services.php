@@ -41,10 +41,16 @@ return [
         'store_domain' => env('LEMONSQUEEZY_STORE_DOMAIN', 'store.nextgenbeing.com'),
         'signing_secret' => env('LEMON_SQUEEZY_SIGNING_SECRET'),
 
-        // Product variant IDs (custom for our app)
+        // Platform subscription variant IDs (for platform access)
         'basic_variant_id' => env('LEMONSQUEEZY_BASIC_VARIANT_ID'),
         'pro_variant_id' => env('LEMONSQUEEZY_PRO_VARIANT_ID'),
         'team_variant_id' => env('LEMONSQUEEZY_TEAM_VARIANT_ID'),
+
+        // AI subscription variant IDs (for AI content generation)
+        'ai_basic_variant_id' => env('LEMONSQUEEZY_AI_BASIC_VARIANT_ID'),
+        'ai_premium_variant_id' => env('LEMONSQUEEZY_AI_PREMIUM_VARIANT_ID'),
+        'ai_enterprise_variant_id' => env('LEMONSQUEEZY_AI_ENTERPRISE_VARIANT_ID'),
+
         'test_mode' => env('LEMONSQUEEZY_TEST_MODE', true), // Set to false after verification
     ],
 
