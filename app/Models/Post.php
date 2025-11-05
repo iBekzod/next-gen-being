@@ -22,7 +22,8 @@ class Post extends Model implements HasMedia
         'read_time', 'views_count', 'likes_count', 'comments_count',
         'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
         'series_title', 'series_slug', 'series_part', 'series_total_parts', 'series_description',
-        'moderation_status', 'moderated_by', 'moderated_at', 'moderation_notes', 'ai_moderation_check'
+        'moderation_status', 'moderated_by', 'moderated_at', 'moderation_notes', 'ai_moderation_check',
+        'post_type', 'video_url', 'video_duration', 'video_thumbnail', 'video_captions_url'
     ];
 
     protected $casts = [
@@ -429,6 +430,100 @@ class Post extends Model implements HasMedia
             'tags' => $this->tags->pluck('name')->join(' '),
             'author' => $this->author?->name ?? '',
         ];
+    }
+
+    // Social Media & Video Relationships
+    public function socialMediaPosts()
+    {
+        return $this->hasMany(SocialMediaPost::class);
+    }
+
+    public function videoGenerations()
+    {
+        return $this->hasMany(VideoGeneration::class);
+    }
+
+    // Video Helper Methods
+    public function isArticle(): bool
+    {
+        return $this->post_type === 'article';
+    }
+
+    public function isVisualStory(): bool
+    {
+        return $this->post_type === 'visual_story';
+    }
+
+    public function isVideoBlog(): bool
+    {
+        return $this->post_type === 'video_blog';
+    }
+
+    public function hasVideo(): bool
+    {
+        return !empty($this->video_url);
+    }
+
+    public function getFormattedVideoDuration(): ?string
+    {
+        if (!$this->video_duration) {
+            return null;
+        }
+
+        $minutes = floor($this->video_duration / 60);
+        $seconds = $this->video_duration % 60;
+
+        if ($minutes > 0) {
+            return sprintf('%d:%02d', $minutes, $seconds);
+        }
+
+        return "{$seconds}s";
+    }
+
+    public function hasBeenPublishedToSocialMedia(): bool
+    {
+        return $this->socialMediaPosts()->published()->exists();
+    }
+
+    public function getPublishedPlatforms(): array
+    {
+        return $this->socialMediaPosts()
+                    ->published()
+                    ->pluck('platform')
+                    ->unique()
+                    ->toArray();
+    }
+
+    public function hasVideoGeneration(): bool
+    {
+        return $this->videoGenerations()->completed()->exists();
+    }
+
+    public function getLatestVideo(?string $type = null)
+    {
+        $query = $this->videoGenerations()->completed();
+
+        if ($type) {
+            $query->where('video_type', $type);
+        }
+
+        return $query->latest()->first();
+    }
+
+    // Scopes
+    public function scopeArticles($query)
+    {
+        return $query->where('post_type', 'article');
+    }
+
+    public function scopeVisualStories($query)
+    {
+        return $query->where('post_type', 'visual_story');
+    }
+
+    public function scopeVideoBlogs($query)
+    {
+        return $query->where('post_type', 'video_blog');
     }
 }
 

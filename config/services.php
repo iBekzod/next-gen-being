@@ -76,6 +76,9 @@ return [
         'api_key' => env('OPENAI_API_KEY'),
         'organization' => env('OPENAI_ORGANIZATION'),
         'model' => env('OPENAI_MODEL', 'gpt-4'),
+        // Text-to-Speech settings
+        'tts_model' => env('OPENAI_TTS_MODEL', 'tts-1-hd'),
+        'tts_voice' => env('OPENAI_TTS_VOICE', 'onyx'), // alloy, echo, fable, onyx, nova, shimmer
     ],
 
     'groq' => [
@@ -94,6 +97,47 @@ return [
 
     'unsplash' => [
         'access_key' => env('UNSPLASH_ACCESS_KEY'),
+    ],
+
+    // Video Generation Services
+    'pexels' => [
+        'api_key' => env('PEXELS_API_KEY'),
+    ],
+
+    'elevenlabs' => [
+        'api_key' => env('ELEVENLABS_API_KEY'),
+        'voice_id' => env('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM'), // Default voice
+        'model' => env('ELEVENLABS_MODEL', 'eleven_multilingual_v2'),
+    ],
+
+    // Social Media OAuth
+    'youtube' => [
+        'client_id' => env('YOUTUBE_CLIENT_ID'),
+        'client_secret' => env('YOUTUBE_CLIENT_SECRET'),
+        'redirect' => env('YOUTUBE_REDIRECT_URI'),
+    ],
+
+    'instagram' => [
+        'client_id' => env('INSTAGRAM_CLIENT_ID'),
+        'client_secret' => env('INSTAGRAM_CLIENT_SECRET'),
+        'redirect' => env('INSTAGRAM_REDIRECT_URI'),
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI'),
+    ],
+
+    'linkedin' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI'),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'channel_id' => env('TELEGRAM_CHANNEL_ID'),
     ],
 
 ];

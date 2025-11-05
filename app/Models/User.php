@@ -21,7 +21,10 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         'ai_tier', 'groq_api_key', 'openai_api_key', 'unsplash_api_key',
         'ai_posts_generated', 'ai_images_generated', 'ai_tier_starts_at',
         'ai_tier_expires_at', 'monthly_ai_posts_limit', 'monthly_ai_images_limit',
-        'ai_usage_reset_date'
+        'ai_usage_reset_date',
+        'video_tier', 'videos_generated', 'monthly_video_limit',
+        'video_tier_starts_at', 'video_tier_expires_at',
+        'custom_video_intro_url', 'custom_video_outro_url', 'custom_video_logo_url'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -36,6 +39,8 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         'ai_tier_starts_at' => 'datetime',
         'ai_tier_expires_at' => 'datetime',
         'ai_usage_reset_date' => 'date',
+        'video_tier_starts_at' => 'datetime',
+        'video_tier_expires_at' => 'datetime',
     ];
 
     public function canAccessPanel(Panel $panel): bool
@@ -341,5 +346,105 @@ class User extends Authenticatable implements HasMedia, FilamentUser
             'ai_tier_starts_at' => null,
             'ai_tier_expires_at' => null,
         ]);
+    }
+
+    // Social Media Relationships
+    public function socialMediaAccounts()
+    {
+        return $this->hasMany(SocialMediaAccount::class);
+    }
+
+    public function videoGenerations()
+    {
+        return $this->hasMany(VideoGeneration::class);
+    }
+
+    // Video Tier Methods
+    public function hasVideoProSubscription(): bool
+    {
+        return $this->video_tier === 'video_pro';
+    }
+
+    public function isVideoTierExpired(): bool
+    {
+        if (!$this->video_tier_expires_at) {
+            return false;
+        }
+
+        return now()->greaterThan($this->video_tier_expires_at);
+    }
+
+    public function canGenerateVideo(): bool
+    {
+        // Free tier cannot generate videos
+        if ($this->video_tier === 'free') {
+            return false;
+        }
+
+        // Check if subscription expired
+        if ($this->isVideoTierExpired()) {
+            return false;
+        }
+
+        // Video Pro has unlimited generations
+        if ($this->monthly_video_limit === null) {
+            return true;
+        }
+
+        return $this->videos_generated < $this->monthly_video_limit;
+    }
+
+    public function getVideosRemainingQuota(): int|string
+    {
+        if ($this->video_tier === 'free') {
+            return 0;
+        }
+
+        if ($this->monthly_video_limit === null) {
+            return 'unlimited';
+        }
+
+        return max(0, $this->monthly_video_limit - $this->videos_generated);
+    }
+
+    public function upgradeToVideoPro(int $months = 1): void
+    {
+        $this->update([
+            'video_tier' => 'video_pro',
+            'monthly_video_limit' => null, // unlimited
+            'videos_generated' => 0,
+            'video_tier_starts_at' => now(),
+            'video_tier_expires_at' => now()->addMonths($months),
+        ]);
+    }
+
+    public function downgradeVideoTier(): void
+    {
+        $this->update([
+            'video_tier' => 'free',
+            'monthly_video_limit' => 0,
+            'videos_generated' => 0,
+            'video_tier_starts_at' => null,
+            'video_tier_expires_at' => null,
+            'custom_video_intro_url' => null,
+            'custom_video_outro_url' => null,
+            'custom_video_logo_url' => null,
+        ]);
+    }
+
+    public function getConnectedPlatforms(): array
+    {
+        return $this->socialMediaAccounts()
+                    ->where('is_active', true)
+                    ->pluck('platform')
+                    ->toArray();
+    }
+
+    public function hasPlatformConnected(string $platform): bool
+    {
+        return $this->socialMediaAccounts()
+                    ->where('platform', $platform)
+                    ->where('is_active', true)
+                    ->exists();
     }
 }

@@ -157,3 +157,50 @@ Schedule::command('backup:monitor')
 // Clean old backups (monthly)
 Schedule::command('backup:clean')
     ->monthly();
+
+// ========================================
+// VIDEO GENERATION & SOCIAL MEDIA PUBLISHING
+// ========================================
+// Auto-publish approved videos to social media (hourly)
+Schedule::command('social:auto-publish')
+    ->hourly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Social media auto-publish completed');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Social media auto-publish failed');
+    });
+
+// Update engagement metrics from social media platforms (daily at 2 AM)
+Schedule::command('social:update-engagement')
+    ->dailyAt('02:00')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Social media engagement metrics updated');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Social media engagement update failed');
+    });
+
+// Clean up temporary video files (daily at 3 AM)
+Schedule::command('app:cleanup-temp-files')
+    ->dailyAt('03:00')
+    ->timezone(config('app.timezone'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Temporary video files cleaned up');
+    });
+
+// Monitor video generation quota usage (weekly)
+Schedule::call(function () {
+    // Check YouTube API quota usage
+    $quotaUsage = \App\Models\VideoGeneration::where('created_at', '>=', now()->subWeek())
+        ->where('status', 'completed')
+        ->count();
+
+    if ($quotaUsage > 40) {
+        \Illuminate\Support\Facades\Log::warning("High video generation usage this week: {$quotaUsage} videos");
+    }
+})->weeklyOn(1, '10:00')->name('monitor-video-quota');

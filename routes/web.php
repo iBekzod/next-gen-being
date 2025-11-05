@@ -123,3 +123,12 @@ Route::prefix('api/social-share')->name('social-share.')->group(function () {
     Route::post('/generate-utm-url', [App\Http\Controllers\SocialShareController::class, 'generateUtmUrl'])->name('generate-utm-url');
 })->middleware('throttle:60,1');
 
+// Social Media OAuth Routes
+use App\Http\Controllers\Auth\SocialAuthController;
+
+Route::middleware(['auth', 'verified'])->prefix('auth')->name('social.auth.')->group(function () {
+    Route::get('/{platform}/redirect', [SocialAuthController::class, 'redirect'])->name('redirect');
+    Route::get('/{platform}/callback', [SocialAuthController::class, 'callback'])->name('callback');
+    Route::delete('/social-account/{accountId}', [SocialAuthController::class, 'disconnect'])->name('disconnect');
+});
+
