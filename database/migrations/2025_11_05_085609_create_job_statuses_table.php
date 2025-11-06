@@ -30,7 +30,7 @@ return new class extends Migration
 
             // Indexes
             $table->index(['user_id', 'type', 'status']);
-            $table->index(['trackable_type', 'trackable_id']);
+            // Note: morphs() already creates index for trackable_type and trackable_id
             $table->index('created_at');
         });
     }
