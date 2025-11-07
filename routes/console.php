@@ -161,6 +161,27 @@ Schedule::command('backup:clean')
 // ========================================
 // VIDEO GENERATION & SOCIAL MEDIA PUBLISHING
 // ========================================
+// Process scheduled videos (every 15 minutes)
+Schedule::command('videos:process-scheduled')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Scheduled videos processed successfully');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Scheduled video processing failed');
+    });
+
+// Process urgent priority videos more frequently (every 5 minutes)
+Schedule::command('videos:process-scheduled', ['--priority=urgent'])
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Urgent videos processed');
+    });
+
 // Auto-publish approved videos to social media (hourly)
 Schedule::command('social:auto-publish')
     ->hourly()

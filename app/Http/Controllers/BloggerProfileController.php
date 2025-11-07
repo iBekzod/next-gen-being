@@ -60,8 +60,22 @@ class BloggerProfileController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('username', 'like', '%' . $request->search . '%');
+                  ->orWhere('username', 'like', '%' . $request->search . '%')
+                  ->orWhere('bio', 'like', '%' . $request->search . '%');
             });
+        }
+
+        // Filter by category (based on their posts)
+        if ($request->filled('category')) {
+            $query->whereHas('posts', function ($q) use ($request) {
+                $q->where('status', 'published')
+                  ->where('category_id', $request->category);
+            });
+        }
+
+        // Filter by minimum followers
+        if ($request->filled('min_followers')) {
+            $query->having('followers_count', '>=', $request->min_followers);
         }
 
         // Sort options
@@ -76,6 +90,16 @@ class BloggerProfileController extends Controller
             case 'newest':
                 $query->latest('created_at');
                 break;
+            case 'active': // Most recently active
+                $query->orderByDesc(function ($q) {
+                    $q->select('published_at')
+                      ->from('posts')
+                      ->whereColumn('user_id', 'users.id')
+                      ->where('status', 'published')
+                      ->latest()
+                      ->limit(1);
+                });
+                break;
             default: // popular
                 $query->orderByDesc('followers_count')
                       ->orderByDesc('posts_count');
@@ -83,9 +107,39 @@ class BloggerProfileController extends Controller
 
         $bloggers = $query->paginate(20);
 
+        // Get top bloggers for sidebar
+        $topBloggers = User::whereHas('roles', function ($q) {
+            $q->where('name', 'blogger');
+        })->withCount('followers')
+          ->orderByDesc('followers_count')
+          ->limit(5)
+          ->get();
+
+        // Get featured/recommended bloggers
+        $featuredBloggers = User::whereHas('roles', function ($q) {
+            $q->where('name', 'blogger');
+        })->whereHas('posts', function ($q) {
+            $q->where('status', 'published')
+              ->where('moderation_status', 'approved')
+              ->where('moderation_score', '>=', 90); // High quality content
+        })->withCount('followers')
+          ->inRandomOrder()
+          ->limit(3)
+          ->get();
+
+        // Get available categories
+        $categories = \App\Models\Category::withCount(['posts' => function ($q) {
+            $q->where('status', 'published');
+        }])->having('posts_count', '>', 0)
+          ->orderBy('name')
+          ->get();
+
         return view('bloggers.index', [
             'bloggers' => $bloggers,
             'currentSort' => $sort,
+            'topBloggers' => $topBloggers,
+            'featuredBloggers' => $featuredBloggers,
+            'categories' => $categories,
         ]);
     }
 }

@@ -16,6 +16,8 @@ class SocialMediaPublishingService
         protected InstagramPublisher $instagramPublisher,
         protected TwitterPublisher $twitterPublisher,
         protected TelegramPublisher $telegramPublisher,
+        protected LinkedInPublisher $linkedInPublisher,
+        protected FacebookPublisher $facebookPublisher,
     ) {}
 
     /**
@@ -52,6 +54,8 @@ class SocialMediaPublishingService
             'youtube' => $this->youtubePublisher->publish($post, $account),
             'instagram' => $this->instagramPublisher->publish($post, $account),
             'twitter' => $this->twitterPublisher->publish($post, $account),
+            'linkedin' => $this->linkedInPublisher->publish($post, $account),
+            'facebook' => $this->facebookPublisher->publish($post, $account),
             default => throw new Exception("Unsupported platform: {$account->platform}"),
         };
     }
