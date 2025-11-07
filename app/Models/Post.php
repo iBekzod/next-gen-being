@@ -46,6 +46,28 @@ class Post extends Model implements HasMedia
             ->saveSlugsTo('slug');
     }
 
+    // Accessors
+    public function getFeaturedImageAttribute($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // If it's an Unsplash URL, add quality parameters for sharp images
+        if (str_contains($value, 'unsplash.com')) {
+            $separator = str_contains($value, '?') ? '&' : '?';
+            return $value . $separator . 'w=1200&h=630&fit=crop&q=85&auto=format';
+        }
+
+        // If it's a Pexels URL
+        if (str_contains($value, 'pexels.com')) {
+            $separator = str_contains($value, '?') ? '&' : '?';
+            return $value . $separator . 'auto=compress&cs=tinysrgb&w=1200&h=630';
+        }
+
+        return $value;
+    }
+
     // Relationships
     public function author()
     {
