@@ -236,8 +236,7 @@ class JobStatusResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->where('user_id', auth()->id())
-            ->orWhereNull('user_id');
+        // Admin panel shows all job statuses
+        return parent::getEloquentQuery();
     }
 }

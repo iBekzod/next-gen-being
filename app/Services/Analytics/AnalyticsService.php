@@ -1,15 +1,13 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Services\Analytics;
 
 use App\Models\Post;
 use App\Models\User;
 use App\Models\SocialMediaPost;
 use Carbon\Carbon;
-use Filament\Widgets\StatsOverviewWidget;
-use Illuminate\Support\Number;
 
-class AnalyticsDashboardResource
+class AnalyticsService
 {
     /**
      * Get overall platform statistics

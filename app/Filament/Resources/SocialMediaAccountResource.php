@@ -206,6 +206,7 @@ class SocialMediaAccountResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('user_id', auth()->id());
+        // Admin panel shows all social media accounts
+        return parent::getEloquentQuery();
     }
 }

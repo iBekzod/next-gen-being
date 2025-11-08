@@ -10,9 +10,15 @@
     <title>@yield('title', setting('site_name', 'NextGenBeing'))</title>
     <meta name="description" content="@yield('description', setting('site_description'))">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('uploads/logo.png') }}">
-
+    <!-- Favicon and Site Icons -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('uploads/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('uploads/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('uploads/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('uploads/logo.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#1f2937">
+    <meta name="msapplication-TileColor" content="#1f2937">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
