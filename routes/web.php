@@ -4,6 +4,8 @@ use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\LandingPageController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\SearchController;
@@ -32,8 +34,8 @@ Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.s
 Route::get('/tutorials', [PostController::class, 'tutorials'])->name('tutorials.index');
 Route::get('/series/{seriesSlug}', [PostController::class, 'series'])->name('series.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
-Route::get('/categories/{category:slug}', [PostController::class, 'index'])->name('categories.show');
-Route::get('/tags/{tag:slug}', [PostController::class, 'index'])->name('tags.show');
+Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('/tags/{tag:slug}', [TagController::class, 'show'])->name('tags.show');
 
 // Feed routes
 Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');

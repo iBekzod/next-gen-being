@@ -1,8 +1,8 @@
 ﻿@extends('layouts.app')
 
-@section('title', $post->title . ' - ' . setting('site_name'))
-@section('description', $post->excerpt)
-@section('keywords', $post->tags->pluck('name')->implode(', '))
+@section('title', $post->getSeoTitle() . ' - ' . setting('site_name'))
+@section('description', $post->getSeoDescription())
+@section('keywords', $post->getSeoKeywords())
 @section('og_type', 'article')
 
 @php
@@ -34,7 +34,42 @@
 @endforeach
 @endpush
 
+@php
+// Build breadcrumb structure
+$breadcrumbItems = [
+    [
+        '@type' => 'ListItem',
+        'position' => 1,
+        'name' => 'Home',
+        'item' => route('home'),
+    ],
+    [
+        '@type' => 'ListItem',
+        'position' => 2,
+        'name' => 'Articles',
+        'item' => route('posts.index'),
+    ],
+];
+
+if ($post->category) {
+    $breadcrumbItems[] = [
+        '@type' => 'ListItem',
+        'position' => 3,
+        'name' => $post->category->name,
+        'item' => route('categories.show', $post->category->slug),
+    ];
+}
+
+$breadcrumbItems[] = [
+    '@type' => 'ListItem',
+    'position' => count($breadcrumbItems) + 1,
+    'name' => $post->title,
+    'item' => route('posts.show', $post->slug),
+];
+@endphp
+
 @push('structured-data')
+<!-- Article Schema -->
 <script type="application/ld+json">
 {!! json_encode([
     '@context' => 'https://schema.org',
@@ -63,9 +98,58 @@
         '@id' => route('posts.show', $post->slug),
     ],
     'articleSection' => $articleSection,
-    'keywords' => $tagNames,
+    'keywords' => implode(', ', $tagNames),
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
+
+<!-- Breadcrumb Schema -->
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => $breadcrumbItems,
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+
+@if($post->post_type === 'video_blog' && $post->video_url)
+<!-- Video Object Schema -->
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'VideoObject',
+    'name' => $post->title,
+    'description' => $post->excerpt,
+    'thumbnailUrl' => $post->video_thumbnail ?? $shareImage,
+    'uploadDate' => $publishDate,
+    'duration' => $post->video_duration ? 'PT' . $post->video_duration . 'M' : 'PT5M',
+    'contentUrl' => $post->video_url,
+    'url' => route('posts.show', $post->slug),
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endif
+
+@if($post->series_slug && $post->post_type === 'article')
+<!-- HowTo Schema for Tutorial Series -->
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'HowTo',
+    'name' => $post->series_title ?? $post->title,
+    'description' => $post->excerpt,
+    'totalTime' => 'PT' . (($post->series_total_parts ?? 1) * ($post->read_time ?? 5)) . 'M',
+    'image' => [$shareImage],
+    'step' => [
+        [
+            '@type' => 'HowToStep',
+            'position' => $post->series_part ?? 1,
+            'name' => $post->title,
+            'url' => route('posts.show', $post->slug),
+            'text' => $post->excerpt,
+        ]
+    ]
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endif
 @endpush
 
 @section('content')

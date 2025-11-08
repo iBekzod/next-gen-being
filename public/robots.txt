@@ -1,2 +1,49 @@
+# NextGenBeing Blog - SEO Optimized Robots.txt
+# This file tells search engines which pages to crawl and which to avoid
+
+# Allow all user agents
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /posts/*/edit
+Disallow: /dashboard/*
+Disallow: /*?*sort=
+Disallow: /*?*page=
+Allow: /
+
+# Specific crawlers for AI/LLM training
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Bingbot
+Disallow: /admin
+Disallow: /dashboard
+Crawl-delay: 1
+
+User-agent: Googlebot
+Disallow: /admin
+Disallow: /dashboard
+Crawl-delay: 0
+
+# Slow down aggressive crawlers
+User-agent: MJ12bot
+Crawl-delay: 10
+
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+# Sitemap location
+Sitemap: https://nextgenbeingcom/sitemap.xml
+Sitemap: https://nextgenbeingcom/feed.xml

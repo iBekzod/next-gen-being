@@ -55,13 +55,23 @@ class CategoryResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make('SEO')
+                    ->description('Optional - Leave blank to auto-generate from category data')
                     ->schema([
                         Forms\Components\TextInput::make('meta_title')
+                            ->label('Meta Title (Optional)')
+                            ->helperText('Auto-generated: "{Category Name} Articles - {Site Name}" | Max: 60 characters')
                             ->maxLength(60),
 
                         Forms\Components\Textarea::make('meta_description')
+                            ->label('Meta Description (Optional)')
+                            ->helperText('Auto-generated from category description or generic text | Max: 160 characters')
                             ->maxLength(160)
                             ->rows(3),
+
+                        Forms\Components\TextInput::make('meta_keywords')
+                            ->label('Keywords (Optional)')
+                            ->helperText('Auto-generated from: category name + top post tags + generic keywords | Examples: "tech, blog, articles"')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

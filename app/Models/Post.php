@@ -547,6 +547,36 @@ class Post extends Model implements HasMedia
     {
         return $query->where('post_type', 'video_blog');
     }
+
+    // SEO Meta Helpers
+    /**
+     * Get SEO meta title. Falls back to post title if not set.
+     * Structure: 'meta_title', 'description', 'keywords', 'focus_keyword', 'canonical'
+     */
+    public function getSeoTitle(): string
+    {
+        return $this->seo_meta['meta_title'] ?? $this->title;
+    }
+
+    public function getSeoDescription(): string
+    {
+        return $this->seo_meta['description'] ?? $this->excerpt;
+    }
+
+    public function getSeoKeywords(): string
+    {
+        return $this->seo_meta['keywords'] ?? $this->tags->pluck('name')->join(', ');
+    }
+
+    public function getSeoFocusKeyword(): ?string
+    {
+        return $this->seo_meta['focus_keyword'] ?? null;
+    }
+
+    public function setSeoMeta(array $meta): void
+    {
+        $this->seo_meta = array_merge($this->seo_meta ?? [], $meta);
+    }
 }
 
 

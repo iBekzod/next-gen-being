@@ -108,6 +108,33 @@ class PostResource extends Resource
                     ->columns(3)
                     ->collapsible(),
 
+                Forms\Components\Section::make('SEO Settings')
+                    ->description('Optional - Leave blank to auto-generate from post content')
+                    ->schema([
+                        Forms\Components\TextInput::make('seo_meta.meta_title')
+                            ->label('Meta Title (Optional)')
+                            ->helperText('Auto-generated from: post title | Recommended: 50-60 characters')
+                            ->maxLength(255),
+
+                        Forms\Components\Textarea::make('seo_meta.description')
+                            ->label('Meta Description (Optional)')
+                            ->helperText('Auto-generated from: post excerpt | Recommended: 150-160 characters')
+                            ->rows(3)
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('seo_meta.keywords')
+                            ->label('Keywords (Optional)')
+                            ->helperText('Auto-generated from: post tags | Examples: "tech blog, AI, tutorials"')
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('seo_meta.focus_keyword')
+                            ->label('Focus Keyword (Optional)')
+                            ->helperText('Main keyword you want this post to rank for (e.g., "tech blog", "AI articles"). Helps guide content optimization.')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+
                 Forms\Components\Section::make('Moderation')
                     ->schema([
                         Forms\Components\Select::make('moderation_status')

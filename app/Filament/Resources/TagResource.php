@@ -39,6 +39,28 @@ class TagResource extends Resource
 
                 Forms\Components\ColorPicker::make('color')
                     ->hex(),
+
+                Forms\Components\Section::make('SEO Settings')
+                    ->description('Optional - Leave blank to auto-generate from tag data')
+                    ->schema([
+                        Forms\Components\TextInput::make('meta_title')
+                            ->label('Meta Title (Optional)')
+                            ->helperText('Auto-generated: "#{Tag Name} Articles - {Site Name}" | Max: 60 characters')
+                            ->maxLength(60),
+
+                        Forms\Components\Textarea::make('meta_description')
+                            ->label('Meta Description (Optional)')
+                            ->helperText('Auto-generated: "Discover X articles tagged with #{Tag Name}" | Max: 160 characters')
+                            ->maxLength(160)
+                            ->rows(3),
+
+                        Forms\Components\TextInput::make('meta_keywords')
+                            ->label('Keywords (Optional)')
+                            ->helperText('Auto-generated from: tag name + related tags + generic keywords | Examples: "articles, blog, tech"')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
