@@ -55,6 +55,13 @@ Route::prefix('v1')->group(function () {
             Route::get('/{webhook}/statistics', [WebhookController::class, 'statistics'])->name('statistics');
         });
 
+        // Notification API routes
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::post('/{notification}/mark-read', [WebhookController::class, 'markAsRead'])->name('mark-read');
+            Route::post('/{notification}/mark-unread', [WebhookController::class, 'markAsUnread'])->name('mark-unread');
+            Route::delete('/{notification}', [WebhookController::class, 'delete'])->name('delete');
+        });
+
         // Invoice API routes
         Route::prefix('invoices')->name('invoices.')->group(function () {
             Route::get('/payout/{payout}', [InvoiceController::class, 'downloadPayoutInvoice'])->name('payout');

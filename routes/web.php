@@ -14,6 +14,7 @@ use App\Http\Controllers\FeedController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\BloggerProfileController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
@@ -65,6 +66,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/social-media', [UserDashboardController::class, 'socialMedia'])->name('dashboard.social-media');
     Route::get('/dashboard/analytics', [UserDashboardController::class, 'analytics'])->name('dashboard.analytics');
     Route::get('/dashboard/webhooks', [UserDashboardController::class, 'webhooks'])->name('dashboard.webhooks');
+    Route::get('/dashboard/notifications', [UserDashboardController::class, 'notifications'])->name('dashboard.notifications');
+    Route::get('/dashboard/jobs', [UserDashboardController::class, 'jobStatus'])->name('dashboard.jobs');
+    Route::get('/dashboard/calendar', [UserDashboardController::class, 'contentCalendar'])->name('dashboard.calendar');
     Route::get('/dashboard/settings', [UserDashboardController::class, 'settings'])->name('dashboard.settings');
 
     // Webhook management routes
@@ -74,6 +78,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/webhooks/{webhook}/edit', [WebhookController::class, 'edit'])->name('webhooks.edit');
     Route::put('/webhooks/{webhook}', [WebhookController::class, 'update'])->name('webhooks.update');
     Route::delete('/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('webhooks.destroy');
+
+    // Notification management routes
+    Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notification.mark-read');
+    Route::post('/notifications/{notification}/mark-unread', [NotificationController::class, 'markAsUnread'])->name('notification.mark-unread');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'delete'])->name('notification.delete');
 
     // Subscription management
     Route::post('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
@@ -149,5 +158,24 @@ Route::middleware(['auth', 'verified'])->prefix('auth')->name('social.auth.')->g
     Route::get('/{platform}/redirect', [SocialAuthController::class, 'redirect'])->name('redirect');
     Route::get('/{platform}/callback', [SocialAuthController::class, 'callback'])->name('callback');
     Route::delete('/social-account/{accountId}', [SocialAuthController::class, 'disconnect'])->name('disconnect');
+});
+
+// Collaboration Routes
+use App\Http\Controllers\CollaborationController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Invitation acceptance (public link but requires auth)
+    Route::get('/collaboration/invitation/accept', [CollaborationController::class, 'acceptInvitation'])->name('collaboration.invitation.accept');
+    Route::post('/collaboration/invitation/{invitation}/decline', [CollaborationController::class, 'declineInvitation'])->name('collaboration.invitation.decline');
+
+    // Collaboration notifications
+    Route::get('/collaborations', [CollaborationController::class, 'notifications'])->name('collaboration.notifications');
+
+    // Post collaboration management
+    Route::prefix('posts/{post}/collaboration')->name('collaboration.')->group(function () {
+        Route::get('/', [CollaborationController::class, 'show'])->name('show');
+        Route::get('/history', [CollaborationController::class, 'history'])->name('history');
+        Route::get('/export', [CollaborationController::class, 'exportReport'])->name('export');
+    });
 });
 

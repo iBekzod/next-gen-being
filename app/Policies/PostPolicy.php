@@ -68,4 +68,27 @@ class PostPolicy
     {
         return $user->hasAnyRole(['admin', 'content_manager']);
     }
+
+    /**
+     * Determine if the user can view collaboration details.
+     */
+    public function viewCollaborations(User $user, Post $post): bool
+    {
+        // Author can always view
+        if ($user->id === $post->author_id) {
+            return true;
+        }
+
+        // Collaborators can view
+        return $post->hasCollaborator($user);
+    }
+
+    /**
+     * Determine if the user can manage collaborators.
+     */
+    public function manageCollaborators(User $user, Post $post): bool
+    {
+        $collaborationService = app('CollaborationService');
+        return $collaborationService->canManageCollaborators($post, $user);
+    }
 }

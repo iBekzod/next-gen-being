@@ -465,6 +465,37 @@ class Post extends Model implements HasMedia
         return $this->hasMany(VideoGeneration::class);
     }
 
+    // Collaboration Relationships
+    public function collaborators()
+    {
+        return $this->hasMany(PostCollaborator::class);
+    }
+
+    public function activeCollaborators()
+    {
+        return $this->collaborators()->active();
+    }
+
+    public function collaboratorInvitations()
+    {
+        return $this->hasMany(CollaborationInvitation::class);
+    }
+
+    public function collaborationComments()
+    {
+        return $this->hasMany(CollaborationComment::class);
+    }
+
+    public function versions()
+    {
+        return $this->hasMany(PostVersion::class);
+    }
+
+    public function collaborationActivities()
+    {
+        return $this->hasMany(CollaborationActivity::class);
+    }
+
     // Video Helper Methods
     public function isArticle(): bool
     {
@@ -546,6 +577,86 @@ class Post extends Model implements HasMedia
     public function scopeVideoBlogs($query)
     {
         return $query->where('post_type', 'video_blog');
+    }
+
+    // Collaboration Helper Methods
+    public function isCollaborative(): bool
+    {
+        return $this->activeCollaborators()->count() > 0;
+    }
+
+    public function addCollaborator(User $user, string $role = 'editor'): PostCollaborator
+    {
+        $collaborator = PostCollaborator::create([
+            'post_id' => $this->id,
+            'user_id' => $user->id,
+            'role' => $role,
+        ]);
+
+        CollaborationActivity::logActivity(
+            $this,
+            auth()->user() ?? $user,
+            'role_changed',
+            "{$user->name} added as {$role}"
+        );
+
+        return $collaborator;
+    }
+
+    public function getCollaborator(User $user): ?PostCollaborator
+    {
+        return $this->collaborators()->where('user_id', $user->id)->first();
+    }
+
+    public function hasCollaborator(User $user): bool
+    {
+        return $this->activeCollaborators()
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    public function canBeEditedBy(User $user): bool
+    {
+        if ($this->author_id === $user->id) {
+            return true;
+        }
+
+        $collaborator = $this->getCollaborator($user);
+        return $collaborator && $collaborator->isActive() && $collaborator->hasPermission('edit');
+    }
+
+    public function canBeReviewedBy(User $user): bool
+    {
+        if ($this->author_id === $user->id) {
+            return true;
+        }
+
+        $collaborator = $this->getCollaborator($user);
+        return $collaborator && $collaborator->isActive() && $collaborator->hasPermission('review');
+    }
+
+    public function getCollaborators()
+    {
+        return $this->activeCollaborators()->with('user')->get();
+    }
+
+    public function recordVersion(User $user, string $changeType = 'manual_save', ?string $summary = null): PostVersion
+    {
+        return PostVersion::create([
+            'post_id' => $this->id,
+            'edited_by' => $user->id,
+            'title' => $this->title,
+            'content' => $this->content,
+            'content_json' => $this->content_json,
+            'change_type' => $changeType,
+            'change_summary' => $summary,
+            'created_at' => now(),
+        ]);
+    }
+
+    public function getLatestVersion(): ?PostVersion
+    {
+        return $this->versions()->latest()->first();
     }
 
     // SEO Meta Helpers

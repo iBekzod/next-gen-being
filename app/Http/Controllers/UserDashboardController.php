@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class UserDashboardController extends Controller
 {
@@ -372,6 +373,189 @@ class UserDashboardController extends Controller
             'overallSuccessRate',
             'webhooks',
             'recentLogs'
+        ));
+    }
+
+    /**
+     * Display the notifications center dashboard.
+     */
+    public function notifications(Request $request): View
+    {
+        $user = Auth::user();
+        $filter = $request->get('filter', 'all');
+
+        // Get notification statistics
+        $totalNotifications = $user->notifications()->count();
+        $unreadCount = $user->notifications()->whereNull('read_at')->count();
+        $mentionCount = $user->notifications()
+            ->where('type', 'mention')
+            ->whereNull('read_at')
+            ->count();
+
+        // Get notifications based on filter
+        $query = $user->notifications();
+
+        if ($filter === 'unread') {
+            $query->whereNull('read_at');
+        } elseif ($filter === 'mentions') {
+            $query->where('type', 'mention');
+        }
+
+        $notifications = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        // Get notification types breakdown
+        $notificationsByType = $user->notifications()
+            ->selectRaw('type, COUNT(*) as count')
+            ->groupBy('type')
+            ->get()
+            ->pluck('count', 'type');
+
+        // Get recent read notifications
+        $recentRead = $user->notifications()
+            ->whereNotNull('read_at')
+            ->orderBy('read_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard.notifications', compact(
+            'user',
+            'totalNotifications',
+            'unreadCount',
+            'mentionCount',
+            'filter',
+            'notifications',
+            'notificationsByType',
+            'recentRead'
+        ));
+    }
+
+    /**
+     * Display the job status monitor dashboard.
+     */
+    public function jobStatus(): View
+    {
+        $user = Auth::user();
+
+        // Get job status statistics
+        $totalJobs = \App\Models\JobStatus::where('user_id', $user->id)->count();
+        $pendingJobs = \App\Models\JobStatus::where('user_id', $user->id)->pending()->count();
+        $processingJobs = \App\Models\JobStatus::where('user_id', $user->id)->processing()->count();
+        $completedJobs = \App\Models\JobStatus::where('user_id', $user->id)->completed()->count();
+        $failedJobs = \App\Models\JobStatus::where('user_id', $user->id)->failed()->count();
+
+        // Get job types breakdown
+        $jobsByType = \App\Models\JobStatus::where('user_id', $user->id)
+            ->selectRaw('type, COUNT(*) as count, SUM(CASE WHEN status = \'completed\' THEN 1 ELSE 0 END) as completed_count')
+            ->groupBy('type')
+            ->get();
+
+        // Get recent jobs with pagination
+        $recentJobs = \App\Models\JobStatus::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Get processing jobs (showing progress)
+        $processingJobsList = \App\Models\JobStatus::where('user_id', $user->id)
+            ->where('status', 'processing')
+            ->orderBy('started_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Get failed jobs for alerting
+        $failedJobsList = \App\Models\JobStatus::where('user_id', $user->id)
+            ->where('status', 'failed')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Calculate success rate
+        $successRate = $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 2) : 0;
+
+        return view('dashboard.job-status', compact(
+            'user',
+            'totalJobs',
+            'pendingJobs',
+            'processingJobs',
+            'completedJobs',
+            'failedJobs',
+            'successRate',
+            'jobsByType',
+            'recentJobs',
+            'processingJobsList',
+            'failedJobsList'
+        ));
+    }
+
+    /**
+     * Display the content calendar dashboard.
+     */
+    public function contentCalendar(Request $request): View
+    {
+        $user = Auth::user();
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
+
+        // Get all posts for the user
+        $allPosts = $user->posts()->get();
+
+        // Get posts for the selected month
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $monthPosts = $user->posts()
+            ->whereBetween('published_at', [$startDate, $endDate])
+            ->orderBy('published_at')
+            ->get();
+
+        // Get scheduled posts
+        $scheduledPosts = $user->posts()
+            ->where('status', 'scheduled')
+            ->where('published_at', '>=', now())
+            ->orderBy('published_at')
+            ->limit(10)
+            ->get();
+
+        // Get draft posts
+        $draftPosts = $user->posts()
+            ->where('status', 'draft')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Get series information
+        $series = $user->posts()
+            ->whereNotNull('series_slug')
+            ->selectRaw('series_slug, series_title, COUNT(*) as post_count, MAX(series_total_parts) as total_parts')
+            ->groupBy('series_slug', 'series_title')
+            ->orderBy('series_title')
+            ->get();
+
+        // Get upcoming 30 days posts
+        $upcomingPosts = $user->posts()
+            ->where('published_at', '>=', now())
+            ->where('published_at', '<=', now()->addDays(30))
+            ->orderBy('published_at')
+            ->get();
+
+        // Calculate statistics
+        $publishedCount = $user->posts()->where('status', 'published')->count();
+        $scheduledCount = $user->posts()->where('status', 'scheduled')->count();
+        $draftCount = $user->posts()->where('status', 'draft')->count();
+
+        return view('dashboard.content-calendar', compact(
+            'user',
+            'month',
+            'year',
+            'monthPosts',
+            'scheduledPosts',
+            'draftPosts',
+            'series',
+            'upcomingPosts',
+            'publishedCount',
+            'scheduledCount',
+            'draftCount'
         ));
     }
 

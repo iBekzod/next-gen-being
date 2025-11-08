@@ -552,4 +552,65 @@ class User extends Authenticatable implements HasMedia, FilamentUser
             data: ['level' => $newLevel]
         );
     }
+
+    // Collaboration Relationships
+    public function collaborations()
+    {
+        return $this->hasMany(PostCollaborator::class, 'user_id');
+    }
+
+    public function collaboratedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_collaborators', 'user_id', 'post_id')
+                    ->withPivot('role', 'joined_at', 'left_at')
+                    ->withTimestamps();
+    }
+
+    public function receivedInvitations()
+    {
+        return $this->hasMany(CollaborationInvitation::class, 'user_id');
+    }
+
+    public function sentInvitations()
+    {
+        return $this->hasMany(CollaborationInvitation::class, 'inviter_id');
+    }
+
+    public function collaborationComments()
+    {
+        return $this->hasMany(CollaborationComment::class, 'user_id');
+    }
+
+    public function collaborationActivities()
+    {
+        return $this->hasMany(CollaborationActivity::class, 'user_id');
+    }
+
+    // Collaboration Helper Methods
+    public function getCollaboratedPosts(int $limit = 10)
+    {
+        return $this->collaboratedPosts()
+                    ->wherePivotNull('left_at')
+                    ->latest('updated_at')
+                    ->limit($limit)
+                    ->get();
+    }
+
+    public function getPendingInvitations(int $limit = 10)
+    {
+        return $this->receivedInvitations()
+                    ->where('status', 'pending')
+                    ->where('expires_at', '>', now())
+                    ->latest('created_at')
+                    ->limit($limit)
+                    ->get();
+    }
+
+    public function getActiveCollaborations()
+    {
+        return $this->collaborations()
+                    ->whereNull('left_at')
+                    ->with('post')
+                    ->get();
+    }
 }

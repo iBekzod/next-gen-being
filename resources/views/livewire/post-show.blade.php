@@ -114,6 +114,9 @@
     </div>
     @endif
 
+    <!-- Reader Toolbar with Font Size, Line Height, Reading Modes -->
+    <x-post.reader-toolbar :post="$post" />
+
     <!-- Audio Player -->
     <x-post.audio-player :post="$post" />
 
