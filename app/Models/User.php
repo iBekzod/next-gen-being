@@ -94,6 +94,11 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $this->hasMany(PayoutRequest::class);
     }
 
+    public function webhooks()
+    {
+        return $this->hasMany(Webhook::class);
+    }
+
     // Role Methods
     public function hasRole(string $role): bool
     {

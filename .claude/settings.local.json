@@ -7,7 +7,13 @@
       "Bash(php artisan:*)",
       "Bash(docker exec:*)",
       "Bash(find:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(php -l:*)",
+      "Bash(for file in app/Filament/Resources/*.php app/Filament/Blogger/Resources/*.php)",
+      "Bash(do php -l \"$file\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

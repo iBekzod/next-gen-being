@@ -18,6 +18,9 @@ class SocialMediaPublishingService
         protected TelegramPublisher $telegramPublisher,
         protected LinkedInPublisher $linkedInPublisher,
         protected FacebookPublisher $facebookPublisher,
+        protected MediumPublisher $mediumPublisher,
+        protected DevToPublisher $devtoPublisher,
+        protected RedditPublisher $redditPublisher,
     ) {}
 
     /**
@@ -56,6 +59,9 @@ class SocialMediaPublishingService
             'twitter' => $this->twitterPublisher->publish($post, $account),
             'linkedin' => $this->linkedInPublisher->publish($post, $account),
             'facebook' => $this->facebookPublisher->publish($post, $account),
+            'medium' => $this->mediumPublisher->publish($post, $account),
+            'devto' => $this->devtoPublisher->publish($post, $account),
+            'reddit' => $this->redditPublisher->publish($post, $account),
             default => throw new Exception("Unsupported platform: {$account->platform}"),
         };
     }
@@ -141,6 +147,19 @@ class SocialMediaPublishingService
             'telegram' => $this->telegramPublisher->getMessageStats(
                 $socialPost->platform_post_id,
                 config('services.telegram.channel_id')
+            ),
+            'medium' => $this->mediumPublisher->getMetrics(
+                $socialPost->platform_post_id,
+                $socialPost->socialMediaAccount->metadata['access_token'] ?? ''
+            ),
+            'devto' => $this->devtoPublisher->getMetrics(
+                $socialPost->platform_post_id,
+                $socialPost->socialMediaAccount->metadata['api_key'] ?? ''
+            ),
+            'reddit' => $this->redditPublisher->getMetrics(
+                $socialPost->platform_post_id,
+                $socialPost->socialMediaAccount->metadata['access_token'] ?? '',
+                $socialPost->socialMediaAccount->metadata['subreddit'] ?? ''
             ),
             default => [],
         };
