@@ -111,109 +111,78 @@
             </div>
         </div>
 
-        <!-- 30-Day Earnings Chart Section -->
-        <div class="mb-12 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
+        <!-- 30-Day Earnings Trend Chart -->
+        @php
+            $allDates = collect();
+            for ($i = 29; $i >= 0; $i--) {
+                $allDates->push(now()->subDays($i)->format('Y-m-d'));
+            }
+            $earningsData = [];
+            $earningsLabels = [];
+            foreach ($allDates as $date) {
+                $earning = $dailyEarnings->firstWhere('date', $date)?->total ?? 0;
+                $earningsData[] = (int)$earning;
+                $earningsLabels[] = \Carbon\Carbon::parse($date)->format('M d');
+            }
+        @endphp
+        @if($dailyEarnings->isNotEmpty())
+        <x-chart-line
+            title="30-Day Earnings Trend"
+            :labels="$earningsLabels"
+            :data="$earningsData"
+            color="green"
+        />
+        @else
+        <div class="rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                    30-Day Earnings Trend
-                </h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">30-Day Earnings Trend</h2>
             </div>
-            <div class="p-6">
-                @if($dailyEarnings->isNotEmpty())
-                    <div class="flex items-end justify-between gap-1 h-64">
-                        @php
-                            $maxEarnings = $dailyEarnings->max('total') ?? 1;
-                            $allDates = collect();
-                            for ($i = 29; $i >= 0; $i--) {
-                                $allDates->push(now()->subDays($i)->format('Y-m-d'));
-                            }
-                        @endphp
-                        @foreach($allDates as $date)
-                            @php
-                                $earning = $dailyEarnings->firstWhere('date', $date)?->total ?? 0;
-                                $height = $maxEarnings > 0 ? ($earning / $maxEarnings) * 100 : 0;
-                            @endphp
-                            <div class="flex flex-col items-center flex-1 gap-2 group">
-                                <div class="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:from-blue-600 hover:to-blue-500 hover:shadow-lg"
-                                     style="height: {{ max($height, 4) }}%"
-                                     title="${{ number_format($earning, 2) }}">
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 rotate-45 origin-left transform group-hover:text-gray-700 dark:group-hover:text-gray-200 transition">
-                                    {{ \Carbon\Carbon::parse($date)->format('M d') }}
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="flex flex-col items-center justify-center py-12">
-                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        <p class="text-gray-600 dark:text-gray-400">No earnings in the last 30 days</p>
-                    </div>
-                @endif
+            <div class="p-12 text-center">
+                <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <p class="text-gray-600 dark:text-gray-400">No earnings in the last 30 days</p>
+                <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Start creating premium content to generate earnings</p>
             </div>
         </div>
+        @endif
 
         <!-- Earnings by Source & Top Posts Grid -->
         <div class="grid grid-cols-1 gap-12 mb-12 lg:grid-cols-2">
-            <!-- Earnings by Source -->
+            <!-- Earnings by Source Distribution Chart -->
+            @if($earningsByType->isNotEmpty())
+            @php
+                $sourceLabels = [];
+                $sourceData = [];
+                foreach($earningsByType as $earning) {
+                    $sourceLabels[] = match($earning->type) {
+                        'premium_content' => 'Premium Content',
+                        'engagement_bonus' => 'Engagement Bonus',
+                        'follower_milestone' => 'Follower Milestone',
+                        'referral' => 'Referral',
+                        default => Str::title(str_replace('_', ' ', $earning->type)),
+                    };
+                    $sourceData[] = (int)$earning->total;
+                }
+            @endphp
+            <x-chart-donut
+                title="Earnings by Source"
+                :labels="$sourceLabels"
+                :data="$sourceData"
+            />
+            @else
             <div class="rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                        </svg>
-                        Earnings by Source
-                    </h2>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Earnings by Source</h2>
                 </div>
-                <div class="p-6">
-                    @if($earningsByType->isNotEmpty())
-                        <div class="space-y-4">
-                            @foreach($earningsByType as $earning)
-                                <div>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            @switch($earning->type)
-                                                @case('premium_content')
-                                                    Premium Content
-                                                @break
-                                                @case('engagement_bonus')
-                                                    Engagement Bonus
-                                                @break
-                                                @case('follower_milestone')
-                                                    Follower Milestone
-                                                @break
-                                                @case('referral')
-                                                    Referral
-                                                @break
-                                                @default
-                                                    {{ Str::title(str_replace('_', ' ', $earning->type)) }}
-                                            @endswitch
-                                        </span>
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">${{ number_format($earning->total, 2) }}</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-                                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all"
-                                             style="width: {{ ($earning->total / $earningsByType->sum('total')) * 100 }}%"></div>
-                                    </div>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $earning->count }} transactions</p>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="flex flex-col items-center justify-center py-8">
-                            <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                            </svg>
-                            <p class="text-gray-600 dark:text-gray-400">No earnings yet</p>
-                        </div>
-                    @endif
+                <div class="p-12 text-center">
+                    <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                    </svg>
+                    <p class="text-gray-600 dark:text-gray-400">No earnings yet</p>
                 </div>
             </div>
+            @endif
 
             <!-- Top Earning Posts -->
             <div class="rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
