@@ -37,13 +37,14 @@
         // Define Alpine.js data functions before Alpine loads
         window.themeSwitcher = function() {
             return {
-                darkMode: false,
+                darkMode: true,
                 init() {
                     const stored = localStorage.getItem('theme') ?? localStorage.getItem('darkMode');
                     if (stored) {
                         this.darkMode = stored === 'dark' || stored === 'true';
                     } else {
-                        this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        // Default to dark mode
+                        this.darkMode = true;
                     }
 
                     document.documentElement.classList.toggle('dark', this.darkMode);
@@ -238,66 +239,69 @@
                                 class="ml-2 text-xl font-bold text-gray-900 dark:text-white">{{ setting('site_name') }}</span>
                         </a>
 
-                        <!-- Desktop Navigation -->
-                        <div class="hidden md:ml-8 md:flex md:space-x-8">
+                        <!-- Desktop Navigation - Simplified -->
+                        <div class="hidden md:ml-8 md:flex md:space-x-1">
+                            <!-- Primary: Articles -->
                             <a href="{{ route('posts.index') }}"
-                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
                                 Articles
                             </a>
-                            <a href="{{ route('tutorials.index') }}"
-                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
-                                Tutorials
-                            </a>
+
+                            <!-- Primary: Categories -->
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open"
-                                    class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
-                                    Categories
+                                    class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                    Topics
                                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
                                 <div x-show="open" @click.outside="open = false" x-transition
-                                    class="absolute left-0 z-50 w-48 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
+                                    class="absolute left-0 z-50 w-56 py-2 mt-1 bg-white rounded-lg shadow-xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                                    <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Browse Topics</p>
+                                    </div>
                                     @foreach ($navCategories as $category)
                                         <a href="{{ route('categories.show', $category->slug) }}"
-                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                             {{ $category->name }}
                                         </a>
                                     @endforeach
                                 </div>
                             </div>
-                            @if (setting('enable_subscriptions'))
-                                <a href="{{ route('subscription.plans') }}"
-                                    class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
-                                    Pricing
-                                </a>
-                            @endif
-                            <a href="{{ route('home') }}#product-overview"
-                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
-                                Product
-                            </a>
-                            <a href="{{ route('home') }}#features"
-                                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
-                                Features
-                            </a>
+
+                            <!-- Secondary: More Menu -->
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open"
-                                    class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
-                                    Policies
+                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300">
+                                    More
                                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
                                 <div x-show="open" @click.outside="open = false" x-transition
-                                    class="absolute left-0 z-50 w-56 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
-                                    <a href="{{ route('terms') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Terms &amp; Conditions</a>
-                                    <a href="{{ route('privacy') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Privacy Policy</a>
-                                    <a href="{{ route('refund') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Refund Policy</a>
+                                    class="absolute left-0 z-50 w-56 py-2 mt-1 bg-white rounded-lg shadow-xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                                    <a href="{{ route('tutorials.index') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                        Tutorials
+                                    </a>
+                                    @if (setting('enable_subscriptions'))
+                                        <a href="{{ route('subscription.plans') }}"
+                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            Pricing
+                                        </a>
+                                    @endif
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <a href="{{ route('home') }}#product-overview"
+                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                        Product
+                                    </a>
+                                    <a href="{{ route('home') }}#features"
+                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                        Features
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -305,9 +309,9 @@
 
                     <!-- Search and User Menu -->
                     <div class="flex items-center space-x-4">
-                        <!-- Search -->
+                        <!-- Search - Enhanced -->
                         <div class="relative hidden md:block" x-data="searchModal()">
-                            <button @click="open" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                            <button @click="open" class="p-2 text-gray-500 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400" title="Search articles">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
@@ -392,13 +396,11 @@
                                 </div>
                             </div>
                         @else
-                            <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-3">
                                 <a href="{{ route('login') }}"
-                                    class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">Sign
-                                    in</a>
+                                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Sign in</a>
                                 <a href="{{ route('register') }}"
-                                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">Get
-                                    Started</a>
+                                    class="px-4 py-2 text-sm font-semibold text-white transition-all bg-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-lg">Get Started</a>
                             </div>
                         @endauth
 
@@ -416,33 +418,38 @@
                 </div>
             </div>
 
-            <!-- Mobile Navigation -->
+            <!-- Mobile Navigation - Simplified -->
             <div x-show="mobileMenuOpen" x-transition
                 class="bg-white border-t border-gray-200 md:hidden dark:bg-gray-800 dark:border-gray-700"
                 style="display: none;">
                 <div class="pt-2 pb-3 space-y-1">
+                    <!-- Primary Items -->
                     <a href="{{ route('posts.index') }}"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Articles</a>
-                    <a href="{{ route('tutorials.index') }}"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Tutorials</a>
-                    @foreach ($navCategories->take(5) as $category)
-                        <a href="{{ route('categories.show', $category->slug) }}"
-                            class="block py-2 pl-6 pr-4 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">{{ $category->name }}</a>
-                    @endforeach
-                    @if (setting('enable_subscriptions'))
-                        <a href="{{ route('subscription.plans') }}"
-                            class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Pricing</a>
-                    @endif
-                    <a href="{{ route('home') }}#product-overview"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Product Overview</a>
-                    <a href="{{ route('home') }}#features"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Key Features</a>
-                    <a href="{{ route('terms') }}"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Terms &amp; Conditions</a>
-                    <a href="{{ route('privacy') }}"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Privacy Policy</a>
-                    <a href="{{ route('refund') }}"
-                        class="block py-2 pl-3 pr-4 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Refund Policy</a>
+                        class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Articles</a>
+
+                    <!-- Topics Section -->
+                    <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                        <p class="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Topics</p>
+                        @foreach ($navCategories->take(8) as $category)
+                            <a href="{{ route('categories.show', $category->slug) }}"
+                                class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">{{ $category->name }}</a>
+                        @endforeach
+                    </div>
+
+                    <!-- More Items -->
+                    <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                        <p class="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">More</p>
+                        <a href="{{ route('tutorials.index') }}"
+                            class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
+                        @if (setting('enable_subscriptions'))
+                            <a href="{{ route('subscription.plans') }}"
+                                class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Pricing</a>
+                        @endif
+                        <a href="{{ route('home') }}#product-overview"
+                            class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Product</a>
+                        <a href="{{ route('home') }}#features"
+                            class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Features</a>
+                    </div>
                 </div>
             </div>
         </nav>
