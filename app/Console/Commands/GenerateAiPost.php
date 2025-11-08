@@ -664,21 +664,46 @@ CONTENT STRATEGY:
 - Need ADVANCED patterns, not beginner tutorials
 - Want to learn things NOT commonly found in documentation
 
-⚠️ CRITICAL RULES - MUST FOLLOW:
-1. NO clickbait or exaggerated claims (avoid: '10x faster', 'turbocharge', 'unlock', '99.99%')
-2. NO unrealistic performance numbers without real benchmarks
-3. Focus on REALISTIC expectations and honest trade-offs
-4. Be EDUCATIONAL first, promotional never
-5. Provide REAL working code examples with explanations
-6. Cite actual tools, versions, and documentation
-7. VARY YOUR WRITING STYLE - Don't use the same structure as other articles
-8. Write like a REAL HUMAN developer sharing knowledge, not a template-following robot
-9. **SKIP THE BASICS** - Assume reader knows fundamentals, jump to ADVANCED concepts
-10. **PRODUCTION FOCUS** - Address real-world challenges: scaling, performance, debugging, security
-11. **ARCHITECTURE DECISIONS** - Explain WHY certain patterns over others, trade-offs
-12. **EDGE CASES** - Cover the gotchas, race conditions, memory leaks, N+1 queries
-13. **FRAMEWORK-SPECIFIC DEPTH** - For Laravel: Service Containers, Events, Queues, Pipelines, Macros, etc.
-14. **REAL METRICS** - If mentioning performance, use realistic numbers from actual testing
+🚫 CRITICAL RULES - MUST FOLLOW (QUALITY CONTROL):
+
+**AUTHENTICITY & UNIQUENESS:**
+1. NO generic content that could be found in official docs
+2. NO regurgitation of tutorials from other blogs
+3. Include ORIGINAL insights, learnings, and discoveries
+4. Share REAL problems you've encountered and solved
+5. Reference your OWN experience with specific examples
+6. Include PROPRIETARY knowledge not easily found elsewhere
+
+**TECHNICAL DEPTH:**
+7. Skip surface-level explanations - go 3 levels deeper
+8. Include actual code with error handling, edge cases, and real-world scenarios
+9. Show BEFORE & AFTER comparisons with actual metrics (response times, memory, DB queries)
+10. Explain the WHY behind architectural decisions, not just the HOW
+11. Cover what documentation doesn't: performance gotchas, security pitfalls, scaling challenges
+12. Include debugging techniques and troubleshooting strategies
+
+**PRACTICAL VALUE:**
+13. Every code example must be copy-paste ready and tested
+14. Include complete context: imports, configurations, migrations, tests
+15. Show actual console/terminal output from running commands
+16. Include error messages and how to fix them
+17. Provide copy-paste ready configuration snippets (docker-compose.yml, nginx.conf, etc.)
+
+**QUALITY & HONESTY:**
+18. NO clickbait or exaggerated claims (avoid: '10x faster', 'turbocharge', 'unlock', '99.99%')
+19. NO unrealistic performance numbers without actual benchmarks shown
+20. Be HONEST about trade-offs, limitations, and when NOT to use something
+21. Cite specific versions, dates, and real tools you tested with
+22. Include warnings about common pitfalls and gotchas
+
+**AUTHENTICITY (MOST CRITICAL):**
+23. Write like you're explaining to a team member, not a marketing document
+24. Use \"I\", \"we\", \"our\" to show personal experience
+25. Share failures, lessons learned, and mistakes made
+26. Include direct quotes or references to decisions made in real projects
+27. Use contractions (don't, can't, won't) - write conversationally
+28. Ask rhetorical questions that reflect genuine thinking process
+29. Show personality and opinions (backed by experience)
 
 🎯 WRITING STYLE VARIATION (CRITICAL - Pick ONE randomly):
 
