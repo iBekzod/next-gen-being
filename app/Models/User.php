@@ -24,7 +24,8 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         'ai_usage_reset_date',
         'video_tier', 'videos_generated', 'monthly_video_limit',
         'video_tier_starts_at', 'video_tier_expires_at',
-        'custom_video_intro_url', 'custom_video_outro_url', 'custom_video_logo_url'
+        'custom_video_intro_url', 'custom_video_outro_url', 'custom_video_logo_url',
+        'oauth_provider', 'oauth_provider_id', 'password_updated_at'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -41,6 +42,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         'ai_usage_reset_date' => 'date',
         'video_tier_starts_at' => 'datetime',
         'video_tier_expires_at' => 'datetime',
+        'password_updated_at' => 'datetime',
     ];
 
     public function canAccessPanel(Panel $panel): bool
@@ -119,6 +121,11 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     public function aiRecommendations()
     {
         return $this->hasMany(AIRecommendation::class);
+    }
+
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     // Role Methods
@@ -540,14 +547,6 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     public function getOrCreateReputation()
     {
         return $this->reputation ?? $this->reputation()->create();
-    }
-
-    /**
-     * Get user's achievements
-     */
-    public function achievements()
-    {
-        return $this->hasMany(UserAchievement::class);
     }
 
     /**

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(for file in app/Models/ActiveReader.php app/Models/ReaderLocation.php app/Models/ReaderAnalytics.php app/Http/Controllers/ReaderTrackingController.php app/Http/Middleware/TrackReaders.php app/Livewire/LiveReaders.php app/Livewire/ReaderMap.php app/Livewire/ReaderGeographics.php)",
-      "Bash(do echo \"=== $file ===\")"
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(composer show:*)"
     ],
     "deny": [],
     "ask": []
