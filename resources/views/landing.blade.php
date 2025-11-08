@@ -191,39 +191,40 @@
             <div class="grid lg:grid-cols-3 gap-8">
                 <!-- Hero Featured Post -->
                 <div class="lg:col-span-2">
-                    <article class="relative group overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all">
+                    <a href="{{ route('posts.show', $featuredPost->slug) }}" class="group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all h-96">
                         @if($featuredPost->featured_image)
-                            <img src="{{ $featuredPost->featured_image }}" alt="Featured article: {{ $featuredPost->title }}" title="{{ $featuredPost->title }}" class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-300">
+                            <img src="{{ $featuredPost->featured_image }}" alt="Featured article: {{ $featuredPost->title }}" title="{{ $featuredPost->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
-                            <div class="w-full h-96 bg-gradient-to-br from-blue-500 to-indigo-600" role="img" aria-label="Featured article placeholder"></div>
+                            <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600" role="img" aria-label="Featured article placeholder"></div>
                         @endif
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                        <!-- Overlay Gradient - Stronger for better text visibility -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-10"></div>
+
+                        <!-- Content Overlay -->
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end z-20">
                             <div class="flex items-center gap-2 mb-4">
-                                <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500 text-white">
+                                <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500 text-white shadow-lg">
                                     {{ $featuredPost->category->name }}
                                 </span>
                                 @if($featuredPost->read_time)
-                                    <span class="text-sm text-gray-200">{{ $featuredPost->read_time }} min read</span>
+                                    <span class="text-sm text-gray-100">{{ $featuredPost->read_time }} min read</span>
                                 @endif
                             </div>
-                            <h3 class="text-3xl font-bold text-white mb-3">
-                                <a href="{{ route('posts.show', $featuredPost->slug) }}" class="hover:underline">
-                                    {{ $featuredPost->title }}
-                                </a>
+                            <h3 class="text-3xl font-bold text-white mb-3 line-clamp-3">
+                                {{ $featuredPost->title }}
                             </h3>
-                            <p class="text-gray-100 text-lg mb-4">{{ Str::limit($featuredPost->excerpt, 150) }}</p>
+                            <p class="text-gray-100 text-base mb-4 line-clamp-2">{{ Str::limit($featuredPost->excerpt, 150) }}</p>
                             <div class="flex items-center justify-between pt-4 border-t border-white/20">
                                 <span class="text-sm text-gray-200">{{ $featuredPost->published_at->format('M d, Y') }}</span>
-                                <a href="{{ route('posts.show', $featuredPost->slug) }}" class="inline-flex items-center text-white font-semibold hover:gap-2 gap-1 transition-all">
+                                <span class="inline-flex items-center text-white font-semibold group-hover:gap-2 gap-1 transition-all">
                                     Read full article
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
-                                </a>
+                                </span>
                             </div>
                         </div>
-                    </article>
+                    </a>
                 </div>
 
                 <!-- Top Headlines -->
