@@ -69,6 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/notifications', [UserDashboardController::class, 'notifications'])->name('dashboard.notifications');
     Route::get('/dashboard/jobs', [UserDashboardController::class, 'jobStatus'])->name('dashboard.jobs');
     Route::get('/dashboard/calendar', [UserDashboardController::class, 'contentCalendar'])->name('dashboard.calendar');
+    Route::get('/dashboard/quota', [UserDashboardController::class, 'aiQuota'])->name('dashboard.quota');
     Route::get('/dashboard/settings', [UserDashboardController::class, 'settings'])->name('dashboard.settings');
 
     // Webhook management routes

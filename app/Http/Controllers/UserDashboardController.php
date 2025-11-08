@@ -560,6 +560,107 @@ class UserDashboardController extends Controller
     }
 
     /**
+     * Display the AI quota and usage dashboard.
+     */
+    public function aiQuota(): View
+    {
+        $user = Auth::user();
+
+        // Determine subscription tier and quota limits
+        $subscription = $user->subscription();
+        $subscriptionTier = $subscription ? $subscription->name : 'free';
+
+        // Define quotas based on subscription tier
+        $quotas = [
+            'free' => [
+                'writing_assistant' => 5,
+                'video_generation' => 0,
+                'monthly_api_calls' => 100,
+                'priority_support' => false,
+                'name' => 'Free Plan',
+                'price' => 0,
+            ],
+            'pro' => [
+                'writing_assistant' => 100,
+                'video_generation' => 10,
+                'monthly_api_calls' => 5000,
+                'priority_support' => true,
+                'name' => 'Pro Plan',
+                'price' => 29,
+            ],
+            'business' => [
+                'writing_assistant' => 500,
+                'video_generation' => 100,
+                'monthly_api_calls' => 50000,
+                'priority_support' => true,
+                'name' => 'Business Plan',
+                'price' => 99,
+            ],
+        ];
+
+        $currentQuota = $quotas[$subscriptionTier] ?? $quotas['free'];
+
+        // Calculate usage
+        $writingAssistantUsage = \App\Models\Post::where('user_id', $user->id)
+            ->whereNotNull('writing_assistant_checks')
+            ->count();
+
+        $videoGenerationUsage = \App\Models\VideoGeneration::where('user_id', $user->id)
+            ->where('completed_at', '>=', now()->startOfMonth())
+            ->count();
+
+        $apiCallsUsage = 0; // Can be calculated from webhook logs or api requests
+
+        // Calculate percentages
+        $writingAssistantPercent = min(100, ($writingAssistantUsage / max(1, $currentQuota['writing_assistant'])) * 100);
+        $videoGenerationPercent = $currentQuota['video_generation'] > 0
+            ? min(100, ($videoGenerationUsage / $currentQuota['video_generation']) * 100)
+            : 0;
+        $apiCallsPercent = min(100, ($apiCallsUsage / max(1, $currentQuota['monthly_api_calls'])) * 100);
+
+        // Get usage breakdown
+        $usageBreakdown = [
+            'writing_assistant' => [
+                'used' => $writingAssistantUsage,
+                'limit' => $currentQuota['writing_assistant'],
+                'percent' => $writingAssistantPercent,
+                'description' => 'Grammar checks, style suggestions, and tone analysis',
+                'icon' => '✏️',
+            ],
+            'video_generation' => [
+                'used' => $videoGenerationUsage,
+                'limit' => $currentQuota['video_generation'],
+                'percent' => $videoGenerationPercent,
+                'description' => 'AI-generated video creation from content',
+                'icon' => '🎬',
+            ],
+            'api_calls' => [
+                'used' => $apiCallsUsage,
+                'limit' => $currentQuota['monthly_api_calls'],
+                'percent' => $apiCallsPercent,
+                'description' => 'Monthly API calls for integrations',
+                'icon' => '🔌',
+            ],
+        ];
+
+        // Available upgrade tiers
+        $availableUpgrades = array_filter($quotas, function($tier) use ($subscriptionTier) {
+            return $tier['name'] !== ($quotas[$subscriptionTier]['name'] ?? 'Free Plan');
+        });
+
+        return view('dashboard.ai-quota', compact(
+            'user',
+            'subscriptionTier',
+            'currentQuota',
+            'usageBreakdown',
+            'availableUpgrades',
+            'writingAssistantUsage',
+            'videoGenerationUsage',
+            'apiCallsUsage'
+        ));
+    }
+
+    /**
      * Display the user settings page.
      */
     public function settings(): View
