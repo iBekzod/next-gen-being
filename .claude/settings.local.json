@@ -3,7 +3,9 @@
     "allow": [
       "Bash(for file in app/Models/ActiveReader.php app/Models/ReaderLocation.php app/Models/ReaderAnalytics.php app/Http/Controllers/ReaderTrackingController.php app/Http/Middleware/TrackReaders.php app/Livewire/LiveReaders.php app/Livewire/ReaderMap.php app/Livewire/ReaderGeographics.php)",
       "Bash(do echo \"=== $file ===\")",
-      "Bash(composer show:*)"
+      "Bash(composer show:*)",
+      "Bash(for file in 2025_11_08_000001_create_notifications_table.php 2025_11_08_000002_create_badges_and_reputation_tables.php 2025_11_08_000003_create_post_analytics_table.php 2025_11_08_000004_create_collaboration_tables.php)",
+      "Bash(do echo \"=== $file ===\" head -15 \"$file\")"
     ],
     "deny": [],
     "ask": []

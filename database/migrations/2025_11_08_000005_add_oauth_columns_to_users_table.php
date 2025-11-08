@@ -13,18 +13,22 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Add OAuth provider columns if they don't already exist
+            $needsIndex = false;
+
             if (!Schema::hasColumn('users', 'oauth_provider')) {
                 $table->string('oauth_provider')->nullable()->after('password');
+                $needsIndex = true;
             }
             if (!Schema::hasColumn('users', 'oauth_provider_id')) {
                 $table->string('oauth_provider_id')->nullable()->after('oauth_provider');
+                $needsIndex = true;
             }
             if (!Schema::hasColumn('users', 'password_updated_at')) {
                 $table->timestamp('password_updated_at')->nullable()->after('oauth_provider_id');
             }
 
-            // Add indexes for faster lookups
-            if (!Schema::hasIndexes('users', 'oauth_provider')) {
+            // Add indexes for faster lookups (only if we just added the oauth columns)
+            if ($needsIndex) {
                 $table->index(['oauth_provider', 'oauth_provider_id']);
             }
         });
