@@ -13,6 +13,7 @@ use App\Http\Controllers\SeoController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\BloggerProfileController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
@@ -34,6 +35,8 @@ Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.s
 Route::get('/tutorials', [PostController::class, 'tutorials'])->name('tutorials.index');
 Route::get('/series/{seriesSlug}', [PostController::class, 'series'])->name('series.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/api/search/suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions');
+Route::get('/api/search/trending', [SearchController::class, 'trending'])->name('search.trending');
 Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/tags/{tag:slug}', [TagController::class, 'show'])->name('tags.show');
 
@@ -56,7 +59,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/posts', [UserDashboardController::class, 'posts'])->name('dashboard.posts');
     Route::get('/dashboard/bookmarks', [UserDashboardController::class, 'bookmarks'])->name('dashboard.bookmarks');
+    Route::get('/dashboard/earnings', [UserDashboardController::class, 'earnings'])->name('dashboard.earnings');
+    Route::get('/dashboard/payouts', [UserDashboardController::class, 'payouts'])->name('dashboard.payouts');
+    Route::get('/dashboard/videos', [UserDashboardController::class, 'videos'])->name('dashboard.videos');
+    Route::get('/dashboard/social-media', [UserDashboardController::class, 'socialMedia'])->name('dashboard.social-media');
+    Route::get('/dashboard/analytics', [UserDashboardController::class, 'analytics'])->name('dashboard.analytics');
+    Route::get('/dashboard/webhooks', [UserDashboardController::class, 'webhooks'])->name('dashboard.webhooks');
     Route::get('/dashboard/settings', [UserDashboardController::class, 'settings'])->name('dashboard.settings');
+
+    // Webhook management routes
+    Route::get('/webhooks/create', [WebhookController::class, 'create'])->name('webhooks.create');
+    Route::post('/webhooks', [WebhookController::class, 'store'])->name('webhooks.store');
+    Route::get('/webhooks/{webhook}', [WebhookController::class, 'show'])->name('webhooks.show');
+    Route::get('/webhooks/{webhook}/edit', [WebhookController::class, 'edit'])->name('webhooks.edit');
+    Route::put('/webhooks/{webhook}', [WebhookController::class, 'update'])->name('webhooks.update');
+    Route::delete('/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('webhooks.destroy');
 
     // Subscription management
     Route::post('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');

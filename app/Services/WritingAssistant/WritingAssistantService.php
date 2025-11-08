@@ -8,29 +8,46 @@ use Exception;
 
 class WritingAssistantService
 {
+    private $openaiApiKey;
+    private $useApiCalls = true;
+
+    public function __construct()
+    {
+        $this->openaiApiKey = config('services.openai.api_key');
+        // Disable API calls if key is not configured or in testing
+        $this->useApiCalls = !empty($this->openaiApiKey) && app()->environment() !== 'testing';
+    }
+
     /**
-     * Improve text quality
+     * Improve text quality with AI-powered analysis
      */
     public function improveText(string $text): array
     {
         try {
+            if (strlen($text) < 10) {
+                return [
+                    'error' => 'Text is too short for analysis',
+                    'original' => $text,
+                ];
+            }
+
             $improvements = [
                 'original' => $text,
                 'suggestions' => [],
                 'score' => 0,
             ];
 
-            // Grammar and spelling
-            $improvements['grammar'] = $this->checkGrammar($text);
+            // Grammar and spelling - AI-powered
+            $improvements['grammar'] = $this->checkGrammarWithAI($text);
 
-            // Style improvements
-            $improvements['style'] = $this->suggestStyleImprovements($text);
+            // Style improvements - AI-powered
+            $improvements['style'] = $this->suggestStyleImprovementsWithAI($text);
 
-            // Readability analysis
+            // Readability analysis (local calculation)
             $improvements['readability'] = $this->analyzeReadability($text);
 
-            // Tone analysis
-            $improvements['tone'] = $this->analyzeTone($text);
+            // Tone analysis - AI-powered
+            $improvements['tone'] = $this->analyzeToneWithAI($text);
 
             // Calculate overall quality score
             $improvements['score'] = $this->calculateQualityScore($improvements);
@@ -39,10 +56,164 @@ class WritingAssistantService
 
         } catch (Exception $e) {
             Log::error("Writing assistant error: {$e->getMessage()}");
-            return [
-                'error' => $e->getMessage(),
-                'original' => $text,
-            ];
+            // Fallback to local analysis on API error
+            return $this->improveTextLocal($text);
+        }
+    }
+
+    /**
+     * Fallback to local analysis
+     */
+    private function improveTextLocal(string $text): array
+    {
+        return [
+            'original' => $text,
+            'grammar' => $this->checkGrammar($text),
+            'style' => $this->suggestStyleImprovements($text),
+            'readability' => $this->analyzeReadability($text),
+            'tone' => $this->analyzeTone($text),
+            'score' => 75,
+            'note' => 'Using local analysis (API unavailable)',
+        ];
+    }
+
+    /**
+     * Check grammar with AI API
+     */
+    private function checkGrammarWithAI(string $text): array
+    {
+        if (!$this->useApiCalls) {
+            return $this->checkGrammar($text);
+        }
+
+        try {
+            $response = Http::withToken($this->openaiApiKey)
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-3.5-turbo',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a grammar and spelling expert. Analyze the following text and provide a JSON response with: grammar_score (0-100), issues_found (count), and issues (array of objects with type, text, suggestion, and severity).'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => "Analyze this text for grammar and spelling issues:\n\n{$text}"
+                        ]
+                    ],
+                    'temperature' => 0.3,
+                    'max_tokens' => 500
+                ])
+                ->timeout(10);
+
+            if ($response->successful()) {
+                $content = $response->json('choices.0.message.content', '{}');
+
+                // Try to parse JSON from response
+                if (preg_match('/\{.*\}/s', $content, $matches)) {
+                    $parsed = json_decode($matches[0], true);
+                    if (is_array($parsed)) {
+                        return $parsed + ['api_used' => true];
+                    }
+                }
+            }
+
+            // Fallback to local analysis
+            return $this->checkGrammar($text);
+        } catch (Exception $e) {
+            Log::warning("Grammar API error: {$e->getMessage()}");
+            return $this->checkGrammar($text);
+        }
+    }
+
+    /**
+     * Suggest style improvements with AI
+     */
+    private function suggestStyleImprovementsWithAI(string $text): array
+    {
+        if (!$this->useApiCalls) {
+            return $this->suggestStyleImprovements($text);
+        }
+
+        try {
+            $response = Http::withToken($this->openaiApiKey)
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-3.5-turbo',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a writing style expert. Analyze the following text and provide a JSON response with: style_score (0-100), suggestions_count, and suggestions (array of objects with type, recommendation, and severity).'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => "Analyze this text for style improvements:\n\n{$text}"
+                        ]
+                    ],
+                    'temperature' => 0.3,
+                    'max_tokens' => 500
+                ])
+                ->timeout(10);
+
+            if ($response->successful()) {
+                $content = $response->json('choices.0.message.content', '{}');
+
+                if (preg_match('/\{.*\}/s', $content, $matches)) {
+                    $parsed = json_decode($matches[0], true);
+                    if (is_array($parsed)) {
+                        return $parsed + ['api_used' => true];
+                    }
+                }
+            }
+
+            return $this->suggestStyleImprovements($text);
+        } catch (Exception $e) {
+            Log::warning("Style API error: {$e->getMessage()}");
+            return $this->suggestStyleImprovements($text);
+        }
+    }
+
+    /**
+     * Analyze tone with AI
+     */
+    private function analyzeToneWithAI(string $text): array
+    {
+        if (!$this->useApiCalls) {
+            return $this->analyzeTone($text);
+        }
+
+        try {
+            $response = Http::withToken($this->openaiApiKey)
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-3.5-turbo',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a writing tone analyst. Analyze the following text and provide a JSON response with: scores (object with formal, positive, negative, confident scores 0-100), dominant_tone (string), and analysis (string).'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => "Analyze the tone of this text:\n\n{$text}"
+                        ]
+                    ],
+                    'temperature' => 0.3,
+                    'max_tokens' => 300
+                ])
+                ->timeout(10);
+
+            if ($response->successful()) {
+                $content = $response->json('choices.0.message.content', '{}');
+
+                if (preg_match('/\{.*\}/s', $content, $matches)) {
+                    $parsed = json_decode($matches[0], true);
+                    if (is_array($parsed)) {
+                        return $parsed + ['api_used' => true];
+                    }
+                }
+            }
+
+            return $this->analyzeTone($text);
+        } catch (Exception $e) {
+            Log::warning("Tone API error: {$e->getMessage()}");
+            return $this->analyzeTone($text);
         }
     }
 

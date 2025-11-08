@@ -404,5 +404,26 @@
         </div>
     </section>
     @endif
+
+    <!-- AI-Powered Recommendations -->
+    @if(auth()->check())
+    <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
+        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">✨ Personalized for You</h2>
+        @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'personalized'])
+    </section>
+    @else
+    <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
+        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">🔥 Trending Now</h2>
+        @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'trending'])
+    </section>
+    @endif
+
+    <!-- Similar Articles (for when not authenticated) -->
+    @if(!auth()->check())
+    <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
+        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">📚 More Like This</h2>
+        @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'similar'])
+    </section>
+    @endif
     </article>
 </div>

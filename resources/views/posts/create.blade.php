@@ -813,6 +813,10 @@ document.querySelector('form').addEventListener('submit', function(e) {
         statusSelect.value = 'draft';
     } else if (action === 'publish') {
         statusSelect.value = statusSelect.value === 'scheduled' ? 'scheduled' : 'published';
+        // Show modal after successful publish
+        setTimeout(() => {
+            showPublishModal();
+        }, 1500); // Wait for form to process and redirect back
     }
 });
 
@@ -827,5 +831,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
+
+<!-- Post Publish Actions Modal -->
+@include('partials.post-publish-actions-modal')
 
 @endsection

@@ -4,25 +4,53 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\SearchService;
 
 class SearchController extends Controller
 {
-    /**
-     * Display search results.
-     */
-    public function index(Request $request): View
-    {
-        $query = $request->get('q', '');
-        $type = $request->get('type', 'posts');
+    protected $searchService;
 
-        // Validate search type
-        if (!in_array($type, ['posts', 'authors'])) {
-            $type = 'posts';
+    public function __construct(SearchService $searchService)
+    {
+        $this->searchService = $searchService;
+    }
+
+    /**
+     * Display the advanced search page
+     */
+    public function index(): View
+    {
+        return view('search.index');
+    }
+
+    /**
+     * Get autocomplete suggestions (API endpoint)
+     */
+    public function suggestions(Request $request)
+    {
+        $query = $request->query('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
         }
 
-        return view('search.index', [
-            'query' => $query,
-            'searchType' => $type,
+        $suggestions = $this->searchService->getSuggestions($query, 10);
+
+        return response()->json($suggestions);
+    }
+
+    /**
+     * Get trending searches
+     */
+    public function trending()
+    {
+        $trends = $this->searchService->getTrendingSearches(10);
+
+        return response()->json([
+            'trending' => $trends->map(fn($tag) => [
+                'label' => $tag->name,
+                'count' => $tag->posts_count,
+            ]),
         ]);
     }
 }

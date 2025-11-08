@@ -51,6 +51,331 @@ class UserDashboardController extends Controller
     }
 
     /**
+     * Display the user earnings dashboard.
+     */
+    public function earnings(): View
+    {
+        $user = Auth::user();
+
+        // Get earnings data
+        $totalEarnings = $user->earnings()->paid()->sum('amount');
+        $thisMonthEarnings = $user->earnings()
+            ->paid()
+            ->whereYear('paid_at', now()->year)
+            ->whereMonth('paid_at', now()->month)
+            ->sum('amount');
+        $pendingPayouts = $user->earnings()->pending()->sum('amount');
+
+        // Get top earning posts (from earnings metadata)
+        $topPosts = $user->earnings()
+            ->paid()
+            ->where('type', 'premium_content')
+            ->orderBy('amount', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get earnings by type
+        $earningsByType = $user->earnings()
+            ->paid()
+            ->selectRaw('type, COUNT(*) as count, SUM(amount) as total')
+            ->groupBy('type')
+            ->get();
+
+        // Get 30-day earnings history for chart
+        $thirtyDaysAgo = now()->subDays(30);
+        $dailyEarnings = $user->earnings()
+            ->paid()
+            ->where('paid_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(paid_at) as date, SUM(amount) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Get pending payout requests
+        $payoutRequests = $user->payoutRequests()
+            ->where('status', '!=', 'rejected')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard.earnings', compact(
+            'user',
+            'totalEarnings',
+            'thisMonthEarnings',
+            'pendingPayouts',
+            'topPosts',
+            'earningsByType',
+            'dailyEarnings',
+            'payoutRequests'
+        ));
+    }
+
+    /**
+     * Display the payout management dashboard.
+     */
+    public function payouts(): View
+    {
+        $user = Auth::user();
+
+        // Get payout statistics
+        $totalRequested = $user->payoutRequests()->sum('amount');
+        $totalPaid = $user->payoutRequests()->where('status', 'completed')->sum('amount');
+        $pendingCount = $user->payoutRequests()->where('status', 'pending')->count();
+        $rejectedCount = $user->payoutRequests()->where('status', 'rejected')->count();
+
+        // Calculate average payout
+        $completedPayouts = $user->payoutRequests()->where('status', 'completed')->count();
+        $averagePayout = $completedPayouts > 0 ? $totalPaid / $completedPayouts : 0;
+
+        // Get all payout requests with pagination
+        $payoutRequests = $user->payoutRequests()
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Get payout method statistics
+        $payoutMethods = $user->payoutRequests()
+            ->selectRaw('payout_method, COUNT(*) as count, SUM(amount) as total')
+            ->groupBy('payout_method')
+            ->get();
+
+        // Get monthly payout trend
+        $thirtyDaysAgo = now()->subDays(30);
+        $monthlyPayouts = $user->payoutRequests()
+            ->where('status', 'completed')
+            ->where('processed_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(processed_at) as date, SUM(amount) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Get tax information (if any invoices exist)
+        $invoices = $user->invoices();
+
+        return view('dashboard.payouts', compact(
+            'user',
+            'totalRequested',
+            'totalPaid',
+            'pendingCount',
+            'rejectedCount',
+            'averagePayout',
+            'payoutRequests',
+            'payoutMethods',
+            'monthlyPayouts',
+            'invoices'
+        ));
+    }
+
+    /**
+     * Display the video management dashboard.
+     */
+    public function videos(): View
+    {
+        $user = Auth::user();
+
+        // Get video statistics
+        $totalVideos = $user->videoGenerations()->count();
+        $completedVideos = $user->videoGenerations()->completed()->count();
+        $processingCount = $user->videoGenerations()->processing()->count();
+        $failedCount = $user->videoGenerations()->failed()->count();
+        $queuedCount = $user->videoGenerations()->queued()->count();
+
+        // Calculate total AI credits used
+        $totalCreditsUsed = $user->videoGenerations()->sum('ai_credits_used');
+        $totalGenerationCost = $user->videoGenerations()->sum('generation_cost');
+
+        // Get video quality breakdown
+        $videosByType = $user->videoGenerations()
+            ->selectRaw('video_type, COUNT(*) as count, SUM(file_size_mb) as total_size')
+            ->groupBy('video_type')
+            ->get();
+
+        // Get recent videos with their posts
+        $recentVideos = $user->videoGenerations()
+            ->with('post')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Get processing timeline (last 30 days)
+        $thirtyDaysAgo = now()->subDays(30);
+        $processingTimeline = $user->videoGenerations()
+            ->where('completed_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(completed_at) as date, COUNT(*) as count, SUM(file_size_mb) as size')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        return view('dashboard.videos', compact(
+            'user',
+            'totalVideos',
+            'completedVideos',
+            'processingCount',
+            'failedCount',
+            'queuedCount',
+            'totalCreditsUsed',
+            'totalGenerationCost',
+            'videosByType',
+            'recentVideos',
+            'processingTimeline'
+        ));
+    }
+
+    /**
+     * Display the social media manager dashboard.
+     */
+    public function socialMedia(): View
+    {
+        $user = Auth::user();
+
+        // Get connected accounts
+        $connectedAccounts = $user->socialMediaAccounts()->where('is_active', true)->get();
+        $totalAccounts = $user->socialMediaAccounts()->count();
+        $activeAccounts = $connectedAccounts->count();
+        $expiredTokens = $connectedAccounts->filter(fn($acc) => $acc->isTokenExpired())->count();
+
+        // Get accounts by platform
+        $accountsByPlatform = $user->socialMediaAccounts()
+            ->selectRaw('platform, COUNT(*) as count, SUM(follower_count) as total_followers')
+            ->groupBy('platform')
+            ->get();
+
+        // Get auto-publishing status
+        $autoPublishEnabled = $connectedAccounts->filter(fn($acc) => $acc->auto_publish)->count();
+
+        // Get all social media accounts with pagination
+        $socialMediaAccounts = $user->socialMediaAccounts()
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Get publishing schedule info
+        $accountsWithSchedule = $connectedAccounts->filter(fn($acc) => !empty($acc->publish_schedule))->count();
+
+        // Calculate total followers
+        $totalFollowers = $connectedAccounts->sum('follower_count');
+
+        return view('dashboard.social-media', compact(
+            'user',
+            'connectedAccounts',
+            'totalAccounts',
+            'activeAccounts',
+            'expiredTokens',
+            'accountsByPlatform',
+            'autoPublishEnabled',
+            'socialMediaAccounts',
+            'accountsWithSchedule',
+            'totalFollowers'
+        ));
+    }
+
+    /**
+     * Display the analytics dashboard.
+     */
+    public function analytics(): View
+    {
+        $user = Auth::user();
+
+        // Get total stats
+        $totalViews = $user->posts()->sum('views_count');
+        $totalLikes = $user->posts()->sum('likes_count');
+        $totalComments = $user->posts()->sum('comments_count');
+        $totalShares = $user->posts()->sum('shares_count') ?? 0;
+
+        // Calculate engagement rate
+        $totalPosts = $user->posts()->count();
+        $engagementRate = $totalPosts > 0 ? (($totalLikes + $totalComments + $totalShares) / ($totalViews * $totalPosts)) * 100 : 0;
+
+        // Get popular posts (top 5)
+        $topPosts = $user->posts()
+            ->where('status', 'published')
+            ->orderBy('views_count', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get traffic by category
+        $trafficByCategory = $user->posts()
+            ->join('post_categories', 'posts.id', '=', 'post_categories.post_id')
+            ->join('categories', 'post_categories.category_id', '=', 'categories.id')
+            ->selectRaw('categories.name, SUM(posts.views_count) as total_views, COUNT(posts.id) as count')
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total_views')
+            ->get();
+
+        // Get daily view trends (last 30 days)
+        $thirtyDaysAgo = now()->subDays(30);
+        $dailyViews = $user->posts()
+            ->where('published_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(published_at) as date, SUM(views_count) as views')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Get engagement metrics by post type
+        $engagementByType = $user->posts()
+            ->selectRaw('post_type, COUNT(*) as count, SUM(views_count) as views, SUM(likes_count) as likes')
+            ->groupBy('post_type')
+            ->get();
+
+        return view('dashboard.analytics', compact(
+            'user',
+            'totalViews',
+            'totalLikes',
+            'totalComments',
+            'totalShares',
+            'engagementRate',
+            'topPosts',
+            'trafficByCategory',
+            'dailyViews',
+            'engagementByType'
+        ));
+    }
+
+    /**
+     * Display the webhooks management dashboard.
+     */
+    public function webhooks(): View
+    {
+        $user = Auth::user();
+
+        // Get webhook statistics
+        $totalWebhooks = $user->webhooks()->count();
+        $activeWebhooks = $user->webhooks()->where('status', 'active')->count();
+        $failedWebhooks = $user->webhooks()->where('status', 'failed')->count();
+
+        // Get total deliveries and success rate across all webhooks
+        $webhookIds = $user->webhooks()->pluck('id');
+        $totalDeliveries = \App\Models\WebhookLog::whereIn('webhook_id', $webhookIds)->count();
+
+        $successfulDeliveries = \App\Models\WebhookLog::whereIn('webhook_id', $webhookIds)
+            ->where('success', true)
+            ->count();
+
+        $overallSuccessRate = $totalDeliveries > 0
+            ? round(($successfulDeliveries / $totalDeliveries) * 100, 2)
+            : 0;
+
+        // Get all webhooks with pagination
+        $webhooks = $user->webhooks()
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Get recent delivery logs (last 50 across all webhooks)
+        $recentLogs = \App\Models\WebhookLog::whereIn('webhook_id', $webhookIds)
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        return view('dashboard.webhooks', compact(
+            'user',
+            'totalWebhooks',
+            'activeWebhooks',
+            'failedWebhooks',
+            'totalDeliveries',
+            'overallSuccessRate',
+            'webhooks',
+            'recentLogs'
+        ));
+    }
+
+    /**
      * Display the user settings page.
      */
     public function settings(): View

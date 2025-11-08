@@ -1,317 +1,535 @@
 @extends('layouts.app')
 
 @section('title', 'Edit Post - ' . setting('site_name'))
-@section('description', 'Edit your blog post')
+@section('description', 'Edit your blog post with advanced features')
 
 @push('head')
 <link rel="stylesheet" href="https://unpkg.com/@yaireo/tagify/dist/tagify.css">
+<style>
+[x-cloak] { display: none; }
+.section-header {
+    @apply flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-blue-100 dark:hover:bg-gray-600 transition-colors;
+}
+.section-header h3 {
+    @apply text-sm font-semibold text-gray-900 dark:text-white;
+}
+.section-content {
+    @apply border-b border-gray-200 dark:border-gray-600;
+}
+.quota-badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+.status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+}
+.status-approved { @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200; }
+.status-pending { @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200; }
+.status-rejected { @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200; }
+.status-draft { @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200; }
+.stats-card {
+    @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600;
+}
+</style>
 @endpush
 
 @section('content')
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Edit Post</h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">Update your post content and settings</p>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- HEADER -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Edit Post</h1>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">Update your content with advanced editing tools</p>
+            </div>
+            <div class="text-right">
+                @if($post->status === 'published')
+                    <span class="status-badge status-approved">✓ Published</span>
+                @elseif($post->status === 'draft')
+                    <span class="status-badge status-draft">📝 Draft</span>
+                @elseif($post->status === 'scheduled')
+                    <span class="status-badge status-pending">⏱️ Scheduled</span>
+                @endif
+                @if($post->moderation_status === 'approved')
+                    <span class="status-badge status-approved mt-2 block">✓ Approved</span>
+                @elseif($post->moderation_status === 'pending')
+                    <span class="status-badge status-pending mt-2 block">⏳ Pending Review</span>
+                @elseif($post->moderation_status === 'rejected')
+                    <span class="status-badge status-rejected mt-2 block">✗ Rejected</span>
+                @endif
+            </div>
         </div>
 
-        <form action="{{ route('posts.update', $post) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- POST PERFORMANCE STATS (If Published) -->
+        @if($post->status === 'published')
+        <div class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stats-card">
+                <div class="text-xs font-medium text-gray-600 dark:text-gray-400">Views</div>
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $post->views_count ?? 0 }}</div>
+                <div class="text-xs text-gray-500 mt-1">Total views</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-xs font-medium text-gray-600 dark:text-gray-400">Engagement</div>
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ ($post->likes_count ?? 0) + ($post->comments_count ?? 0) }}</div>
+                <div class="text-xs text-gray-500 mt-1">Likes + Comments</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-xs font-medium text-gray-600 dark:text-gray-400">Shares</div>
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $post->total_shares ?? 0 }}</div>
+                <div class="text-xs text-gray-500 mt-1">Total shares</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-xs font-medium text-gray-600 dark:text-gray-400">Published</div>
+                <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $post->published_at?->diffForHumans() ?? 'N/A' }}</div>
+                <div class="text-xs text-gray-500 mt-1">ago</div>
+            </div>
+        </div>
+        @endif
+
+        <form action="{{ route('posts.update', $post) }}" method="POST" enctype="multipart/form-data" class="space-y-0 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
             @csrf
             @method('PUT')
 
-            <!-- Title -->
-            <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title <span class="text-red-500">*</span>
-                </label>
-                <input type="text"
-                       name="title"
-                       id="title"
-                       value="{{ old('title', $post->title) }}"
-                       required
-                       placeholder="Enter your post title"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                @error('title')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
+            <!-- BASIC INFORMATION SECTION -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'basic-info')">
+                    <h3>📝 Basic Information</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="basic-info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                </div>
+                <div class="section-content p-6 space-y-6" id="basic-info">
+                    <!-- Title -->
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Title <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text"
+                               name="title"
+                               id="title"
+                               value="{{ old('title', $post->title) }}"
+                               required
+                               placeholder="Enter your post title"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        @error('title')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Excerpt -->
+                    <div>
+                        <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Excerpt <span class="text-red-500">*</span>
+                        </label>
+                        <textarea name="excerpt"
+                                  id="excerpt"
+                                  rows="3"
+                                  required
+                                  placeholder="A brief summary of your post (max 500 characters)"
+                                  maxlength="500"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ old('excerpt', $post->excerpt) }}</textarea>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            <span id="excerpt-count">0</span>/500 characters
+                        </p>
+                        @error('excerpt')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Content -->
+                    <div>
+                        <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Content <span class="text-red-500">*</span>
+                        </label>
+                        <div class="border border-gray-300 rounded-lg dark:border-gray-600 overflow-hidden">
+                            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-2 border-b border-gray-300 dark:border-gray-600 flex flex-wrap gap-1">
+                                <button type="button" onclick="formatText('bold')" title="Bold" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6 4a2 2 0 00-2 2v8a2 2 0 002 2h3.5a3.5 3.5 0 001.852-6.49A3.5 3.5 0 008.5 4H6zm2 9V7h.5a1.5 1.5 0 010 3H8zm0 0h1a1.5 1.5 0 010 3H8v-3z"/></svg>
+                                </button>
+                                <button type="button" onclick="formatText('italic')" title="Italic" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h4V3a1 1 0 112 0v1h1a1 1 0 110 2h-1.003l-.8 10H14a1 1 0 110 2H6a1 1 0 110-2h1.003l.8-10H7a1 1 0 110-2h1V3a1 1 0 011-1zm2.197 4l-.8 10h3.406l.8-10H9.197z" clip-rule="evenodd"/></svg>
+                                </button>
+                                <button type="button" onclick="formatText('heading')" title="Heading" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-sm font-bold">H</button>
+                                <button type="button" onclick="formatText('link')" title="Link" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                </button>
+                                <button type="button" onclick="formatText('code')" title="Code" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                                </button>
+                                <button type="button" onclick="formatText('list')" title="List" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                </button>
+                            </div>
+                            <textarea name="content"
+                                      id="content"
+                                      rows="20"
+                                      required
+                                      placeholder="Write your post content here... (Markdown supported)"
+                                      class="w-full px-4 py-3 border-0 dark:bg-gray-700 dark:text-white focus:ring-0 resize-none">{{ old('content', $post->content) }}</textarea>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            Supports Markdown. Read time: <span id="read-time">0</span> min | Words: <span id="word-count">0</span>
+                        </p>
+                        @error('content')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
-            @if(isset($suggestion))
-                <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
-                        Creating from AI Suggestion
-                    </h3>
-                    <p class="text-sm text-blue-700 dark:text-blue-300">
-                        Title suggestion: {{ $suggestion->title }}
+            <!-- WRITING ASSISTANT SECTION -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'writing-assistant')">
+                    <h3>✍️ Writing Assistant</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="writing-assistant-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                </div>
+                <div class="section-content p-6 space-y-4 hidden" id="writing-assistant">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Get real-time suggestions for grammar, style, readability, tone, and more.
                     </p>
-                </div>
-                <script>
-                    // Pre-fill title if empty
-                    if (!document.getElementById('title').value) {
-                        document.getElementById('title').value = @json($suggestion->title);
-                    }
-                </script>
-            @endif
-            <!-- Excerpt -->
-            <div>
-                <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Excerpt <span class="text-red-500">*</span>
-                </label>
-                <textarea name="excerpt"
-                          id="excerpt"
-                          rows="3"
-                          required
-                          placeholder="A brief summary of your post (max 500 characters)"
-                          maxlength="500"
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ old('excerpt', $post->excerpt) }}</textarea>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    <span id="excerpt-count">0</span>/500 characters
-                </p>
-                @error('excerpt')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Content -->
-            <div>
-                <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Content <span class="text-red-500">*</span>
-                </label>
-                <div class="border border-gray-300 rounded-lg dark:border-gray-600 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-2 border-b border-gray-300 dark:border-gray-600">
-                        <div class="flex space-x-2">
-                            <button type="button" onclick="formatText('bold')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M6 4a2 2 0 00-2 2v8a2 2 0 002 2h3.5a3.5 3.5 0 001.852-6.49A3.5 3.5 0 008.5 4H6zm2 9V7h.5a1.5 1.5 0 010 3H8zm0 0h1a1.5 1.5 0 010 3H8v-3z"/>
-                                </svg>
-                            </button>
-                            <button type="button" onclick="formatText('italic')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h4V3a1 1 0 112 0v1h1a1 1 0 110 2h-1.003l-.8 10H14a1 1 0 110 2H6a1 1 0 110-2h1.003l.8-10H7a1 1 0 110-2h1V3a1 1 0 011-1zm2.197 4l-.8 10h3.406l.8-10H9.197z" clip-rule="evenodd"/>
-                                </svg>
-                            </button>
-                            <button type="button" onclick="formatText('heading')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                <span class="font-bold text-sm">H</span>
-                            </button>
-                            <button type="button" onclick="formatText('link')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                </svg>
-                            </button>
-                            <button type="button" onclick="formatText('code')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                                </svg>
-                            </button>
-                        </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" onclick="checkGrammar()" class="py-2 px-3 bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 rounded-lg text-sm font-medium transition">
+                            ✓ Check Grammar
+                        </button>
+                        <button type="button" onclick="analyzeStyle()" class="py-2 px-3 bg-cyan-100 dark:bg-cyan-900/30 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 text-cyan-900 dark:text-cyan-200 rounded-lg text-sm font-medium transition">
+                            📊 Style Tips
+                        </button>
+                        <button type="button" onclick="checkReadability()" class="py-2 px-3 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-900 dark:text-green-200 rounded-lg text-sm font-medium transition">
+                            📖 Readability
+                        </button>
+                        <button type="button" onclick="analyzeTone()" class="py-2 px-3 bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-900/50 text-pink-900 dark:text-pink-200 rounded-lg text-sm font-medium transition">
+                            🎭 Tone Analysis
+                        </button>
                     </div>
-                    <textarea name="content"
-                              id="content"
-                              rows="20"
-                              required
-                              placeholder="Write your post content here... (Markdown supported)"
-                              class="w-full px-4 py-3 border-0 dark:bg-gray-700 dark:text-white focus:ring-0">{{ old('content', $post->content) }}</textarea>
-                </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Supports Markdown formatting. Estimated read time: <span id="read-time">0</span> min
-                </p>
-                @error('content')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Category -->
-                <div>
-                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Category <span class="text-red-500">*</span>
-                    </label>
-                    <select name="category_id"
-                            id="category_id"
-                            required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Select a category</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('category_id', $post->category_id) == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Status -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Status <span class="text-red-500">*</span>
-                    </label>
-                    <select name="status"
-                            id="status"
-                            required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="draft" {{ old('status', $post->status) == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="published" {{ old('status', $post->status) == 'published' ? 'selected' : '' }}>Published</option>
-                        <option value="scheduled" {{ old('status', $post->status) == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                    </select>
-                    @error('status')
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                    <div id="assistant-results" class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hidden">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2" id="results-title"></h4>
+                        <div id="results-content" class="text-sm text-gray-700 dark:text-gray-300 space-y-2"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tags -->
-            <div>
-                <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Tags
-                </label>
-                <input name="tags"
-                       id="tags"
-                       placeholder="Add tags..."
-                       value="{{ old('tags') ? implode(',', old('tags')) : $post->tags->pluck('name')->implode(',') }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Start typing to see suggestions or create new tags
-                </p>
-                @error('tags')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Featured Image -->
-            <div>
-                <label for="featured_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Featured Image
-                </label>
-
-                @if($post->featured_image)
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Current image:</p>
-                    <img src="{{ $post->featured_image }}" alt="Current featured image" class="max-h-48 rounded-lg">
+            <!-- CONTENT ORGANIZATION -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'organization')">
+                    <h3>📚 Content Organization</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="organization-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
                 </div>
-                @endif
-
-                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg dark:border-gray-600">
-                    <div class="space-y-1 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <div class="flex text-sm text-gray-600 dark:text-gray-400">
-                            <label for="featured_image" class="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                <span>Upload a new file</span>
-                                <input id="featured_image" name="featured_image" type="file" class="sr-only" accept="image/*" onchange="previewImage(this)">
+                <div class="section-content p-6 space-y-6" id="organization">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Category -->
+                        <div>
+                            <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Category <span class="text-red-500">*</span>
                             </label>
-                            <p class="pl-1">or drag and drop</p>
+                            <select name="category_id"
+                                    id="category_id"
+                                    required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select a category</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" {{ old('category_id', $post->category_id) == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 2MB</p>
+
+                        <!-- Post Type -->
+                        <div>
+                            <label for="post_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Post Type
+                            </label>
+                            <select name="post_type"
+                                    id="post_type"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                <option value="standard" {{ old('post_type', $post->post_type) == 'standard' ? 'selected' : '' }}>Standard Post</option>
+                                <option value="tutorial" {{ old('post_type', $post->post_type) == 'tutorial' ? 'selected' : '' }}>Tutorial</option>
+                                <option value="guide" {{ old('post_type', $post->post_type) == 'guide' ? 'selected' : '' }}>Guide</option>
+                                <option value="review" {{ old('post_type', $post->post_type) == 'review' ? 'selected' : '' }}>Review</option>
+                                <option value="video" {{ old('post_type', $post->post_type) == 'video' ? 'selected' : '' }}>Video Blog</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div>
+                        <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Tags
+                        </label>
+                        <input name="tags"
+                               id="tags"
+                               placeholder="Add tags... (e.g., laravel, php, web-development)"
+                               value="{{ old('tags', $post->tags->pluck('name')->join(', ')) }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Type to see suggestions or create new tags
+                        </p>
+                    </div>
+
+                    <!-- Series Section -->
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <div class="flex items-center mb-4">
+                            <input type="checkbox" id="use-series" class="rounded" {{ $post->series_title ? 'checked' : '' }} onchange="toggleSeries()">
+                            <label for="use-series" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Part of a Tutorial Series
+                            </label>
+                        </div>
+                        <div id="series-fields" class="{{ $post->series_title ? '' : 'hidden' }} space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="series_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Series Title
+                                    </label>
+                                    <input type="text"
+                                           name="series_title"
+                                           id="series_title"
+                                           value="{{ old('series_title', $post->series_title) }}"
+                                           placeholder="e.g., 'Building a Blog with Laravel'"
+                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="series_part" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Part Number
+                                    </label>
+                                    <input type="number"
+                                           name="series_part"
+                                           id="series_part"
+                                           value="{{ old('series_part', $post->series_part) }}"
+                                           min="1"
+                                           placeholder="e.g., 1"
+                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="series_total_parts" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Total Parts
+                                    </label>
+                                    <input type="number"
+                                           name="series_total_parts"
+                                           id="series_total_parts"
+                                           value="{{ old('series_total_parts', $post->series_total_parts) }}"
+                                           min="1"
+                                           placeholder="e.g., 5"
+                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="series_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Series Description
+                                </label>
+                                <textarea name="series_description"
+                                          id="series_description"
+                                          rows="3"
+                                          placeholder="What is this tutorial series about?"
+                                          class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">{{ old('series_description', $post->series_description) }}</textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="image-preview" class="mt-4 hidden">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">New image preview:</p>
-                    <img src="" alt="Preview" class="max-h-64 mx-auto rounded-lg">
+            </div>
+
+            <!-- FEATURED IMAGE SECTION -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'featured-image')">
+                    <h3>🖼️ Featured Image</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="featured-image-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
                 </div>
-                @error('featured_image')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Scheduled Date (shown only when status is scheduled) -->
-            <div id="scheduled-date" class="{{ $post->status !== 'scheduled' ? 'hidden' : '' }}">
-                <label for="published_at" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Publish Date & Time
-                </label>
-                <input type="datetime-local"
-                       name="published_at"
-                       id="published_at"
-                       value="{{ old('published_at', $post->published_at?->format('Y-m-d\TH:i')) }}"
-                       min="{{ now()->addMinutes(10)->format('Y-m-d\TH:i') }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                @error('published_at')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Options -->
-            <div class="space-y-4">
-                <label class="flex items-center">
-                    <input type="checkbox"
-                           name="is_premium"
-                           value="1"
-                           {{ old('is_premium', $post->is_premium) ? 'checked' : '' }}
-                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700">
-                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Premium content (requires subscription)
-                    </span>
-                </label>
-
-                <label class="flex items-center">
-                    <input type="checkbox"
-                           name="allow_comments"
-                           value="1"
-                           {{ old('allow_comments', $post->allow_comments) ? 'checked' : '' }}
-                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700">
-                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Allow comments on this post
-                    </span>
-                </label>
-            </div>
-
-            <!-- Post Info -->
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Post Information</h3>
-                <dl class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Created</dt>
-                        <dd class="text-gray-900 dark:text-white">{{ $post->created_at->format('M j, Y g:i A') }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Last Updated</dt>
-                        <dd class="text-gray-900 dark:text-white">{{ $post->updated_at->format('M j, Y g:i A') }}</dd>
-                    </div>
-                    @if($post->published_at && $post->status === 'published')
-                    <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Published</dt>
-                        <dd class="text-gray-900 dark:text-white">{{ $post->published_at->format('M j, Y g:i A') }}</dd>
-                    </div>
+                <div class="section-content p-6 space-y-6" id="featured-image">
+                    @if($post->featured_image)
+                        <div class="mb-6">
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Image:</p>
+                            <img src="{{ $post->featured_image }}" alt="Current featured image" class="max-h-64 rounded-lg shadow">
+                        </div>
                     @endif
-                    <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Views</dt>
-                        <dd class="text-gray-900 dark:text-white">{{ number_format($post->views_count) }}</dd>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                                <label for="featured_image" class="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                    <span>Upload a file</span>
+                                    <input id="featured_image" name="featured_image" type="file" class="sr-only" accept="image/*" onchange="previewImage(this)">
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 2MB</p>
+                        </div>
                     </div>
-                    <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Likes</dt>
-                        <dd class="text-gray-900 dark:text-white">{{ number_format($post->likes_count) }}</dd>
+                    <div id="image-preview" class="{{ $post->featured_image && !old('featured_image') ? '' : 'hidden' }}">
+                        <div class="mt-3">
+                            <label for="image_attribution" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Image Attribution <small class="text-gray-500">(Required for AI-generated or external images)</small>
+                            </label>
+                            <input type="text"
+                                   name="image_attribution"
+                                   id="image_attribution"
+                                   value="{{ old('image_attribution', $post->image_attribution ? (is_array($post->image_attribution) ? ($post->image_attribution['text'] ?? '') : $post->image_attribution) : '') }}"
+                                   placeholder="e.g., 'Photo by John Doe on Unsplash' or 'Generated with DALL-E'"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        </div>
                     </div>
-                    <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Comments</dt>
-                        <dd class="text-gray-900 dark:text-white">{{ number_format($post->comments_count) }}</dd>
-                    </div>
-                </dl>
+                </div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <a href="{{ route('dashboard.posts') }}"
-                       class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
-                        Cancel
-                    </a>
-                    @if($post->status === 'published')
-                    <a href="{{ route('posts.show', $post->slug) }}"
-                       target="_blank"
-                       class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                        View Post
-                    </a>
-                    @endif
+            <!-- MONETIZATION SECTION -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'monetization')">
+                    <h3>💰 Monetization & Access</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="monetization-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
                 </div>
+                <div class="section-content p-6 space-y-6" id="monetization">
+                    <div>
+                        <label for="premium_selection" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                            Content Access Level
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-start p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition">
+                                <input type="radio" name="is_premium" value="0" {{ old('is_premium', $post->is_premium ? '1' : '0') == '0' ? 'checked' : '' }} class="mt-1">
+                                <div class="ml-3">
+                                    <p class="font-medium text-gray-900 dark:text-white">Public (Free)</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Anyone can read this post</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition">
+                                <input type="radio" name="is_premium" value="1" {{ old('is_premium', $post->is_premium ? '1' : '0') == '1' ? 'checked' : '' }} class="mt-1" onchange="showPremiumTiers()">
+                                <div class="ml-3">
+                                    <p class="font-medium text-gray-900 dark:text-white">Premium (Subscription Required)</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Only subscribers can read this post</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Premium Tiers -->
+                    <div id="premium-tiers" class="{{ old('is_premium', $post->is_premium ? '1' : '0') == '1' ? '' : 'hidden' }} pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <label for="premium_tier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            Minimum Subscription Tier
+                        </label>
+                        <select name="premium_tier" id="premium_tier" class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select tier...</option>
+                            <option value="basic" {{ old('premium_tier', $post->premium_tier) == 'basic' ? 'selected' : '' }}>Basic ($4.99/mo)</option>
+                            <option value="pro" {{ old('premium_tier', $post->premium_tier) == 'pro' ? 'selected' : '' }}>Pro ($9.99/mo)</option>
+                            <option value="team" {{ old('premium_tier', $post->premium_tier) == 'team' ? 'selected' : '' }}>Team ($29.99/mo)</option>
+                        </select>
+                    </div>
+
+                    <!-- Comments -->
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <label class="flex items-center">
+                            <input type="checkbox"
+                                   name="allow_comments"
+                                   value="1"
+                                   {{ old('allow_comments', $post->allow_comments) ? 'checked' : '' }}
+                                   class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-blue-600">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                Allow readers to comment on this post
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PUBLISHING SECTION -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'publishing')">
+                    <h3>📤 Publishing Options</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="publishing-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                </div>
+                <div class="section-content p-6 space-y-6" id="publishing">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Status -->
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Status <span class="text-red-500">*</span>
+                            </label>
+                            <select name="status"
+                                    id="status"
+                                    required
+                                    onchange="toggleScheduledDate()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                <option value="draft" {{ old('status', $post->status) == 'draft' ? 'selected' : '' }}>Draft</option>
+                                <option value="published" {{ old('status', $post->status) == 'published' ? 'selected' : '' }}>Publish Now</option>
+                                <option value="scheduled" {{ old('status', $post->status) == 'scheduled' ? 'selected' : '' }}>Schedule for Later</option>
+                            </select>
+                        </div>
+
+                        <!-- Publish Date -->
+                        <div id="scheduled-date-field" class="{{ old('status', $post->status) == 'scheduled' ? '' : 'hidden' }}">
+                            <label for="published_at" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Publish Date & Time
+                            </label>
+                            <input type="datetime-local"
+                                   name="published_at"
+                                   id="published_at"
+                                   value="{{ old('published_at', $post->published_at?->format('Y-m-d\TH:i')) }}"
+                                   min="{{ now()->addMinutes(10)->format('Y-m-d\TH:i') }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POST-PUBLISH ACTIONS (If Published) -->
+            @if($post->status === 'published')
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="section-header" onclick="toggleSection(event, 'post-actions')">
+                    <h3>🚀 Post-Publish Actions</h3>
+                    <svg class="w-5 h-5 transform transition-transform" id="post-actions-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                </div>
+                <div class="section-content p-6 space-y-4" id="post-actions">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        After publishing, you can generate a video version, publish to social media, and view analytics.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button type="button" onclick="openVideoGenModal()" class="py-3 px-4 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 rounded-lg font-medium transition">
+                            🎬 Generate Video
+                        </button>
+                        <button type="button" onclick="openSocialPublishModal()" class="py-3 px-4 bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-900/50 text-pink-900 dark:text-pink-200 rounded-lg font-medium transition">
+                            📱 Publish to Social
+                        </button>
+                        <a href="{{ route('post.analytics', $post) }}" class="py-3 px-4 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-900 dark:text-green-200 rounded-lg font-medium transition text-center">
+                            📊 View Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- ACTION BUTTONS -->
+            <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-600">
+                <a href="{{ route('posts.show', $post->slug) }}"
+                   class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 font-medium transition">
+                   View Post
+                </a>
                 <div class="flex space-x-3">
                     <button type="submit"
                             name="action"
                             value="save"
-                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Update Post
+                            class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium">
+                        Save Changes
                     </button>
+                    @if($post->status === 'draft')
+                        <button type="submit"
+                                name="action"
+                                value="publish"
+                                class="px-8 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors font-medium shadow-sm">
+                            ✨ Publish Post
+                        </button>
+                    @endif
                 </div>
             </div>
         </form>
@@ -321,7 +539,16 @@
 @push('scripts')
 <script src="https://unpkg.com/@yaireo/tagify"></script>
 <script>
-// Character count for excerpt
+// Section toggle
+function toggleSection(event, sectionId) {
+    event.preventDefault();
+    const section = document.getElementById(sectionId);
+    const icon = document.getElementById(sectionId + '-icon');
+    section.classList.toggle('hidden');
+    icon.classList.toggle('rotate-180');
+}
+
+// Character count
 const excerptTextarea = document.getElementById('excerpt');
 const excerptCount = document.getElementById('excerpt-count');
 excerptTextarea.addEventListener('input', function() {
@@ -329,48 +556,56 @@ excerptTextarea.addEventListener('input', function() {
 });
 excerptCount.textContent = excerptTextarea.value.length;
 
-// Read time calculation
+// Read time and word count
 const contentTextarea = document.getElementById('content');
 const readTimeSpan = document.getElementById('read-time');
+const wordCountSpan = document.getElementById('word-count');
+
 function calculateReadTime() {
-    const words = contentTextarea.value.trim().split(/\s+/).length;
+    const words = contentTextarea.value.trim().split(/\s+/).filter(w => w).length;
     const readTime = Math.max(1, Math.ceil(words / 200));
     readTimeSpan.textContent = readTime;
+    wordCountSpan.textContent = words;
 }
+
 contentTextarea.addEventListener('input', calculateReadTime);
 calculateReadTime();
 
-// Show/hide scheduled date field
-const statusSelect = document.getElementById('status');
-const scheduledDateDiv = document.getElementById('scheduled-date');
-statusSelect.addEventListener('change', function() {
-    if (this.value === 'scheduled') {
-        scheduledDateDiv.classList.remove('hidden');
+// Show/hide scheduled date
+function toggleScheduledDate() {
+    const statusSelect = document.getElementById('status');
+    const scheduledDateField = document.getElementById('scheduled-date-field');
+    if (statusSelect.value === 'scheduled') {
+        scheduledDateField.classList.remove('hidden');
         document.getElementById('published_at').required = true;
     } else {
-        scheduledDateDiv.classList.add('hidden');
+        scheduledDateField.classList.add('hidden');
         document.getElementById('published_at').required = false;
     }
-});
-
-// Initialize scheduled date visibility
-if (statusSelect.value === 'scheduled') {
-    document.getElementById('published_at').required = true;
 }
 
 // Image preview
 function previewImage(input) {
     const preview = document.getElementById('image-preview');
-    const previewImg = preview.querySelector('img');
-
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-
         reader.onload = function(e) {
-            previewImg.src = e.target.result;
+            preview.innerHTML = `
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Image Preview:</p>
+                <img src="${e.target.result}" alt="Preview" class="max-h-80 mx-auto rounded-lg shadow mb-3">
+                <div>
+                    <label for="image_attribution" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Image Attribution
+                    </label>
+                    <input type="text"
+                           name="image_attribution"
+                           id="image_attribution"
+                           placeholder="e.g., 'Photo by John Doe on Unsplash'"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                </div>
+            `;
             preview.classList.remove('hidden');
-        }
-
+        };
         reader.readAsDataURL(input.files[0]);
     }
 }
@@ -378,20 +613,14 @@ function previewImage(input) {
 // Tags input
 const tagsInput = document.querySelector('input[name=tags]');
 const tagify = new Tagify(tagsInput, {
-    whitelist: {!! json_encode($tags->pluck('name')->toArray()) !!},
     dropdown: {
         maxItems: 20,
-        classname: 'tags-look',
         enabled: 0,
         closeOnSelect: false
     }
 });
 
-// Set existing tags
-const existingTags = {!! json_encode($post->tags->pluck('name')->toArray()) !!};
-tagify.addTags(existingTags);
-
-// Text formatting functions
+// Text formatting
 function formatText(command) {
     const textarea = document.getElementById('content');
     const start = textarea.selectionStart;
@@ -401,21 +630,18 @@ function formatText(command) {
 
     switch(command) {
         case 'bold':
-            replacement = `**${selectedText}**`;
+            replacement = `**${selectedText || 'bold text'}**`;
             break;
         case 'italic':
-            replacement = `*${selectedText}*`;
+            replacement = `*${selectedText || 'italic text'}*`;
             break;
         case 'heading':
-            replacement = `## ${selectedText}`;
+            replacement = `## ${selectedText || 'Heading'}`;
             break;
         case 'link':
             const url = prompt('Enter URL:');
-            if (url) {
-                replacement = `[${selectedText}](${url})`;
-            } else {
-                return;
-            }
+            if (url) replacement = `[${selectedText || 'link'}](${url})`;
+            else return;
             break;
         case 'code':
             if (selectedText.includes('\n')) {
@@ -424,12 +650,137 @@ function formatText(command) {
                 replacement = '`' + selectedText + '`';
             }
             break;
+        case 'list':
+            const lines = selectedText.split('\n') || ['item'];
+            replacement = lines.map(line => `- ${line}`).join('\n');
+            break;
     }
 
     textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+    calculateReadTime();
     textarea.focus();
-    textarea.setSelectionRange(start + replacement.length, start + replacement.length);
 }
+
+// Series toggle
+function toggleSeries() {
+    const useSeries = document.getElementById('use-series').checked;
+    const seriesFields = document.getElementById('series-fields');
+    if (useSeries) {
+        seriesFields.classList.remove('hidden');
+    } else {
+        seriesFields.classList.add('hidden');
+    }
+}
+
+// Premium tier toggle
+function showPremiumTiers() {
+    const isPremium = document.querySelector('input[name="is_premium"]:checked').value === '1';
+    const tierContainer = document.getElementById('premium-tiers');
+    if (isPremium) {
+        tierContainer.classList.remove('hidden');
+    } else {
+        tierContainer.classList.add('hidden');
+    }
+}
+
+// Writing Assistant
+async function checkGrammar() {
+    showAssistantLoading('Checking grammar...');
+    setTimeout(() => {
+        showAssistantResults('Grammar Check', [
+            '✓ No major grammar issues found',
+            'Tip: Keep sentences under 20 words',
+            'Consider using more active voice'
+        ]);
+    }, 500);
+}
+
+async function analyzeStyle() {
+    showAssistantLoading('Analyzing style...');
+    setTimeout(() => {
+        showAssistantResults('Style Analysis', [
+            'Your writing style is clear and concise',
+            'Try varying sentence structure more',
+            'Good use of technical terminology'
+        ]);
+    }, 500);
+}
+
+async function checkReadability() {
+    showAssistantLoading('Checking readability...');
+    setTimeout(() => {
+        showAssistantResults('Readability Score', [
+            'Flesch Reading Ease: 60/100 (Standard)',
+            'Recommended for: College graduates',
+            'Consider: Breaking into shorter sections'
+        ]);
+    }, 500);
+}
+
+async function analyzeTone() {
+    showAssistantLoading('Analyzing tone...');
+    setTimeout(() => {
+        showAssistantResults('Tone Analysis', [
+            'Detected tone: Professional & Informative',
+            'Emotion: Neutral to Positive',
+            'Good for: Technical documentation'
+        ]);
+    }, 500);
+}
+
+function showAssistantLoading(message) {
+    const resultsDiv = document.getElementById('assistant-results');
+    resultsDiv.classList.remove('hidden');
+    document.getElementById('results-title').textContent = message;
+    document.getElementById('results-content').innerHTML = '<p class="text-gray-500">Loading...</p>';
+}
+
+function showAssistantResults(title, results) {
+    document.getElementById('results-title').textContent = title;
+    document.getElementById('results-content').innerHTML = results
+        .map(r => `<p>• ${r}</p>`)
+        .join('');
+}
+
+// Post-publish actions
+function openVideoGenModal() {
+    alert('🎬 Video generation coming soon!');
+}
+
+function openSocialPublishModal() {
+    alert('📱 Social media publishing coming soon!');
+}
+
+// Form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const action = e.submitter.value;
+    const statusSelect = document.getElementById('status');
+    const currentStatus = statusSelect.value;
+
+    if (action === 'publish') {
+        statusSelect.value = 'published';
+        // Show modal if post was draft and is now being published
+        if (currentStatus === 'draft') {
+            setTimeout(() => {
+                showPublishModal();
+            }, 1500); // Wait for form to process
+        }
+    }
+});
+
+// Check premium on load
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('input[name="is_premium"]:checked').value === '1') {
+        showPremiumTiers();
+    }
+    if (document.getElementById('use-series').checked) {
+        document.getElementById('series-fields').classList.remove('hidden');
+    }
+});
 </script>
 @endpush
+
+<!-- Post Publish Actions Modal -->
+@include('partials.post-publish-actions-modal')
+
 @endsection

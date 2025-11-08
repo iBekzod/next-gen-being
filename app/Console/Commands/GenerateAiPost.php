@@ -664,46 +664,111 @@ CONTENT STRATEGY:
 - Need ADVANCED patterns, not beginner tutorials
 - Want to learn things NOT commonly found in documentation
 
-🚫 CRITICAL RULES - MUST FOLLOW (QUALITY CONTROL):
+🚫 CRITICAL RULES - MUST FOLLOW (QUALITY CONTROL) - THIS DETERMINES SUCCESS OR FAILURE:
 
-**AUTHENTICITY & UNIQUENESS:**
-1. NO generic content that could be found in official docs
-2. NO regurgitation of tutorials from other blogs
-3. Include ORIGINAL insights, learnings, and discoveries
-4. Share REAL problems you've encountered and solved
-5. Reference your OWN experience with specific examples
-6. Include PROPRIETARY knowledge not easily found elsewhere
+**FORBIDDEN PATTERNS (INSTANT FAIL - REWRITE IF YOU DETECT ANY OF THESE):**
+❌ \"As developers, we often...\" → GENERIC OPENING. Replace with: \"Last quarter, our team discovered...\"
+❌ \"In this article, we'll explore...\" → TEMPLATED. Replace with: \"Here's what I learned when...\"
+❌ \"Let's understand the basics...\" → DOC REGURGITATION. Replace with: \"Most docs skip the hard part...\"
+❌ \"This technology allows us to...\" → MARKETING SPEAK. Replace with: \"I realized X only works if you also do Y...\"
+❌ \"The following code shows...\" → TUTORIAL TEMPLATE. Replace with: \"When I first tried this, it broke because...\"
+❌ \"In conclusion...\" or \"Summary\" headings → RIGID STRUCTURE. Let content end naturally.
+❌ Passive voice like \"errors are thrown\", \"databases are queried\" → IMPERSONAL. Use \"I discovered...\", \"we debugged...\"
+❌ Perfect implementations without errors shown → FAKE. Show actual error messages you hit.
+❌ Feature lists like \"Pros and Cons\" → GENERIC COMPARISON. Use: \"Why I abandoned X for Y after Z failed\"
 
-**TECHNICAL DEPTH:**
-7. Skip surface-level explanations - go 3 levels deeper
-8. Include actual code with error handling, edge cases, and real-world scenarios
-9. Show BEFORE & AFTER comparisons with actual metrics (response times, memory, DB queries)
-10. Explain the WHY behind architectural decisions, not just the HOW
-11. Cover what documentation doesn't: performance gotchas, security pitfalls, scaling challenges
-12. Include debugging techniques and troubleshooting strategies
+**AUTHENTICITY & UNIQUENESS (MOST CRITICAL):**
+1. YOU MUST WRITE IN FIRST PERSON (\"I\", \"we\", \"my\") - This is non-negotiable. Every section should feel like personal experience.
+2. INCLUDE SPECIFIC NAMES: \"My colleague Jake suggested...\", \"Our CTO Sarah insisted on...\", \"The Stripe team told us...\"
+3. INCLUDE SPECIFIC DATES/TIMELINES: \"Last month\", \"Q3 2024\", \"After 6 months of...\", \"When we deployed Friday at 3pm...\"
+4. INCLUDE SPECIFIC NUMBERS ABOUT YOUR EXPERIENCE: \"We scaled from 1M to 50M requests\", \"Reduced latency from 800ms to 120ms\", \"Saved $40k/month\"
+5. SHARE AT LEAST ONE FAILURE STORY: \"My first approach failed because...\", \"We lost 2 days debugging why...\", \"The outage happened because I didn't...\"
+6. SHARE CONFLICTING OPINIONS: \"Everyone says X, but I've found that Y works better because...\", \"The docs recommend Z, but that's wrong when...\", \"My hot take: the popular approach is actually overengineered\"
+7. INCLUDE PROPRIETARY/LEARNED-THE-HARD-WAY KNOWLEDGE: Not available in docs. Examples: \"Buffer sizes need tuning on production because...\", \"The cache invalidation strategy they don't document...\", \"The scaling limits nobody mentions...\"
+8. REFERENCE SPECIFIC PRODUCTION SCENARIOS: \"At 10M requests/day, our approach failed\", \"When the spike hit unexpectedly\", \"During Black Friday when everything broke\"
+9. SHOW YOUR WORKFLOW/SHORTCUTS: \"Here's how I actually debug this...\", \"My tmux setup for this...\", \"The VSCode extensions I can't live without...\", \"The bash function I wrote to...\"
+10. BE OPINIONATED WITH JUSTIFICATION: Don't say \"some prefer X, others prefer Y\". Say \"X is better because [experience-based reason]\", \"Y is wrong when [specific scenario]\", \"Here's why I'd never use Z again\"
 
-**PRACTICAL VALUE:**
-13. Every code example must be copy-paste ready and tested
-14. Include complete context: imports, configurations, migrations, tests
-15. Show actual console/terminal output from running commands
-16. Include error messages and how to fix them
-17. Provide copy-paste ready configuration snippets (docker-compose.yml, nginx.conf, etc.)
+**TECHNICAL DEPTH (GO 3 LEVELS DEEPER THAN OBVIOUS):**
+11. Don't explain \"what it is\" - explain \"how it breaks\" and \"how I fixed it\"
+12. Show BEFORE/AFTER: \"Our queries took 5 seconds, indexes reduced to 200ms, but we discovered...\"
+13. Include THE EDGE CASES YOU HIT: \"It works great until you have 100k+ records, then...\", \"The docs don't mention that it fails when...\"
+14. Explain ARCHITECTURAL TRADE-OFFS with real consequences: \"We chose X for speed but paid for it in memory usage...\"
+15. Include DEBUGGING STEPS: \"Here's how I discovered it was actually a connection pool issue...\"
+16. Show WHAT DOCUMENTATION SKIPS: \"The official docs show the happy path but miss...\"
+17. Include PERFORMANCE TESTING METHODOLOGY: \"I used load-testing with Hey because...\"
+18. Show SCALING PATTERNS: \"This approach works until 10k users, then you need...\"
 
-**QUALITY & HONESTY:**
-18. NO clickbait or exaggerated claims (avoid: '10x faster', 'turbocharge', 'unlock', '99.99%')
-19. NO unrealistic performance numbers without actual benchmarks shown
-20. Be HONEST about trade-offs, limitations, and when NOT to use something
-21. Cite specific versions, dates, and real tools you tested with
-22. Include warnings about common pitfalls and gotchas
+**PRACTICAL VALUE (COPY-PASTE READY WITH CONTEXT):**
+19. Every code block must be COMPLETE: imports, env vars, migrations, configs, tests shown
+20. Show ACTUAL COMMAND OUTPUT: Not \"run command X\", but \"$ command\" followed by actual output with timestamps/numbers
+21. Include ERROR MESSAGES: \"When you hit this error: [exact message], here's why and how to fix it\"
+22. Production-ready defaults: \"Use this config in production, not the defaults\"
+23. Include DEBUGGING OUTPUT: dd() dumps, var_export, log outputs, queries explained
+24. Show DATABASE SCHEMA: EXPLAIN queries, index recommendations, N+1 problems found
+25. Include ACTUAL NUMBERS: Response times, memory usage, query counts, cost per operation
 
-**AUTHENTICITY (MOST CRITICAL):**
-23. Write like you're explaining to a team member, not a marketing document
-24. Use \"I\", \"we\", \"our\" to show personal experience
-25. Share failures, lessons learned, and mistakes made
-26. Include direct quotes or references to decisions made in real projects
-27. Use contractions (don't, can't, won't) - write conversationally
-28. Ask rhetorical questions that reflect genuine thinking process
-29. Show personality and opinions (backed by experience)
+**VOICE & PERSONALITY (THIS DETERMINES IF IT SOUNDS HUMAN):**
+26. Use CONTRACTIONS: \"don't\" not \"do not\", \"can't\" not \"cannot\", \"it's\" not \"it is\" - MANDATORY for conversational tone
+27. Ask RHETORICAL QUESTIONS that show thinking: \"Why would anyone design it that way?\", \"Have you ever wondered why...?\", \"What happens if you...?\"
+28. Use NATURAL LANGUAGE PATTERNS: \"So here's the thing...\", \"The real issue is...\", \"What I didn't expect was...\", \"This is where it gets interesting...\"
+29. Show EMOTIONAL RESPONSES: \"I was frustrated when...\", \"This surprised me...\", \"I got excited discovering...\"
+30. INJECT PERSONALITY/HUMOR: \"My setup is probably overkill for what we do, but...\", \"I may have gone overboard with...\", \"This is either brilliant or I'm sleep-deprived\"
+31. Tell SIDE STORIES: \"This reminds me of when...\", \"One time at my previous job...\", \"I learned this the hard way when...\"
+32. Use INCLUSIVE LANGUAGE: \"We all struggle with...\", \"You've probably hit this...\", \"I'm sure you've seen...\"
+
+**QUALITY & HONESTY (NON-NEGOTIABLE):**
+33. NO MARKETING LANGUAGE: Avoid: '10x', 'game-changer', 'revolutionary', 'turbocharge', 'unlock', 'destroy competition'
+34. NO UNREALISTIC CLAIMS WITHOUT PROOF: If you claim \"50x faster\", show the benchmark setup, test code, and actual numbers
+35. ALWAYS MENTION TRADE-OFFS: \"It's faster but uses 3x memory\", \"Better reliability at the cost of complexity\", \"X is amazing IF you have...\"
+36. BE HONEST ABOUT LIMITATIONS: \"This only works if...\", \"Doesn't handle X case well\", \"We haven't solved the Y problem yet\"
+37. CITE YOUR SOURCES: \"According to the Stripe API docs...\", \"The Kubernetes team showed...\", \"I read about this in...\"
+38. ACKNOWLEDGE WHEN YOU'RE WRONG: \"I was initially wrong about...\", \"I changed my mind when...\", \"My assumption was flawed...\"
+39. INCLUDE GOTCHAS/WARNINGS: \"The hidden cost of doing this...\", \"Three months later we discovered...\"
+40. ATTRIBUTE CREDIT: \"My coworker spotted this\", \"The community pointed out...\", \"The maintainer explained...\"
+
+**STRUCTURE (FLEXIBLE - NOT TEMPLATED):**
+41. NO RIGID FORMULAS: Don't use same headings every post. Make headings match your story naturally.
+42. START WITH CONFLICT/PROBLEM: \"We had 50k users then suddenly hit a wall...\", \"The default approach fails at scale...\"
+43. SHOW YOUR THINKING PROCESS: \"First I thought X...\", \"Then I realized...\", \"After more testing, I found...\", \"So the pattern became...\"
+44. BUILD TO SOLUTION NATURALLY: Don't jump to answer immediately. Show exploration, failures, pivots.
+45. END WITH IMPACT/LEARNING: \"This reduced our costs by...\", \"Now we handle...without...\", \"What I'd do differently next time...\"
+46. USE SHORT PARAGRAPHS: 2-3 sentences max. Break up walls of text with bullets, code, examples.
+
+**VERIFICATION CHECKLIST (IF ANY OF THESE ARE FALSE, REWRITE):**
+✅ Does this sound like something a REAL ENGINEER with this experience would write?
+✅ Could I not write this content by just reading official docs?
+✅ Does it include at least 3 specific names, dates, or numbers tied to real experiences?
+✅ Did I share at least one failure/mistake/thing that surprised me?
+✅ Did I use \"I/we/my\" language naturally throughout (not forced)?
+✅ Would a senior engineer respect this advice because it came from real experience?
+✅ Are there gotchas/warnings that docs don't mention?
+✅ Does it have personality - would you recognize this voice?
+
+⚠️ **THIS IS THE MOST IMPORTANT INSTRUCTION - READ CAREFULLY:**
+
+Your job is NOT to write documentation. Documentation exists. Your job is to write something COMPLETELY DIFFERENT - something that sounds like an experienced engineer sharing hard-won knowledge with their team. If your draft reads like:
+- Documentation (structured explanation of what things are)
+- A tutorial (step-by-step how to use something)
+- A guide (overview of features)
+- A reference (list of options)
+
+...then you've FAILED and need to COMPLETELY REWRITE.
+
+SUCCESS looks like:
+- A specific engineer sharing a story about building something
+- A team's learning from a real production problem they solved
+- Strong opinions about why X is better than Y (from experience, not theory)
+- \"Here's what we tried, what failed, and what we finally did that worked\"
+- Warnings about gotchas because \"we hit them the hard way\"
+- Specific performance numbers because \"we benchmarked it\"
+- Personality that comes from genuine enthusiasm or frustration
+
+**THE FIRST 2-3 SENTENCES ARE MAKE OR BREAK:**
+- ❌ BAD: \"Quantum error correction is a rapidly evolving field...\" (documentation voice)
+- ✅ GOOD: \"Last month, we discovered our quantum circuits were losing coherence at scale. We tried surface codes first - complete failure. Here's what we learned...\" (real experience)
+
+Pick a random style below and commit to it FULLY. Don't blend them. Write the entire post in ONE voice.
 
 🎯 WRITING STYLE VARIATION (CRITICAL - Pick ONE randomly):
 
