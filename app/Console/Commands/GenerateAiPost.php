@@ -849,14 +849,68 @@ AVOID formal \"Conclusion\" heading. Instead:
 - Don't force a conclusion if the content speaks for itself
 {$conclusionExtra}
 
+SEO BEST PRACTICES (CRITICAL FOR RANKING):
+
+📌 Title Formula (Pick one based on content type):
+1. How-To: \"How to [Achieve] Without [Pain]\" (Example: \"How to Learn AI Without Getting Overwhelmed\")
+2. Lists: \"[Odd Number] [Noun] Every [Audience] Needs in 2025\" (Example: \"7 AI Tools Every Developer Needs in 2025\")
+3. Questions: \"What Is [Concept] and Why Does It Matter?\" (Example: \"What Is Prompt Engineering and Why It Matters?\")
+4. Comparisons: \"[A] vs [B]: Which [Outcome]?\" (Example: \"ChatGPT vs Claude: Which AI Is Better for Code?\")
+5. Guides: \"The Complete Guide to [Topic]\" (Example: \"The Complete Guide to Prompt Engineering\")
+6. News: \"[Company] [Action]: [Impact]\" (Example: \"OpenAI Releases GPT-5: Here's What Changed\")
+
+💡 Meta Description Formula (135-160 chars exactly):
+- Start with primary keyword
+- Include specific benefit/outcome
+- Use action word (\"Learn\", \"Discover\", \"Master\", \"Build\")
+- Example: \"Master prompt engineering techniques to unlock AI's full potential. Learn 7 proven strategies used by professionals.\"
+
+🔗 Internal Linking Strategy:
+- Include 5-10 internal links per 2,000 word article
+- 1 link approximately every 200-300 words
+- Anchor text: Use keyword variations (never \"click here\")
+- Distribution: Spread throughout, not clustered at beginning/end
+- Link to: Related posts, pillar pages, category pages
+- Natural placement within sentences
+
+✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
+- Show credentials: \"As a senior engineer at [Company]...\" or \"With 10 years in...\"
+- Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
+- Cite credible sources: Link to official docs, GitHub repos, research papers
+- Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
+- Include author credibility signals
+
+📊 Content Length Guidelines:
+- 400-600 words: Breaking news or quick tips
+- 600-800 words: Short how-tos or opinion pieces
+- 1,500-2,000 words: Full tutorials and guides
+- 2,000-2,500 words: In-depth guides and comprehensive comparisons
+- 1,800-2,200 words: Comparison articles
+
+🎯 Keyword Integration:
+- Use primary keyword in: Title (essential), first 100 words (essential), at least 1x per section
+- Use keyword variations naturally: \"prompt engineering\", \"prompting techniques\", \"prompt design\"
+- Don't force keywords: Write naturally first, optimize second
+- Long-tail keywords: Include related 3-5 word phrases naturally
+- LSI keywords: Use semantic variations (not just exact matches)
+
+📋 Content Structure for Google:
+- H1: Main title (only 1 per page)
+- H2: Major sections (3-5 for 2000 word article)
+- H3: Subsections (break up long sections)
+- Lists/bullets: Use for scannability
+- Code blocks: With language specified
+- Tables: For comparisons
+- Images: With descriptive alt text
+
 FORMATTING RULES:
-- Use ## for main headings, ### for subheadings
+- Use ## for main headings (H2), ### for subheadings (H3)
 - Add code blocks with language specification: ```javascript, ```python, etc.
 - CRITICAL: Keep code examples clear and simple for JSON compatibility
 - Use **bold** for key terms, *italics* for emphasis
 - Add > blockquotes for important notes
 - Use tables for comparisons
-- Keep paragraphs short and punchy
+- Keep paragraphs short and punchy (2-4 sentences max)
 - When in JSON mode, ensure proper escaping of all special characters
 - ⚠️ DO NOT START YOUR CONTENT WITH \"Excerpt\", \"Meta Title\", \"Meta Description\", \"Keywords\", or \"Tags\" - these are METADATA fields that go in the JSON response, NOT in the article markdown itself
 
@@ -1759,14 +1813,68 @@ AVOID formal \"Conclusion\" heading. Instead:
 - Don't force a conclusion if the content speaks for itself
 {$conclusionExtra}
 
+SEO BEST PRACTICES (CRITICAL FOR RANKING):
+
+📌 Title Formula (Pick one based on content type):
+1. How-To: \"How to [Achieve] Without [Pain]\" (Example: \"How to Learn AI Without Getting Overwhelmed\")
+2. Lists: \"[Odd Number] [Noun] Every [Audience] Needs in 2025\" (Example: \"7 AI Tools Every Developer Needs in 2025\")
+3. Questions: \"What Is [Concept] and Why Does It Matter?\" (Example: \"What Is Prompt Engineering and Why It Matters?\")
+4. Comparisons: \"[A] vs [B]: Which [Outcome]?\" (Example: \"ChatGPT vs Claude: Which AI Is Better for Code?\")
+5. Guides: \"The Complete Guide to [Topic]\" (Example: \"The Complete Guide to Prompt Engineering\")
+6. News: \"[Company] [Action]: [Impact]\" (Example: \"OpenAI Releases GPT-5: Here's What Changed\")
+
+💡 Meta Description Formula (135-160 chars exactly):
+- Start with primary keyword
+- Include specific benefit/outcome
+- Use action word (\"Learn\", \"Discover\", \"Master\", \"Build\")
+- Example: \"Master prompt engineering techniques to unlock AI's full potential. Learn 7 proven strategies used by professionals.\"
+
+🔗 Internal Linking Strategy:
+- Include 5-10 internal links per 2,000 word article
+- 1 link approximately every 200-300 words
+- Anchor text: Use keyword variations (never \"click here\")
+- Distribution: Spread throughout, not clustered at beginning/end
+- Link to: Related posts, pillar pages, category pages
+- Natural placement within sentences
+
+✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
+- Show credentials: \"As a senior engineer at [Company]...\" or \"With 10 years in...\"
+- Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
+- Cite credible sources: Link to official docs, GitHub repos, research papers
+- Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
+- Include author credibility signals
+
+📊 Content Length Guidelines:
+- 400-600 words: Breaking news or quick tips
+- 600-800 words: Short how-tos or opinion pieces
+- 1,500-2,000 words: Full tutorials and guides
+- 2,000-2,500 words: In-depth guides and comprehensive comparisons
+- 1,800-2,200 words: Comparison articles
+
+🎯 Keyword Integration:
+- Use primary keyword in: Title (essential), first 100 words (essential), at least 1x per section
+- Use keyword variations naturally: \"prompt engineering\", \"prompting techniques\", \"prompt design\"
+- Don't force keywords: Write naturally first, optimize second
+- Long-tail keywords: Include related 3-5 word phrases naturally
+- LSI keywords: Use semantic variations (not just exact matches)
+
+📋 Content Structure for Google:
+- H1: Main title (only 1 per page)
+- H2: Major sections (3-5 for 2000 word article)
+- H3: Subsections (break up long sections)
+- Lists/bullets: Use for scannability
+- Code blocks: With language specified
+- Tables: For comparisons
+- Images: With descriptive alt text
+
 FORMATTING RULES:
-- Use ## for main headings, ### for subheadings
+- Use ## for main headings (H2), ### for subheadings (H3)
 - Add code blocks with language specification: ```javascript, ```python, etc.
 - CRITICAL: Keep code examples clear and simple for JSON compatibility
 - Use **bold** for key terms, *italics* for emphasis
 - Add > blockquotes for important notes
 - Use tables for comparisons
-- Keep paragraphs short and punchy
+- Keep paragraphs short and punchy (2-4 sentences max)
 - When in JSON mode, ensure proper escaping of all special characters
 - ⚠️ DO NOT START YOUR CONTENT WITH \"Excerpt\", \"Meta Title\", \"Meta Description\", \"Keywords\", or \"Tags\" - these are METADATA fields that go in the JSON response, NOT in the article markdown itself
 

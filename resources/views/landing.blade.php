@@ -172,6 +172,135 @@
         </div>
     </section>
 
+    <!-- Featured Articles for SEO -->
+    @php
+        $featuredPost = \App\Models\Post::published()->orderByDesc('views_count')->first();
+        $topHeadlines = \App\Models\Post::published()->orderByDesc('views_count')->limit(4)->get();
+        $featuredCategories = \App\Models\Category::active()->with('publishedPosts')->orderBy('sort_order')->limit(3)->get();
+    @endphp
+
+    @if($featuredPost)
+    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900">
+        <div class="max-w-7xl mx-auto">
+            <!-- Featured Hero Article -->
+            <div class="mb-12">
+                <p class="text-sm font-semibold tracking-wide text-blue-600 dark:text-blue-400 uppercase">Featured</p>
+                <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Latest Research & Insights</h2>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Hero Featured Post -->
+                <div class="lg:col-span-2">
+                    <article class="relative group overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all">
+                        @if($featuredPost->featured_image)
+                            <img src="{{ $featuredPost->featured_image }}" alt="{{ $featuredPost->title }}" class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-300">
+                        @else
+                            <div class="w-full h-96 bg-gradient-to-br from-blue-500 to-indigo-600"></div>
+                        @endif
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500 text-white">
+                                    {{ $featuredPost->category->name }}
+                                </span>
+                                @if($featuredPost->read_time)
+                                    <span class="text-sm text-gray-200">{{ $featuredPost->read_time }} min read</span>
+                                @endif
+                            </div>
+                            <h3 class="text-3xl font-bold text-white mb-3">
+                                <a href="{{ route('posts.show', $featuredPost->slug) }}" class="hover:underline">
+                                    {{ $featuredPost->title }}
+                                </a>
+                            </h3>
+                            <p class="text-gray-100 text-lg mb-4">{{ Str::limit($featuredPost->excerpt, 150) }}</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-white/20">
+                                <span class="text-sm text-gray-200">{{ $featuredPost->published_at->format('M d, Y') }}</span>
+                                <a href="{{ route('posts.show', $featuredPost->slug) }}" class="inline-flex items-center text-white font-semibold hover:gap-2 gap-1 transition-all">
+                                    Read full article
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Top Headlines -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Headlines</h3>
+                    @foreach($topHeadlines->skip(1)->take(3) as $post)
+                        <article class="p-4 bg-white dark:bg-slate-700 rounded-lg shadow hover:shadow-lg transition-shadow">
+                            <div class="flex items-start gap-3">
+                                @if($post->featured_image)
+                                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="w-16 h-16 object-cover rounded flex-shrink-0">
+                                @endif
+                                <div class="flex-1">
+                                    <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">{{ $post->category->name }}</span>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mt-1 line-clamp-2">
+                                        <a href="{{ route('posts.show', $post->slug) }}" class="hover:text-blue-600 dark:hover:text-blue-400 transition">
+                                            {{ $post->title }}
+                                        </a>
+                                    </h4>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-2 block">{{ $post->published_at->format('M d, Y') }}</span>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Featured Categories -->
+            @if($featuredCategories->count() > 0)
+            <div class="mt-12">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Explore by Topic</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    @foreach($featuredCategories as $category)
+                        @php $categoryPosts = $category->publishedPosts()->limit(3)->get(); @endphp
+                        @if($categoryPosts->count() > 0)
+                        <div class="group">
+                            <div class="mb-4 pb-4 border-b-2 border-blue-200 dark:border-blue-900">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                                    <a href="{{ route('categories.show', $category->slug) }}">
+                                        {{ $category->name }}
+                                    </a>
+                                </h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ $category->description }}</p>
+                            </div>
+                            <div class="space-y-3">
+                                @foreach($categoryPosts as $post)
+                                    <article class="pb-3 border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition line-clamp-2">
+                                            <a href="{{ route('posts.show', $post->slug) }}">
+                                                {{ $post->title }}
+                                            </a>
+                                        </h4>
+                                        <div class="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <span>{{ $post->published_at->format('M d') }}</span>
+                                            @if($post->read_time)
+                                                <span>•</span>
+                                                <span>{{ $post->read_time }} min</span>
+                                            @endif
+                                        </div>
+                                    </article>
+                                @endforeach
+                            </div>
+                            <a href="{{ route('categories.show', $category->slug) }}" class="inline-flex items-center mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm">
+                                View all {{ $category->name }} articles
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+    </section>
+    @endif
+
     <section class="py-16 bg-white dark:bg-slate-950">
         <div class="px-6 mx-auto max-w-7xl">
             <div class="max-w-3xl">
