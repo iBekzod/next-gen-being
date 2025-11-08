@@ -140,4 +140,10 @@ return [
         'channel_id' => env('TELEGRAM_CHANNEL_ID'),
     ],
 
+    'discord' => [
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect' => env('DISCORD_OAUTH_REDIRECT', '/auth/oauth/discord/callback'),
+    ],
+
 ];

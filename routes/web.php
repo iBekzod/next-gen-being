@@ -118,6 +118,18 @@ Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 
 Auth::routes(['verify' => true]);
 
+// OAuth Login Routes
+use App\Http\Controllers\Auth\OAuthController;
+
+Route::prefix('auth/oauth')->name('auth.social.')->group(function () {
+    Route::get('{provider}/redirect', [OAuthController::class, 'redirect'])->name('redirect')->where('provider', 'google|github|facebook|discord');
+    Route::get('{provider}/callback', [OAuthController::class, 'callback'])->name('callback')->where('provider', 'google|github|facebook|discord');
+});
+
+Route::middleware(['auth'])->prefix('auth/oauth')->name('auth.social.')->group(function () {
+    Route::delete('{provider}/disconnect', [OAuthController::class, 'disconnect'])->name('disconnect')->where('provider', 'google|github|facebook|discord');
+});
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard.home');
 // Policy pages
 Route::view('/privacy', 'privacy')->name('privacy');
