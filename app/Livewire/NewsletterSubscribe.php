@@ -49,6 +49,13 @@ class NewsletterSubscribe extends Component
 
             session()->flash('newsletter_success', 'Please check your email to confirm your subscription!');
 
+            // Dispatch toast notification for better UX
+            $this->dispatch('show-notification', [
+                'type' => 'success',
+                'message' => 'Please check your email to confirm your subscription!',
+                'duration' => 5000
+            ]);
+
             Log::info('Newsletter subscription created', [
                 'email' => $subscription->email,
                 'user_id' => $userId,
@@ -56,6 +63,13 @@ class NewsletterSubscribe extends Component
 
         } catch (\Exception $e) {
             $this->error = 'Something went wrong. Please try again.';
+
+            // Dispatch error notification
+            $this->dispatch('show-notification', [
+                'type' => 'error',
+                'message' => $this->error,
+                'duration' => 5000
+            ]);
 
             Log::error('Newsletter subscription failed', [
                 'email' => $this->email,

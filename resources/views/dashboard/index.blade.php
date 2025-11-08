@@ -3,6 +3,11 @@
 @section('title', 'Dashboard - ' . setting('site_name'))
 @section('description', 'Manage your account, posts, and settings')
 
+@php
+    $aiLearningPlans = auth()->user()->learningPaths()->where('status', '!=', 'completed')->limit(1)->get();
+    $aiRecommendations = auth()->user()->aiRecommendations()->active()->limit(5)->get();
+@endphp
+
 @section('content')
 <section class="bg-slate-950 text-white">
     <div class="px-6 py-12 mx-auto max-w-7xl">
@@ -138,6 +143,48 @@
                 </a>
             </div>
         </div>
+
+        <!-- AI Learning Section -->
+        @if($aiLearningPlans->isNotEmpty() || $aiRecommendations->isNotEmpty())
+        <div class="mt-12 pt-12 border-t-2 border-gray-200 dark:border-slate-700">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-2">
+                <span class="text-3xl">🤖</span>
+                AI-Powered Learning
+            </h2>
+
+            <!-- Learning Paths & Recommendations Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Active Learning Paths -->
+                @if($aiLearningPlans->isNotEmpty())
+                <div class="lg:col-span-2">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Your Learning Paths</h3>
+                    <div class="space-y-4">
+                        @foreach($aiLearningPlans as $plan)
+                        <x-ai-learning-path-card :learning-path="$plan" />
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <!-- AI Recommendations Sidebar -->
+                @if($aiRecommendations->isNotEmpty())
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Recommendations</h3>
+                    <div class="space-y-3">
+                        @foreach($aiRecommendations->take(3) as $rec)
+                        <x-ai-recommendation-card :recommendation="$rec" />
+                        @endforeach
+                    </div>
+                    @if($aiRecommendations->count() > 3)
+                    <a href="{{ route('recommendations.index') }}" class="mt-4 block text-center py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                        View All {{ $aiRecommendations->count() }} Recommendations →
+                    </a>
+                    @endif
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
 
         <!-- Recent Activity -->
         @livewire('user-dashboard')

@@ -68,7 +68,7 @@
                     </svg>
                 </button>
 
-                <div class="relative" x-data="{ open: false }">
+                <div class="relative" x-data="shareMenu()" @keydown.escape="open = false">
                     <button @click="open = !open"
                             class="flex items-center px-4 py-2 space-x-2 text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 hover:shadow-md dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:border-slate-500 transition-all duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,20 +78,20 @@
                     <div x-show="open"
                          @click.away="open = false"
                          x-transition
-                         class="absolute right-0 z-10 w-56 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
-                        <button @click="copyLink()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                         class="absolute right-0 z-10 w-56 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-slate-800 dark:border-slate-700">
+                        <button @click="copyLink()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
                             📋 Copy Link
                         </button>
-                        <button @click="shareTwitter()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                        <button @click="shareTwitter()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
                             🐦 Share on Twitter
                         </button>
-                        <button @click="shareLinkedIn()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                        <button @click="shareLinkedIn()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
                             💼 Share on LinkedIn
                         </button>
-                        <button @click="shareFacebook()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                        <button @click="shareFacebook()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
                             📘 Share on Facebook
                         </button>
-                        <button @click="shareEmail()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                        <button @click="shareEmail()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
                             ✉️ Share via Email
                         </button>
                     </div>
@@ -430,3 +430,85 @@
     @endif
     </article>
 </div>
+
+<script>
+function shareMenu() {
+    return {
+        open: false,
+
+        copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                this.showNotification('Link copied to clipboard!');
+                this.open = false;
+            }).catch(() => {
+                this.showNotification('Failed to copy link', 'error');
+            });
+        },
+
+        shareTwitter() {
+            const title = document.querySelector('h1').textContent;
+            const url = window.location.href;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=nextgenbeing`;
+            window.open(twitterUrl, 'twitter-share', 'width=550,height=420');
+            this.open = false;
+        },
+
+        shareLinkedIn() {
+            const url = window.location.href;
+            const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+            window.open(linkedinUrl, 'linkedin-share', 'width=550,height=420');
+            this.open = false;
+        },
+
+        shareFacebook() {
+            const url = window.location.href;
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            window.open(facebookUrl, 'facebook-share', 'width=550,height=420');
+            this.open = false;
+        },
+
+        shareEmail() {
+            const title = document.querySelector('h1').textContent;
+            const url = window.location.href;
+            const subject = encodeURIComponent(`Check out: ${title}`);
+            const body = encodeURIComponent(`I found an interesting article: ${title}\n\nRead it here: ${url}`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            this.open = false;
+        },
+
+        showNotification(message, type = 'success') {
+            // Create a simple toast notification
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-50 transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 2000);
+        }
+    };
+}
+
+function readingProgress() {
+    return {
+        progress: 0,
+
+        init() {
+            window.addEventListener('scroll', () => this.updateProgress());
+        },
+
+        updateProgress() {
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = window.scrollY;
+            this.progress = windowHeight > 0 ? (scrolled / windowHeight) * 100 : 0;
+        }
+    };
+}
+</script>

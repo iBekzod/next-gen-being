@@ -99,6 +99,28 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $this->hasMany(Webhook::class);
     }
 
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')
+                    ->withPivot('earned_at')
+                    ->withTimestamps();
+    }
+
+    public function tutorialProgress()
+    {
+        return $this->hasMany(TutorialProgress::class);
+    }
+
+    public function learningPaths()
+    {
+        return $this->hasMany(LearningPath::class);
+    }
+
+    public function aiRecommendations()
+    {
+        return $this->hasMany(AIRecommendation::class);
+    }
+
     // Role Methods
     public function hasRole(string $role): bool
     {

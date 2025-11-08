@@ -659,6 +659,41 @@ class Post extends Model implements HasMedia
         return $this->versions()->latest()->first();
     }
 
+    // Reader Tracking Relationships
+    public function activeReaders()
+    {
+        return $this->hasMany(ActiveReader::class);
+    }
+
+    public function readerLocations()
+    {
+        return $this->hasMany(ReaderLocation::class);
+    }
+
+    public function readerAnalytics()
+    {
+        return $this->hasMany(ReaderAnalytics::class);
+    }
+
+    // Reader Tracking Helper Methods
+    public function getLiveReaderCount(): int
+    {
+        $readerTrackingService = app('ReaderTrackingService');
+        return $readerTrackingService->getActiveReaderCount($this->id);
+    }
+
+    public function getReaderBreakdown(): array
+    {
+        $readerTrackingService = app('ReaderTrackingService');
+        return $readerTrackingService->getReaderBreakdown($this->id);
+    }
+
+    public function getTopCountries(int $limit = 5): array
+    {
+        $readerTrackingService = app('ReaderTrackingService');
+        return $readerTrackingService->getTopCountries($this->id, $limit);
+    }
+
     // SEO Meta Helpers
     /**
      * Get SEO meta title. Falls back to post title if not set.

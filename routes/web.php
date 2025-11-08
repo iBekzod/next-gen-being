@@ -163,6 +163,8 @@ Route::middleware(['auth', 'verified'])->prefix('auth')->name('social.auth.')->g
 
 // Collaboration Routes
 use App\Http\Controllers\CollaborationController;
+    // Reader Tracking Routes
+use App\Http\Controllers\ReaderTrackingController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Invitation acceptance (public link but requires auth)
@@ -178,5 +180,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/history', [CollaborationController::class, 'history'])->name('history');
         Route::get('/export', [CollaborationController::class, 'exportReport'])->name('export');
     });
+
+
+    Route::prefix('api/posts/{post}/readers')->name('readers.')->group(function () {
+        Route::post('/activity', [ReaderTrackingController::class, 'recordActivity'])->name('activity');
+        Route::get('/count', [ReaderTrackingController::class, 'getLiveCount'])->name('count');
+        Route::get('/list', [ReaderTrackingController::class, 'getLiveReadersList'])->name('list');
+        Route::get('/locations', [ReaderTrackingController::class, 'getReaderLocations'])->name('locations');
+        Route::get('/countries', [ReaderTrackingController::class, 'getTopCountries'])->name('countries');
+        Route::get('/analytics', [ReaderTrackingController::class, 'getAnalytics'])->name('analytics');
+    });
+
+    Route::post('/api/readers/cleanup', [ReaderTrackingController::class, 'cleanupInactive'])->name('readers.cleanup');
 });
 

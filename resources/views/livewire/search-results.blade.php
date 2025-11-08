@@ -40,7 +40,24 @@
             @forelse($posts as $post)
                 <article class="p-6 transition border rounded-2xl border-slate-200/70 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700/60 bg-white dark:bg-slate-900/60">
                     <div class="flex flex-wrap items-center gap-3 mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase">
-                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-{{ $post->category->color ?? 'blue' }}-100 text-{{ $post->category->color ?? 'blue' }}-800 dark:bg-{{ $post->category->color ?? 'blue' }}-900/60 dark:text-{{ $post->category->color ?? 'blue' }}-200">{{ $post->category->name }}</span>
+                        @php
+                            $colorMap = [
+                                'red' => '#fee2e2',
+                                'blue' => '#dbeafe',
+                                'green' => '#dcfce7',
+                                'purple' => '#f3e8ff',
+                                'yellow' => '#fef3c7',
+                                'pink' => '#fce7f3',
+                                'indigo' => '#e0e7ff',
+                                'teal' => '#ccfbf1',
+                            ];
+                            $color = $post->category->color ?? 'blue';
+                            $bgColor = $colorMap[$color] ?? $colorMap['blue'];
+                        @endphp
+                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-slate-800 rounded-full dark:text-slate-100"
+                              style="background-color: {{ $bgColor }}; opacity: 0.8;">
+                            {{ $post->category->name }}
+                        </span>
                         <span>{{ $post->read_time }} min read</span>
                         <span>{{ $post->published_at->format('M j, Y') }}</span>
                     </div>

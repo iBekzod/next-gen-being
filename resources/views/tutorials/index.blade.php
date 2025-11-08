@@ -44,6 +44,15 @@
     </div>
 </section>
 
+<!-- User Progress Section (if logged in) -->
+@auth
+<section class="py-12 bg-slate-900 border-b border-slate-800">
+    <div class="px-6 mx-auto max-w-7xl">
+        <x-learning-progress-card />
+    </div>
+</section>
+@endauth
+
 <!-- Statistics Bar -->
 <section class="bg-slate-900 border-b border-slate-800">
     <div class="px-6 py-8 mx-auto max-w-7xl">
@@ -217,6 +226,17 @@
                 @endforeach
             </div>
         @endif
+    </div>
+</section>
+
+<!-- Leaderboard Section -->
+<section class="py-16 bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800">
+    <div class="px-6 mx-auto max-w-7xl">
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Learning Leaderboard</h2>
+            <p class="text-gray-600 dark:text-gray-400">See who's making the most progress in the community</p>
+        </div>
+        <x-leaderboard :limit="10" />
     </div>
 </section>
 

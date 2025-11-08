@@ -1,34 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git log:*)",
-      "Bash(php artisan:*)",
-      "Bash(docker exec:*)",
-      "Bash(find:*)",
-      "Bash(test:*)",
-      "Bash(dir:*)",
-      "Bash(nul)",
-      "Bash(php -l:*)",
-      "Bash(for file in app/Filament/Resources/*.php app/Filament/Blogger/Resources/*.php)",
-      "Bash(do php -l \"$file\")",
-      "Bash(done)",
-      "Bash(do if [ -f \"$file\" ])",
-      "Bash(then docker exec ngb-app php -l \"$file\")",
-      "Bash(echo \"Error in: $file\" fi done)",
-      "Bash(mkdir:*)",
-      "Bash(for file in app/Filament/Resources/*.php)",
-      "Bash(do docker exec ngb-app php -l \"$file\")",
-      "Bash(echo:*)",
-      "Bash(python3:*)",
-      "Bash(convert:*)",
-      "Bash(copy:*)",
-      "Bash(docker logs:*)",
-      "Bash(for resource in app/Filament/Blogger/Resources/*.php)",
-      "Bash(do echo '=== $(basename $resource) ===' grep -A 5 'public static function getPages' $resource)",
-      "Bash(docker ps:*)",
-      "Bash(cat:*)"
+      "Bash(for file in app/Models/ActiveReader.php app/Models/ReaderLocation.php app/Models/ReaderAnalytics.php app/Http/Controllers/ReaderTrackingController.php app/Http/Middleware/TrackReaders.php app/Livewire/LiveReaders.php app/Livewire/ReaderMap.php app/Livewire/ReaderGeographics.php)",
+      "Bash(do echo \"=== $file ===\")"
     ],
     "deny": [],
     "ask": []
