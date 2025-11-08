@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         // Active readers - track who is currently viewing a post
-        Schema::create('active_readers', function (Blueprint $table) {
+        if (!Schema::hasTable('active_readers')) {
+            Schema::create('active_readers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade'); // Anonymous users have null
@@ -29,9 +30,11 @@ return new class extends Migration
             $table->index('session_id');
             $table->index('last_activity_at'); // For cleanup queries
         });
+        }
 
         // Reader locations - geographic data
-        Schema::create('reader_locations', function (Blueprint $table) {
+        if (!Schema::hasTable('reader_locations')) {
+            Schema::create('reader_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->string('ip_address')->unique(); // One location per IP per post
@@ -51,9 +54,11 @@ return new class extends Migration
             $table->index('country_code');
             $table->index('last_seen_at');
         });
+        }
 
         // Reader analytics aggregated data
-        Schema::create('reader_analytics', function (Blueprint $table) {
+        if (!Schema::hasTable('reader_analytics')) {
+            Schema::create('reader_analytics', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->unsignedInteger('total_readers_today')->default(0);
@@ -70,6 +75,7 @@ return new class extends Migration
             $table->index('post_id');
             $table->index('date');
         });
+        }
     }
 
     /**

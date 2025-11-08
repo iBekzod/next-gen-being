@@ -22,11 +22,11 @@
                 Premium Content
             </span>
             @endif
-            <span class="text-sm text-gray-500">{{ $post->read_time }} min read</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ $post->read_time }} min read</span>
         </div>
 
-        <h1 class="mb-4 text-3xl font-bold text-gray-900 lg:text-4xl">{{ $post->title }}</h1>
-        <p class="mb-6 text-xl text-gray-600">{{ $post->excerpt }}</p>
+        <h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white lg:text-4xl">{{ $post->title }}</h1>
+        <p class="mb-6 text-xl text-gray-700 dark:text-gray-300">{{ $post->excerpt }}</p>
 
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
@@ -35,15 +35,15 @@
                      class="w-12 h-12 rounded-full">
                 <div>
                     <div class="flex items-center space-x-3">
-                        <p class="font-semibold text-gray-900">{{ $post->author->name }}</p>
+                        <p class="font-semibold text-gray-900 dark:text-white">{{ $post->author->name }}</p>
                         @if(auth()->check() && auth()->id() !== $post->author_id)
                         <button wire:click="toggleFollow"
-                                class="px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 {{ auth()->user()->isFollowing($post->author) ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:scale-105' }}">
+                                class="px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 {{ auth()->user()->isFollowing($post->author) ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:scale-105' }}">
                             {{ auth()->user()->isFollowing($post->author) ? 'Following' : '+ Follow' }}
                         </button>
                         @endif
                     </div>
-                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                    <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                         <span>{{ $post->published_at->format('M j, Y') }}</span>
                         <span>•</span>
                         <span>{{ number_format($post->views_count) }} views</span>
@@ -107,8 +107,8 @@
              alt="{{ $post->title }}"
              class="object-cover w-full h-96 rounded-2xl">
         @if($post->image_attribution && isset($post->image_attribution['source']) && $post->image_attribution['source'] === 'unsplash')
-        <div class="mt-2 text-sm text-gray-500">
-            Photo by <a href="{{ $post->image_attribution['photographer_url'] }}?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-blue-600 transition-colors">{{ $post->image_attribution['photographer_name'] }}</a> on <a href="https://unsplash.com?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-700 hover:text-blue-600 transition-colors">Unsplash</a>
+        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Photo by <a href="{{ $post->image_attribution['photographer_url'] }}?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{{ $post->image_attribution['photographer_name'] }}</a> on <a href="https://unsplash.com?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Unsplash</a>
         </div>
         @endif
     </div>
@@ -254,9 +254,9 @@
 
     <!-- Comments Section -->
     @if($post->allow_comments)
-    <section class="pt-8 border-t border-gray-200">
+    <section class="pt-8 border-t border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
                 Comments ({{ $comments->count() }})
             </h2>
             @auth
@@ -384,8 +384,8 @@
 
     <!-- Related Posts -->
     @if($relatedPosts->count() > 0)
-    <section class="pt-8 mt-12 border-t border-gray-200">
-        <h2 class="mb-6 text-2xl font-bold text-gray-900">Related Articles</h2>
+    <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
+        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">Related Articles</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             @foreach($relatedPosts as $relatedPost)
             <article class="group p-5 bg-gray-50 dark:bg-slate-900 rounded-xl transition-all duration-300 hover:-translate-y-2 hover:bg-white" style="border: 3px solid #616161; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);">
@@ -398,10 +398,10 @@
                     <div class="w-full h-32 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600"></div>
                     @endif
                 </div>
-                <h3 class="font-semibold text-gray-900 dark:text-white transition-colors group-hover:text-blue-600 line-clamp-2">
+                <h3 class="font-semibold text-gray-900 dark:text-white transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2">
                     <a href="{{ route('posts.show', $relatedPost->slug) }}">{{ $relatedPost->title }}</a>
                 </h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $relatedPost->published_at->format('M j, Y') }}</p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $relatedPost->published_at->format('M j, Y') }}</p>
             </article>
             @endforeach
         </div>
@@ -412,6 +412,7 @@
     @if(auth()->check())
     <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
         <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">✨ Personalized for You</h2>
+
         @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'personalized'])
     </section>
     @else
