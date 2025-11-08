@@ -858,6 +858,7 @@ FORMATTING RULES:
 - Use tables for comparisons
 - Keep paragraphs short and punchy
 - When in JSON mode, ensure proper escaping of all special characters
+- ⚠️ DO NOT START YOUR CONTENT WITH \"Excerpt\", \"Meta Title\", \"Meta Description\", \"Keywords\", or \"Tags\" - these are METADATA fields that go in the JSON response, NOT in the article markdown itself
 
 TONE:
 - Professional and educational
@@ -867,20 +868,23 @@ TONE:
 - Like a senior developer mentoring with real-world experience
 - NO hype, NO clickbait, NO exaggeration
 
-Also provide:
+METADATA FIELDS (DO NOT INCLUDE THESE IN THE ARTICLE CONTENT):
+Generate these separately and return in the JSON response:
 - **Excerpt**: Educational hook with specific benefit (150-200 chars, NO clickbait)
 - **Meta title**: Professional title with specifics (60 chars max, NO hype)
 - **Meta description**: Clear value prop with realistic expectations (155 chars max)
 - **Keywords**: 5-7 high-intent, searchable technical terms
 - **Tags**: 3-5 relevant, specific topic tags
 
+⚠️ CRITICAL: The \"content\" field should ONLY contain the article markdown. DO NOT include the Excerpt, Meta Title, Meta Description, Keywords, or Tags in the article content itself. Those fields belong ONLY in the JSON response fields, not in the content markdown.
+
 Return ONLY this JSON (ensure proper escaping):
 {
   \"title\": \"[Professional, educational title - NO clickbait phrases like '10x', 'turbocharge', 'unlock']\",
-  \"content\": \"[Full markdown content with stories, code, tips]\",
-  \"excerpt\": \"[Specific benefit that creates curiosity]\",
-  \"meta_title\": \"[SEO title with benefit]\",
-  \"meta_description\": \"[Value proposition with outcome]\",
+  \"content\": \"[ONLY the full markdown article content. NO metadata, NO excerpt, NO meta fields. Start with intro heading, end with conclusion.]\",
+  \"excerpt\": \"[Specific benefit that creates curiosity - SEPARATE from content, NOT included in article]\",
+  \"meta_title\": \"[SEO title with benefit - SEPARATE from content]\",
+  \"meta_description\": \"[Value proposition with outcome - SEPARATE from content]\",
   \"keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],
   \"tags\": [\"tag1\", \"tag2\", \"tag3\"]
 }";
@@ -1764,6 +1768,7 @@ FORMATTING RULES:
 - Use tables for comparisons
 - Keep paragraphs short and punchy
 - When in JSON mode, ensure proper escaping of all special characters
+- ⚠️ DO NOT START YOUR CONTENT WITH \"Excerpt\", \"Meta Title\", \"Meta Description\", \"Keywords\", or \"Tags\" - these are METADATA fields that go in the JSON response, NOT in the article markdown itself
 
 TONE:
 - Professional and educational
@@ -1773,20 +1778,23 @@ TONE:
 - Like a senior developer mentoring with real-world experience
 - NO hype, NO clickbait, NO exaggeration
 
-Also provide:
+METADATA FIELDS (DO NOT INCLUDE THESE IN THE ARTICLE CONTENT):
+Generate these separately and return in the JSON response:
 - **Excerpt**: Educational hook with specific benefit (150-200 chars, NO clickbait)
 - **Meta title**: Professional title with specifics (60 chars max, NO hype)
 - **Meta description**: Clear value prop with realistic expectations (155 chars max)
 - **Keywords**: 5-7 high-intent, searchable technical terms
 - **Tags**: 3-5 relevant, specific topic tags
 
+⚠️ CRITICAL: The \"content\" field should ONLY contain the article markdown. DO NOT include the Excerpt, Meta Title, Meta Description, Keywords, or Tags in the article content itself. Those fields belong ONLY in the JSON response fields, not in the content markdown.
+
 Return ONLY this JSON (ensure proper escaping):
 {
   \"title\": \"[Professional, educational title - NO clickbait phrases like '10x', 'turbocharge', 'unlock']\",
-  \"content\": \"[Full markdown content with stories, code, tips]\",
-  \"excerpt\": \"[Specific benefit that creates curiosity]\",
-  \"meta_title\": \"[SEO title with benefit]\",
-  \"meta_description\": \"[Value proposition with outcome]\",
+  \"content\": \"[ONLY the full markdown article content. NO metadata, NO excerpt, NO meta fields. Start with intro heading, end with conclusion.]\",
+  \"excerpt\": \"[Specific benefit that creates curiosity - SEPARATE from content, NOT included in article]\",
+  \"meta_title\": \"[SEO title with benefit - SEPARATE from content]\",
+  \"meta_description\": \"[Value proposition with outcome - SEPARATE from content]\",
   \"keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],
   \"tags\": [\"tag1\", \"tag2\", \"tag3\"]
 }";

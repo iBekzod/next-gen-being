@@ -452,4 +452,44 @@ class User extends Authenticatable implements HasMedia, FilamentUser
                     ->where('is_active', true)
                     ->exists();
     }
+
+    /**
+     * Get user's notifications
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get user's notification preferences
+     */
+    public function notificationPreferences()
+    {
+        return $this->hasOne(NotificationPreference::class);
+    }
+
+    /**
+     * Get or create notification preferences
+     */
+    public function getNotificationPreferences()
+    {
+        return $this->notificationPreferences ?? $this->notificationPreferences()->create([]);
+    }
+
+    /**
+     * Get unread notification count
+     */
+    public function unreadNotificationCount(): int
+    {
+        return Notification::unreadCountFor($this);
+    }
+
+    /**
+     * Get unread notifications
+     */
+    public function getUnreadNotifications(int $limit = 10)
+    {
+        return Notification::getUnreadFor($this, $limit);
+    }
 }
