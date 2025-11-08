@@ -492,4 +492,64 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     {
         return Notification::getUnreadFor($this, $limit);
     }
+
+    /**
+     * Get user's badges
+     */
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withTimestamps()
+            ->withPivot('earned_at')
+            ->orderByPivot('earned_at', 'desc');
+    }
+
+    /**
+     * Get user's reputation
+     */
+    public function reputation()
+    {
+        return $this->hasOne(UserReputation::class);
+    }
+
+    /**
+     * Get or create reputation record
+     */
+    public function getOrCreateReputation()
+    {
+        return $this->reputation ?? $this->reputation()->create();
+    }
+
+    /**
+     * Get user's achievements
+     */
+    public function achievements()
+    {
+        return $this->hasMany(UserAchievement::class);
+    }
+
+    /**
+     * Check if user has badge
+     */
+    public function hasBadge(string $badgeSlug): bool
+    {
+        return $this->badges()->where('slug', $badgeSlug)->exists();
+    }
+
+    /**
+     * Notify user of level up
+     */
+    public function notifyLevelUp(string $newLevel): void
+    {
+        // Create notification
+        app('NotificationService')->create(
+            user: $this,
+            type: 'earnings_milestone',
+            title: 'Level Up!',
+            message: "Congratulations! You've reached {$newLevel} level!",
+            actionUrl: route('dashboard.reputation'),
+            notifiable: $this,
+            data: ['level' => $newLevel]
+        );
+    }
 }

@@ -49,10 +49,28 @@ class PostController extends Controller
             $suggestion = \App\Models\AiContentSuggestion::find($request->get('suggestion'));
         }
 
+        $user = Auth::user();
+        $userAiQuota = [
+            'tier' => $user->ai_tier,
+            'posts_generated' => $user->ai_posts_generated,
+            'posts_limit' => $user->monthly_ai_posts_limit,
+            'images_generated' => $user->ai_images_generated,
+            'images_limit' => $user->monthly_ai_images_limit,
+            'can_generate' => $user->canGenerateAIContent(),
+            'can_generate_image' => $user->canGenerateAIImage(),
+        ];
+
         return view('posts.create', [
             'categories' => Category::active()->ordered()->get(),
             'tags' => Tag::active()->popular()->get(),
             'suggestion' => $suggestion,
+            'userAiQuota' => $userAiQuota,
+            'premiumTiers' => [
+                'free' => 'Free',
+                'basic' => 'Basic ($4.99/mo)',
+                'pro' => 'Pro ($9.99/mo)',
+                'team' => 'Team ($29.99/mo)',
+            ],
         ]);
     }
 
@@ -70,7 +88,14 @@ class PostController extends Controller
             'status' => 'required|in:draft,published,scheduled',
             'published_at' => 'nullable|date|after:now',
             'is_premium' => 'boolean',
+            'premium_tier' => 'nullable|in:free,basic,pro,team',
             'allow_comments' => 'boolean',
+            'series_title' => 'nullable|string|max:255',
+            'series_part' => 'nullable|integer|min:1',
+            'series_total_parts' => 'nullable|integer|min:1',
+            'series_description' => 'nullable|string|max:1000',
+            'image_attribution' => 'nullable|string',
+            'post_type' => 'nullable|in:standard,tutorial,video,guide,review',
         ]);
 
         $validated['author_id'] = Auth::id();
@@ -124,6 +149,11 @@ class PostController extends Controller
             // Everything else needs manual review
             $validated['moderation_status'] = 'pending';
             $validated['status'] = 'draft'; // Keep as draft until approved
+        }
+
+        // Generate series slug if series title provided
+        if (!empty($validated['series_title'])) {
+            $validated['series_slug'] = \Illuminate\Support\Str::slug($validated['series_title']);
         }
 
         $post = Post::create($validated);

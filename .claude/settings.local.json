@@ -26,7 +26,8 @@
       "Bash(copy:*)",
       "Bash(docker logs:*)",
       "Bash(for resource in app/Filament/Blogger/Resources/*.php)",
-      "Bash(do echo '=== $(basename $resource) ===' grep -A 5 'public static function getPages' $resource)"
+      "Bash(do echo '=== $(basename $resource) ===' grep -A 5 'public static function getPages' $resource)",
+      "Bash(docker ps:*)"
     ],
     "deny": [],
     "ask": []
