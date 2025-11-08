@@ -180,7 +180,7 @@
     @endphp
 
     @if($featuredPost)
-    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900">
+    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900">
         <div class="max-w-7xl mx-auto">
             <!-- Featured Hero Article -->
             <div class="mb-12">
@@ -193,11 +193,11 @@
                 <div class="lg:col-span-2">
                     <article class="relative group overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all">
                         @if($featuredPost->featured_image)
-                            <img src="{{ $featuredPost->featured_image }}" alt="{{ $featuredPost->title }}" class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-300">
+                            <img src="{{ $featuredPost->featured_image }}" alt="Featured article: {{ $featuredPost->title }}" title="{{ $featuredPost->title }}" class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
-                            <div class="w-full h-96 bg-gradient-to-br from-blue-500 to-indigo-600"></div>
+                            <div class="w-full h-96 bg-gradient-to-br from-blue-500 to-indigo-600" role="img" aria-label="Featured article placeholder"></div>
                         @endif
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-8 flex flex-col justify-end">
                             <div class="flex items-center gap-2 mb-4">
                                 <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500 text-white">
@@ -230,19 +230,19 @@
                 <div class="space-y-4">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Headlines</h3>
                     @foreach($topHeadlines->skip(1)->take(3) as $post)
-                        <article class="p-4 bg-white dark:bg-slate-700 rounded-lg shadow hover:shadow-lg transition-shadow">
+                        <article class="p-4 bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-lg transition-shadow border dark:border-slate-700">
                             <div class="flex items-start gap-3">
                                 @if($post->featured_image)
-                                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="w-16 h-16 object-cover rounded flex-shrink-0">
+                                    <img src="{{ $post->featured_image }}" alt="Article preview: {{ $post->title }}" title="{{ $post->title }}" class="w-16 h-16 object-cover rounded flex-shrink-0">
                                 @endif
                                 <div class="flex-1">
-                                    <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">{{ $post->category->name }}</span>
+                                    <span class="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase" title="{{ $post->category->name }}">{{ $post->category->name }}</span>
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-white mt-1 line-clamp-2">
-                                        <a href="{{ route('posts.show', $post->slug) }}" class="hover:text-blue-600 dark:hover:text-blue-400 transition">
+                                        <a href="{{ route('posts.show', $post->slug) }}" class="hover:text-blue-600 dark:hover:text-blue-300 transition" title="Read article: {{ $post->title }}">
                                             {{ $post->title }}
                                         </a>
                                     </h4>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-2 block">{{ $post->published_at->format('M d, Y') }}</span>
+                                    <span class="text-xs text-gray-600 dark:text-gray-300 mt-2 block">{{ $post->published_at->format('M d, Y') }}</span>
                                 </div>
                             </div>
                         </article>
@@ -258,14 +258,14 @@
                     @foreach($featuredCategories as $category)
                         @php $categoryPosts = $category->publishedPosts()->limit(3)->get(); @endphp
                         @if($categoryPosts->count() > 0)
-                        <div class="group">
+                        <div class="group p-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                             <div class="mb-4 pb-4 border-b-2 border-blue-200 dark:border-blue-900">
                                 <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
                                     <a href="{{ route('categories.show', $category->slug) }}">
                                         {{ $category->name }}
                                     </a>
                                 </h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ $category->description }}</p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">{{ $category->description }}</p>
                             </div>
                             <div class="space-y-3">
                                 @foreach($categoryPosts as $post)
@@ -275,7 +275,7 @@
                                                 {{ $post->title }}
                                             </a>
                                         </h4>
-                                        <div class="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        <div class="flex items-center gap-2 mt-2 text-xs text-gray-600 dark:text-gray-400">
                                             <span>{{ $post->published_at->format('M d') }}</span>
                                             @if($post->read_time)
                                                 <span>•</span>
@@ -405,9 +405,12 @@
         <div class="px-6 mx-auto max-w-7xl">
             <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
                 <div class="max-w-2xl">
-                    <p class="text-sm font-semibold tracking-wide text-blue-300 uppercase">Stay sharp</p>
-                    <h2 class="mt-3 text-3xl font-bold text-white">Ready to dive deeper?</h2>
-                    <p class="mt-4 text-base leading-7 text-slate-300">Browse our in-depth analysis, curated toolkits, and operating frameworks across the most requested topics.</p>
+                    <p class="text-sm font-semibold tracking-wide text-blue-300 uppercase">Premium intelligence platform</p>
+                    <h2 class="mt-3 text-3xl font-bold text-white">What sets NextGenBeing apart</h2>
+                    <p class="mt-4 text-base leading-7 text-slate-300">
+                        Unlike general tech news, we specialize in <strong>actionable intelligence</strong>.
+                        Every drop includes frameworks you can implement, tools you can test, and strategies you can replicate.
+                    </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <a href="{{ route('posts.index') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-slate-900 bg-white rounded-xl shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition">
@@ -420,20 +423,133 @@
                 </div>
             </div>
             <div id="features" class="grid gap-6 mt-12 lg:grid-cols-3">
-                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Workflow architecture</p>
-                    <h3 class="mt-2 text-lg font-semibold text-white">Operating systems that compound</h3>
-                    <p class="mt-3 text-sm text-slate-300">Weekly agenda setups, async documentation stacks, and focus rituals used by elite operators.</p>
+                <!-- Feature 1: Systems & Workflows -->
+                <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l-2 2M9 6l2-2m0 0l2 2m-2-2v13m4-8l-2-2m2 2l2-2m0 0V8m0 0l-2 2m0-2v13"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-300/60 uppercase tracking-wider">Workflow architecture</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">Operating systems that compound</h3>
+                    <p class="mt-2 text-sm text-slate-300 mb-4">
+                        Discover the weekly agenda setups, async documentation stacks, and focus rituals that elite operators use to maintain clarity and momentum.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Time-blocking frameworks proven by founders</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Documentation templates for team alignment</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Decision-making protocols that scale</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Tooling reviews</p>
-                    <h3 class="mt-2 text-lg font-semibold text-white">Objective, faceless breakdowns</h3>
-                    <p class="mt-3 text-sm text-slate-300">See the tradeoffs across AI copilots, research assistants, and automation suites before you invest.</p>
+
+                <!-- Feature 2: Tooling Reviews -->
+                <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-300/60 uppercase tracking-wider">Tooling reviews</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">Objective, faceless breakdowns</h3>
+                    <p class="mt-2 text-sm text-slate-300 mb-4">
+                        Compare AI copilots, research assistants, and automation platforms with unbiased analysis. No sponsored reviews. Pure tradeoffs.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Hands-on testing across 50+ tools monthly</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Cost analysis and ROI calculations</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Integration guides and workflow patterns</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <p class="text-xs font-semibold tracking-wide text-blue-200 uppercase">Playbooks</p>
-                    <h3 class="mt-2 text-lg font-semibold text-white">From idea to execution faster</h3>
-                    <p class="mt-3 text-sm text-slate-300">Replicate the launch cadence and growth loops powering the next wave of internet-first companies.</p>
+
+                <!-- Feature 3: Playbooks -->
+                <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-300/60 uppercase tracking-wider">Playbooks</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">From idea to execution faster</h3>
+                    <p class="mt-2 text-sm text-slate-300 mb-4">
+                        Replicate the launch cadence, growth loops, and go-to-market strategies that power the next wave of internet-first companies.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Step-by-step execution frameworks</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Metrics to track and milestones to hit</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-slate-400">
+                            <span class="text-blue-400 mt-0.5">✓</span>
+                            <span>Real case studies from 100+ launches</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Trust & Authority Section -->
+            <div class="mt-16 pt-12 border-t border-white/10">
+                <div class="grid gap-12 md:grid-cols-3">
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 text-blue-300 mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="text-sm font-semibold text-white">Hands-on research</h4>
+                        <p class="mt-2 text-xs text-slate-400">
+                            Every recommendation is tested and validated before publication. No speculation, no sponsored content.
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 text-blue-300 mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 6a3 3 0 11-6 0 3 3 0 016 0zM16 16a5 5 0 01-8 0"/>
+                            </svg>
+                        </div>
+                        <h4 class="text-sm font-semibold text-white">Built by operators</h4>
+                        <p class="mt-2 text-xs text-slate-400">
+                            Written by founders, product leaders, and engineers who've shipped at scale. Real experience, real insights.
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 text-blue-300 mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                            </svg>
+                        </div>
+                        <h4 class="text-sm font-semibold text-white">Constantly updated</h4>
+                        <p class="mt-2 text-xs text-slate-400">
+                            New drops every week. Playbooks refresh quarterly. Tools tracked in real-time as they evolve.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
