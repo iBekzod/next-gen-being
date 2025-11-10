@@ -174,8 +174,8 @@
 
     <!-- Featured Articles for SEO -->
     @php
-        $featuredPost = \App\Models\Post::published()->orderByDesc('views_count')->first();
-        $topHeadlines = \App\Models\Post::published()->orderByDesc('views_count')->limit(4)->get();
+        $featuredPost = \App\Models\Post::published()->with(['category', 'author'])->orderByDesc('views_count')->first();
+        $topHeadlines = \App\Models\Post::published()->with(['category', 'author'])->orderByDesc('views_count')->limit(4)->get();
         $featuredCategories = \App\Models\Category::active()->with('publishedPosts')->orderBy('sort_order')->limit(3)->get();
     @endphp
 
@@ -203,9 +203,11 @@
                         <!-- Content Overlay -->
                         <div class="absolute inset-0 p-8 flex flex-col justify-end z-20">
                             <div class="flex items-center gap-2 mb-4">
-                                <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500 text-white shadow-lg">
-                                    {{ $featuredPost->category->name }}
-                                </span>
+                                @if($featuredPost->category)
+                                    <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500 text-white shadow-lg">
+                                        {{ $featuredPost->category->name }}
+                                    </span>
+                                @endif
                                 @if($featuredPost->read_time)
                                     <span class="text-sm text-gray-100">{{ $featuredPost->read_time }} min read</span>
                                 @endif
@@ -237,7 +239,9 @@
                                     <img src="{{ $post->featured_image }}" alt="Article preview: {{ $post->title }}" title="{{ $post->title }}" class="w-16 h-16 object-cover rounded flex-shrink-0">
                                 @endif
                                 <div class="flex-1">
-                                    <span class="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase" title="{{ $post->category->name }}">{{ $post->category->name }}</span>
+                                    @if($post->category)
+                                        <span class="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase" title="{{ $post->category->name }}">{{ $post->category->name }}</span>
+                                    @endif
                                     <h4 class="text-sm font-bold text-slate-900 dark:text-white mt-1 line-clamp-2">
                                         <a href="{{ route('posts.show', $post->slug) }}" class="hover:text-blue-600 dark:hover:text-blue-300 transition" title="Read article: {{ $post->title }}">
                                             {{ $post->title }}

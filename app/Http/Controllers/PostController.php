@@ -273,9 +273,9 @@ class PostController extends Controller
                 'total_parts' => $item->series_total_parts,
                 'published_parts' => $item->published_parts,
                 'last_updated' => \Carbon\Carbon::parse($item->last_updated),
-                'featured_image' => $firstPost->featured_image ?? null,
-                'category' => $firstPost->category ?? null,
-                'author' => $firstPost->author ?? null,
+                'featured_image' => $firstPost?->featured_image ?? null,
+                'category' => $firstPost?->category ?? null,
+                'author' => $firstPost?->author ?? null,
                 'is_complete' => $item->published_parts == $item->series_total_parts,
             ];
         });

@@ -83,9 +83,11 @@
                     <div class="flex-1 p-6">
                         <!-- Category & Reading Time -->
                         <div class="flex items-center gap-3 mb-3">
-                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-{{ $post->category->color ?? 'blue' }}-100 text-{{ $post->category->color ?? 'blue' }}-800">
-                                {{ $post->category->name }}
-                            </span>
+                            @if($post->category)
+                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-{{ $post->category->color ?? 'blue' }}-100 text-{{ $post->category->color ?? 'blue' }}-800">
+                                    {{ $post->category->name }}
+                                </span>
+                            @endif
                             <span class="text-sm text-gray-500 dark:text-gray-400">{{ $post->read_time }} min read</span>
                         </div>
 
@@ -103,15 +105,19 @@
 
                         <!-- Meta -->
                         <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center space-x-3">
-                                <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}"
-                                     alt="{{ $post->author->name }}"
-                                     class="w-8 h-8 rounded-full">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $post->author->name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $post->published_at->format('M j, Y') }}</p>
+                            @if($post->author)
+                                <div class="flex items-center space-x-3">
+                                    <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}"
+                                         alt="{{ $post->author->name }}"
+                                         class="w-8 h-8 rounded-full">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $post->author->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $post->published_at->format('M j, Y') }}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $post->published_at->format('M j, Y') }}</div>
+                            @endif
 
                             <a href="{{ route('posts.show', $post->slug) }}"
                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-all transform bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:shadow-lg hover:scale-105">
