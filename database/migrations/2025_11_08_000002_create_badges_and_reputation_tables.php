@@ -8,6 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Achievements table - predefined achievements users can earn
+        if (!Schema::hasTable('achievements')) {
+            Schema::create('achievements', function (Blueprint $table) {
+                $table->id();
+                $table->string('name'); // "First Post", "Top Contributor", etc.
+                $table->text('description')->nullable();
+                $table->string('slug')->unique();
+                $table->string('icon')->nullable(); // Emoji or icon file
+                $table->string('color')->default('blue'); // For styling
+                $table->integer('points')->default(10); // Points awarded for achievement
+                $table->integer('order')->default(0);
+                $table->boolean('is_active')->default(true);
+                $table->json('requirements')->nullable(); // {"min_posts": 10}
+                $table->timestamps();
+            });
+        }
+
         // Badges table - predefined badges users can earn
         if (!Schema::hasTable('badges')) {
             Schema::create('badges', function (Blueprint $table) {
@@ -62,20 +79,20 @@ return new class extends Migration
             });
         }
 
-        // Achievement tracking - for future use
+        // Achievement tracking - links users to achievements they've earned
         if (!Schema::hasTable('user_achievements')) {
             Schema::create('user_achievements', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('achievement_code'); // 'first_post', 'first_like_received', 'reached_100_followers'
-            $table->text('description');
-            $table->timestamp('achieved_at')->useCurrent();
-            $table->json('metadata')->nullable();
-            $table->timestamps();
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->unsignedBigInteger('achievement_id');
+                $table->timestamp('achieved_at')->useCurrent();
+                $table->json('metadata')->nullable();
+                $table->timestamps();
 
-            $table->unique(['user_id', 'achievement_code']);
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index('achievement_code');
+                $table->unique(['user_id', 'achievement_id']);
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                $table->foreign('achievement_id')->references('id')->on('achievements')->onDelete('cascade');
+                $table->index(['user_id', 'achieved_at']);
             });
         }
     }
@@ -86,5 +103,6 @@ return new class extends Migration
         Schema::dropIfExists('user_reputation');
         Schema::dropIfExists('user_badges');
         Schema::dropIfExists('badges');
+        Schema::dropIfExists('achievements');
     }
 };

@@ -1,7 +1,6 @@
 @props(['user' => null, 'stats' => null, 'compact' => false])
 
 @php
-    $stats = $stats ?? (auth()->check() ? \App\Services\Tutorial\TutorialProgressService::class : null);
     if (!$stats && auth()->check()) {
         $stats = app(\App\Services\Tutorial\TutorialProgressService::class)->getUserStats(auth()->user());
     }
