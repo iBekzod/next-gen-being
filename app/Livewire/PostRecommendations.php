@@ -51,7 +51,7 @@ class PostRecommendations extends Component
                 'category_name' => $post->category->name,
                 'category_slug' => $post->category->slug,
                 'author_name' => $post->author->name,
-                'author_slug' => $post->author->username ?? $post->author->slug,
+                'author_slug' => $post->author->username ?? $post->author->slug ?? 'user-' . $post->author->id,
                 'published_at' => $post->published_at->format('M d, Y'),
             ];
         })->toArray();
