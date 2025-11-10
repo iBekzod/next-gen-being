@@ -39,7 +39,12 @@
             <!-- BASIC INFORMATION SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'basic-info')">
-                    <h3>📝 Basic Information</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        <h3>Basic Information</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="basic-info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -64,9 +69,14 @@
 
                     @if(isset($suggestion))
                         <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
-                            <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
-                                ✨ Creating from AI Suggestion
-                            </h4>
+                            <div class="flex items-center gap-2 mb-1">
+                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                    Creating from AI Suggestion
+                                </h4>
+                            </div>
                             <p class="text-sm text-blue-700 dark:text-blue-300">
                                 Title suggestion: <strong>{{ $suggestion->title }}</strong>
                             </p>
@@ -143,7 +153,12 @@
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'ai-assistant')">
                     <div class="flex items-center gap-3">
-                        <span>🤖 AI Assistant</span>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5.36 4.64l-.707.707M9.172 9.172L8.465 8.465m3.536 9.172l-.707.707M9 12a3 3 0 11 0 0 6 3 3 0 010-6z"/>
+                            </svg>
+                            <span>AI Assistant</span>
+                        </div>
                         <span class="quota-badge quota-{{ $userAiQuota['can_generate'] ? 'ok' : 'limited' }}">
                             @if($userAiQuota['tier'] === 'free')
                                 Free Tier
@@ -185,8 +200,11 @@
                                     id="ai_generate_btn"
                                     onclick="generateAIContent()"
                                     {{ !$userAiQuota['can_generate'] ? 'disabled' : '' }}
-                                    class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium">
-                                ✨ Generate Content
+                                    class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <span>Generate Content</span>
                             </button>
                         </div>
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -211,8 +229,11 @@
                                     id="ai_image_btn"
                                     onclick="generateAIImage()"
                                     {{ !$userAiQuota['can_generate_image'] ? 'disabled' : '' }}
-                                    class="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium">
-                                🎨 Generate Image
+                                    class="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a6 6 0 016 6v4a6 6 0 016 6v4a2 2 0 01-2 2h-4.5"/>
+                                </svg>
+                                <span>Generate Image</span>
                             </button>
                         </div>
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -225,7 +246,12 @@
             <!-- WRITING ASSISTANT SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'writing-assistant')">
-                    <h3>✍️ Writing Assistant</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v7a7 7 0 1011.293-6.293 1 1 0 10-1.414 1.414A5 5 0 1011 11V4z"/>
+                        </svg>
+                        <h3>Writing Assistant</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="writing-assistant-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -235,17 +261,29 @@
                         Get real-time suggestions for grammar, style, readability, tone, and more.
                     </p>
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" onclick="checkGrammar()" class="py-2 px-3 bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 rounded-lg text-sm font-medium transition">
-                            ✓ Check Grammar
+                        <button type="button" onclick="checkGrammar()" class="py-2 px-3 bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Check Grammar</span>
                         </button>
-                        <button type="button" onclick="analyzeStyle()" class="py-2 px-3 bg-cyan-100 dark:bg-cyan-900/30 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 text-cyan-900 dark:text-cyan-200 rounded-lg text-sm font-medium transition">
-                            📊 Style Tips
+                        <button type="button" onclick="analyzeStyle()" class="py-2 px-3 bg-cyan-100 dark:bg-cyan-900/30 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 text-cyan-900 dark:text-cyan-200 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>Style Tips</span>
                         </button>
-                        <button type="button" onclick="checkReadability()" class="py-2 px-3 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-900 dark:text-green-200 rounded-lg text-sm font-medium transition">
-                            📖 Readability
+                        <button type="button" onclick="checkReadability()" class="py-2 px-3 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-900 dark:text-green-200 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17.25m20-11.002c5.5 0 10 4.747 10 11.002M12 6.253N12 3m0 13.002c-5.5 0-10-4.747-10-11"/>
+                            </svg>
+                            <span>Readability</span>
                         </button>
-                        <button type="button" onclick="analyzeTone()" class="py-2 px-3 bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-900/50 text-pink-900 dark:text-pink-200 rounded-lg text-sm font-medium transition">
-                            🎭 Tone Analysis
+                        <button type="button" onclick="analyzeTone()" class="py-2 px-3 bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-900/50 text-pink-900 dark:text-pink-200 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Tone Analysis</span>
                         </button>
                     </div>
                     <div id="assistant-results" class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hidden">
@@ -258,7 +296,12 @@
             <!-- CONTENT ORGANIZATION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'organization')">
-                    <h3>📚 Content Organization</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <h3>Content Organization</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="organization-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -382,7 +425,12 @@
             <!-- FEATURED IMAGE SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'featured-image')">
-                    <h3>🖼️ Featured Image</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <h3>Featured Image</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="featured-image-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -424,7 +472,12 @@
             <!-- MONETIZATION SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'monetization')">
-                    <h3>💰 Monetization & Access</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <h3>Monetization & Access</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="monetization-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -484,7 +537,12 @@
             <!-- PUBLISHING SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'publishing')">
-                    <h3>📤 Publishing Options</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <h3>Publishing Options</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="publishing-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -539,8 +597,11 @@
                     <button type="submit"
                             name="action"
                             value="publish"
-                            class="px-8 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors font-medium shadow-sm">
-                        ✨ Publish Post
+                            class="px-8 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors font-medium shadow-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span>Publish Post</span>
                     </button>
                 </div>
             </div>
@@ -711,7 +772,7 @@ async function generateAIContent() {
 
     const btn = document.getElementById('ai_generate_btn');
     btn.disabled = true;
-    btn.textContent = '⏳ Generating...';
+    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m6.364 1.636l-.707.707M21 12h-1m1.364 6.364l-.707-.707M12 21v-1m-6.364-1.636l.707-.707M3 12h1M3.636 5.636l.707.707"/></svg><span>Generating...</span>';
 
     try {
         // This would call your AI API endpoint
@@ -719,7 +780,7 @@ async function generateAIContent() {
         alert('AI content generation coming soon!');
     } finally {
         btn.disabled = false;
-        btn.textContent = '✨ Generate Content';
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span>Generate Content</span>';
     }
 }
 
@@ -733,14 +794,14 @@ async function generateAIImage() {
 
     const btn = document.getElementById('ai_image_btn');
     btn.disabled = true;
-    btn.textContent = '⏳ Generating...';
+    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m6.364 1.636l-.707.707M21 12h-1m1.364 6.364l-.707-.707M12 21v-1m-6.364-1.636l.707-.707M3 12h1M3.636 5.636l.707.707"/></svg><span>Generating...</span>';
 
     try {
         // This would call your AI image API
         alert('AI image generation coming soon!');
     } finally {
         btn.disabled = false;
-        btn.textContent = '🎨 Generate Image';
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a6 6 0 016 6v4a6 6 0 016 6v4a2 2 0 01-2 2h-4.5"/></svg><span>Generate Image</span>';
     }
 }
 

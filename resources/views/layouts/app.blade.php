@@ -310,11 +310,11 @@
                                 Tutorials
                             </a>
 
-                            <!-- Bloggers (Conditional) -->
-                            @if ((isset($totalBloggers) && $totalBloggers > 5) || \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['blogger', 'content_creator']))->count() > 5)
-                                <a href="{{ route('bloggers.index') }}"
+                            <!-- Pricing -->
+                            @if (setting('enable_subscriptions'))
+                                <a href="{{ route('subscription.plans') }}"
                                     class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
-                                    Bloggers
+                                    Pricing
                                 </a>
                             @endif
 
@@ -326,14 +326,6 @@
                                 </svg>
                                 Write
                             </a>
-
-                            <!-- Pricing -->
-                            @if (setting('enable_subscriptions'))
-                                <a href="{{ route('subscription.plans') }}"
-                                    class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
-                                    Pricing
-                                </a>
-                            @endif
                         </div>
                     </div>
 
@@ -548,10 +540,10 @@
                             class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
                     </div>
 
-                    <!-- Bloggers (Conditional) -->
-                    @if ((isset($totalBloggers) && $totalBloggers > 5) || \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['blogger', 'content_creator']))->count() > 5)
-                        <a href="{{ route('bloggers.index') }}"
-                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Bloggers</a>
+                    <!-- Pricing -->
+                    @if (setting('enable_subscriptions'))
+                        <a href="{{ route('subscription.plans') }}"
+                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Pricing</a>
                     @endif
 
                     <!-- Write -->
@@ -564,14 +556,6 @@
                             Write
                         </span>
                     </a>
-
-                    <!-- Pricing -->
-                    @if (setting('enable_subscriptions'))
-                        <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
-                            <a href="{{ route('subscription.plans') }}"
-                                class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Pricing</a>
-                        </div>
-                    @endif
                 </div>
             </div>
         </nav>

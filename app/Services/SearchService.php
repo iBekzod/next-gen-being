@@ -214,13 +214,13 @@ class SearchService
                 $q->where('status', 'published');
             })
             ->limit(2)
-            ->get(['id', 'name', 'username', 'avatar']);
+            ->get(['id', 'name', 'avatar']);
 
         foreach ($authors as $author) {
             $suggestions[] = [
                 'type' => 'author',
                 'title' => $author->name,
-                'url' => route('bloggers.profile', $author->username ?? $author->id),
+                'url' => route('bloggers.profile', $author->id),
                 'avatar' => $author->avatar,
             ];
         }
