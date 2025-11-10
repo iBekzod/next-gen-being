@@ -5,34 +5,44 @@
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
             @foreach($this->featuredPosts as $index => $post)
             <a href="{{ route('posts.show', $post->slug) }}" class="group block {{ $index === 0 ? 'lg:col-span-2' : '' }}">
-                <div class="relative overflow-hidden rounded-2xl bg-gray-900 {{ $index === 0 ? 'h-96' : 'h-64' }} cursor-pointer">
+                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 {{ $index === 0 ? 'h-96' : 'h-64' }} cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-300">
                     @if($post->featured_image)
                     <img src="{{ $post->featured_image }}"
                          alt="{{ $post->title }}"
                          class="absolute inset-0 object-cover w-full h-full transition-transform duration-300 group-hover:scale-105">
+                    @else
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600"></div>
                     @endif
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
                         <div class="flex items-center mb-3 space-x-3">
-                            <span class="px-3 py-1 bg-{{ $post->category->color ?? 'blue' }}-500 text-white text-xs font-medium rounded-full">
-                                {{ $post->category->name }}
-                            </span>
-                            <span class="text-sm text-white/80">{{ $post->read_time }} min read</span>
+                            @if($post->category)
+                                <span class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-full shadow-md">
+                                    {{ $post->category->name }}
+                                </span>
+                            @endif
+                            @if($post->read_time)
+                                <span class="text-sm text-white/80">{{ $post->read_time }} min read</span>
+                            @endif
                         </div>
                         <h2 class="text-white font-bold {{ $index === 0 ? 'text-2xl lg:text-3xl' : 'text-xl' }} line-clamp-2 mb-2">
                             {{ $post->title }}
                         </h2>
                         <p class="mb-3 text-sm text-white/90 line-clamp-2">{{ $post->excerpt }}</p>
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}"
-                                     alt="{{ $post->author->name }}"
-                                     class="w-8 h-8 rounded-full">
-                                <div>
-                                    <p class="text-sm font-medium text-white">{{ $post->author->name }}</p>
-                                    <p class="text-xs text-white/70">{{ $post->published_at->format('M j, Y') }}</p>
+                            @if($post->author)
+                                <div class="flex items-center space-x-3">
+                                    <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}"
+                                         alt="{{ $post->author->name }}"
+                                         class="w-8 h-8 rounded-full">
+                                    <div>
+                                        <p class="text-sm font-medium text-white">{{ $post->author->name }}</p>
+                                        <p class="text-xs text-white/70">{{ $post->published_at->format('M j, Y') }}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <div class="text-sm text-white/80">{{ $post->published_at->format('M j, Y') }}</div>
+                            @endif
                             <div class="flex items-center space-x-4 text-sm text-white/70">
                                 <span class="flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
