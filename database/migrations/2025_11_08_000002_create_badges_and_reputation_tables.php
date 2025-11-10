@@ -37,7 +37,8 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('badge_id')->references('id')->on('badges')->onDelete('cascade');
             $table->index('earned_at');
-        });
+            });
+        }
 
         // User reputation - tracks reputation points
         if (!Schema::hasTable('user_reputation')) {
