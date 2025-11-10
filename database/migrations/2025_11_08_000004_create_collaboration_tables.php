@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         // Post collaborators - track who can edit/view/review a post
-        Schema::create('post_collaborators', function (Blueprint $table) {
+        if (!Schema::hasTable('post_collaborators')) {
+            Schema::create('post_collaborators', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
@@ -25,10 +26,12 @@ return new class extends Migration
             $table->unique(['post_id', 'user_id']); // Prevent duplicate collaborators
             $table->index('post_id');
             $table->index('user_id');
-        });
+            });
+        }
 
         // Collaboration invitations - pending invites to collaborators
-        Schema::create('collaboration_invitations', function (Blueprint $table) {
+        if (!Schema::hasTable('collaboration_invitations')) {
+            Schema::create('collaboration_invitations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('inviter_id')->constrained('users')->onDelete('cascade');
@@ -47,10 +50,12 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('email');
             $table->index('token');
-        });
+            });
+        }
 
         // Collaboration comments - editorial comments on sections of posts
-        Schema::create('collaboration_comments', function (Blueprint $table) {
+        if (!Schema::hasTable('collaboration_comments')) {
+            Schema::create('collaboration_comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
@@ -66,10 +71,12 @@ return new class extends Migration
             $table->index('post_id');
             $table->index('user_id');
             $table->index('status');
-        });
+            });
+        }
 
         // Post versions/revisions - track collaborative editing history
-        Schema::create('post_versions', function (Blueprint $table) {
+        if (!Schema::hasTable('post_versions')) {
+            Schema::create('post_versions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('edited_by')->constrained('users')->onDelete('cascade');
@@ -84,10 +91,12 @@ return new class extends Migration
             $table->index('post_id');
             $table->index('edited_by');
             $table->index('created_at');
-        });
+            });
+        }
 
         // Collaboration activity log - for audit trail
-        Schema::create('collaboration_activities', function (Blueprint $table) {
+        if (!Schema::hasTable('collaboration_activities')) {
+            Schema::create('collaboration_activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
@@ -110,7 +119,8 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('action');
             $table->index('created_at');
-        });
+            });
+        }
     }
 
     /**

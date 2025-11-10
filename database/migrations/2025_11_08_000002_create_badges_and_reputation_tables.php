@@ -9,7 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         // Badges table - predefined badges users can earn
-        Schema::create('badges', function (Blueprint $table) {
+        if (!Schema::hasTable('badges')) {
+            Schema::create('badges', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // "Rising Star", "Top Contributor", etc.
             $table->text('description');
@@ -21,9 +22,11 @@ return new class extends Migration
             $table->json('requirements')->nullable(); // {"min_posts": 10, "min_likes": 100}
             $table->timestamps();
         });
+        }
 
         // User badges - tracks which badges a user has earned
-        Schema::create('user_badges', function (Blueprint $table) {
+        if (!Schema::hasTable('user_badges')) {
+            Schema::create('user_badges', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('badge_id');
@@ -37,7 +40,8 @@ return new class extends Migration
         });
 
         // User reputation - tracks reputation points
-        Schema::create('user_reputation', function (Blueprint $table) {
+        if (!Schema::hasTable('user_reputation')) {
+            Schema::create('user_reputation', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
             $table->integer('points')->default(0); // Total reputation points
@@ -54,10 +58,12 @@ return new class extends Migration
             $table->index('points');
             $table->index('level');
             $table->index('engagement_score');
-        });
+            });
+        }
 
         // Achievement tracking - for future use
-        Schema::create('user_achievements', function (Blueprint $table) {
+        if (!Schema::hasTable('user_achievements')) {
+            Schema::create('user_achievements', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('achievement_code'); // 'first_post', 'first_like_received', 'reached_100_followers'
@@ -69,7 +75,8 @@ return new class extends Migration
             $table->unique(['user_id', 'achievement_code']);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->index('achievement_code');
-        });
+            });
+        }
     }
 
     public function down(): void

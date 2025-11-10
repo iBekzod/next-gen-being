@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         // Track analytics snapshots for posts (daily aggregation)
-        Schema::create('post_analytics', function (Blueprint $table) {
+        if (!Schema::hasTable('post_analytics')) {
+            Schema::create('post_analytics', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->date('date')->index(); // Track per day
@@ -31,10 +32,12 @@ return new class extends Migration
 
             $table->unique(['post_id', 'date']); // One analytics record per post per day
             $table->index(['post_id', 'date']);
-        });
+            });
+        }
 
         // Reader engagement data (for follower relationships)
-        Schema::create('reader_engagements', function (Blueprint $table) {
+        if (!Schema::hasTable('reader_engagements')) {
+            Schema::create('reader_engagements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->foreignId('reader_id')->nullable()->constrained('users')->onDelete('set null');
@@ -47,10 +50,12 @@ return new class extends Migration
             $table->index(['post_id', 'action']);
             $table->index(['reader_id', 'action']);
             $table->index('created_at');
-        });
+            });
+        }
 
         // Author stats cache (pre-computed for dashboard performance)
-        Schema::create('author_stats', function (Blueprint $table) {
+        if (!Schema::hasTable('author_stats')) {
+            Schema::create('author_stats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
             $table->unsignedInteger('total_posts')->default(0);
@@ -69,10 +74,12 @@ return new class extends Migration
             $table->unique('author_id');
             $table->index('total_views');
             $table->index('engagement_rate');
-        });
+            });
+        }
 
         // Monthly performance summary (for insights and trends)
-        Schema::create('post_monthly_stats', function (Blueprint $table) {
+        if (!Schema::hasTable('post_monthly_stats')) {
+            Schema::create('post_monthly_stats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->unsignedSmallInteger('year');
@@ -87,7 +94,8 @@ return new class extends Migration
 
             $table->unique(['post_id', 'year', 'month']);
             $table->index(['post_id', 'year']);
-        });
+            });
+        }
     }
 
     /**
