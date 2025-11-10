@@ -363,7 +363,12 @@
             <!-- FEATURED IMAGE SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'featured-image')">
-                    <h3>🖼️ Featured Image</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <h3>Featured Image</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="featured-image-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -409,7 +414,12 @@
             <!-- MONETIZATION SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'monetization')">
-                    <h3>💰 Monetization & Access</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <h3>Monetization & Access</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="monetization-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -469,7 +479,12 @@
             <!-- PUBLISHING SECTION -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'publishing')">
-                    <h3>📤 Publishing Options</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <h3>Publishing Options</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="publishing-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -512,7 +527,12 @@
             @if($post->status === 'published')
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <div class="section-header" onclick="toggleSection(event, 'post-actions')">
-                    <h3>🚀 Post-Publish Actions</h3>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <h3>Post-Publish Actions</h3>
+                    </div>
                     <svg class="w-5 h-5 transform transition-transform" id="post-actions-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
@@ -522,14 +542,24 @@
                         After publishing, you can generate a video version, publish to social media, and view analytics.
                     </p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <button type="button" onclick="openVideoGenModal()" class="py-3 px-4 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 rounded-lg font-medium transition">
-                            🎬 Generate Video
+                        <button type="button" onclick="openVideoGenModal()" class="py-3 px-4 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Generate Video</span>
                         </button>
-                        <button type="button" onclick="openSocialPublishModal()" class="py-3 px-4 bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-900/50 text-pink-900 dark:text-pink-200 rounded-lg font-medium transition">
-                            📱 Publish to Social
+                        <button type="button" onclick="openSocialPublishModal()" class="py-3 px-4 bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-900/50 text-pink-900 dark:text-pink-200 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 18h.01M4 12h.01M20 12h.01M16 18h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"/>
+                            </svg>
+                            <span>Publish to Social</span>
                         </button>
-                        <a href="{{ route('post.analytics', $post) }}" class="py-3 px-4 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-900 dark:text-green-200 rounded-lg font-medium transition text-center">
-                            📊 View Analytics
+                        <a href="{{ route('post.analytics', $post) }}" class="py-3 px-4 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 text-green-900 dark:text-green-200 rounded-lg font-medium transition text-center flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>View Analytics</span>
                         </a>
                     </div>
                 </div>
@@ -553,8 +583,11 @@
                         <button type="submit"
                                 name="action"
                                 value="publish"
-                                class="px-8 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors font-medium shadow-sm">
-                            ✨ Publish Post
+                                class="px-8 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors font-medium shadow-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            <span>Publish Post</span>
                         </button>
                     @endif
                 </div>

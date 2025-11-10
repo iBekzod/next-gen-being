@@ -253,45 +253,74 @@
 
             <!-- Featured Categories -->
             @if($featuredCategories->count() > 0)
-            <div class="mt-12">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Explore by Topic</h2>
+            <div class="mt-16 pt-12 border-t border-gray-200 dark:border-slate-700">
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-3">Explore by Topic</h2>
+                <p class="text-gray-700 dark:text-gray-400 mb-10 max-w-2xl">Discover curated collections of articles organized by topic. Find exactly what you're looking for.</p>
                 <div class="grid md:grid-cols-3 gap-8">
                     @foreach($featuredCategories as $category)
                         @php $categoryPosts = $category->publishedPosts()->limit(3)->get(); @endphp
                         @if($categoryPosts->count() > 0)
-                        <div class="group p-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                            <div class="mb-4 pb-4 border-b-2 border-blue-200 dark:border-blue-900">
-                                <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
-                                    <a href="{{ route('categories.show', $category->slug) }}">
-                                        {{ $category->name }}
-                                    </a>
-                                </h3>
-                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">{{ $category->description }}</p>
+                        <div class="group bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-xl shadow-md border border-gray-300 dark:border-slate-700 hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-300 overflow-hidden">
+                            <!-- Category Header with Icon -->
+                            <div class="px-6 pt-6 pb-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-800 border-b border-gray-200 dark:border-slate-700">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        @if($category->icon)
+                                            <div class="text-3xl">{{ $category->icon }}</div>
+                                        @else
+                                            <div class="w-10 h-10 bg-blue-200 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                                </svg>
+                                            </div>
+                                        @endif
+                                        <div class="flex-1">
+                                            <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                                                <a href="{{ route('categories.show', $category->slug) }}">
+                                                    {{ $category->name }}
+                                                </a>
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if($category->description)
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ $category->description }}</p>
+                                @endif
                             </div>
-                            <div class="space-y-3">
+
+                            <!-- Posts List -->
+                            <div class="px-6 py-6 space-y-4">
                                 @foreach($categoryPosts as $post)
-                                    <article class="pb-3 border-b border-gray-200 dark:border-slate-700 last:border-0">
-                                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition line-clamp-2">
+                                    <article class="pb-4 border-b border-gray-200 dark:border-slate-700 last:pb-0 last:border-0">
+                                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition line-clamp-2 leading-snug">
                                             <a href="{{ route('posts.show', $post->slug) }}">
                                                 {{ $post->title }}
                                             </a>
                                         </h4>
-                                        <div class="flex items-center gap-2 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                                            <span>{{ $post->published_at->format('M d') }}</span>
+                                        <div class="flex items-center gap-3 mt-2 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                            <span class="inline-block px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded">{{ $post->published_at->format('M d, Y') }}</span>
                                             @if($post->read_time)
-                                                <span>•</span>
-                                                <span>{{ $post->read_time }} min</span>
+                                                <span class="flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 2m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    {{ $post->read_time }} min
+                                                </span>
                                             @endif
                                         </div>
                                     </article>
                                 @endforeach
                             </div>
-                            <a href="{{ route('categories.show', $category->slug) }}" class="inline-flex items-center mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm">
-                                View all {{ $category->name }} articles
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
+
+                            <!-- CTA Button -->
+                            <div class="px-6 py-5 bg-gradient-to-r from-gray-50 to-white dark:from-slate-800 dark:to-slate-900 border-t border-gray-200 dark:border-slate-700">
+                                <a href="{{ route('categories.show', $category->slug) }}" class="inline-flex items-center justify-center w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg transition-colors duration-200">
+                                    View all {{ $category->name }} articles
+                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                         @endif
                     @endforeach
