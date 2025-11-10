@@ -59,9 +59,11 @@
         <div class="rounded-lg bg-white dark:bg-slate-800/50 p-4 border border-amber-100 dark:border-slate-700">
             <p class="text-sm font-bold text-gray-900 dark:text-white mb-3">Achievements ({{ $stats['total_achievements'] }})</p>
             <div class="flex flex-wrap gap-2">
-                @foreach(auth()->user()->achievements()->latest('earned_at')->take(6)->get() as $achievement)
+                @forelse(auth()->user()->achievements()->latest('earned_at')->take(6)->get() as $achievement)
                 <x-achievement-badge :achievement="$achievement" earned="true" size="sm" />
-                @endforeach
+                @empty
+                <p class="text-xs text-gray-500 dark:text-gray-400">Loading achievements...</p>
+                @endforelse
             </div>
         </div>
         @endif

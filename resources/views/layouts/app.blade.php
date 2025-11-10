@@ -68,6 +68,37 @@
         window.searchModal = function() {
             return {
                 isOpen: false,
+                searchQuery: '',
+                results: {
+                    posts: [],
+                    tutorials: [],
+                    bloggers: []
+                },
+                isLoading: false,
+                async performSearch() {
+                    if (!this.searchQuery.trim()) {
+                        this.results = { posts: [], tutorials: [], bloggers: [] };
+                        return;
+                    }
+
+                    this.isLoading = true;
+                    try {
+                        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(this.searchQuery)}`);
+                        const data = await response.json();
+
+                        // Parse results into sections
+                        this.results = {
+                            posts: (data.posts || []).slice(0, 3),
+                            tutorials: (data.tutorials || []).slice(0, 3),
+                            bloggers: (data.bloggers || []).slice(0, 3)
+                        };
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        this.results = { posts: [], tutorials: [], bloggers: [] };
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
                 open() {
                     this.isOpen = true;
                     this.$nextTick(() => {
@@ -76,6 +107,8 @@
                 },
                 close() {
                     this.isOpen = false;
+                    this.searchQuery = '';
+                    this.results = { posts: [], tutorials: [], bloggers: [] };
                 }
             }
         };
@@ -239,15 +272,15 @@
                                 class="ml-2 text-xl font-bold text-gray-900 dark:text-white">{{ setting('site_name') }}</span>
                         </a>
 
-                        <!-- Desktop Navigation - Simplified -->
+                        <!-- Desktop Navigation - Main Menu -->
                         <div class="hidden md:ml-8 md:flex md:space-x-1">
-                            <!-- Primary: Articles -->
+                            <!-- Articles -->
                             <a href="{{ route('posts.index') }}"
                                 class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
                                 Articles
                             </a>
 
-                            <!-- Primary: Categories -->
+                            <!-- Topics -->
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open"
                                     class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
@@ -271,39 +304,36 @@
                                 </div>
                             </div>
 
-                            <!-- Secondary: More Menu -->
-                            <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open"
-                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 transition-colors border-b-2 border-transparent dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300">
-                                    More
-                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                                <div x-show="open" @click.outside="open = false" x-transition
-                                    class="absolute left-0 z-50 w-56 py-2 mt-1 bg-white rounded-lg shadow-xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-                                    <a href="{{ route('tutorials.index') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                        Tutorials
-                                    </a>
-                                    @if (setting('enable_subscriptions'))
-                                        <a href="{{ route('subscription.plans') }}"
-                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                            Pricing
-                                        </a>
-                                    @endif
-                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
-                                    <a href="{{ route('home') }}#product-overview"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                        Product
-                                    </a>
-                                    <a href="{{ route('home') }}#features"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                        Features
-                                    </a>
-                                </div>
-                            </div>
+                            <!-- Tutorials -->
+                            <a href="{{ route('tutorials.index') }}"
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                Tutorials
+                            </a>
+
+                            <!-- Bloggers (Conditional) -->
+                            @if ((isset($totalBloggers) && $totalBloggers > 5) || \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['blogger', 'content_creator']))->count() > 5)
+                                <a href="{{ route('bloggers.index') }}"
+                                    class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                    Bloggers
+                                </a>
+                            @endif
+
+                            <!-- Write -->
+                            <a href="@auth {{ route('posts.create') }} @else {{ route('write.earn') }} @endauth"
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-blue-600 transition-colors border-b-2 border-transparent dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:border-blue-600">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Write
+                            </a>
+
+                            <!-- Pricing -->
+                            @if (setting('enable_subscriptions'))
+                                <a href="{{ route('subscription.plans') }}"
+                                    class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                    Pricing
+                                </a>
+                            @endif
                         </div>
                     </div>
 
@@ -320,23 +350,99 @@
                             <template x-teleport="body">
                                 <div x-cloak x-show="isOpen" x-transition.opacity.duration.200ms
                                     @keydown.escape.window="close" @click.self="close"
-                                    class="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-24 pb-12 overflow-y-auto bg-black/60 backdrop-blur-sm">
-                                    <div class="w-full max-w-lg overflow-hidden bg-white rounded-xl shadow-2xl dark:bg-gray-900"
+                                    class="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-20 pb-12 overflow-y-auto bg-black/60 backdrop-blur-sm">
+                                    <div class="w-full max-w-2xl overflow-hidden bg-white rounded-xl shadow-2xl dark:bg-gray-900"
                                         x-transition.scale.origin-top @click.outside="close">
-                                        <form action="{{ route('search') }}" method="GET" class="p-6 space-y-4" @submit="close">
+                                        <!-- Search Input -->
+                                        <div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4">
                                             <div class="flex items-center">
                                                 <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                                 </svg>
-                                                <input x-ref="searchField" type="text" name="q" placeholder="Search articles..."
+                                                <input x-ref="searchField"
+                                                    type="text"
+                                                    placeholder="Search articles, tutorials, bloggers..."
+                                                    x-model="searchQuery"
+                                                    @input.debounce="performSearch()"
                                                     class="flex-1 text-lg text-gray-900 placeholder-gray-500 bg-transparent border-0 dark:text-white focus:ring-0"
                                                     @keydown.escape.stop="close">
+                                                <button x-show="isLoading" class="ml-2">
+                                                    <svg class="w-5 h-5 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
-                                            <div class="flex justify-end space-x-3">
-                                                <button type="button" @click="close" class="px-4 py-2 text-sm text-gray-600 transition-colors rounded-md dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
-                                                <button type="submit" class="px-4 py-2 text-sm font-semibold text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">Search</button>
+                                        </div>
+
+                                        <!-- Results -->
+                                        <div class="max-h-[60vh] overflow-y-auto">
+                                            <!-- Posts Section -->
+                                            <div x-show="results.posts.length > 0" class="border-b border-gray-200 dark:border-gray-700">
+                                                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800">
+                                                    <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Articles</h3>
+                                                </div>
+                                                <template x-for="post in results.posts">
+                                                    <a :href="`/posts/${post.slug}`" @click="close()" class="flex gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0">
+                                                        <img x-show="post.featured_image" :src="post.featured_image" :alt="post.title" class="w-12 h-12 rounded object-cover flex-shrink-0">
+                                                        <div class="flex-1 min-w-0">
+                                                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1" x-text="post.title"></h4>
+                                                            <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1" x-text="post.excerpt"></p>
+                                                        </div>
+                                                    </a>
+                                                </template>
                                             </div>
-                                        </form>
+
+                                            <!-- Tutorials Section -->
+                                            <div x-show="results.tutorials.length > 0" class="border-b border-gray-200 dark:border-gray-700">
+                                                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800">
+                                                    <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Tutorials</h3>
+                                                </div>
+                                                <template x-for="tutorial in results.tutorials">
+                                                    <a :href="`/posts/${tutorial.slug}`" @click="close()" class="flex gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0">
+                                                        <svg class="w-4 h-4 mt-1 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.669 0-3.218.51-4.5 1.385A7.968 7.968 0 009 4.804z"></path>
+                                                        </svg>
+                                                        <div class="flex-1 min-w-0">
+                                                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1" x-text="tutorial.title"></h4>
+                                                            <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1" x-text="tutorial.excerpt"></p>
+                                                        </div>
+                                                    </a>
+                                                </template>
+                                            </div>
+
+                                            <!-- Bloggers Section -->
+                                            <div x-show="results.bloggers.length > 0">
+                                                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800">
+                                                    <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Bloggers</h3>
+                                                </div>
+                                                <div class="grid grid-cols-3 gap-3 p-4">
+                                                    <template x-for="blogger in results.bloggers">
+                                                        <a :href="`/blogger/${blogger.username}`" @click="close()" class="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                                            <img :src="blogger.avatar" :alt="blogger.name" class="w-12 h-12 rounded-full object-cover">
+                                                            <div class="text-center">
+                                                                <p class="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1" x-text="blogger.name"></p>
+                                                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1" x-text="`@${blogger.username}`"></p>
+                                                            </div>
+                                                        </a>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- No Results Message -->
+                                            <div x-show="searchQuery && !isLoading && results.posts.length === 0 && results.tutorials.length === 0 && results.bloggers.length === 0"
+                                                class="p-8 text-center">
+                                                <p class="text-gray-600 dark:text-gray-400">No results found for "<span x-text="searchQuery"></span>"</p>
+                                            </div>
+
+                                            <!-- Show More Button -->
+                                            <div x-show="searchQuery && !isLoading && (results.posts.length > 0 || results.tutorials.length > 0 || results.bloggers.length > 0)"
+                                                class="border-t border-gray-200 dark:border-gray-700 p-4">
+                                                <a :href="`{{ route('search') }}?q=${encodeURIComponent(searchQuery)}`" @click="close()"
+                                                    class="block w-full px-4 py-2 text-center text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                                    View all results for "<span x-text="searchQuery"></span>"
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -423,7 +529,7 @@
                 class="bg-white border-t border-gray-200 md:hidden dark:bg-gray-800 dark:border-gray-700"
                 style="display: none;">
                 <div class="pt-2 pb-3 space-y-1">
-                    <!-- Primary Items -->
+                    <!-- Articles -->
                     <a href="{{ route('posts.index') }}"
                         class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Articles</a>
 
@@ -436,20 +542,36 @@
                         @endforeach
                     </div>
 
-                    <!-- More Items -->
+                    <!-- Tutorials -->
                     <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
-                        <p class="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">More</p>
                         <a href="{{ route('tutorials.index') }}"
-                            class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
-                        @if (setting('enable_subscriptions'))
-                            <a href="{{ route('subscription.plans') }}"
-                                class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Pricing</a>
-                        @endif
-                        <a href="{{ route('home') }}#product-overview"
-                            class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Product</a>
-                        <a href="{{ route('home') }}#features"
-                            class="block py-2 pl-6 pr-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Features</a>
+                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
                     </div>
+
+                    <!-- Bloggers (Conditional) -->
+                    @if ((isset($totalBloggers) && $totalBloggers > 5) || \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['blogger', 'content_creator']))->count() > 5)
+                        <a href="{{ route('bloggers.index') }}"
+                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Bloggers</a>
+                    @endif
+
+                    <!-- Write -->
+                    <a href="@auth {{ route('posts.create') }} @else {{ route('write.earn') }} @endauth"
+                        class="block py-2 pl-3 pr-4 text-base font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Write
+                        </span>
+                    </a>
+
+                    <!-- Pricing -->
+                    @if (setting('enable_subscriptions'))
+                        <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                            <a href="{{ route('subscription.plans') }}"
+                                class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Pricing</a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </nav>

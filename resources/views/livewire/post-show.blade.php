@@ -22,7 +22,7 @@
                 Premium Content
             </span>
             @endif
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ $post->read_time }} min read</span>
+            <span class="text-sm text-gray-700 dark:text-gray-400">{{ $post->read_time }} min read</span>
         </div>
 
         <h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white lg:text-4xl">{{ $post->title }}</h1>
@@ -43,7 +43,7 @@
                         </button>
                         @endif
                     </div>
-                    <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                    <div class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-400">
                         <span>{{ $post->published_at->format('M j, Y') }}</span>
                         <span>•</span>
                         <span>{{ number_format($post->views_count) }} views</span>
@@ -79,20 +79,25 @@
                          @click.away="open = false"
                          x-transition
                          class="absolute right-0 z-10 w-56 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-slate-800 dark:border-slate-700">
-                        <button @click="copyLink()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
-                            📋 Copy Link
+                        <button @click="copyLink()" class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                            Copy Link
                         </button>
-                        <button @click="shareTwitter()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
-                            🐦 Share on Twitter
+                        <button @click="shareTwitter()" class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7"/></svg>
+                            Share on Twitter
                         </button>
-                        <button @click="shareLinkedIn()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
-                            💼 Share on LinkedIn
+                        <button @click="shareLinkedIn()" class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                            Share on LinkedIn
                         </button>
-                        <button @click="shareFacebook()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
-                            📘 Share on Facebook
+                        <button @click="shareFacebook()" class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0zM9 15a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
+                            Share on Facebook
                         </button>
-                        <button @click="shareEmail()" class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
-                            ✉️ Share via Email
+                        <button @click="shareEmail()" class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            Share via Email
                         </button>
                     </div>
                 </div>
@@ -107,8 +112,8 @@
              alt="{{ $post->title }}"
              class="object-cover w-full h-96 rounded-2xl">
         @if($post->image_attribution && isset($post->image_attribution['source']) && $post->image_attribution['source'] === 'unsplash')
-        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Photo by <a href="{{ $post->image_attribution['photographer_url'] }}?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{{ $post->image_attribution['photographer_name'] }}</a> on <a href="https://unsplash.com?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Unsplash</a>
+        <div class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+            Photo by <a href="{{ $post->image_attribution['photographer_url'] }}?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-900 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{{ $post->image_attribution['photographer_name'] }}</a> on <a href="https://unsplash.com?utm_source=nextgenbeing&utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-900 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Unsplash</a>
         </div>
         @endif
     </div>
@@ -150,8 +155,9 @@
 
                     <!-- What You'll Get -->
                     <div class="p-6 mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                        <h4 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            🎯 What's in the full article:
+                        <h4 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h12a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            What's in the full article
                         </h4>
                         <ul class="space-y-3">
                             <li class="flex items-start">

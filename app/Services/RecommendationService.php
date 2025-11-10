@@ -14,21 +14,27 @@ class RecommendationService
      */
     public function getRecommendationsForUser(User $user, $limit = 5): Collection
     {
-        // Get user's interaction history
-        $likedPostIds = PostInteraction::where('user_id', $user->id)
-            ->where('type', 'like')
-            ->pluck('post_id')
-            ->toArray();
+        try {
+            // Get user's interaction history
+            $likedPostIds = PostInteraction::where('user_id', $user->id)
+                ->where('type', 'like')
+                ->pluck('post_id')
+                ->toArray();
 
-        $viewedPostIds = PostInteraction::where('user_id', $user->id)
-            ->where('type', 'view')
-            ->pluck('post_id')
-            ->toArray();
+            $viewedPostIds = PostInteraction::where('user_id', $user->id)
+                ->where('type', 'view')
+                ->pluck('post_id')
+                ->toArray();
 
-        $allInteractedIds = array_merge($likedPostIds, $viewedPostIds);
+            $allInteractedIds = array_merge($likedPostIds, $viewedPostIds);
 
-        // If user has no history, show trending posts
-        if (empty($allInteractedIds)) {
+            // If user has no history, show trending posts
+            if (empty($allInteractedIds)) {
+                return $this->getTrendingPosts($limit);
+            }
+        } catch (\Exception $e) {
+            // If PostInteraction table doesn't exist yet, show trending posts
+            \Log::warning('PostInteraction table not ready: ' . $e->getMessage());
             return $this->getTrendingPosts($limit);
         }
 
@@ -230,12 +236,17 @@ class RecommendationService
      */
     private function isTrending(Post $post): bool
     {
-        // Post is trending if it has high engagement in the last 7 days
-        $recentEngagement = PostInteraction::where('post_id', $post->id)
-            ->where('created_at', '>=', now()->subDays(7))
-            ->count();
+        try {
+            // Post is trending if it has high engagement in the last 7 days
+            $recentEngagement = PostInteraction::where('post_id', $post->id)
+                ->where('created_at', '>=', now()->subDays(7))
+                ->count();
 
-        return $recentEngagement > 10;
+            return $recentEngagement > 10;
+        } catch (\Exception $e) {
+            // If PostInteraction table doesn't exist, fall back to views
+            return $post->views_count > 50;
+        }
     }
 
     /**
