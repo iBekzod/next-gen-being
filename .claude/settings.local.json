@@ -9,7 +9,10 @@
       "Bash(for file in database/migrations/2025_11_08_000005*.php database/migrations/2025_11_08_000006*.php database/migrations/2025_11_08_000007*.php database/migrations/2025_11_08_000008*.php database/migrations/2025_11_08_000009*.php database/migrations/2025_11_08_000010*.php database/migrations/2025_11_08_000011*.php)",
       "Bash(do echo \"Checking $file\")",
       "Bash(git -C \"d:\\projects\\MyProjects\\next-gen-being\" log --name-status --oneline -20)",
-      "Bash(git -C d:projectsMyProjectsnext-gen-being diff HEAD~5 app/Models/Post.php)"
+      "Bash(git -C d:projectsMyProjectsnext-gen-being diff HEAD~5 app/Models/Post.php)",
+      "Bash(__NEW_LINE__ ls -la \"/d/projects/MyProjects/next-gen-being/\"ACHIEVEMENT*.*)",
+      "Bash(docker exec:*)",
+      "Bash(php -l:*)"
     ],
     "deny": [],
     "ask": []

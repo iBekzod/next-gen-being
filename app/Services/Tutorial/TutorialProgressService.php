@@ -159,7 +159,7 @@ class TutorialProgressService
             }
 
             if ($earned) {
-                $user->achievements()->attach($achievement, ['earned_at' => now()]);
+                $user->achievements()->attach($achievement, ['achieved_at' => now()]);
                 $awardedAchievements->push($achievement);
             }
         }

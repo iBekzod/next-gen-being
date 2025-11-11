@@ -104,7 +104,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     public function achievements()
     {
         return $this->belongsToMany(Achievement::class, 'user_achievements')
-                    ->withPivot('earned_at')
+                    ->withPivot('achieved_at')
                     ->withTimestamps();
     }
 

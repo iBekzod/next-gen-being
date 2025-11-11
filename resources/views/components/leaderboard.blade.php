@@ -77,7 +77,7 @@
 
                 <!-- Badges (top 3 achievements) -->
                 <div class="flex-shrink-0 flex gap-1">
-                    @foreach($learner->achievements()->latest('earned_at')->take(3)->get() as $achievement)
+                    @foreach($learner->achievements()->latest('achieved_at')->take(3)->get() as $achievement)
                     <div class="group relative">
                         <span class="text-lg">{{ $achievement->icon }}</span>
                         <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-48">

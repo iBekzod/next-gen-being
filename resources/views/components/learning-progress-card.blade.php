@@ -84,7 +84,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            @forelse(auth()->user()->achievements()->latest('earned_at')->take(6)->get() as $achievement)
+            @forelse(auth()->user()->achievements()->latest('achieved_at')->take(6)->get() as $achievement)
             <a href="javascript:void(0)" class="group block">
                 <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 h-48 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <!-- Achievement Icon/Image Background -->
@@ -112,7 +112,7 @@
 
                         <!-- Meta Info -->
                         <div class="flex items-center justify-between text-xs text-white/70">
-                            <span class="font-medium">Earned {{ $achievement->pivot->earned_at?->format('M j, Y') ?? 'Recently' }}</span>
+                            <span class="font-medium">Earned {{ $achievement->pivot->achieved_at?->format('M j, Y') ?? 'Recently' }}</span>
                             <span class="flex items-center gap-1">
                                 ⭐ {{ $achievement->points ?? 10 }} XP
                             </span>

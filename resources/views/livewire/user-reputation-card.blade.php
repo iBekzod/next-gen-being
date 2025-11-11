@@ -65,11 +65,11 @@
             <div class="space-y-2">
                 @foreach (array_slice($achievements, 0, 5) as $achievement)
                     <div class="flex items-center space-x-2 text-sm">
-                        <span class="text-lg">✓</span>
+                        <span class="text-lg">{{ $achievement->icon ?? '✓' }}</span>
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">{{ $achievement['achievement_code'] ?? 'Achievement' }}</p>
+                            <p class="font-medium text-gray-900 dark:text-white">{{ $achievement->name ?? 'Achievement' }}</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ \Carbon\Carbon::parse($achievement['achieved_at'])->diffForHumans() }}
+                                {{ \Carbon\Carbon::parse($achievement->pivot->achieved_at)->diffForHumans() }}
                             </p>
                         </div>
                     </div>
