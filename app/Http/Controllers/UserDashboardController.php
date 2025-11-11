@@ -741,6 +741,23 @@ class UserDashboardController extends Controller
     }
 
     /**
+     * Display the learning leaderboard.
+     */
+    public function leaderboard(): View
+    {
+        $service = app(\App\Services\Tutorial\TutorialProgressService::class);
+        $topLearners = $service->getTopLearners(50); // Get top 50 learners
+        $currentUser = Auth::user();
+        $userPosition = $currentUser ? $service->getUserLeaderboardPosition($currentUser) : null;
+
+        return view('dashboard.leaderboard', compact(
+            'topLearners',
+            'currentUser',
+            'userPosition'
+        ));
+    }
+
+    /**
      * Delete user account.
      */
     public function deleteAccount(Request $request): RedirectResponse
