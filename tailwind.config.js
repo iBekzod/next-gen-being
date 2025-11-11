@@ -114,9 +114,15 @@ export default {
                         },
                         pre: {
                             color: theme('colors.gray.50'),
-                            backgroundColor: theme('colors.gray.800'),
+                            backgroundColor: theme('colors.gray.900'),
                             overflowX: 'auto',
                             fontWeight: '400',
+                            borderRadius: '0.5rem',
+                            border: `1px solid ${theme('colors.gray.700')}`,
+                            padding: '1rem',
+                            marginTop: '1.5em',
+                            marginBottom: '1.5em',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                         },
                         'pre code': {
                             backgroundColor: 'transparent',
@@ -133,6 +139,19 @@ export default {
                             content: 'none',
                         },
                         'pre code::after': {
+                            content: 'none',
+                        },
+                        code: {
+                            backgroundColor: theme('colors.gray.100'),
+                            color: theme('colors.gray.900'),
+                            borderRadius: '0.25rem',
+                            padding: '0.2em 0.4em',
+                            fontWeight: '500',
+                        },
+                        'code::before': {
+                            content: 'none',
+                        },
+                        'code::after': {
                             content: 'none',
                         },
                         table: {
@@ -216,14 +235,25 @@ export default {
                             color: theme('colors.gray.400'),
                         },
                         code: {
-                            color: theme('colors.gray.100'),
+                            backgroundColor: theme('colors.gray.800'),
+                            color: theme('colors.blue.300'),
+                            borderRadius: '0.25rem',
+                            padding: '0.2em 0.4em',
+                            fontWeight: '500',
+                            border: `1px solid ${theme('colors.gray.700')}`,
                         },
                         'a code': {
                             color: theme('colors.primary.400'),
                         },
                         pre: {
                             color: theme('colors.gray.200'),
-                            backgroundColor: theme('colors.gray.800'),
+                            backgroundColor: theme('colors.gray.900'),
+                            borderRadius: '0.5rem',
+                            border: `1px solid ${theme('colors.gray.700')}`,
+                            padding: '1rem',
+                            marginTop: '1.5em',
+                            marginBottom: '1.5em',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
                         },
                         thead: {
                             borderBottomColor: theme('colors.gray.600'),

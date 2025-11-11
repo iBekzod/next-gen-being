@@ -13,17 +13,17 @@
 
 <div class="rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-lg overflow-hidden">
     <!-- Header -->
-    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-slate-700 dark:to-slate-700 border-b border-gray-200 dark:border-slate-700">
+    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-indigo-700 dark:to-blue-800 border-b border-blue-200 dark:border-indigo-600">
         <div class="flex items-center justify-between mb-2">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
                 <span class="text-2xl">📈</span>
                 {{ $learningPath->name }}
             </h3>
-            <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-bold">
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-white/20 text-white rounded-full text-sm font-bold border border-white/30">
                 {{ $completedItems }}/{{ $totalItems }} completed
             </span>
         </div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $learningPath->description }}</p>
+        <p class="text-sm text-blue-100">{{ $learningPath->description }}</p>
     </div>
 
     <!-- Overall Progress -->
@@ -42,13 +42,17 @@
     @if($items->isNotEmpty())
     <div class="divide-y divide-gray-200 dark:divide-slate-700">
         @foreach($items as $item)
-        <div class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+        <div class="px-6 py-4 {{ !$item->completed && $item->order == ($completedItems + 1) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500' : 'hover:bg-gray-50 dark:hover:bg-slate-700/50' }} transition-colors">
             <div class="flex items-start gap-4">
                 <!-- Order Badge -->
                 <div class="flex-shrink-0">
                     @if($item->completed)
-                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-sm">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-sm shadow-sm">
                         ✓
+                    </div>
+                    @elseif($item->order == ($completedItems + 1))
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-500 dark:bg-blue-600 text-white font-bold text-sm shadow-md">
+                        {{ str_pad($item->order, 2, '0', STR_PAD_LEFT) }}
                     </div>
                     @else
                     <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 font-bold text-sm">
@@ -61,20 +65,25 @@
                 <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex-1">
-                            <h4 class="font-semibold {{ $item->completed ? 'text-gray-600 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-white' }}">
+                            <h4 class="font-semibold {{ $item->completed ? 'text-gray-600 dark:text-gray-400 line-through' : ($item->order == ($completedItems + 1) ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white') }}">
                                 {{ $item->title }}
                             </h4>
                             @if($item->description)
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{{ $item->description }}</p>
+                            <p class="text-sm {{ $item->order == ($completedItems + 1) ? 'text-blue-800 dark:text-blue-300' : 'text-gray-600 dark:text-gray-400' }} mt-1 line-clamp-2">{{ $item->description }}</p>
                             @endif
                         </div>
 
                         <!-- Status -->
                         <div class="flex-shrink-0">
                             @if($item->completed)
-                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-bold">
+                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-bold shadow-sm">
                                 <span>✓</span>
                                 <span>Done</span>
+                            </span>
+                            @elseif($item->order == ($completedItems + 1))
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-bold shadow-md">
+                                <span>◉</span>
+                                <span>In Progress</span>
                             </span>
                             @else
                             <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-300 rounded-full text-xs font-bold">
@@ -86,7 +95,7 @@
                     </div>
 
                     <!-- Meta Info -->
-                    <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                    <div class="mt-2 flex flex-wrap items-center gap-3 text-xs {{ $item->order == ($completedItems + 1) ? 'text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400' }}">
                         @if($item->estimated_duration_minutes)
                         <span class="flex items-center gap-1">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

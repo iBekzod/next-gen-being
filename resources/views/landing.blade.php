@@ -180,7 +180,7 @@
     @endphp
 
     @if($featuredPost)
-    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900">
+    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
         <div class="max-w-7xl mx-auto">
             <!-- Featured Hero Article -->
             <div class="mb-12">
@@ -195,10 +195,10 @@
                         @if($featuredPost->featured_image)
                             <img src="{{ $featuredPost->featured_image }}" alt="Featured article: {{ $featuredPost->title }}" title="{{ $featuredPost->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
-                            <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600" role="img" aria-label="Featured article placeholder"></div>
+                            <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600" role="img" aria-label="Featured article placeholder"></div>
                         @endif
-                        <!-- Overlay Gradient - Stronger for better text visibility -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-10"></div>
+                        <!-- Overlay Gradient - Adaptive darkness for better text visibility -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent dark:from-black/95 dark:via-black/50 z-10"></div>
 
                         <!-- Content Overlay -->
                         <div class="absolute inset-0 p-8 flex flex-col justify-end z-20">
