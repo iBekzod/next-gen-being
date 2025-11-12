@@ -3,6 +3,7 @@
 @section('title', 'Write & Earn - Share Your Knowledge')
 @section('description', 'Become a blogger on ' . setting('site_name', 'NextGenBeing') . ' and earn money by sharing your expertise with our community.')
 
+@section('content')
 <div class="min-h-screen bg-white dark:bg-gray-900">
     <!-- Hero Section -->
     <div class="relative px-4 py-20 sm:px-6 lg:px-8">
@@ -292,6 +293,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
