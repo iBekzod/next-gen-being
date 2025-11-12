@@ -64,9 +64,9 @@
             <!-- Tutorial Series List -->
             <div class="space-y-8">
                 @foreach($series as $item)
-                <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden shadow-md hover:shadow-lg transition-all">
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden shadow-md hover:shadow-lg transition-all" x-data="{ open: false }">
                     <!-- Series Header with Image -->
-                    <div class="flex flex-col sm:flex-row gap-6 p-6">
+                    <div class="flex flex-col sm:flex-row gap-6 p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors" @click="open = !open">
                         <!-- Featured Image -->
                         <div class="flex-shrink-0 w-full sm:w-40 h-40 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
                             @if($item['featured_image'])
@@ -87,18 +87,26 @@
                                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{{ $item['description'] }}</p>
                                     @endif
                                 </div>
-                                @if($item['is_complete'])
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 dark:bg-emerald-500 rounded-full whitespace-nowrap">
-                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                <div class="flex items-center gap-2">
+                                    @if($item['is_complete'])
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 dark:bg-emerald-500 rounded-full whitespace-nowrap">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Complete
+                                    </span>
+                                    @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-blue-600 dark:bg-blue-500 rounded-full whitespace-nowrap">
+                                        <span>◉</span> In Progress
+                                    </span>
+                                    @endif
+                                    <!-- Expand/Collapse Chevron -->
+                                    <svg class="flex-shrink-0 w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                                         :class="{ 'rotate-180': open }"
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                                     </svg>
-                                    Complete
-                                </span>
-                                @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-blue-600 dark:bg-blue-500 rounded-full whitespace-nowrap">
-                                    <span>◉</span> In Progress
-                                </span>
-                                @endif
+                                </div>
                             </div>
 
                             <!-- Progress -->
@@ -116,7 +124,7 @@
                     </div>
 
                     <!-- Series Parts List -->
-                    <div class="border-t border-gray-200 dark:border-slate-700">
+                    <div class="border-t border-gray-200 dark:border-slate-700" x-show="open" x-transition>
                         @php
                             $seriesPosts = \App\Models\Post::published()
                                 ->inSeries($item['slug'])

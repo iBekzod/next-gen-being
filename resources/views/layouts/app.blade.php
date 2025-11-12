@@ -84,13 +84,29 @@
                     this.isLoading = true;
                     try {
                         const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(this.searchQuery)}`);
-                        const data = await response.json();
+                        const suggestions = await response.json();
 
-                        // Parse results into sections
+                        // Organize flat array of suggestions by type
+                        const categorized = { posts: [], tutorials: [], bloggers: [] };
+
+                        suggestions.forEach(item => {
+                            if (item.type === 'post') {
+                                categorized.posts.push(item);
+                            } else if (item.type === 'tutorial') {
+                                categorized.tutorials.push(item);
+                            } else if (item.type === 'author') {
+                                categorized.bloggers.push(item);
+                            } else if (item.type === 'category' || item.type === 'tag') {
+                                // Add categories and tags to posts section
+                                categorized.posts.push(item);
+                            }
+                        });
+
+                        // Limit each section to 3 results
                         this.results = {
-                            posts: (data.posts || []).slice(0, 3),
-                            tutorials: (data.tutorials || []).slice(0, 3),
-                            bloggers: (data.bloggers || []).slice(0, 3)
+                            posts: categorized.posts.slice(0, 3),
+                            tutorials: categorized.tutorials.slice(0, 3),
+                            bloggers: categorized.bloggers.slice(0, 3)
                         };
                     } catch (error) {
                         console.error('Search error:', error);
@@ -355,7 +371,7 @@
                                                     type="text"
                                                     placeholder="Search articles, tutorials, bloggers..."
                                                     x-model="searchQuery"
-                                                    @input.debounce="performSearch()"
+                                                    @input.debounce.300="performSearch()"
                                                     class="flex-1 text-lg text-gray-900 placeholder-gray-500 bg-transparent border-0 dark:text-white focus:ring-0"
                                                     @keydown.escape.stop="close">
                                                 <button x-show="isLoading" class="ml-2">

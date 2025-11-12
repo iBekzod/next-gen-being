@@ -98,6 +98,18 @@ class PostController extends Controller
             'post_type' => 'nullable|in:standard,tutorial,video,guide,review',
         ]);
 
+        // If series_title is provided, require series_part and series_total_parts
+        if (!empty($validated['series_title'])) {
+            if (empty($validated['series_part']) || empty($validated['series_total_parts'])) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'series_part' => 'Series part number is required when creating a tutorial series',
+                        'series_total_parts' => 'Total series parts is required when creating a tutorial series'
+                    ]);
+            }
+        }
+
         $validated['author_id'] = Auth::id();
         $validated['slug'] = null; // Will be auto-generated
 
@@ -211,7 +223,23 @@ class PostController extends Controller
             'published_at' => 'nullable|date',
             'is_premium' => 'boolean',
             'allow_comments' => 'boolean',
+            'series_title' => 'nullable|string|max:255',
+            'series_part' => 'nullable|integer|min:1',
+            'series_total_parts' => 'nullable|integer|min:1',
+            'series_description' => 'nullable|string|max:1000',
         ]);
+
+        // If series_title is provided, require series_part and series_total_parts
+        if (!empty($validated['series_title'])) {
+            if (empty($validated['series_part']) || empty($validated['series_total_parts'])) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'series_part' => 'Series part number is required when creating a tutorial series',
+                        'series_total_parts' => 'Total series parts is required when creating a tutorial series'
+                    ]);
+            }
+        }
         if ($request->input('action') === 'save_draft') {
             $validated['status'] = 'draft';
         } elseif ($request->input('action') === 'publish') {

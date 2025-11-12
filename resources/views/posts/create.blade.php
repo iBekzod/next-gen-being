@@ -92,7 +92,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 50;
+    z-index: 100;
 }
 
 .modal-overlay.active {
@@ -200,12 +200,77 @@
 }
 
 .create-post-form h1,
-.create-post-form h2 {
+.create-post-form h2,
+.create-post-form h3,
+.create-post-form h4,
+.create-post-form h5,
+.create-post-form h6 {
     color: #111827 !important;
 }
 
-.create-post-form p {
-    color: #6b7280 !important;
+.create-post-form p,
+.create-post-form span,
+.create-post-form div {
+    color: #111827 !important;
+}
+
+/* Section styling */
+.create-post-form .section-card {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.create-post-form .form-group {
+    color: #111827 !important;
+}
+
+/* Ensure all text in the form is dark */
+.create-post-form {
+    color: #111827 !important;
+}
+
+.create-post-form * {
+    color: #111827 !important;
+}
+
+/* Override any dark mode text */
+.create-post-form .dark,
+.create-post-form .dark * {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+}
+
+/* Tagify input styling */
+.create-post-form #tagify-container .tagify {
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.375rem !important;
+    padding: 0.5rem !important;
+    min-height: 40px !important;
+}
+
+.create-post-form #tagify-container .tagify__input {
+    color: #111827 !important;
+}
+
+.create-post-form #tagify-container .tagify__tag {
+    background-color: #2563eb !important;
+    color: white !important;
+}
+
+.create-post-form #tagify-container input.tagify__input {
+    color: #111827 !important;
+}
+
+/* Ensure form doesn't affect navbar */
+nav {
+    z-index: 50 !important;
+}
+
+.create-post-form {
+    position: relative;
+    z-index: 1;
 }
 </style>
 @endpush
@@ -575,21 +640,29 @@ function closeContentModal() {
 }
 
 function generatePostContent() {
-    const topic = document.getElementById('content-topic').value;
-    const keywords = document.getElementById('content-keywords').value;
+    let topic = document.getElementById('content-topic').value.trim();
+    const keywords = document.getElementById('content-keywords').value.trim();
 
-    if (!topic.trim()) {
-        alert('Please enter a topic for your post');
-        return;
+    // If no topic provided, use the title from the form
+    if (!topic) {
+        const title = document.getElementById('title').value.trim();
+        if (!title) {
+            alert('Please enter a topic for your post or fill in the post title');
+            return;
+        }
+        topic = title;
     }
 
     const btn = event.target;
     const originalText = btn.textContent;
     btn.disabled = true;
+    btn.textContent = 'Generating...';
 
-    // Simulate AI generation
+    // Simulate AI generation with more contextual content
     setTimeout(() => {
-        const content = `# ${topic}\n\nYour AI-generated content will appear here. Edit and customize it to match your unique voice and perspective.\n\n## Getting Started\n\nBegin by introducing your topic and why it matters to your readers.\n\n## Main Points\n\nDevelop your key ideas with examples and explanations.\n\n## Conclusion\n\nSummarize the main takeaways and provide actionable next steps for your readers.`;
+        const keywordList = keywords ? `\n\nKey topics covered: ${keywords}` : '';
+
+        const content = `# ${topic}\n\n## Introduction\n\nWelcome to this comprehensive guide on ${topic}. In this article, we'll explore the key concepts, best practices, and practical implementations you need to know.${keywordList}\n\n## What is ${topic}?\n\nStart with a clear definition and context for your readers. Explain why this topic matters and who should care about it.\n\n## Key Concepts\n\n### Concept 1\nExplain the first major concept with relevant details and examples.\n\n### Concept 2\nCover the second important aspect with practical insights.\n\n### Concept 3\nProvide additional valuable information related to your topic.\n\n## Best Practices\n\n- Practice 1: Explain why this is important\n- Practice 2: Share practical tips and techniques\n- Practice 3: Provide actionable recommendations\n\n## Common Mistakes to Avoid\n\nDiscuss what readers should watch out for when working with ${topic}.\n\n## Practical Examples\n\nInclude real-world examples and code snippets where applicable.\n\n## Conclusion\n\nSummarize the key takeaways and encourage readers to implement what they've learned. Share next steps for readers interested in going deeper.`;
 
         document.getElementById('content').value = content;
         closeContentModal();
@@ -610,24 +683,42 @@ function closeImageModal() {
 }
 
 function generatePostImage() {
-    const description = document.getElementById('image-description').value;
+    let description = document.getElementById('image-description').value.trim();
 
-    if (!description.trim()) {
-        alert('Please describe the image you want to generate');
-        return;
+    // If no description provided, use the title from the form
+    if (!description) {
+        const title = document.getElementById('title').value.trim();
+        if (!title) {
+            alert('Please describe the image you want to generate or fill in the post title');
+            return;
+        }
+        description = `A professional featured image for an article about: ${title}`;
     }
 
     const btn = event.target;
     const originalText = btn.textContent;
     btn.disabled = true;
+    btn.textContent = 'Generating...';
 
     // Simulate image generation
     setTimeout(() => {
-        const placeholderUrl = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80';
+        // Use different placeholder images based on keywords in the description
+        const descriptions = description.toLowerCase();
+        let placeholderUrl = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80';
+
+        if (descriptions.includes('code') || descriptions.includes('web') || descriptions.includes('programming')) {
+            placeholderUrl = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&q=80';
+        } else if (descriptions.includes('business') || descriptions.includes('startup')) {
+            placeholderUrl = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80';
+        } else if (descriptions.includes('design') || descriptions.includes('creative')) {
+            placeholderUrl = 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=80';
+        } else if (descriptions.includes('data') || descriptions.includes('analysis')) {
+            placeholderUrl = 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80';
+        }
 
         document.getElementById('preview-img').src = placeholderUrl;
         document.getElementById('image-preview').style.display = 'block';
-        document.getElementById('image_attribution').value = 'Generated with AI';
+        document.getElementById('image_attribution').value = 'Generated with AI based on: ' + description;
 
         closeImageModal();
         btn.disabled = false;
