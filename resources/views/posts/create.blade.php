@@ -11,6 +11,12 @@
 <style>
 [x-cloak] { display: none; }
 
+/* Force light styling throughout form */
+.create-post-form {
+    background-color: #f9fafb !important;
+    color: #111827 !important;
+}
+
 .tooltip-trigger {
     cursor: help;
     display: inline-flex;
@@ -64,16 +70,12 @@
 }
 
 .section-card {
-    background: white;
+    background: #ffffff !important;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-}
-
-.dark .section-card {
-    background: #1f2937;
-    border-color: #374151;
+    color: #111827 !important;
 }
 
 .form-group {
@@ -98,28 +100,20 @@
 }
 
 .modal-box {
-    background: white;
+    background: #ffffff !important;
     border-radius: 0.5rem;
     box-shadow: 0 20px 25px rgba(0,0,0,0.15);
     padding: 1.5rem;
     max-width: 28rem;
     width: 90%;
-}
-
-.dark .modal-box {
-    background: #1f2937;
-    color: white;
+    color: #111827 !important;
 }
 
 .modal-box h3 {
     font-size: 1.125rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: #1f2937;
-}
-
-.dark .modal-box h3 {
-    color: white;
+    color: #1f2937 !important;
 }
 
 .modal-input {
@@ -129,12 +123,8 @@
     border-radius: 0.375rem;
     margin-bottom: 1rem;
     font-family: inherit;
-}
-
-.dark .modal-input {
-    background: #374151;
-    border-color: #4b5563;
-    color: white;
+    background-color: #ffffff !important;
+    color: #111827 !important;
 }
 
 .modal-buttons {
@@ -161,8 +151,8 @@
 .btn-secondary {
     flex: 1;
     padding: 0.5rem 1rem;
-    background: #e5e7eb;
-    color: #1f2937;
+    background: #e5e7eb !important;
+    color: #1f2937 !important;
     border: none;
     border-radius: 0.375rem;
     font-weight: 500;
@@ -170,17 +160,8 @@
     transition: background 0.2s;
 }
 
-.dark .btn-secondary {
-    background: #374151;
-    color: white;
-}
-
 .btn-secondary:hover {
-    background: #d1d5db;
-}
-
-.dark .btn-secondary:hover {
-    background: #4b5563;
+    background: #d1d5db !important;
 }
 
 .loading {
@@ -194,12 +175,44 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
+/* Force light theme for all form inputs */
+.create-post-form input[type="text"],
+.create-post-form input[type="email"],
+.create-post-form input[type="number"],
+.create-post-form input[type="date"],
+.create-post-form input[type="datetime-local"],
+.create-post-form textarea,
+.create-post-form select {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+.create-post-form input[type="text"]::placeholder,
+.create-post-form input[type="email"]::placeholder,
+.create-post-form textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+.create-post-form label {
+    color: #374151 !important;
+}
+
+.create-post-form h1,
+.create-post-form h2 {
+    color: #111827 !important;
+}
+
+.create-post-form p {
+    color: #6b7280 !important;
+}
 </style>
 @endpush
 
 @section('content')
-<div style="min-height: 100vh; background: #f9fafb; padding: 2rem 1rem;">
-    <div style="max-width: 56rem; margin: 0 auto;">
+<div style="min-height: 100vh; background: #f9fafb; padding: 2rem 1rem;" class="create-post-form">
+    <div style="max-width: 56rem; margin: 0 auto; color: #111827;">
         <!-- Header -->
         <div style="margin-bottom: 2rem;">
             <h1 style="font-size: 1.875rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">Create Post</h1>

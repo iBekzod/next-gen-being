@@ -28,9 +28,9 @@ class SearchController extends Controller
      */
     public function suggestions(Request $request)
     {
-        $query = $request->query('q', '');
+        $query = trim($request->query('q', ''));
 
-        if (strlen($query) < 2) {
+        if (strlen($query) < 1) {
             return response()->json([]);
         }
 

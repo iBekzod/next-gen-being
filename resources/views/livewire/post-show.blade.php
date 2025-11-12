@@ -25,8 +25,6 @@
             <span class="text-sm text-gray-700 dark:text-gray-400">{{ $post->read_time }} min read</span>
         </div>
 
-        <p class="mb-6 text-xl text-gray-700 dark:text-gray-300">{{ $post->excerpt }}</p>
-
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) }}"

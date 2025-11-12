@@ -161,7 +161,8 @@ class SearchService
      */
     public function getSuggestions(string $query, $limit = 10): array
     {
-        if (strlen($query) < 2) {
+        $query = trim($query);
+        if (strlen($query) < 1) {
             return [];
         }
 
