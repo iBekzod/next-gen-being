@@ -28,15 +28,15 @@
         <div class="max-w-2xl mx-auto">
             <div class="relative group">
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
-                <div class="relative bg-slate-800 rounded-lg p-1">
-                    <div class="flex items-center gap-3 px-4 py-3 text-gray-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="relative bg-white dark:bg-slate-800 rounded-lg p-1">
+                    <div class="flex items-center gap-3 px-4 py-3 text-gray-400 dark:text-gray-500">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                         <input type="text"
                                id="tutorialSearch"
                                placeholder="Search tutorials..."
-                               class="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-sm">
+                               class="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none text-sm">
                     </div>
                 </div>
             </div>
@@ -117,14 +117,14 @@
                                             {{ $item['title'] }}
                                         </h3>
                                         @if($item['is_complete'])
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/30 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-emerald-600 dark:bg-emerald-500 rounded-full shadow-sm">
                                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                             </svg>
                                             Complete
                                         </span>
                                         @else
-                                        <span class="inline-flex items-center px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 rounded-full border border-blue-200 dark:border-blue-800">
+                                        <span class="inline-flex items-center px-3 py-1 text-xs font-bold text-white bg-blue-600 dark:bg-blue-500 rounded-full shadow-sm">
                                             In Progress
                                         </span>
                                         @endif
@@ -166,7 +166,7 @@
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0"
                          x-transition:enter-end="opacity-100"
-                         class="border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50">
+                         class="border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/50">
                         <div class="px-6 py-6">
                             @php
                                 $seriesPosts = \App\Models\Post::published()
@@ -201,7 +201,7 @@
                                                     {{ $post->read_time }} min
                                                 </span>
                                                 @if($post->is_premium)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full font-medium">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500 dark:bg-amber-500 text-white rounded-full font-bold text-xs shadow-sm">
                                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                                     </svg>
