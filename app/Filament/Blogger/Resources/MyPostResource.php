@@ -7,6 +7,8 @@ use App\Filament\Blogger\Resources\MyPostResource\RelationManagers;
 use App\Models\Post;
 use App\Models\Category;
 use App\Services\EnhancedAIGenerationService;
+use App\Services\AI\AdvancedAIContentService;
+use App\Services\Content\ContentQualityChecker;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -202,6 +204,234 @@ class MyPostResource extends Resource
                             ->maxLength(500)
                             ->columnSpanFull(),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Content Guidance & SEO')
+                    ->description('AI-powered suggestions to improve your content quality and SEO')
+                    ->schema([
+                        Forms\Components\Placeholder::make('guidance_intro')
+                            ->label('')
+                            ->content('Get AI suggestions for better titles, content structure, and SEO optimization. Use the buttons below to generate ideas.'),
+
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('guidance_topic')
+                                    ->label('Topic for Suggestions')
+                                    ->placeholder('e.g., Laravel 11, Web Development')
+                                    ->helperText('What is your content about?')
+                                    ->columnSpan(2),
+                            ]),
+
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('generateTitleSuggestions')
+                                ->label('Get Title Suggestions')
+                                ->icon('heroicon-o-sparkles')
+                                ->color('info')
+                                ->modalHeading('Title Suggestions')
+                                ->modalDescription('Select a title suggestion that best fits your content')
+                                ->modalWidth('lg')
+                                ->action(function (Forms\Get $get, Forms\Set $set) {
+                                    // Modal just displays suggestions, user can manually copy
+                                    Notification::make()
+                                        ->title('Title Suggestions Generated')
+                                        ->body('Select a title from the list and click the title field to use it.')
+                                        ->info()
+                                        ->send();
+                                })
+                                ->form([
+                                    Forms\Components\Placeholder::make('title_list')
+                                        ->label('Suggested Titles')
+                                        ->content(function (Forms\Get $get) {
+                                            $topic = $get('guidance_topic');
+                                            if (!$topic) {
+                                                return 'Please enter a topic above to generate title suggestions.';
+                                            }
+
+                                            try {
+                                                $service = app(AdvancedAIContentService::class);
+                                                $result = $service->generateTitles($topic, 5);
+
+                                                if ($result['success']) {
+                                                    $output = "<div class='space-y-3'>";
+                                                    foreach ($result['titles'] as $index => $title) {
+                                                        $output .= "<div class='p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500'>";
+                                                        $output .= "<p class='font-semibold text-gray-800'>{$title}</p>";
+                                                        $output .= "</div>";
+                                                    }
+                                                    $output .= "</div>";
+                                                    $output .= "<div class='mt-4 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500'>";
+                                                    $output .= "<p class='font-semibold text-gray-800 mb-2'>💡 Tips for Better Titles:</p>";
+                                                    $output .= "<ul class='list-disc list-inside text-sm text-gray-700'>";
+                                                    foreach ($result['tips'] as $tip) {
+                                                        $output .= "<li>{$tip}</li>";
+                                                    }
+                                                    $output .= "</ul>";
+                                                    $output .= "</div>";
+                                                    return $output;
+                                                }
+                                                return 'Failed to generate suggestions. Please try again.';
+                                            } catch (\Exception $e) {
+                                                return 'Error generating suggestions: ' . $e->getMessage();
+                                            }
+                                        }),
+                                ]),
+
+                            Forms\Components\Actions\Action::make('generateOutline')
+                                ->label('Generate Content Outline')
+                                ->icon('heroicon-o-document-text')
+                                ->color('success')
+                                ->modalHeading('Content Outline')
+                                ->modalDescription('A suggested outline structure for your content')
+                                ->modalWidth('lg')
+                                ->action(function (Forms\Get $get, array $data) {
+                                    $topic = $get('guidance_topic');
+                                    $outlineType = $data['outline_type'] ?? 'comprehensive';
+
+                                    if (!$topic) {
+                                        Notification::make()
+                                            ->title('Topic Required')
+                                            ->body('Please enter a topic above to generate an outline.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    try {
+                                        $service = app(AdvancedAIContentService::class);
+                                        $result = $service->generateOutline($topic, $outlineType);
+
+                                        if ($result['success']) {
+                                            Notification::make()
+                                                ->title('Outline Generated!')
+                                                ->body('Check the modal dialog for your content outline.')
+                                                ->success()
+                                                ->send();
+                                        }
+                                    } catch (\Exception $e) {
+                                        Notification::make()
+                                            ->title('Generation Failed')
+                                            ->body($e->getMessage())
+                                            ->danger()
+                                            ->send();
+                                    }
+                                })
+                                ->form([
+                                    Forms\Components\Select::make('outline_type')
+                                        ->label('Outline Type')
+                                        ->options([
+                                            'comprehensive' => 'Comprehensive Guide',
+                                            'how-to' => 'How-To Article',
+                                            'analysis' => 'Analysis/Review',
+                                            'listicle' => 'List Article (Top 10, etc)',
+                                        ])
+                                        ->required(),
+                                ]),
+
+                            Forms\Components\Actions\Action::make('checkQuality')
+                                ->label('Check Content Quality & SEO')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('warning')
+                                ->disabled(fn (Forms\Get $get) => !$get('title') || !$get('content'))
+                                ->modalHeading('Content Quality Analysis')
+                                ->modalDescription('Get detailed feedback on your content quality and SEO')
+                                ->modalWidth('2xl')
+                                ->action(function () {
+                                    Notification::make()
+                                        ->title('Analysis Complete')
+                                        ->body('Review the detailed feedback above to improve your content.')
+                                        ->success()
+                                        ->send();
+                                })
+                                ->form([
+                                    Forms\Components\Placeholder::make('quality_results')
+                                        ->label('')
+                                        ->content(function (Forms\Get $get) {
+                                            $title = $get('title');
+                                            $excerpt = $get('excerpt');
+                                            $content = $get('content');
+
+                                            if (!$title || !$content) {
+                                                return 'Please fill in the title and content fields first.';
+                                            }
+
+                                            try {
+                                                $checker = app(ContentQualityChecker::class);
+                                                $analysis = $checker->analyzePost($title, $excerpt, $content);
+
+                                                $output = "<div class='space-y-4'>";
+
+                                                // Overall Score
+                                                $score = $analysis['overall_score'];
+                                                $scoreColor = match($score['grade']) {
+                                                    'A' => 'green',
+                                                    'B' => 'blue',
+                                                    'C' => 'yellow',
+                                                    'D' => 'orange',
+                                                    default => 'red'
+                                                };
+                                                $output .= "<div class='p-4 bg-{$scoreColor}-50 rounded-lg border-l-4 border-{$scoreColor}-500'>";
+                                                $output .= "<div class='flex justify-between items-center'>";
+                                                $output .= "<div>";
+                                                $output .= "<p class='text-sm font-semibold text-gray-700'>Overall Quality Score</p>";
+                                                $output .= "<p class='text-3xl font-bold text-{$scoreColor}-600'>{$score['score']}/100</p>";
+                                                $output .= "</div>";
+                                                $output .= "<div class='text-4xl font-bold text-{$scoreColor}-600'>{$score['grade']}</div>";
+                                                $output .= "</div>";
+                                                $output .= "<p class='text-xs text-gray-600 mt-2'>{$score['feedback']}</p>";
+                                                $output .= "</div>";
+
+                                                // SEO Analysis
+                                                $seo = $analysis['seo_analysis'];
+                                                $output .= "<div class='p-4 bg-indigo-50 rounded-lg'>";
+                                                $output .= "<p class='font-semibold text-gray-800 mb-3'>📊 SEO Analysis</p>";
+                                                $output .= "<div class='space-y-2'>";
+                                                foreach ($seo['checks'] as $check) {
+                                                    $icon = $check['passed'] ? '✅' : '⚠️';
+                                                    $output .= "<div class='flex items-start gap-2'>";
+                                                    $output .= "<span class='text-lg'>{$icon}</span>";
+                                                    $output .= "<div class='flex-1'>";
+                                                    $output .= "<p class='font-medium text-gray-800'>{$check['name']}</p>";
+                                                    $output .= "<p class='text-xs text-gray-600'>{$check['feedback']}</p>";
+                                                    $output .= "</div>";
+                                                    $output .= "</div>";
+                                                }
+                                                $output .= "</div>";
+                                                $output .= "</div>";
+
+                                                // Readability
+                                                $readability = $analysis['readability_analysis'];
+                                                $output .= "<div class='p-4 bg-green-50 rounded-lg'>";
+                                                $output .= "<p class='font-semibold text-gray-800 mb-2'>📖 Readability</p>";
+                                                $output .= "<ul class='text-sm text-gray-700 space-y-1'>";
+                                                $output .= "<li>🕐 Reading Time: {$readability['reading_time']} min</li>";
+                                                $output .= "<li>📊 Avg Sentence Length: {$readability['avg_sentence_length']} words</li>";
+                                                $output .= "<li>📈 Flesch Reading Ease: {$readability['flesch_reading_ease']}/100</li>";
+                                                $output .= "</ul>";
+                                                $output .= "</div>";
+
+                                                // Recommendations
+                                                $recommendations = $analysis['recommendations'];
+                                                if (!empty($recommendations)) {
+                                                    $output .= "<div class='p-4 bg-purple-50 rounded-lg'>";
+                                                    $output .= "<p class='font-semibold text-gray-800 mb-3'>💡 Top Recommendations</p>";
+                                                    $output .= "<ol class='list-decimal list-inside text-sm text-gray-700 space-y-2'>";
+                                                    foreach (array_slice($recommendations, 0, 5) as $rec) {
+                                                        $output .= "<li>{$rec}</li>";
+                                                    }
+                                                    $output .= "</ol>";
+                                                    $output .= "</div>";
+                                                }
+
+                                                $output .= "</div>";
+                                                return $output;
+                                            } catch (\Exception $e) {
+                                                return 'Error analyzing content: ' . $e->getMessage();
+                                            }
+                                        }),
+                                ]),
+                        ])->fullWidth(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(true),
 
                 Forms\Components\Section::make('Content')
                     ->schema([
