@@ -293,8 +293,7 @@ class UserDashboardController extends Controller
 
         // Get traffic by category
         $trafficByCategory = $user->posts()
-            ->join('post_categories', 'posts.id', '=', 'post_categories.post_id')
-            ->join('categories', 'post_categories.category_id', '=', 'categories.id')
+            ->join('categories', 'posts.category_id', '=', 'categories.id')
             ->selectRaw('categories.name, SUM(posts.views_count) as total_views, COUNT(posts.id) as count')
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('total_views')
