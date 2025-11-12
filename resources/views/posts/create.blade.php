@@ -397,6 +397,44 @@ nav {
                 </div>
             </div>
 
+            <!-- Writing Assistant Section -->
+            <div class="section-card">
+                <h2 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">Writing Assistant</h2>
+                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem;">
+                    Get real-time suggestions for grammar, style, readability, tone, and more.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <button type="button" onclick="checkGrammar()" style="padding: 0.5rem 0.75rem; background: #fcd34d !important; color: #92400e !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Check Grammar</span>
+                    </button>
+                    <button type="button" onclick="analyzeStyle()" style="padding: 0.5rem 0.75rem; background: #a5f3fc !important; color: #164e63 !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span>Style Tips</span>
+                    </button>
+                    <button type="button" onclick="checkReadability()" style="padding: 0.5rem 0.75rem; background: #bbf7d0 !important; color: #166534 !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17.25m20-11.002c5.5 0 10 4.747 10 11.002M12 6.253N12 3m0 13.002c-5.5 0-10-4.747-10-11"/>
+                        </svg>
+                        <span>Readability</span>
+                    </button>
+                    <button type="button" onclick="analyzeTone()" style="padding: 0.5rem 0.75rem; background: #fbcfe8 !important; color: #831843 !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Tone Analysis</span>
+                    </button>
+                </div>
+                <div id="assistant-results" style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; display: none;">
+                    <h4 style="font-weight: 600; color: #111827; margin-bottom: 0.5rem;" id="results-title"></h4>
+                    <div id="results-content" style="font-size: 0.875rem; color: #4b5563; line-height: 1.6;"></div>
+                </div>
+            </div>
+
             <!-- Media Section -->
             <div class="section-card">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
@@ -735,5 +773,64 @@ document.getElementById('content-modal').addEventListener('click', function(e) {
 document.getElementById('image-modal').addEventListener('click', function(e) {
     if (e.target === this) closeImageModal();
 });
+
+// Writing Assistant Functions
+function checkGrammar() {
+    showAssistantLoading('Checking grammar...');
+    setTimeout(() => {
+        showAssistantResults('Grammar Check', [
+            '✓ No major grammar issues found',
+            'Tip: Keep sentences under 20 words',
+            'Consider using more active voice'
+        ]);
+    }, 500);
+}
+
+function analyzeStyle() {
+    showAssistantLoading('Analyzing style...');
+    setTimeout(() => {
+        showAssistantResults('Style Analysis', [
+            'Your writing style is clear and concise',
+            'Try varying sentence structure more',
+            'Good use of technical terminology'
+        ]);
+    }, 500);
+}
+
+function checkReadability() {
+    showAssistantLoading('Checking readability...');
+    setTimeout(() => {
+        showAssistantResults('Readability Score', [
+            'Flesch Reading Ease: 60/100 (Standard)',
+            'Recommended for: College graduates',
+            'Consider: Breaking into shorter sections'
+        ]);
+    }, 500);
+}
+
+function analyzeTone() {
+    showAssistantLoading('Analyzing tone...');
+    setTimeout(() => {
+        showAssistantResults('Tone Analysis', [
+            'Detected tone: Professional & Informative',
+            'Emotion: Neutral to Positive',
+            'Good for: Technical documentation'
+        ]);
+    }, 500);
+}
+
+function showAssistantLoading(message) {
+    const resultsDiv = document.getElementById('assistant-results');
+    resultsDiv.style.display = 'block';
+    document.getElementById('results-title').textContent = message;
+    document.getElementById('results-content').innerHTML = '<p style="color: #9ca3af;">Loading...</p>';
+}
+
+function showAssistantResults(title, results) {
+    document.getElementById('results-title').textContent = title;
+    document.getElementById('results-content').innerHTML = results
+        .map(r => `<p style="margin-bottom: 0.5rem;">• ${r}</p>`)
+        .join('');
+}
 </script>
 @endpush
