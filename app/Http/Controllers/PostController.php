@@ -276,7 +276,7 @@ class PostController extends Controller
                 'featured_image' => $firstPost?->featured_image ?? null,
                 'category' => $firstPost?->category ?? null,
                 'author' => $firstPost?->author ?? null,
-                'is_complete' => $item->published_parts == $item->series_total_parts,
+                'is_complete' => ($item->series_total_parts !== null && $item->published_parts >= $item->series_total_parts),
             ];
         });
 
