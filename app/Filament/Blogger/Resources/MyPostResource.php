@@ -179,6 +179,137 @@ class MyPostResource extends Resource
                     ->collapsible()
                     ->collapsed(false),
 
+                Forms\Components\Section::make('Writing Guidelines & Tips')
+                    ->description('Best practices for creating engaging content')
+                    ->schema([
+                        Forms\Components\Tabs::make('Guidelines')
+                            ->tabs([
+                                Forms\Components\Tabs\Tab::make('Title Guidelines')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('title_guide')
+                                            ->label('')
+                                            ->content('
+                                                <div class="space-y-4">
+                                                    <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">📝 Effective Titles</h4>
+                                                        <ul class="space-y-2 text-sm text-gray-700">
+                                                            <li>✓ Keep between 40-70 characters for optimal display</li>
+                                                            <li>✓ Start with power words: How, Why, Ultimate, Best, Essential</li>
+                                                            <li>✓ Include numbers when relevant (Top 5, 7 Steps, etc.)</li>
+                                                            <li>✓ Include target keywords naturally</li>
+                                                            <li>✓ Be specific and benefit-driven</li>
+                                                            <li>✓ Avoid clickbait and misleading claims</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">✅ Examples</h4>
+                                                        <ul class="space-y-1 text-sm text-gray-700 font-mono">
+                                                            <li>• How to Master Laravel 11 in 30 Days</li>
+                                                            <li>• 10 Essential Web Development Best Practices</li>
+                                                            <li>• Why Vue.js is Better Than React for 2024</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            '),
+                                    ]),
+
+                                Forms\Components\Tabs\Tab::make('Content Structure')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('structure_guide')
+                                            ->label('')
+                                            ->content('
+                                                <div class="space-y-4">
+                                                    <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">🏗️ Recommended Structure</h4>
+                                                        <ol class="space-y-2 text-sm text-gray-700">
+                                                            <li><strong>1. Hook/Introduction</strong> - Grab attention in first 2-3 sentences</li>
+                                                            <li><strong>2. Problem Statement</strong> - What problem does this solve?</li>
+                                                            <li><strong>3. Value Proposition</strong> - Why should readers care?</li>
+                                                            <li><strong>4. Main Content</strong> - Use clear headings, short paragraphs, bullet points</li>
+                                                            <li><strong>5. Examples/Proof</strong> - Real-world examples and case studies</li>
+                                                            <li><strong>6. Call-to-Action</strong> - What should readers do next?</li>
+                                                            <li><strong>7. Conclusion</strong> - Summarize key takeaways</li>
+                                                        </ol>
+                                                    </div>
+                                                    <div class="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">📊 Formatting Tips</h4>
+                                                        <ul class="space-y-2 text-sm text-gray-700">
+                                                            <li>• Use H2 and H3 headings to break content into sections</li>
+                                                            <li>• Keep paragraphs to 3-4 sentences maximum</li>
+                                                            <li>• Use bullet points and numbered lists</li>
+                                                            <li>• Add code blocks for technical content</li>
+                                                            <li>• Include quotes and blockquotes for emphasis</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            '),
+                                    ]),
+
+                                Forms\Components\Tabs\Tab::make('Writing Style')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('style_guide')
+                                            ->label('')
+                                            ->content('
+                                                <div class="space-y-4">
+                                                    <div class="bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">✍️ Tone & Voice</h4>
+                                                        <ul class="space-y-2 text-sm text-gray-700">
+                                                            <li>• Write in second person (you, your) when appropriate</li>
+                                                            <li>• Be conversational but professional</li>
+                                                            <li>• Use active voice instead of passive voice</li>
+                                                            <li>• Show personality and authenticity</li>
+                                                            <li>• Avoid jargon or explain technical terms</li>
+                                                            <li>• Use contractions naturally (don\'t, it\'s, we\'re)</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="bg-cyan-50 p-4 rounded-lg border-l-4 border-cyan-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">🎯 Engagement</h4>
+                                                        <ul class="space-y-2 text-sm text-gray-700">
+                                                            <li>• Ask questions to engage readers</li>
+                                                            <li>• Share personal stories and experiences</li>
+                                                            <li>• Provide actionable insights, not just theory</li>
+                                                            <li>• Back claims with data and sources</li>
+                                                            <li>• End with a clear takeaway message</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            '),
+                                    ]),
+
+                                Forms\Components\Tabs\Tab::make('SEO Best Practices')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('seo_guide')
+                                            ->label('')
+                                            ->content('
+                                                <div class="space-y-4">
+                                                    <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">🔍 SEO Essentials</h4>
+                                                        <ul class="space-y-2 text-sm text-gray-700">
+                                                            <li>• Focus keyword should appear in title and first paragraph</li>
+                                                            <li>• Use 2-3 related keywords throughout the content</li>
+                                                            <li>• Write meta description under 160 characters</li>
+                                                            <li>• Create descriptive headings with keywords</li>
+                                                            <li>• Link to relevant internal and external resources</li>
+                                                            <li>• Aim for 1000-2000 words for comprehensive articles</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="bg-pink-50 p-4 rounded-lg border-l-4 border-pink-500">
+                                                        <h4 class="font-bold text-gray-900 mb-2">🖼️ Media & Links</h4>
+                                                        <ul class="space-y-2 text-sm text-gray-700">
+                                                            <li>• Use alt text on images (describes content for SEO)</li>
+                                                            <li>• Include at least one featured image</li>
+                                                            <li>• Use descriptive file names for images</li>
+                                                            <li>• Link to authoritative sources in your niche</li>
+                                                            <li>• Create internal links to related articles</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            '),
+                                    ]),
+                            ])
+                            ->columnSpanFull(),
+                    ])->collapsible()->collapsed(true),
+
                 Forms\Components\Section::make('Post Details')
                     ->schema([
                         Forms\Components\TextInput::make('title')
