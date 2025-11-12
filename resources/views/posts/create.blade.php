@@ -266,11 +266,24 @@
 /* Ensure form doesn't affect navbar */
 nav {
     z-index: 50 !important;
+    position: sticky !important;
+    top: 0 !important;
+}
+
+body {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+main {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 .create-post-form {
     position: relative;
     z-index: 1;
+    margin-top: 0;
 }
 </style>
 @endpush
@@ -369,14 +382,22 @@ nav {
 
             <!-- Content Section -->
             <div class="section-card">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <h2 style="font-size: 1.125rem; font-weight: bold; color: #111827;">Post Content</h2>
-                    <button type="button" onclick="openContentModal()" class="ai-button">
-                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                        Generate with AI
-                    </button>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button type="button" onclick="openContentModal()" class="ai-button">
+                            <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Generate with AI
+                        </button>
+                        <button type="button" onclick="openStructureModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: linear-gradient(to right, #8b5cf6, #7c3aed); color: white; border-radius: 0.5rem; font-weight: 500; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Suggest Structure
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Content Editor -->
@@ -499,6 +520,78 @@ nav {
             </div>
             @endif
 
+            <!-- Tutorial Series Section (Optional) -->
+            <div class="section-card">
+                <h2 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">Tutorial Series (Optional)</h2>
+                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">Make this post part of a tutorial series to help readers follow a learning path.</p>
+
+                <!-- Series Title -->
+                <div class="form-group">
+                    <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Series Title</label>
+                    <input type="text"
+                           name="series_title"
+                           id="series_title"
+                           value="{{ old('series_title') }}"
+                           placeholder="e.g., Advanced Laravel Development"
+                           style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                    <p class="input-help-text">Leave empty if this is not part of a series</p>
+                    @error('series_title')
+                        <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Series Part and Total Parts (shown when series_title is filled) -->
+                <div id="series-details-group" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <!-- Series Part Number -->
+                        <div class="form-group">
+                            <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Part Number</label>
+                            <input type="number"
+                                   name="series_part"
+                                   id="series_part"
+                                   value="{{ old('series_part') }}"
+                                   min="1"
+                                   placeholder="e.g., 1"
+                                   style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                            <p class="input-help-text">Which part is this in the series?</p>
+                            @error('series_part')
+                                <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Total Parts -->
+                        <div class="form-group">
+                            <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Total Parts</label>
+                            <input type="number"
+                                   name="series_total_parts"
+                                   id="series_total_parts"
+                                   value="{{ old('series_total_parts') }}"
+                                   min="1"
+                                   placeholder="e.g., 5"
+                                   style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                            <p class="input-help-text">How many parts in total?</p>
+                            @error('series_total_parts')
+                                <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Series Description -->
+                    <div class="form-group">
+                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Series Description</label>
+                        <textarea name="series_description"
+                                  id="series_description"
+                                  rows="2"
+                                  placeholder="Brief description of what this series covers..."
+                                  style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">{{ old('series_description') }}</textarea>
+                        <p class="input-help-text">Helps readers understand the learning path</p>
+                        @error('series_description')
+                            <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
             <!-- Publishing Section -->
             <div class="section-card">
                 <h2 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">Publishing Settings</h2>
@@ -617,6 +710,31 @@ nav {
     </div>
 </div>
 
+<!-- AI Structure Suggestion Modal -->
+<div id="structure-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Suggest Post Structure</h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">Post Topic (optional)</label>
+                <input type="text"
+                       id="structure-topic"
+                       class="modal-input"
+                       placeholder="Leave blank to use your post title">
+            </div>
+            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">This will generate a template outline for your post structure. You can then use "Generate with AI" to fill in the content.</p>
+            <div class="modal-buttons">
+                <button type="button" onclick="generateStructure()" class="btn-primary">
+                    Generate Structure
+                </button>
+                <button type="button" onclick="closeStructureModal()" class="btn-secondary">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://unpkg.com/@yaireo/tagify"></script>
 <script>
@@ -642,6 +760,20 @@ if (excerptInput) {
 document.getElementById('is_premium').addEventListener('change', function() {
     document.getElementById('premium-tier-group').style.display = this.checked ? 'block' : 'none';
 });
+
+// Series details visibility
+const seriesTitleInput = document.getElementById('series_title');
+const seriesDetailsGroup = document.getElementById('series-details-group');
+if (seriesTitleInput) {
+    // Toggle on input
+    seriesTitleInput.addEventListener('input', function() {
+        seriesDetailsGroup.style.display = this.value.trim() ? 'block' : 'none';
+    });
+    // Initialize on page load
+    if (seriesTitleInput.value.trim()) {
+        seriesDetailsGroup.style.display = 'block';
+    }
+}
 
 // Initialize tagify if container exists
 const tagifyContainer = document.getElementById('tagify-container');
@@ -774,6 +906,49 @@ document.getElementById('image-modal').addEventListener('click', function(e) {
     if (e.target === this) closeImageModal();
 });
 
+document.getElementById('structure-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeStructureModal();
+});
+
+// Structure Modal Functions
+function openStructureModal() {
+    document.getElementById('structure-modal').classList.add('active');
+}
+
+function closeStructureModal() {
+    document.getElementById('structure-modal').classList.remove('active');
+}
+
+function generateStructure() {
+    let topic = document.getElementById('structure-topic').value.trim();
+
+    // If no topic provided, use the title from the form
+    if (!topic) {
+        const title = document.getElementById('title').value.trim();
+        if (!title) {
+            alert('Please enter a topic or use your post title');
+            return;
+        }
+        topic = title;
+    }
+
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+
+    // Generate structure template
+    setTimeout(() => {
+        const structure = `# ${topic}\n\n## Introduction\n\nWelcome to this comprehensive guide on ${topic}. In this article, we'll explore the key concepts, best practices, and practical implementations you need to know.\n\n## What is ${topic}?\n\nStart with a clear definition and context for your readers. Explain why this topic matters and who should care about it.\n\n## Key Concepts\n\n### Concept 1\nExplain the first major concept with relevant details and examples.\n\n### Concept 2\nCover the second important aspect with practical insights.\n\n### Concept 3\nProvide additional valuable information related to your topic.\n\n## Best Practices\n\n- Practice 1: Explain why this is important\n- Practice 2: Share practical tips and techniques\n- Practice 3: Provide actionable recommendations\n\n## Common Mistakes to Avoid\n\nDiscuss what readers should watch out for when working with ${topic}.\n\n## Practical Examples\n\nInclude real-world examples and code snippets where applicable.\n\n## Conclusion\n\nSummarize the key takeaways and encourage readers to implement what they've learned. Share next steps for readers interested in going deeper.`;
+
+        document.getElementById('content').value = structure;
+        closeStructureModal();
+        btn.disabled = false;
+        btn.textContent = originalText;
+        document.getElementById('structure-topic').value = '';
+    }, 2000);
+}
+
 // Writing Assistant Functions
 function checkGrammar() {
     showAssistantLoading('Checking grammar...');
@@ -834,3 +1009,5 @@ function showAssistantResults(title, results) {
 }
 </script>
 @endpush
+
+@endsection

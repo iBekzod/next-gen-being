@@ -29,6 +29,18 @@
 .stats-card {
     @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600;
 }
+
+/* Ensure navbar stays on top */
+nav {
+    z-index: 50 !important;
+    position: sticky !important;
+    top: 0 !important;
+}
+
+body, main {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 </style>
 @endpush
 

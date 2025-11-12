@@ -12,7 +12,8 @@
       "Bash(git -C d:projectsMyProjectsnext-gen-being diff HEAD~5 app/Models/Post.php)",
       "Bash(__NEW_LINE__ ls -la \"/d/projects/MyProjects/next-gen-being/\"ACHIEVEMENT*.*)",
       "Bash(docker exec:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
