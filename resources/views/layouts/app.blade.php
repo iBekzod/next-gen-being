@@ -291,13 +291,13 @@
                                     </svg>
                                 </button>
                                 <div x-show="open" @click.outside="open = false" x-transition
-                                    class="absolute left-0 z-50 w-56 py-2 mt-1 bg-white rounded-lg shadow-xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-                                    <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Browse Topics</p>
+                                    class="absolute left-0 z-50 w-56 py-2 mt-1 bg-white rounded-lg shadow-xl dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
+                                    <div class="px-3 py-2 border-b border-gray-300 dark:border-gray-700">
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Browse Topics</p>
                                     </div>
                                     @foreach ($navCategories as $category)
                                         <a href="{{ route('categories.show', $category->slug) }}"
-                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
                                             {{ $category->name }}
                                         </a>
                                     @endforeach
@@ -469,27 +469,24 @@
                                 </button>
 
                                 <div x-show="open" @click.outside="open = false" x-transition
-                                    class="absolute right-0 z-50 w-48 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800">
+                                    class="absolute right-0 z-50 w-48 py-1 mt-2 bg-white rounded-md shadow-lg dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
                                     <a href="{{ route('dashboard') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                                        class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Dashboard</a>
                                     @if (auth()->user()->hasAnyRole(['admin', 'content_manager', 'blogger']))
                                         <a href="{{ route('posts.create') }}"
-                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Write
-                                            Article</a>
+                                            class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Write Article</a>
                                     @endif
                                     @if (auth()->user()->hasAnyRole(['admin', 'content_manager']))
                                         <a href="/admin"
-                                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Admin
-                                            Panel</a>
+                                            class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Admin Panel</a>
                                     @endif
                                     <a href="{{ route('dashboard.settings') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
-                                    <hr class="my-1">
+                                        class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Settings</a>
+                                    <hr class="my-1 border-gray-300 dark:border-gray-700">
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit"
-                                            class="block w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign
-                                            out</button>
+                                            class="block w-full px-4 py-3 text-sm text-left text-gray-900 dark:text-gray-200 hover:bg-red-100 dark:hover:bg-gray-700 hover:text-red-700 dark:hover:text-red-300 transition-colors">Sign out</button>
                                     </form>
                                 </div>
                             </div>
