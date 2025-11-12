@@ -462,6 +462,158 @@ class MyPostResource extends Resource
                             ->placeholder('Image credit information (auto-filled if using AI generation)'),
                     ])->columns(1),
 
+                Forms\Components\Section::make('Publishing Workflow')
+                    ->description('Smart publishing with scheduling, preview, and quality checks')
+                    ->schema([
+                        Forms\Components\Placeholder::make('publish_intro')
+                            ->label('')
+                            ->content('Review your post before publishing. Use the buttons below to preview and validate your content.'),
+
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Actions\Action::make('previewPost')
+                                    ->label('Preview Post')
+                                    ->icon('heroicon-o-eye')
+                                    ->color('info')
+                                    ->disabled(fn (Forms\Get $get) => !$get('title') || !$get('content'))
+                                    ->modalHeading('Post Preview')
+                                    ->modalDescription('See how your post will look to readers')
+                                    ->modalWidth('4xl')
+                                    ->action(function () {
+                                        Notification::make()
+                                            ->title('Preview Generated')
+                                            ->body('Scroll down in the modal to see the full preview.')
+                                            ->info()
+                                            ->send();
+                                    })
+                                    ->form([
+                                        Forms\Components\Placeholder::make('preview_content')
+                                            ->label('')
+                                            ->content(function (Forms\Get $get) {
+                                                $title = $get('title');
+                                                $excerpt = $get('excerpt');
+                                                $content = $get('content');
+                                                $image = $get('featured_image');
+
+                                                $html = "<div class='max-w-2xl mx-auto'>";
+
+                                                if ($image) {
+                                                    $html .= "<img src='" . asset('storage/' . $image) . "' alt='{$title}' class='w-full h-auto rounded-lg mb-6'>";
+                                                }
+
+                                                $html .= "<h1 class='text-4xl font-bold text-gray-900 mb-4'>{$title}</h1>";
+                                                $html .= "<p class='text-lg text-gray-600 mb-6 italic'>{$excerpt}</p>";
+                                                $html .= "<div class='prose prose-lg max-w-none'>";
+                                                $html .= nl2br(htmlspecialchars($content));
+                                                $html .= "</div>";
+                                                $html .= "</div>";
+
+                                                return $html;
+                                            }),
+                                    ]),
+
+                                Forms\Components\Actions\Action::make('validatePublish')
+                                    ->label('Publish Checklist')
+                                    ->icon('heroicon-o-list-bullet')
+                                    ->color('success')
+                                    ->disabled(fn (Forms\Get $get) => !$get('title') || !$get('content'))
+                                    ->modalHeading('Pre-Publish Checklist')
+                                    ->modalDescription('Verify everything is ready before publishing')
+                                    ->modalWidth('lg')
+                                    ->action(function (Forms\Get $get) {
+                                        $title = $get('title');
+                                        $excerpt = $get('excerpt');
+                                        $content = $get('content');
+                                        $image = $get('featured_image');
+                                        $category = $get('category_id');
+
+                                        $checks = [
+                                            'title' => ['passed' => !empty($title) && strlen($title) > 10 && strlen($title) < 70, 'name' => '✓ Title is between 10-70 characters'],
+                                            'excerpt' => ['passed' => !empty($excerpt) && strlen($excerpt) > 20, 'name' => '✓ Excerpt is at least 20 characters'],
+                                            'content' => ['passed' => !empty($content) && strlen($content) > 200, 'name' => '✓ Content is at least 200 words'],
+                                            'featured_image' => ['passed' => !empty($image), 'name' => '✓ Featured image is set'],
+                                            'category' => ['passed' => !empty($category), 'name' => '✓ Category is selected'],
+                                        ];
+
+                                        $allPassed = collect($checks)->every(fn ($check) => $check['passed']);
+
+                                        if ($allPassed) {
+                                            Notification::make()
+                                                ->title('Ready to Publish!')
+                                                ->body('All checks passed. Your post is ready to be published.')
+                                                ->success()
+                                                ->send();
+                                        } else {
+                                            Notification::make()
+                                                ->title('Issues Found')
+                                                ->body('Please fix the items marked below before publishing.')
+                                                ->warning()
+                                                ->send();
+                                        }
+                                    })
+                                    ->form([
+                                        Forms\Components\Placeholder::make('checklist_results')
+                                            ->label('')
+                                            ->content(function (Forms\Get $get) {
+                                                $title = $get('title');
+                                                $excerpt = $get('excerpt');
+                                                $content = $get('content');
+                                                $image = $get('featured_image');
+                                                $category = $get('category_id');
+
+                                                $checks = [
+                                                    ['passed' => !empty($title) && strlen($title) > 10 && strlen($title) < 70, 'name' => 'Title is between 10-70 characters', 'feedback' => strlen($title) . ' characters'],
+                                                    ['passed' => !empty($excerpt) && strlen($excerpt) > 20, 'name' => 'Excerpt is at least 20 characters', 'feedback' => strlen($excerpt) . ' characters'],
+                                                    ['passed' => !empty($content) && strlen($content) > 200, 'name' => 'Content has substantial length', 'feedback' => 'Minimum 200 characters'],
+                                                    ['passed' => !empty($image), 'name' => 'Featured image is set', 'feedback' => $image ? 'Image uploaded' : 'No image'],
+                                                    ['passed' => !empty($category), 'name' => 'Category is selected', 'feedback' => 'Required for organization'],
+                                                ];
+
+                                                $output = "<div class='space-y-3'>";
+                                                foreach ($checks as $check) {
+                                                    $icon = $check['passed'] ? '✅' : '❌';
+                                                    $bgColor = $check['passed'] ? 'bg-green-50' : 'bg-red-50';
+                                                    $borderColor = $check['passed'] ? 'border-green-500' : 'border-red-500';
+                                                    $output .= "<div class='p-3 {$bgColor} rounded-lg border-l-4 {$borderColor}'>";
+                                                    $output .= "<div class='flex items-start gap-2'>";
+                                                    $output .= "<span class='text-lg'>{$icon}</span>";
+                                                    $output .= "<div class='flex-1'>";
+                                                    $output .= "<p class='font-semibold text-gray-800'>{$check['name']}</p>";
+                                                    $output .= "<p class='text-xs text-gray-600'>{$check['feedback']}</p>";
+                                                    $output .= "</div>";
+                                                    $output .= "</div>";
+                                                    $output .= "</div>";
+                                                }
+                                                $output .= "</div>";
+                                                return $output;
+                                            }),
+                                    ]),
+                            ])
+                            ->columnSpan('full'),
+
+                        Forms\Components\Select::make('publish_strategy')
+                            ->label('Publishing Strategy')
+                            ->options([
+                                'immediately' => 'Publish Immediately',
+                                'scheduled' => 'Schedule for Later',
+                                'draft' => 'Save as Draft',
+                            ])
+                            ->default('draft')
+                            ->required()
+                            ->helperText('Choose when to make this post live'),
+
+                        Forms\Components\DateTimePicker::make('published_at')
+                            ->label('Publish Date & Time')
+                            ->default(now())
+                            ->visible(fn (Forms\Get $get) => in_array($get('publish_strategy'), ['immediately', 'scheduled']))
+                            ->required(fn (Forms\Get $get) => in_array($get('publish_strategy'), ['immediately', 'scheduled'])),
+
+                        Forms\Components\Toggle::make('allow_comments')
+                            ->label('Allow Comments')
+                            ->helperText('Readers can leave comments on this post')
+                            ->default(true),
+                    ])->columns(2),
+
                 Forms\Components\Section::make('Settings')
                     ->schema([
                         Forms\Components\Select::make('status')
@@ -483,10 +635,6 @@ class MyPostResource extends Resource
                                 'team' => 'Team ($29.99/month)',
                             ])
                             ->visible(fn (Forms\Get $get) => $get('is_premium')),
-
-                        Forms\Components\DateTimePicker::make('published_at')
-                            ->label('Publish Date')
-                            ->default(now()),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Series (Optional)')

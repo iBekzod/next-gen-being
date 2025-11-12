@@ -17,7 +17,7 @@ class Post extends Model implements HasMedia
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'content_json',
         'featured_image', 'image_attribution', 'gallery', 'status', 'published_at',
-        'scheduled_at', 'is_featured', 'allow_comments', 'is_premium',
+        'scheduled_at', 'publish_strategy', 'is_featured', 'allow_comments', 'is_premium',
         'premium_tier', 'preview_percentage', 'paywall_message',
         'read_time', 'views_count', 'likes_count', 'comments_count',
         'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
