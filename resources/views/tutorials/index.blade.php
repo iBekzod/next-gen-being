@@ -159,7 +159,7 @@
                         </div>
 
                         <!-- View Series Button -->
-                        <a href="{{ route('tutorials.series', $item['slug']) }}"
+                        <a href="{{ route('series.show', $item['slug']) }}"
                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-800 dark:hover:to-blue-900 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 w-full">
                             <span>View Series</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

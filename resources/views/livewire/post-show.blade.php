@@ -25,7 +25,6 @@
             <span class="text-sm text-gray-700 dark:text-gray-400">{{ $post->read_time }} min read</span>
         </div>
 
-        <h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white lg:text-4xl">{{ $post->title }}</h1>
         <p class="mb-6 text-xl text-gray-700 dark:text-gray-300">{{ $post->excerpt }}</p>
 
         <div class="flex items-center justify-between">
