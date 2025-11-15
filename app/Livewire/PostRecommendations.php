@@ -45,21 +45,21 @@ class PostRecommendations extends Component
                 'slug' => $post->slug,
                 'excerpt' => $post->excerpt,
                 'views' => $post->views_count ?? 0,
-                'likes' => $post->likes_count ?? 0,
-                'comments' => $post->comments()->count(),
                 'featured_image' => $post->featured_image,
-                'category_name' => $post->category->name,
-                'category_slug' => $post->category->slug,
-                'author_name' => $post->author->name,
-                'author_slug' => $post->author->username ?? $post->author->slug ?? 'user-' . $post->author->id,
-                'published_at' => $post->published_at->format('M d, Y'),
+                'category_name' => optional($post->category)->name ?? 'Uncategorized',
+                'category_slug' => optional($post->category)->slug ?? 'uncategorized',
+                'author_name' => optional($post->author)->name ?? 'Unknown Author',
+                'author_slug' => optional($post->author)->username ?? optional($post->author)->slug ?? 'user-' . ($post->author_id ?? 0),
+                'published_at' => optional($post->published_at)->format('M d, Y') ?? 'Recently',
             ];
         })->toArray();
 
         if ($this->user && count($this->recommendations) > 0) {
             foreach ($this->recommendations as $rec) {
                 $post = Post::find($rec['id']);
-                $this->recommendationService->logRecommendationShown($this->user, $post, $this->type);
+                if ($post) {
+                    $this->recommendationService->logRecommendationShown($this->user, $post, $this->type);
+                }
             }
         }
     }

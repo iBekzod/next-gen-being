@@ -245,7 +245,7 @@ class RecommendationService
             return $recentEngagement > 10;
         } catch (\Exception $e) {
             // If PostInteraction table doesn't exist, fall back to views
-            return $post->views_count > 50;
+            return ($post->views_count ?? 0) > 50;
         }
     }
 
