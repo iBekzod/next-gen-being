@@ -11,10 +11,15 @@
 <style>
 [x-cloak] { display: none; }
 
-/* Force light styling throughout form */
+/* Form styling with dark mode support */
 .create-post-form {
-    background-color: #f9fafb !important;
-    color: #111827 !important;
+    background-color: #f9fafb;
+    color: #111827;
+}
+
+.dark .create-post-form {
+    background-color: #111827;
+    color: #f9fafb;
 }
 
 .tooltip-trigger {
@@ -40,7 +45,7 @@
 }
 
 .dark .input-help-text {
-    color: #9ca3af;
+    color: #d1d5db;
 }
 
 .ai-button {
@@ -70,12 +75,18 @@
 }
 
 .section-card {
-    background: #ffffff !important;
+    background: #ffffff;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    color: #111827 !important;
+    color: #111827;
+}
+
+.dark .section-card {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
 }
 
 .form-group {
@@ -100,20 +111,29 @@
 }
 
 .modal-box {
-    background: #ffffff !important;
+    background: #ffffff;
     border-radius: 0.5rem;
     box-shadow: 0 20px 25px rgba(0,0,0,0.15);
     padding: 1.5rem;
     max-width: 28rem;
     width: 90%;
-    color: #111827 !important;
+    color: #111827;
+}
+
+.dark .modal-box {
+    background: #1f2937;
+    color: #f9fafb;
 }
 
 .modal-box h3 {
     font-size: 1.125rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: #1f2937 !important;
+    color: #1f2937;
+}
+
+.dark .modal-box h3 {
+    color: #f9fafb;
 }
 
 .modal-input {
@@ -123,8 +143,14 @@
     border-radius: 0.375rem;
     margin-bottom: 1rem;
     font-family: inherit;
-    background-color: #ffffff !important;
-    color: #111827 !important;
+    background-color: #ffffff;
+    color: #111827;
+}
+
+.dark .modal-input {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
 }
 
 .modal-buttons {
@@ -151,8 +177,8 @@
 .btn-secondary {
     flex: 1;
     padding: 0.5rem 1rem;
-    background: #e5e7eb !important;
-    color: #1f2937 !important;
+    background: #e5e7eb;
+    color: #1f2937;
     border: none;
     border-radius: 0.375rem;
     font-weight: 500;
@@ -160,8 +186,17 @@
     transition: background 0.2s;
 }
 
+.dark .btn-secondary {
+    background: #374151;
+    color: #f9fafb;
+}
+
 .btn-secondary:hover {
-    background: #d1d5db !important;
+    background: #d1d5db;
+}
+
+.dark .btn-secondary:hover {
+    background: #4b5563;
 }
 
 .loading {
@@ -176,7 +211,7 @@
     to { transform: rotate(360deg); }
 }
 
-/* Force light theme for all form inputs */
+/* Form inputs with dark mode support */
 .create-post-form input[type="text"],
 .create-post-form input[type="email"],
 .create-post-form input[type="number"],
@@ -184,19 +219,41 @@
 .create-post-form input[type="datetime-local"],
 .create-post-form textarea,
 .create-post-form select {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    border-color: #d1d5db !important;
+    background-color: #ffffff;
+    color: #111827;
+    border-color: #d1d5db;
+}
+
+.dark .create-post-form input[type="text"],
+.dark .create-post-form input[type="email"],
+.dark .create-post-form input[type="number"],
+.dark .create-post-form input[type="date"],
+.dark .create-post-form input[type="datetime-local"],
+.dark .create-post-form textarea,
+.dark .create-post-form select {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
 }
 
 .create-post-form input[type="text"]::placeholder,
 .create-post-form input[type="email"]::placeholder,
 .create-post-form textarea::placeholder {
-    color: #9ca3af !important;
+    color: #9ca3af;
+}
+
+.dark .create-post-form input[type="text"]::placeholder,
+.dark .create-post-form input[type="email"]::placeholder,
+.dark .create-post-form textarea::placeholder {
+    color: #9ca3af;
 }
 
 .create-post-form label {
-    color: #374151 !important;
+    color: #374151;
+}
+
+.dark .create-post-form label {
+    color: #e5e7eb;
 }
 
 .create-post-form h1,
@@ -205,62 +262,167 @@
 .create-post-form h4,
 .create-post-form h5,
 .create-post-form h6 {
-    color: #111827 !important;
+    color: #111827;
 }
 
-.create-post-form p,
-.create-post-form span,
-.create-post-form div {
-    color: #111827 !important;
+.dark .create-post-form h1,
+.dark .create-post-form h2,
+.dark .create-post-form h3,
+.dark .create-post-form h4,
+.dark .create-post-form h5,
+.dark .create-post-form h6 {
+    color: #f9fafb;
 }
 
-/* Section styling */
-.create-post-form .section-card {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    border: 1px solid #e5e7eb !important;
+.create-post-form p {
+    color: #111827;
 }
 
-.create-post-form .form-group {
-    color: #111827 !important;
+.dark .create-post-form p {
+    color: #e5e7eb;
 }
 
-/* Ensure all text in the form is dark */
-.create-post-form {
-    color: #111827 !important;
-}
-
-.create-post-form * {
-    color: #111827 !important;
-}
-
-/* Override any dark mode text */
-.create-post-form .dark,
-.create-post-form .dark * {
-    color: #111827 !important;
-    background-color: #ffffff !important;
-}
+/* Tagify styling with dark mode support */
 
 /* Tagify input styling */
 .create-post-form #tagify-container .tagify {
-    background-color: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 0.375rem !important;
-    padding: 0.5rem !important;
-    min-height: 40px !important;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    min-height: 40px;
+}
+
+.dark .create-post-form #tagify-container .tagify {
+    background-color: #374151;
+    border-color: #4b5563;
 }
 
 .create-post-form #tagify-container .tagify__input {
-    color: #111827 !important;
+    color: #111827;
+}
+
+.dark .create-post-form #tagify-container .tagify__input {
+    color: #f9fafb;
 }
 
 .create-post-form #tagify-container .tagify__tag {
-    background-color: #2563eb !important;
-    color: white !important;
+    background-color: #2563eb;
+    color: white;
 }
 
 .create-post-form #tagify-container input.tagify__input {
-    color: #111827 !important;
+    color: #111827;
+}
+
+.dark .create-post-form #tagify-container input.tagify__input {
+    color: #f9fafb;
+}
+
+/* Dark mode overrides for inline styles */
+.dark [style*="background: #f9fafb"] {
+    background: #111827 !important;
+}
+
+.dark [style*="color: #111827"] {
+    color: #f9fafb !important;
+}
+
+.dark [style*="color: #6b7280"] {
+    color: #d1d5db !important;
+}
+
+.dark [style*="color: #374151"] {
+    color: #e5e7eb !important;
+}
+
+.dark [style*="color: #9ca3af"] {
+    color: #9ca3af !important;
+}
+
+.dark [style*="color: #1f2937"] {
+    color: #f9fafb !important;
+}
+
+/* Writing Assistant button styles */
+.assistant-btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.assistant-btn-grammar {
+    background: #fcd34d;
+    color: #92400e;
+}
+
+.dark .assistant-btn-grammar {
+    background: #b45309;
+    color: #fef08a;
+}
+
+.assistant-btn-style {
+    background: #a5f3fc;
+    color: #164e63;
+}
+
+.dark .assistant-btn-style {
+    background: #0e7490;
+    color: #cffafe;
+}
+
+.assistant-btn-readability {
+    background: #bbf7d0;
+    color: #166534;
+}
+
+.dark .assistant-btn-readability {
+    background: #047857;
+    color: #d1fae5;
+}
+
+.assistant-btn-tone {
+    background: #fbcfe8;
+    color: #831843;
+}
+
+.dark .assistant-btn-tone {
+    background: #be185d;
+    color: #fbf5fe;
+}
+
+/* Assistant results styling */
+#assistant-results {
+    background: #f3f4f6;
+}
+
+.dark #assistant-results {
+    background: #374151;
+    color: #f9fafb;
+}
+
+#results-title {
+    color: #111827;
+}
+
+.dark #results-title {
+    color: #f9fafb;
+}
+
+#results-content {
+    color: #4b5563;
+}
+
+.dark #results-content {
+    color: #d1d5db;
 }
 
 /* Ensure form doesn't affect navbar */
@@ -425,32 +587,32 @@ main {
                     Get real-time suggestions for grammar, style, readability, tone, and more.
                 </p>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
-                    <button type="button" onclick="checkGrammar()" style="padding: 0.5rem 0.75rem; background: #fcd34d !important; color: #92400e !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <button type="button" onclick="checkGrammar()" class="assistant-btn assistant-btn-grammar">
                         <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         <span>Check Grammar</span>
                     </button>
-                    <button type="button" onclick="analyzeStyle()" style="padding: 0.5rem 0.75rem; background: #a5f3fc !important; color: #164e63 !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <button type="button" onclick="analyzeStyle()" class="assistant-btn assistant-btn-style">
                         <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
                         <span>Style Tips</span>
                     </button>
-                    <button type="button" onclick="checkReadability()" style="padding: 0.5rem 0.75rem; background: #bbf7d0 !important; color: #166534 !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <button type="button" onclick="checkReadability()" class="assistant-btn assistant-btn-readability">
                         <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17.25m20-11.002c5.5 0 10 4.747 10 11.002M12 6.253N12 3m0 13.002c-5.5 0-10-4.747-10-11"/>
                         </svg>
                         <span>Readability</span>
                     </button>
-                    <button type="button" onclick="analyzeTone()" style="padding: 0.5rem 0.75rem; background: #fbcfe8 !important; color: #831843 !important; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <button type="button" onclick="analyzeTone()" class="assistant-btn assistant-btn-tone">
                         <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         <span>Tone Analysis</span>
                     </button>
                 </div>
-                <div id="assistant-results" style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; display: none;">
+                <div id="assistant-results" style="margin-top: 1rem; padding: 1rem; border-radius: 0.5rem; display: none;">
                     <h4 style="font-weight: 600; color: #111827; margin-bottom: 0.5rem;" id="results-title"></h4>
                     <div id="results-content" style="font-size: 0.875rem; color: #4b5563; line-height: 1.6;"></div>
                 </div>

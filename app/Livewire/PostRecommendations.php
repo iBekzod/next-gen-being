@@ -16,7 +16,7 @@ class PostRecommendations extends Component
 
     protected $recommendationService;
 
-    public function mount(Post $post, User $user = null, string $type = 'similar')
+    public function mount(Post $post, ?User $user = null, string $type = 'similar')
     {
         $this->recommendationService = app(RecommendationService::class);
         $this->currentPost = $post;

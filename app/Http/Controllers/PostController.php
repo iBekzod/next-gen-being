@@ -252,6 +252,12 @@ class PostController extends Controller
             $path = $request->file('featured_image')->store('posts', 'public');
             $validated['featured_image'] = Storage::url($path);
         }
+
+        // Generate series slug if series title provided
+        if (!empty($validated['series_title'])) {
+            $validated['series_slug'] = \Illuminate\Support\Str::slug($validated['series_title']);
+        }
+
         $post->update($validated);
 
         if (isset($validated['tags'])) {
@@ -274,15 +280,16 @@ class PostController extends Controller
 
     public function tutorials()
     {
-        // Get all unique series
+        // Get all unique series - group by series_slug only to avoid duplicates from NULL values
         $series = Post::published()
             ->whereNotNull('series_slug')
-            ->select('series_slug', 'series_title', 'series_description', 'series_total_parts')
+            ->select('series_slug', 'series_title', 'series_description')
+            ->selectRaw('MAX(series_total_parts) as series_total_parts')
             ->selectRaw('MIN(series_part) as first_part')
             ->selectRaw('MAX(published_at) as last_updated')
             ->selectRaw('COUNT(*) as published_parts')
             ->with(['category'])
-            ->groupBy('series_slug', 'series_title', 'series_description', 'series_total_parts')
+            ->groupBy('series_slug', 'series_title', 'series_description')
             ->orderByDesc('last_updated')
             ->get();
 
