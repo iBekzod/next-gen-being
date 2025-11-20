@@ -3,45 +3,59 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Services\OAuthCredentialService;
+use App\Services\OAuthProviderService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Str;
+use Illuminate\Http\RedirectResponse;
 
 class OAuthController extends Controller
 {
-    /**
-     * Supported OAuth providers for user authentication
-     */
-    const SUPPORTED_PROVIDERS = ['google', 'github', 'facebook'];
+    public function __construct(
+        protected OAuthCredentialService $credentialService,
+        protected OAuthProviderService $providerService,
+    ) {}
 
     /**
      * Redirect to OAuth provider
      */
-    public function redirect($provider)
+    public function redirect(string $provider): RedirectResponse
     {
-        if (!in_array($provider, self::SUPPORTED_PROVIDERS)) {
-            abort(404, 'Provider not supported');
+        // Validate provider is enabled
+        if (!$this->credentialService->hasValidCredentials($provider)) {
+            return redirect()->route('login')
+                ->with('error', ucfirst($provider) . ' authentication is not available right now.');
         }
 
-        return Socialite::driver($provider)->redirect();
+        try {
+            return $this->providerService->getSocialiteRedirect($provider);
+        } catch (\Exception $e) {
+            \Log::error('OAuth Redirect Error', [
+                'provider' => $provider,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('login')
+                ->with('error', 'Failed to redirect to ' . ucfirst($provider) . '. Please try again.');
+        }
     }
 
     /**
      * Handle OAuth callback
      */
-    public function callback($provider)
+    public function callback(string $provider): RedirectResponse
     {
-        if (!in_array($provider, self::SUPPORTED_PROVIDERS)) {
-            abort(404, 'Provider not supported');
+        // Validate provider is enabled
+        if (!$this->credentialService->hasValidCredentials($provider)) {
+            return redirect()->route('login')
+                ->with('error', ucfirst($provider) . ' authentication is not available.');
         }
 
         try {
-            $socialUser = Socialite::driver($provider)->user();
+            // Get user from OAuth provider
+            $socialiteUser = $this->providerService->getOAuthUser($provider);
 
-            // Find or create user
-            $user = $this->findOrCreateUser($socialUser, $provider);
+            // Find or create user and link social account
+            $user = $this->providerService->findOrCreateUser($provider, $socialiteUser);
 
             // Log the user in
             Auth::login($user, true);
@@ -49,10 +63,11 @@ class OAuthController extends Controller
             // Redirect based on user role
             $redirectPath = $this->getRedirectPath($user);
 
-            return redirect($redirectPath)->with('success', 'Welcome back, ' . $user->name . '!');
+            return redirect($redirectPath)
+                ->with('success', 'Welcome back, ' . $user->name . '! You have successfully signed in with ' . ucfirst($provider) . '.');
 
         } catch (\Exception $e) {
-            \Log::error('OAuth Error', [
+            \Log::error('OAuth Callback Error', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -64,53 +79,51 @@ class OAuthController extends Controller
     }
 
     /**
-     * Find or create user from OAuth data
+     * Disconnect OAuth provider from user account
      */
-    protected function findOrCreateUser($socialUser, $provider)
+    public function disconnect(string $provider): RedirectResponse
     {
-        // First, try to find by provider ID
-        $user = User::where('oauth_provider', $provider)
-                    ->where('oauth_provider_id', $socialUser->getId())
-                    ->first();
+        // Validate provider
+        if (!$this->credentialService->isValidProvider($provider)) {
+            return redirect()->back()
+                ->with('error', 'Invalid provider.');
+        }
 
-        if ($user) {
-            // Update avatar if changed
-            if ($socialUser->getAvatar() && $socialUser->getAvatar() !== $user->avatar) {
-                $user->update(['avatar' => $socialUser->getAvatar()]);
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return redirect()->route('login');
             }
-            return $user;
-        }
 
-        // Second, try to find by email
-        $user = User::where('email', $socialUser->getEmail())->first();
+            // Check if user has this provider connected
+            if (!$this->providerService->hasConnectedProvider($user, $provider)) {
+                return redirect()->back()
+                    ->with('error', ucfirst($provider) . ' is not connected to your account.');
+            }
 
-        if ($user) {
-            // Link this provider to existing account
-            $user->update([
-                'oauth_provider' => $provider,
-                'oauth_provider_id' => $socialUser->getId(),
-                'avatar' => $socialUser->getAvatar() ?? $user->avatar,
-                'email_verified_at' => $user->email_verified_at ?? now(),
+            // Disconnect the social account
+            $this->providerService->disconnectSocialAccount($user, $provider);
+
+            return redirect()->back()
+                ->with('success', ucfirst($provider) . ' has been successfully disconnected from your account.');
+
+        } catch (\Exception $e) {
+            \Log::error('OAuth Disconnect Error', [
+                'provider' => $provider,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
             ]);
-            return $user;
-        }
 
-        // Create new user
-        return User::create([
-            'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User',
-            'email' => $socialUser->getEmail(),
-            'password' => Hash::make(Str::random(32)), // Random password for OAuth users
-            'email_verified_at' => now(), // OAuth emails are pre-verified
-            'avatar' => $socialUser->getAvatar(),
-            'oauth_provider' => $provider,
-            'oauth_provider_id' => $socialUser->getId(),
-        ]);
+            return redirect()->back()
+                ->with('error', 'Failed to disconnect ' . ucfirst($provider) . '. Please try again.');
+        }
     }
 
     /**
      * Determine where to redirect user after login
      */
-    protected function getRedirectPath(User $user)
+    protected function getRedirectPath($user): string
     {
         // Check if user has admin role
         if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {

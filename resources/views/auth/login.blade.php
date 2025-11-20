@@ -53,6 +53,8 @@
                 </button>
             </form>
 
+            @include('auth.partials.social-login-buttons', ['title' => 'Or continue with'])
+
             <p class="mt-8 text-sm text-center text-slate-500 dark:text-slate-400">
                 New to NextGenBeing?
                 <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">Create an account</a>
