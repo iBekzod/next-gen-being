@@ -83,6 +83,99 @@ Route::prefix('v1')->group(function () {
             Route::post('/publish', [TutorialGenerationController::class, 'publishSeries'])->name('publish');
             Route::get('/config', [TutorialGenerationController::class, 'configuration'])->name('config');
         });
+
+        // Engagement & Monetization Features Routes
+        Route::prefix('features')->name('features.')->group(function () {
+            // Tips
+            Route::post('/tips/initiate', [\App\Http\Controllers\TipController::class, 'initiate'])->name('tips.initiate');
+            Route::get('/tips/stats/{userId}', [\App\Http\Controllers\TipController::class, 'stats'])->name('tips.stats');
+            Route::get('/tips/leaderboard', [\App\Http\Controllers\TipController::class, 'leaderboard'])->name('tips.leaderboard');
+            Route::get('/tips/my-sent', [\App\Http\Controllers\TipController::class, 'myTipsSent'])->name('tips.sent');
+            Route::get('/tips/my-received', [\App\Http\Controllers\TipController::class, 'myTipsReceived'])->name('tips.received');
+
+            // Streaks
+            Route::get('/streaks/{userId}', [\App\Http\Controllers\StreakController::class, 'show'])->name('streaks.show');
+            Route::get('/streaks/leaderboard/reading', [\App\Http\Controllers\StreakController::class, 'readingLeaderboard'])->name('streaks.reading');
+            Route::get('/streaks/leaderboard/writing', [\App\Http\Controllers\StreakController::class, 'writingLeaderboard'])->name('streaks.writing');
+            Route::get('/streaks/my', [\App\Http\Controllers\StreakController::class, 'myStreaks'])->name('streaks.my');
+            Route::post('/streaks/record/reading', [\App\Http\Controllers\StreakController::class, 'recordReading'])->name('streaks.record.reading');
+            Route::post('/streaks/record/writing', [\App\Http\Controllers\StreakController::class, 'recordWriting'])->name('streaks.record.writing');
+
+            // Leaderboards
+            Route::get('/leaderboards/creators', [\App\Http\Controllers\LeaderboardController::class, 'creators'])->name('leaderboards.creators');
+            Route::get('/leaderboards/readers', [\App\Http\Controllers\LeaderboardController::class, 'readers'])->name('leaderboards.readers');
+            Route::get('/leaderboards/engagers', [\App\Http\Controllers\LeaderboardController::class, 'engagers'])->name('leaderboards.engagers');
+            Route::get('/leaderboards/trending', [\App\Http\Controllers\LeaderboardController::class, 'trending'])->name('leaderboards.trending');
+            Route::get('/leaderboards/user-rank', [\App\Http\Controllers\LeaderboardController::class, 'userRank'])->name('leaderboards.rank');
+
+            // Challenges
+            Route::get('/challenges', [\App\Http\Controllers\ChallengeController::class, 'index'])->name('challenges.index');
+            Route::get('/challenges/{challenge}', [\App\Http\Controllers\ChallengeController::class, 'show'])->name('challenges.show');
+            Route::post('/challenges/{challenge}/join', [\App\Http\Controllers\ChallengeController::class, 'join'])->name('challenges.join');
+            Route::post('/challenges/{challenge}/progress', [\App\Http\Controllers\ChallengeController::class, 'updateProgress'])->name('challenges.progress');
+            Route::post('/challenges/{challenge}/claim-reward', [\App\Http\Controllers\ChallengeController::class, 'claimReward'])->name('challenges.reward');
+            Route::get('/challenges/{challenge}/leaderboard', [\App\Http\Controllers\ChallengeController::class, 'leaderboard'])->name('challenges.leaderboard');
+            Route::get('/challenges/{challenge}/stats', [\App\Http\Controllers\ChallengeController::class, 'stats'])->name('challenges.stats');
+            Route::get('/challenges/my', [\App\Http\Controllers\ChallengeController::class, 'myChallenges'])->name('challenges.my');
+
+            // Collections
+            Route::get('/collections', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collections.index');
+            Route::post('/collections', [\App\Http\Controllers\CollectionController::class, 'store'])->name('collections.store');
+            Route::get('/collections/public', [\App\Http\Controllers\CollectionController::class, 'publicCollections'])->name('collections.public');
+            Route::get('/collections/trending', [\App\Http\Controllers\CollectionController::class, 'trending'])->name('collections.trending');
+            Route::get('/collections/search', [\App\Http\Controllers\CollectionController::class, 'search'])->name('collections.search');
+            Route::get('/collections/my-saved', [\App\Http\Controllers\CollectionController::class, 'mySaved'])->name('collections.saved');
+            Route::get('/collections/{collection}', [\App\Http\Controllers\CollectionController::class, 'show'])->name('collections.show');
+            Route::put('/collections/{collection}', [\App\Http\Controllers\CollectionController::class, 'update'])->name('collections.update');
+            Route::delete('/collections/{collection}', [\App\Http\Controllers\CollectionController::class, 'destroy'])->name('collections.destroy');
+            Route::post('/collections/{collection}/posts', [\App\Http\Controllers\CollectionController::class, 'addPost'])->name('collections.add-post');
+            Route::delete('/collections/{collection}/posts/{post}', [\App\Http\Controllers\CollectionController::class, 'removePost'])->name('collections.remove-post');
+            Route::post('/collections/{collection}/save', [\App\Http\Controllers\CollectionController::class, 'toggleSave'])->name('collections.toggle-save');
+
+            // Content Calendar
+            Route::post('/schedule/posts', [\App\Http\Controllers\ContentCalendarController::class, 'schedule'])->name('schedule.store');
+            Route::post('/schedule/drafts', [\App\Http\Controllers\ContentCalendarController::class, 'saveDraft'])->name('schedule.draft');
+            Route::get('/schedule/calendar', [\App\Http\Controllers\ContentCalendarController::class, 'calendar'])->name('schedule.calendar');
+            Route::get('/schedule/upcoming', [\App\Http\Controllers\ContentCalendarController::class, 'upcoming'])->name('schedule.upcoming');
+            Route::get('/schedule/drafts', [\App\Http\Controllers\ContentCalendarController::class, 'drafts'])->name('schedule.drafts');
+            Route::get('/schedule/history', [\App\Http\Controllers\ContentCalendarController::class, 'history'])->name('schedule.history');
+            Route::get('/schedule/stats', [\App\Http\Controllers\ContentCalendarController::class, 'stats'])->name('schedule.stats');
+            Route::get('/schedule/suggestions', [\App\Http\Controllers\ContentCalendarController::class, 'suggestions'])->name('schedule.suggestions');
+            Route::put('/schedule/{scheduled}', [\App\Http\Controllers\ContentCalendarController::class, 'update'])->name('schedule.update');
+            Route::delete('/schedule/{scheduled}', [\App\Http\Controllers\ContentCalendarController::class, 'delete'])->name('schedule.delete');
+
+            // Analytics
+            Route::get('/analytics/dashboard', [\App\Http\Controllers\AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+            Route::get('/analytics/performance', [\App\Http\Controllers\AnalyticsController::class, 'performance'])->name('analytics.performance');
+            Route::get('/analytics/audience', [\App\Http\Controllers\AnalyticsController::class, 'audience'])->name('analytics.audience');
+            Route::get('/analytics/revenue', [\App\Http\Controllers\AnalyticsController::class, 'revenue'])->name('analytics.revenue');
+            Route::get('/analytics/daily', [\App\Http\Controllers\AnalyticsController::class, 'dailyAnalytics'])->name('analytics.daily');
+
+            // Affiliates
+            Route::post('/affiliate/links', [\App\Http\Controllers\AffiliateController::class, 'createLink'])->name('affiliate.create');
+            Route::get('/affiliate/links', [\App\Http\Controllers\AffiliateController::class, 'listLinks'])->name('affiliate.list');
+            Route::get('/affiliate/links/{link}/stats', [\App\Http\Controllers\AffiliateController::class, 'stats'])->name('affiliate.stats');
+            Route::get('/affiliate/earnings', [\App\Http\Controllers\AffiliateController::class, 'earnings'])->name('affiliate.earnings');
+            Route::get('/affiliate/leaderboard', [\App\Http\Controllers\AffiliateController::class, 'leaderboard'])->name('affiliate.leaderboard');
+
+            // Reader Preferences
+            Route::get('/preferences', [\App\Http\Controllers\PreferenceController::class, 'show'])->name('preferences.show');
+            Route::put('/preferences', [\App\Http\Controllers\PreferenceController::class, 'update'])->name('preferences.update');
+            Route::post('/preferences/reset', [\App\Http\Controllers\PreferenceController::class, 'reset'])->name('preferences.reset');
+            Route::post('/preferences/dislike/{categoryId}', [\App\Http\Controllers\PreferenceController::class, 'dislike'])->name('preferences.dislike');
+            Route::get('/preferences/recommendations', [\App\Http\Controllers\PreferenceController::class, 'recommendations'])->name('preferences.recommendations');
+
+            // Creator Tools
+            Route::post('/creator-tools/ideas/generate', [\App\Http\Controllers\CreatorToolsController::class, 'generateIdeas'])->name('tools.ideas.generate');
+            Route::get('/creator-tools/ideas', [\App\Http\Controllers\CreatorToolsController::class, 'listIdeas'])->name('tools.ideas.list');
+            Route::post('/creator-tools/ideas/{idea}/outline', [\App\Http\Controllers\CreatorToolsController::class, 'generateOutline'])->name('tools.ideas.outline');
+            Route::post('/creator-tools/seo/analyze', [\App\Http\Controllers\CreatorToolsController::class, 'analyzeSEO'])->name('tools.seo');
+            Route::get('/creator-tools/audience', [\App\Http\Controllers\CreatorToolsController::class, 'audience'])->name('tools.audience');
+            Route::get('/creator-tools/suggestions', [\App\Http\Controllers\CreatorToolsController::class, 'suggestions'])->name('tools.suggestions');
+            Route::get('/creator-tools/report', [\App\Http\Controllers\CreatorToolsController::class, 'report'])->name('tools.report');
+            Route::put('/creator-tools/ideas/{idea}', [\App\Http\Controllers\CreatorToolsController::class, 'updateIdea'])->name('tools.ideas.update');
+            Route::delete('/creator-tools/ideas/{idea}', [\App\Http\Controllers\CreatorToolsController::class, 'deleteIdea'])->name('tools.ideas.delete');
+        });
     });
 
     // Public tutorial API endpoints

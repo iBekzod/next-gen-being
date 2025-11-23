@@ -239,4 +239,172 @@ class NotificationService
     {
         return Notification::where('created_at', '<', now()->subDays($days))->delete();
     }
+
+    // Email Notification Methods
+
+    /**
+     * Send email notification for tip received
+     */
+    public static function notifyTipReceived(User $recipient, User $tipper, float $amount, ?Post $post = null): void
+    {
+        try {
+            $prefs = $recipient->getNotificationPreferences();
+            if (!$prefs->shouldSendEmailFor('tip_received')) {
+                return;
+            }
+
+            \Mail::send('emails.tip-received', [
+                'recipient' => $recipient,
+                'tipper' => $tipper,
+                'amount' => $amount,
+                'post' => $post,
+            ], function ($message) use ($recipient, $amount) {
+                $message->to($recipient->email)
+                    ->subject("You received a \${$amount} tip!");
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send tip notification email', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send email notification for streak milestone
+     */
+    public static function notifyStreakMilestone(User $user, string $type, int $count): void
+    {
+        try {
+            $prefs = $user->getNotificationPreferences();
+            if (!$prefs->shouldSendEmailFor('streak_milestone')) {
+                return;
+            }
+
+            \Mail::send('emails.streak-milestone', [
+                'user' => $user,
+                'type' => $type,
+                'count' => $count,
+            ], function ($message) use ($user, $type, $count) {
+                $message->to($user->email)
+                    ->subject("🔥 Congratulations! {$count}-day {$type} streak!");
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send streak milestone email', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send email notification for streak at risk
+     */
+    public static function notifyStreakAtRisk(User $user, string $type, int $currentCount): void
+    {
+        try {
+            $prefs = $user->getNotificationPreferences();
+            if (!$prefs->shouldSendEmailFor('streak_warning')) {
+                return;
+            }
+
+            \Mail::send('emails.streak-at-risk', [
+                'user' => $user,
+                'type' => $type,
+                'currentCount' => $currentCount,
+            ], function ($message) use ($user) {
+                $message->to($user->email)
+                    ->subject('⚠️ Your streak is at risk! Come back now');
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send streak warning email', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send email notification for challenge completed
+     */
+    public static function notifyChallengeCompleted(User $user, $challenge): void
+    {
+        try {
+            $prefs = $user->getNotificationPreferences();
+            if (!$prefs->shouldSendEmailFor('challenge_completed')) {
+                return;
+            }
+
+            \Mail::send('emails.challenge-completed', [
+                'user' => $user,
+                'challenge' => $challenge,
+            ], function ($message) use ($user, $challenge) {
+                $message->to($user->email)
+                    ->subject("🏆 Challenge completed: {$challenge->name}");
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send challenge completed email', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send weekly digest email
+     */
+    public static function sendWeeklyDigest(User $user): void
+    {
+        try {
+            $prefs = $user->getNotificationPreferences();
+            if (!$prefs->shouldSendEmailFor('weekly_digest')) {
+                return;
+            }
+
+            // Get top posts from the week
+            $topPosts = Post::published()
+                ->where('published_at', '>=', now()->subDays(7))
+                ->orderBy('views_count', 'desc')
+                ->limit(5)
+                ->get();
+
+            // Get stats
+            $stats = [
+                'posts_read' => $user->interactions()
+                    ->where('type', 'view')
+                    ->where('created_at', '>=', now()->subDays(7))
+                    ->count(),
+                'posts_liked' => $user->interactions()
+                    ->where('type', 'like')
+                    ->where('created_at', '>=', now()->subDays(7))
+                    ->count(),
+                'followers_gained' => $user->followers()
+                    ->where('created_at', '>=', now()->subDays(7))
+                    ->count(),
+            ];
+
+            \Mail::send('emails.weekly-digest', [
+                'user' => $user,
+                'topPosts' => $topPosts,
+                'stats' => $stats,
+            ], function ($message) use ($user) {
+                $message->to($user->email)
+                    ->subject('📬 Your weekly digest');
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send weekly digest', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send email notification for post mentioned
+     */
+    public static function notifyPostMentioned(User $user, Post $post, int $mentionCount): void
+    {
+        try {
+            $prefs = $user->getNotificationPreferences();
+            if (!$prefs->shouldSendEmailFor('post_mentioned')) {
+                return;
+            }
+
+            \Mail::send('emails.post-trending', [
+                'user' => $user,
+                'post' => $post,
+                'mentionCount' => $mentionCount,
+            ], function ($message) use ($user, $post) {
+                $message->to($user->email)
+                    ->subject("🚀 Your post is trending: {$post->title}");
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send post trending email', ['error' => $e->getMessage()]);
+        }
+    }
 }

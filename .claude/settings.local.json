@@ -21,7 +21,10 @@
       "Bash(curl:*)",
       "Bash(python3:*)",
       "Bash(php artisan:*)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(docker-compose:*)",
+      "Bash(__NEW_LINE__ echo '=== FILES CREATED THIS SESSION ===')",
+      "Bash(__NEW_LINE__ echo \"=== ✅ ALL 12 BLADE VIEWS CREATED ===\")"
     ],
     "deny": [],
     "ask": []

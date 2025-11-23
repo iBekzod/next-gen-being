@@ -634,4 +634,112 @@ class User extends Authenticatable implements HasMedia, FilamentUser
                     ->with('post')
                     ->get();
     }
+
+    // New Feature Relationships - Extended Build Session
+
+    // Tipping System
+    public function tipsSent()
+    {
+        return $this->hasMany(Tip::class, 'from_user_id');
+    }
+
+    public function tipsReceived()
+    {
+        return $this->hasMany(Tip::class, 'to_user_id');
+    }
+
+    // Streaks System
+    public function streaks()
+    {
+        return $this->hasMany(Streak::class);
+    }
+
+    public function getStreakBySys($type = 'reading')
+    {
+        return $this->streaks()->where('type', $type)->first();
+    }
+
+    // Challenges System
+    public function challengeParticipations()
+    {
+        return $this->hasMany(ChallengeParticipant::class);
+    }
+
+    public function joinedChallenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'challenge_participants')
+                    ->withPivot('progress', 'is_completed', 'completed_at', 'reward_claimed')
+                    ->withTimestamps();
+    }
+
+    // Creator Analytics
+    public function creatorAnalytics()
+    {
+        return $this->hasMany(CreatorAnalytic::class);
+    }
+
+    public function getLatestAnalytics()
+    {
+        return $this->creatorAnalytics()->latest('date')->first();
+    }
+
+    // Collections System
+    public function collections()
+    {
+        return $this->hasMany(Collection::class);
+    }
+
+    public function savedCollections()
+    {
+        return $this->belongsToMany(Collection::class, 'saved_collections')
+                    ->withTimestamps();
+    }
+
+    // Content Calendar & Scheduling
+    public function scheduledPosts()
+    {
+        return $this->hasMany(ScheduledPost::class);
+    }
+
+    // Reader Preferences
+    public function readerPreference()
+    {
+        return $this->hasOne(ReaderPreference::class);
+    }
+
+    public function getOrCreateReaderPreference()
+    {
+        return $this->readerPreference ?? $this->readerPreference()->create();
+    }
+
+    // Affiliate System
+    public function affiliateLinks()
+    {
+        return $this->hasMany(AffiliateLink::class, 'creator_id');
+    }
+
+    public function affiliateClicks()
+    {
+        return $this->hasMany(AffiliateClick::class, 'user_id');
+    }
+
+    public function affiliateConversions()
+    {
+        return $this->hasMany(AffiliateConversion::class, 'user_id');
+    }
+
+    // Creator Tools
+    public function contentIdeas()
+    {
+        return $this->hasMany(ContentIdea::class);
+    }
+
+    public function getActiveContentIdeas($limit = 20)
+    {
+        return $this->contentIdeas()
+                    ->active()
+                    ->orderByDesc('trending_score')
+                    ->limit($limit)
+                    ->get();
+    }
 }
