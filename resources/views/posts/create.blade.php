@@ -211,6 +211,28 @@
     to { transform: rotate(360deg); }
 }
 
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
 /* Form inputs with dark mode support */
 .create-post-form input[type="text"],
 .create-post-form input[type="email"],
@@ -820,8 +842,9 @@ main {
 <!-- AI Content Generation Modal -->
 <div id="content-modal" class="modal-overlay">
     <div class="modal-box">
-        <h3>Generate Post Content</h3>
+        <h3>Generate Post Content with AI</h3>
         <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Topic Input -->
             <div>
                 <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">What is your post about?</label>
                 <input type="text"
@@ -829,6 +852,40 @@ main {
                        class="modal-input"
                        placeholder="e.g., Building Web Applications with Laravel">
             </div>
+
+            <!-- Generation Type -->
+            <div>
+                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">Type of Content</label>
+                <select id="content-type" class="modal-input" style="cursor: pointer;">
+                    <option value="full">Full Article Content</option>
+                    <option value="outline">Article Outline</option>
+                    <option value="introduction">Introduction Only</option>
+                    <option value="conclusion">Conclusion Only</option>
+                </select>
+            </div>
+
+            <!-- Tone -->
+            <div>
+                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">Writing Tone</label>
+                <select id="content-tone" class="modal-input" style="cursor: pointer;">
+                    <option value="professional">Professional & Formal</option>
+                    <option value="engaging">Engaging & Conversational</option>
+                    <option value="casual">Casual & Friendly</option>
+                    <option value="academic">Academic & Technical</option>
+                </select>
+            </div>
+
+            <!-- Length -->
+            <div>
+                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">Desired Length</label>
+                <select id="content-length" class="modal-input" style="cursor: pointer;">
+                    <option value="short">Short (500-800 words)</option>
+                    <option value="medium" selected>Medium (1000-1500 words)</option>
+                    <option value="long">Long (2000+ words)</option>
+                </select>
+            </div>
+
+            <!-- Keywords -->
             <div>
                 <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">Key topics to cover (optional)</label>
                 <input type="text"
@@ -838,7 +895,8 @@ main {
             </div>
             <div class="modal-buttons">
                 <button type="button" onclick="generatePostContent()" class="btn-primary">
-                    Generate
+                    <span id="generate-btn-text">Generate</span>
+                    <span id="generate-loading" style="display:none;" class="loading"></span>
                 </button>
                 <button type="button" onclick="closeContentModal()" class="btn-secondary">
                     Cancel
@@ -939,15 +997,38 @@ if (seriesTitleInput) {
 
 // Initialize tagify if container exists
 const tagifyContainer = document.getElementById('tagify-container');
+let tagifyInstance = null;
 if (tagifyContainer) {
     const tagifyInput = document.createElement('input');
-    tagifyInput.name = 'tags';
     tagifyInput.id = 'tags-input';
     tagifyInput.value = '{{ old('tags') }}';
     tagifyInput.style.width = '100%';
     tagifyContainer.appendChild(tagifyInput);
 
-    new Tagify(tagifyInput);
+    tagifyInstance = new Tagify(tagifyInput);
+}
+
+// Handle form submission - sync tagify data before submit
+const createPostForm = document.querySelector('form[action="{{ route('posts.store') }}"]');
+if (createPostForm) {
+    createPostForm.addEventListener('submit', function(e) {
+        // Sync Tagify data to hidden input before submission
+        if (tagifyInstance) {
+            const tags = tagifyInstance.getCleanData();
+            const tagNames = tags.map(tag => typeof tag === 'string' ? tag : tag.value).join(',');
+
+            // Create or update hidden input with tag data
+            let tagsInput = document.getElementById('tags-hidden');
+            if (!tagsInput) {
+                tagsInput = document.createElement('input');
+                tagsInput.type = 'hidden';
+                tagsInput.name = 'tags';
+                tagsInput.id = 'tags-hidden';
+                this.appendChild(tagsInput);
+            }
+            tagsInput.value = tagNames;
+        }
+    });
 }
 
 // Image preview
@@ -974,8 +1055,11 @@ function closeContentModal() {
 function generatePostContent() {
     let topic = document.getElementById('content-topic').value.trim();
     const keywords = document.getElementById('content-keywords').value.trim();
+    const contentType = document.getElementById('content-type').value;
+    const tone = document.getElementById('content-tone').value;
+    const length = document.getElementById('content-length').value;
 
-    // If no topic provided, use the title from the form
+    // Validate inputs
     if (!topic) {
         const title = document.getElementById('title').value.trim();
         if (!title) {
@@ -985,24 +1069,90 @@ function generatePostContent() {
         topic = title;
     }
 
-    const btn = event.target;
+    const btn = event.target.closest('button');
     const originalText = btn.textContent;
+    const btnText = document.getElementById('generate-btn-text');
+    const btnLoading = document.getElementById('generate-loading');
+
+    // Show loading state
     btn.disabled = true;
-    btn.textContent = 'Generating...';
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-block';
 
-    // Simulate AI generation with more contextual content
-    setTimeout(() => {
-        const keywordList = keywords ? `\n\nKey topics covered: ${keywords}` : '';
+    // Call backend API
+    fetch('/api/v1/writing/generate-content', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            topic: topic,
+            type: contentType,
+            tone: tone,
+            length: length,
+            keywords: keywords || null
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Insert generated content into textarea
+            document.getElementById('content').value = data.data.content;
 
-        const content = `# ${topic}\n\n## Introduction\n\nWelcome to this comprehensive guide on ${topic}. In this article, we'll explore the key concepts, best practices, and practical implementations you need to know.${keywordList}\n\n## What is ${topic}?\n\nStart with a clear definition and context for your readers. Explain why this topic matters and who should care about it.\n\n## Key Concepts\n\n### Concept 1\nExplain the first major concept with relevant details and examples.\n\n### Concept 2\nCover the second important aspect with practical insights.\n\n### Concept 3\nProvide additional valuable information related to your topic.\n\n## Best Practices\n\n- Practice 1: Explain why this is important\n- Practice 2: Share practical tips and techniques\n- Practice 3: Provide actionable recommendations\n\n## Common Mistakes to Avoid\n\nDiscuss what readers should watch out for when working with ${topic}.\n\n## Practical Examples\n\nInclude real-world examples and code snippets where applicable.\n\n## Conclusion\n\nSummarize the key takeaways and encourage readers to implement what they've learned. Share next steps for readers interested in going deeper.`;
+            // Show success message
+            showNotification(`Content generated successfully! (${data.data.wordCount} words)`, 'success');
 
-        document.getElementById('content').value = content;
-        closeContentModal();
+            // Clear input fields and close modal
+            document.getElementById('content-topic').value = '';
+            document.getElementById('content-keywords').value = '';
+            closeContentModal();
+        } else {
+            showNotification('Failed to generate content: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error generating content: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // Reset button state
         btn.disabled = false;
-        btn.textContent = originalText;
-        document.getElementById('content-topic').value = '';
-        document.getElementById('content-keywords').value = '';
-    }, 2000);
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    });
+}
+
+// Notification helper
+function showNotification(message, type = 'success') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background-color: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // Image Modal Functions

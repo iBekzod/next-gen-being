@@ -13,7 +13,15 @@
       "Bash(__NEW_LINE__ ls -la \"/d/projects/MyProjects/next-gen-being/\"ACHIEVEMENT*.*)",
       "Bash(docker exec:*)",
       "Bash(php -l:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(composer require:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nImplement full OAuth login functionality with Google, GitHub, Facebook, and Discord\n\nFeatures:\n- Created OAuthCredentialService to validate and manage provider credentials\n- Created OAuthProviderService to handle OAuth operations (login, linking, disconnecting)\n- Enhanced OAuthController with credential validation and proper error handling\n- Implemented disconnect functionality for users to unlink OAuth providers\n- Added conditional social login buttons component that appears only with valid credentials\n- Integrated social login buttons into login and register views\n- Buttons only display when corresponding provider credentials are configured in .env\n- Added Laravel Socialite package dependency\n- Registered OAuth services in AppServiceProvider for dependency injection\n\nThe implementation ensures:\n✓ Social login buttons appear only when env credentials are valid\n✓ Full account linking support (multiple providers to one user)\n✓ Proper error handling and logging\n✓ Support for Google, GitHub, Facebook, and Discord\n✓ Disconnect/unlink functionality for managing connected accounts\n✓ Uses services for credential management and separation of concerns\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(docker-compose exec:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(php artisan:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []

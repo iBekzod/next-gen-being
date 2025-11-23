@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UserController as ApiUserController;
 use App\Http\Controllers\Api\WritingAssistantController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\TutorialGenerationController;
 
 Route::prefix('v1')->group(function () {
     // Public API routes
@@ -40,6 +41,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/introduction-templates', [WritingAssistantController::class, 'getIntroductionTemplates'])->name('introduction-templates');
             Route::post('/content-outlines', [WritingAssistantController::class, 'getContentOutlines'])->name('content-outlines');
             Route::post('/extract-keywords', [WritingAssistantController::class, 'extractKeywords'])->name('extract-keywords');
+            Route::post('/generate-content', [WritingAssistantController::class, 'generateContent'])->name('generate-content');
         });
 
         // Webhook API routes
@@ -72,5 +74,19 @@ Route::prefix('v1')->group(function () {
             Route::get('/payouts', [InvoiceController::class, 'getUserPayouts'])->name('payouts');
             Route::get('/statistics', [InvoiceController::class, 'getStatistics'])->name('statistics');
         });
+
+        // Tutorial Generation API routes (Admin only)
+        Route::prefix('tutorials')->name('tutorials.')->group(function () {
+            Route::get('/status', [TutorialGenerationController::class, 'status'])->name('status');
+            Route::post('/trigger', [TutorialGenerationController::class, 'trigger'])->name('trigger');
+            Route::get('/history', [TutorialGenerationController::class, 'history'])->name('history');
+            Route::post('/publish', [TutorialGenerationController::class, 'publishSeries'])->name('publish');
+            Route::get('/config', [TutorialGenerationController::class, 'configuration'])->name('config');
+        });
+    });
+
+    // Public tutorial API endpoints
+    Route::prefix('tutorials')->name('tutorials.')->group(function () {
+        Route::get('/config', [TutorialGenerationController::class, 'configuration'])->name('config');
     });
 });

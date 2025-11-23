@@ -146,4 +146,8 @@ return [
         'redirect' => env('DISCORD_OAUTH_REDIRECT', '/auth/oauth/discord/callback'),
     ],
 
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
 ];
