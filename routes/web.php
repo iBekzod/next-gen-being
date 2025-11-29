@@ -141,10 +141,6 @@ Route::view('/terms', 'terms')->name('terms');
 
 Route::view('/refund-policy', 'refund')->name('refund');
 
-
-
-
-
 // Newsletter Routes
 use App\Http\Controllers\NewsletterController;
 
@@ -178,7 +174,6 @@ Route::middleware(['auth', 'verified'])->prefix('auth')->name('social.auth.')->g
 
 // Collaboration Routes
 use App\Http\Controllers\CollaborationController;
-    // Reader Tracking Routes
 use App\Http\Controllers\ReaderTrackingController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -196,7 +191,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/export', [CollaborationController::class, 'exportReport'])->name('export');
     });
 
-
     Route::prefix('api/posts/{post}/readers')->name('readers.')->group(function () {
         Route::post('/activity', [ReaderTrackingController::class, 'recordActivity'])->name('activity');
         Route::get('/count', [ReaderTrackingController::class, 'getLiveCount'])->name('count');
@@ -208,4 +202,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/api/readers/cleanup', [ReaderTrackingController::class, 'cleanupInactive'])->name('readers.cleanup');
 });
-
