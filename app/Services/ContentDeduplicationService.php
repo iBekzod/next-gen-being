@@ -103,7 +103,16 @@ class ContentDeduplicationService
 
             $maxSimilarity = 0;
 
-            foreach ($similarContents as $item) {
+            // Sort by similarity (descending) to include most relevant articles first
+            usort($similarContents, function ($a, $b) {
+                return $b['similarity'] <=> $a['similarity'];
+            });
+
+            // Include top similar items (max 5 to get rich content without noise)
+            $maxItems = min(5, count($similarContents));
+            $selectedItems = array_slice($similarContents, 0, $maxItems);
+
+            foreach ($selectedItems as $item) {
                 $contentIds[] = $item['content']->id;
                 if (!in_array($item['content']->content_source_id, $sourceIds)) {
                     $sourceIds[] = $item['content']->content_source_id;
@@ -111,6 +120,12 @@ class ContentDeduplicationService
                 $maxSimilarity = max($maxSimilarity, $item['similarity']);
 
                 // Mark as duplicate
+                $item['content']->markAsDuplicate($primaryContent->id);
+            }
+
+            // Mark remaining non-selected similar items as duplicates too
+            $remainingItems = array_slice($similarContents, $maxItems);
+            foreach ($remainingItems as $item) {
                 $item['content']->markAsDuplicate($primaryContent->id);
             }
 

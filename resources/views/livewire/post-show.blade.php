@@ -41,8 +41,10 @@
                         @endif
                     </div>
                     <div class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-400">
+                        @if($post->published_at)
                         <span>{{ $post->published_at->format('M j, Y') }}</span>
                         <span>•</span>
+                        @endif
                         <span>{{ number_format($post->views_count) }} views</span>
                     </div>
                 </div>
@@ -404,7 +406,9 @@
                 <h3 class="font-semibold text-gray-900 dark:text-white transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2">
                     <a href="{{ route('posts.show', $relatedPost->slug) }}">{{ $relatedPost->title }}</a>
                 </h3>
+                @if($relatedPost->published_at)
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $relatedPost->published_at->format('M j, Y') }}</p>
+                @endif
             </article>
             @endforeach
         </div>

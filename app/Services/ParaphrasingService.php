@@ -118,21 +118,32 @@ SOURCES:
 Your task:
 1. Create a comprehensive, well-written article that paraphrases and elaborates on these sources
 2. Preserve ALL factual information from the sources
-3. Add explanation of why readers should care about this topic
-4. Explain technical concepts in clear language
-5. Provide context and implications
-6. Do NOT add information not present in the sources
-7. Cite sources naturally within the text using [Source Name] references
-8. Make it engaging and valuable to readers{$languageInstruction}
+3. Organize information logically, grouping related topics together
+4. Create smooth transitions between different topics/sources
+5. Use section headers (##, ###) to organize content by theme or subtopic
+6. Add explanation of why readers should care about this topic
+7. Explain technical concepts in clear language
+8. Provide context and implications
+9. Do NOT add information not present in the sources
+10. Cite sources naturally within the text using [Source Name] references
+11. Make it engaging and valuable to readers
+12. Ensure formatting is consistent and easy to read
+
+IMPORTANT - When merging multiple sources:
+- Group related information together logically
+- Create clear section breaks between distinct topics
+- Use transition phrases to connect different ideas
+- Maintain a coherent narrative flow
+- Avoid abrupt topic switches - bridge them smoothly{$languageInstruction}
 
 Format your response as JSON:
 {
   \"title\": \"A compelling headline\",
   \"excerpt\": \"One paragraph summary (max 150 words)\",
-  \"content\": \"Full article in HTML or markdown\"
+  \"content\": \"Full article in markdown format with proper ## section headers and smooth transitions\"
 }
 
-Ensure the content is at least 1000 words and covers all key points from the sources.";
+Ensure the content is at least 1000 words, covers all key points from the sources, and is well-formatted for readability.";
 
             $response = Http::timeout(self::API_TIMEOUT)
                 ->withHeaders([
