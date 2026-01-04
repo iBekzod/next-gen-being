@@ -140,6 +140,52 @@ class Kernel extends ConsoleKernel
         })
             ->monthly()
             ->onOneServer();
+
+        // === CONTENT CURATION PIPELINE SCHEDULING ===
+
+        // 1. Scrape all sources (6 AM daily)
+        $schedule->command('content:scrape-all --async')
+            ->dailyAt('06:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // 2. Find duplicates and group content (8 AM daily)
+        $schedule->command('content:deduplicate --hours=24 --async')
+            ->dailyAt('08:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // 3. Paraphrase aggregations (3 times daily: 10 AM, 1 PM, 4 PM)
+        $schedule->command('content:paraphrase-pending --limit=10')
+            ->dailyAt('10:00')
+            ->withoutOverlapping()
+            ->runInBackground();
+
+        $schedule->command('content:paraphrase-pending --limit=10')
+            ->dailyAt('13:00')
+            ->withoutOverlapping()
+            ->runInBackground();
+
+        $schedule->command('content:paraphrase-pending --limit=10')
+            ->dailyAt('16:00')
+            ->withoutOverlapping()
+            ->runInBackground();
+
+        // 4. Translate curated posts (3 PM daily)
+        $schedule->command('content:translate-pending --limit=20 --languages=es,fr,de,zh')
+            ->dailyAt('15:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // 5. Prepare review notifications (6:30 PM daily)
+        $schedule->command('content:prepare-review --limit=50')
+            ->dailyAt('18:30')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
     }
 
     /**

@@ -12,6 +12,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use App\Filament\Widgets\BlogStatsOverview;
+use App\Filament\Widgets\ContentCurationStatsWidget;
 use App\Filament\Widgets\RecentComments;
 use App\Filament\Widgets\RecentPosts;
 use App\Filament\Widgets\StatsOverview;
@@ -45,12 +46,14 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                ContentCurationStatsWidget::class,
                 StatsOverview::class,
                 RecentPosts::class,
                 RecentComments::class,
             ])
             ->navigationGroups([
                 'Content',
+                'Content Curation',
                 'User Management',
                 'Commerce',
                 'Marketing',

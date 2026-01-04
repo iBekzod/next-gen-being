@@ -694,6 +694,131 @@ class Post extends Model implements HasMedia
         return $readerTrackingService->getTopCountries($this->id, $limit);
     }
 
+    // Curated Content Relationships
+    public function contentAggregation()
+    {
+        return $this->belongsTo(ContentAggregation::class, 'content_aggregation_id');
+    }
+
+    public function sourceReferences()
+    {
+        return $this->hasMany(SourceReference::class);
+    }
+
+    public function basePost()
+    {
+        return $this->belongsTo(Post::class, 'base_post_id');
+    }
+
+    public function translatedVersions()
+    {
+        return $this->hasMany(Post::class, 'base_post_id');
+    }
+
+    // Curated Content Scopes
+    public function scopeCurated($query)
+    {
+        return $query->where('is_curated', true);
+    }
+
+    public function scopeOriginal($query)
+    {
+        return $query->where('is_curated', false);
+    }
+
+    public function scopeBySourceType($query, $type)
+    {
+        return $query->where('content_source_type', $type);
+    }
+
+    public function scopeWithSources($query)
+    {
+        return $query->curated()
+            ->with('contentAggregation', 'sourceReferences');
+    }
+
+    // Curated Content Helper Methods
+    public function isCurated(): bool
+    {
+        return $this->is_curated === true;
+    }
+
+    public function getSourceCount(): int
+    {
+        if (!$this->source_ids) {
+            return 0;
+        }
+
+        return is_array($this->source_ids) ? count($this->source_ids) : 0;
+    }
+
+    public function getSourceNames(): array
+    {
+        if (!$this->source_ids) {
+            return [];
+        }
+
+        return ContentSource::whereIn('id', $this->source_ids)
+            ->pluck('name')
+            ->toArray();
+    }
+
+    public function getReferenceCount(): int
+    {
+        return $this->sourceReferences()->count();
+    }
+
+    public function getParaphraseConfidencePercent(): ?int
+    {
+        if (!$this->paraphrase_confidence_score) {
+            return null;
+        }
+
+        return (int) ($this->paraphrase_confidence_score * 100);
+    }
+
+    public function isFactVerified(): bool
+    {
+        return $this->is_fact_verified === true;
+    }
+
+    public function markAsFactVerified(?string $notes = null): void
+    {
+        $this->update([
+            'is_fact_verified' => true,
+            'verification_notes' => $notes,
+        ]);
+    }
+
+    public function getLanguageLabel(): string
+    {
+        return match($this->base_language) {
+            'es' => 'Español',
+            'fr' => 'Français',
+            'de' => 'Deutsch',
+            'zh' => '中文',
+            'pt' => 'Português',
+            'it' => 'Italiano',
+            'ja' => '日本語',
+            'ru' => 'Русский',
+            default => 'English',
+        };
+    }
+
+    public function isTranslation(): bool
+    {
+        return $this->base_post_id !== null;
+    }
+
+    public function getBaseLanguagePost(): ?Post
+    {
+        if ($this->isTranslation()) {
+            return $this->basePost;
+        }
+
+        return $this;
+    }
+
     // SEO Meta Helpers
     /**
      * Get SEO meta title. Falls back to post title if not set.

@@ -22,7 +22,8 @@
       "Bash(python3:*)",
       "Bash(php artisan:*)",
       "Bash(docker logs:*)",
-      "Bash(docker-compose:*)"
+      "Bash(docker-compose:*)",
+      "Bash(timeout 120 docker-compose exec:*)"
     ],
     "deny": [],
     "ask": []
