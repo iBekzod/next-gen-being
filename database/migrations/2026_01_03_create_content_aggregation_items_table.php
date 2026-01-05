@@ -13,8 +13,12 @@ return new class extends Migration
     {
         Schema::create('content_aggregation_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('content_aggregation_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('collected_content_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('content_aggregation_id')
+                ->constrained('content_aggregations')
+                ->cascadeOnDelete();
+            $table->foreignId('collected_content_id')
+                ->constrained('collected_content')
+                ->cascadeOnDelete();
             $table->integer('position')->default(0);
             $table->float('similarity_score')->default(0);
             $table->timestamps();
