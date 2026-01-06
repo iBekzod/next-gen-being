@@ -808,10 +808,10 @@ main {
                             @if(isset($allPosts))
                                 @foreach($allPosts as $post)
                                     <option value="{{ $post->id }}"
-                                            data-series-title="{{ $post->series_title }}"
-                                            data-series-part="{{ $post->series_part }}"
-                                            data-series-total="{{ $post->series_total_parts }}"
-                                            data-series-description="{{ $post->series_description }}">
+                                            data-series-title="{{ htmlspecialchars($post->series_title ?? '', ENT_QUOTES) }}"
+                                            data-series-part="{{ (int)($post->series_part ?? 0) }}"
+                                            data-series-total="{{ (int)($post->series_total_parts ?? 0) }}"
+                                            data-series-description="{{ htmlspecialchars($post->series_description ?? '', ENT_QUOTES) }}">
                                         {{ $post->title }}
                                         @if($post->series_title)
                                             ({{ $post->series_title }} - Part {{ $post->series_part }})
@@ -1065,31 +1065,30 @@ const existingPostSelect = document.getElementById('existing_post_id');
 if (existingPostSelect) {
     existingPostSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        const seriesTitle = selectedOption.getAttribute('data-series-title');
-        const seriesPart = selectedOption.getAttribute('data-series-part');
-        const seriesTotal = selectedOption.getAttribute('data-series-total');
-        const seriesDescription = selectedOption.getAttribute('data-series-description');
+        const seriesTitle = selectedOption.getAttribute('data-series-title') || '';
+        const seriesPart = parseInt(selectedOption.getAttribute('data-series-part') || '0');
+        const seriesTotal = parseInt(selectedOption.getAttribute('data-series-total') || '0');
+        const seriesDescription = selectedOption.getAttribute('data-series-description') || '';
         const seriesInfoDisplay = document.getElementById('series-info-display');
 
-        if (this.value) {
-            // Post selected
-            const nextPart = seriesPart ? parseInt(seriesPart) + 1 : 1;
+        if (this.value && seriesTitle) {
+            // Post selected with series information
+            const nextPart = seriesPart > 0 ? seriesPart + 1 : 1;
+            const totalParts = seriesTotal > 0 ? seriesTotal : nextPart;
 
             // Update series fields
-            document.getElementById('series_title').value = seriesTitle || '';
+            document.getElementById('series_title').value = seriesTitle;
             document.getElementById('series_part').value = nextPart;
-            document.getElementById('series_total_parts').value = seriesTotal || nextPart;
-            document.getElementById('series_description').value = seriesDescription || '';
+            document.getElementById('series_total_parts').value = totalParts;
+            document.getElementById('series_description').value = seriesDescription;
 
             // Show series info display
-            if (seriesTitle) {
-                document.getElementById('series-info-title').textContent = seriesTitle;
-                document.getElementById('series-info-current-part').textContent = 'Part ' + seriesPart;
-                document.getElementById('series-info-next-part').textContent = 'Part ' + nextPart;
-                seriesInfoDisplay.style.display = 'block';
-            }
+            document.getElementById('series-info-title').textContent = seriesTitle;
+            document.getElementById('series-info-current-part').textContent = 'Part ' + (seriesPart > 0 ? seriesPart : 'N/A');
+            document.getElementById('series-info-next-part').textContent = 'Part ' + nextPart;
+            seriesInfoDisplay.style.display = 'block';
         } else {
-            // No post selected
+            // No post selected or no series info
             seriesInfoDisplay.style.display = 'none';
             document.getElementById('series_title').value = '';
             document.getElementById('series_part').value = '';

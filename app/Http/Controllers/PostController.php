@@ -206,10 +206,16 @@ class PostController extends Controller
     {
         $this->authorize('update', $post);
 
+        $user = Auth::user();
+        $allPosts = Post::where('author_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('posts.edit', [
             'post' => $post,
             'categories' => Category::active()->ordered()->get(),
             'tags' => Tag::active()->popular()->get(),
+            'allPosts' => $allPosts,
         ]);
     }
 
