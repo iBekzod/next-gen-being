@@ -60,9 +60,27 @@ class PostController extends Controller
             'can_generate_image' => $user->canGenerateAIImage(),
         ];
 
+        // Get user's existing series
+        $userSeries = Post::where('author_id', $user->id)
+            ->whereNotNull('series_title')
+            ->distinct()
+            ->pluck('series_title')
+            ->toArray();
+
+        // Build seriesList grouped by title with post counts
+        $seriesList = [];
+        foreach ($userSeries as $seriesTitle) {
+            $posts = Post::where('author_id', $user->id)
+                ->where('series_title', $seriesTitle)
+                ->orderBy('series_part', 'asc')
+                ->get();
+            $seriesList[$seriesTitle] = $posts;
+        }
+
         return view('posts.create', [
             'categories' => Category::active()->ordered()->get(),
             'tags' => Tag::active()->popular()->get(),
+            'seriesList' => $seriesList,
             'suggestion' => $suggestion,
             'userAiQuota' => $userAiQuota,
             'premiumTiers' => [

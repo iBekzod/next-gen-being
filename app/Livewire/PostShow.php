@@ -3,12 +3,15 @@ namespace App\Livewire;
 
 use App\Models\Post;
 use App\Models\Comment;
+use App\Services\RecommendationService;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
 
 class PostShow extends Component
 {
+    protected RecommendationService $recommendationService;
+
     public Post $post;
     public bool $showComments = true;
 
@@ -17,6 +20,12 @@ class PostShow extends Component
 
     public ?Comment $replyingTo = null;
     public bool $showCommentForm = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->recommendationService = app(RecommendationService::class);
+    }
 
     public function mount(Post $post)
     {
@@ -185,6 +194,12 @@ class PostShow extends Component
 
     public function render()
     {
+        // Fetch personalized recommendations for authenticated users
+        $recommendedPosts = collect();
+        if (Auth::check()) {
+            $recommendedPosts = $this->recommendationService->getRecommendationsForUser(Auth::user(), 3);
+        }
+
         return view('livewire.post-show', [
             'comments' => $this->post->comments()
                 ->approved()
@@ -197,6 +212,7 @@ class PostShow extends Component
                 ->where('category_id', $this->post->category_id)
                 ->limit(3)
                 ->get(),
+            'recommendedPosts' => $recommendedPosts,
         ]);
     }
 }

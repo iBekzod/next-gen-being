@@ -698,7 +698,7 @@ main {
                 <div class="form-group">
                     <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Add tags to your post</label>
                     <input type="hidden" name="tags" id="tags" value="{{ old('tags') }}">
-                    <div id="tagify-container" style="width: 100%;"></div>
+                    <input type="text" id="tags-input" placeholder="Type tag name and press Enter..." style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
                     <p class="input-help-text">Type and press Enter to add tags</p>
                 </div>
             </div>
@@ -709,25 +709,34 @@ main {
                 <h2 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">Tutorial Series (Optional)</h2>
                 <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">Make this post part of a tutorial series to help readers follow a learning path.</p>
 
-                <!-- Series Title -->
+                <!-- Select Existing Series or Create New -->
                 <div class="form-group">
-                    <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Series Title</label>
-                    <input type="text"
-                           name="series_title"
-                           id="series_title"
-                           value="{{ old('series_title') }}"
-                           placeholder="e.g., Advanced Laravel Development"
-                           style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
-                    <p class="input-help-text">Leave empty if this is not part of a series</p>
-                    @error('series_title')
-                        <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
-                    @enderror
+                    <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Tutorial Series</label>
+                    <select name="series_mode" id="series_mode" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                        <option value="">No Series</option>
+                        <option value="new">Create New Series</option>
+                        <option value="existing">Add to Existing Series</option>
+                    </select>
+                    <p class="input-help-text">Choose whether to create a new series or add to an existing one</p>
                 </div>
 
-                <!-- Series Part and Total Parts (shown when series_title is filled) -->
-                <div id="series-details-group" style="display: none;">
+                <!-- New Series Section (shown when "Create New Series" is selected) -->
+                <div id="new-series-group" style="display: none;">
+                    <div class="form-group">
+                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Series Title</label>
+                        <input type="text"
+                               name="series_title"
+                               id="series_title"
+                               value="{{ old('series_title') }}"
+                               placeholder="e.g., Advanced Laravel Development"
+                               style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                        <p class="input-help-text">Give your series a descriptive name</p>
+                        @error('series_title')
+                            <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <!-- Series Part Number -->
                         <div class="form-group">
                             <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Part Number</label>
                             <input type="number"
@@ -743,7 +752,6 @@ main {
                             @enderror
                         </div>
 
-                        <!-- Total Parts -->
                         <div class="form-group">
                             <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Total Parts</label>
                             <input type="number"
@@ -760,7 +768,6 @@ main {
                         </div>
                     </div>
 
-                    <!-- Series Description -->
                     <div class="form-group">
                         <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Series Description</label>
                         <textarea name="series_description"
@@ -772,6 +779,34 @@ main {
                         @error('series_description')
                             <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626;">{{ $message }}</p>
                         @enderror
+                    </div>
+                </div>
+
+                <!-- Existing Series Section (shown when "Add to Existing Series" is selected) -->
+                <div id="existing-series-group" style="display: none;">
+                    <div class="form-group">
+                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Select a Series</label>
+                        <select name="existing_series_id" id="existing_series_id" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                            <option value="">-- Choose a series --</option>
+                            @foreach($seriesList as $seriesTitle => $posts)
+                                <option value="{{ $seriesTitle }}" data-posts-count="{{ count($posts) }}">
+                                    {{ $seriesTitle }} ({{ count($posts) }} posts)
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="input-help-text">Select from your existing tutorial series</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Next Part Number</label>
+                        <input type="number"
+                               name="series_part_existing"
+                               id="series_part_existing"
+                               value="{{ old('series_part_existing') }}"
+                               min="1"
+                               placeholder="Auto-calculated based on series"
+                               style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                        <p class="input-help-text">This will be auto-calculated as the next part in the series</p>
                     </div>
                 </div>
             </div>
@@ -981,34 +1016,54 @@ document.getElementById('is_premium').addEventListener('change', function() {
     document.getElementById('premium-tier-group').style.display = this.checked ? 'block' : 'none';
 });
 
-// Series details visibility
-const seriesTitleInput = document.getElementById('series_title');
-const seriesDetailsGroup = document.getElementById('series-details-group');
-if (seriesTitleInput) {
-    // Toggle on input
-    seriesTitleInput.addEventListener('input', function() {
-        seriesDetailsGroup.style.display = this.value.trim() ? 'block' : 'none';
+// Series mode switching
+const seriesModeSelect = document.getElementById('series_mode');
+const newSeriesGroup = document.getElementById('new-series-group');
+const existingSeriesGroup = document.getElementById('existing-series-group');
+const existingSeriesSelect = document.getElementById('existing_series_id');
+
+if (seriesModeSelect) {
+    seriesModeSelect.addEventListener('change', function() {
+        newSeriesGroup.style.display = this.value === 'new' ? 'block' : 'none';
+        existingSeriesGroup.style.display = this.value === 'existing' ? 'block' : 'none';
     });
+
     // Initialize on page load
-    if (seriesTitleInput.value.trim()) {
-        seriesDetailsGroup.style.display = 'block';
+    if (seriesModeSelect.value === 'new') {
+        newSeriesGroup.style.display = 'block';
+    } else if (seriesModeSelect.value === 'existing') {
+        existingSeriesGroup.style.display = 'block';
     }
 }
 
-// Initialize tagify if container exists
-const tagifyContainer = document.getElementById('tagify-container');
-let tagifyInstance = null;
-if (tagifyContainer) {
-    const tagifyInput = document.createElement('input');
-    tagifyInput.id = 'tags-input';
-    tagifyInput.value = '{{ old('tags') }}';
-    tagifyInput.style.width = '100%';
-    tagifyContainer.appendChild(tagifyInput);
+// Handle existing series selection - auto-calculate next part number
+if (existingSeriesSelect) {
+    existingSeriesSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const postsCount = selectedOption.getAttribute('data-posts-count');
+        const nextPart = postsCount ? parseInt(postsCount) + 1 : 1;
 
-    tagifyInstance = new Tagify(tagifyInput);
+        const partInput = document.getElementById('series_part_existing');
+        if (partInput) {
+            partInput.value = nextPart;
+        }
+    });
 }
 
-// Handle form submission - sync tagify data before submit
+// Initialize tagify for tags input
+const tagsInput = document.getElementById('tags-input');
+let tagifyInstance = null;
+if (tagsInput) {
+    tagifyInstance = new Tagify(tagsInput, {
+        dropdown: {
+            maxItems: 20,
+            enabled: 1,
+            closeOnSelect: false
+        }
+    });
+}
+
+// Handle form submission - sync tagify data and series data before submit
 const createPostForm = document.querySelector('form[action="{{ route('posts.store') }}"]');
 if (createPostForm) {
     createPostForm.addEventListener('submit', function(e) {
@@ -1027,6 +1082,31 @@ if (createPostForm) {
                 this.appendChild(tagsInput);
             }
             tagsInput.value = tagNames;
+        }
+
+        // Handle series mode data
+        const seriesMode = document.getElementById('series_mode').value;
+
+        if (seriesMode === '') {
+            // No series - remove series fields
+            document.getElementById('series_title').value = '';
+            document.getElementById('series_part').value = '';
+            document.getElementById('series_total_parts').value = '';
+            document.getElementById('series_description').value = '';
+        } else if (seriesMode === 'existing') {
+            // Existing series - populate series_title from selected series
+            const selectedSeries = document.getElementById('existing_series_id').value;
+            const partNum = document.getElementById('series_part_existing').value;
+
+            if (selectedSeries && partNum) {
+                document.getElementById('series_title').value = selectedSeries;
+                document.getElementById('series_part').value = partNum;
+                // Keep series_total_parts as is or calculate from dropdown
+                const selectedOption = document.getElementById('existing_series_id').options[document.getElementById('existing_series_id').selectedIndex];
+                const postsCount = selectedOption.getAttribute('data-posts-count');
+                // Set total parts to at least the next part number
+                document.getElementById('series_total_parts').value = Math.max(partNum, postsCount ? parseInt(postsCount) + 1 : 1);
+            }
         }
     });
 }

@@ -415,28 +415,34 @@
     </section>
     @endif
 
-    <!-- AI-Powered Recommendations -->
-    @if(auth()->check())
+    <!-- Recommended For You -->
+    @if(auth()->check() && $recommendedPosts->count() > 0)
     <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
-        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">✨ Personalized for You</h2>
-
-        @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'personalized'])
-    </section>
-    @else
-    <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
-        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">🔥 Trending Now</h2>
-        @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'trending'])
+        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">✨ Recommended For You</h2>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+            @foreach($recommendedPosts as $recommendedPost)
+            <article class="group p-5 bg-gray-50 dark:bg-slate-900 rounded-xl transition-all duration-300 hover:-translate-y-2 hover:bg-white" style="border: 3px solid #616161; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);">
+                <div class="mb-4 aspect-w-16 aspect-h-9">
+                    @if($recommendedPost->featured_image)
+                    <img src="{{ $recommendedPost->featured_image }}"
+                         alt="{{ $recommendedPost->title }}"
+                         class="object-cover w-full h-32 transition-opacity rounded-lg group-hover:opacity-90">
+                    @else
+                    <div class="w-full h-32 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                    @endif
+                </div>
+                <h3 class="font-semibold text-gray-900 dark:text-white transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2">
+                    <a href="{{ route('posts.show', $recommendedPost->slug) }}">{{ $recommendedPost->title }}</a>
+                </h3>
+                @if($recommendedPost->published_at)
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $recommendedPost->published_at->format('M j, Y') }}</p>
+                @endif
+            </article>
+            @endforeach
+        </div>
     </section>
     @endif
 
-    <!-- Similar Articles (for when not authenticated) -->
-    @if(!auth()->check())
-    <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
-        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">📚 More Like This</h2>
-        @livewire('post-recommendations', ['currentPost' => $post, 'type' => 'similar'])
-    </section>
-    @endif
-    </article>
 </div>
 
 <script>
