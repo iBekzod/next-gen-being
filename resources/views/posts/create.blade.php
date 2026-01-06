@@ -366,6 +366,23 @@
     color: #f9fafb !important;
 }
 
+/* Series info display dark mode */
+.dark #series-info-display {
+    background: #374151 !important;
+    color: #f9fafb !important;
+    border-left-color: #3b82f6 !important;
+}
+
+.dark #series-info-display p strong {
+    color: #e5e7eb !important;
+}
+
+.dark #series-info-display #series-info-title,
+.dark #series-info-display #series-info-current-part,
+.dark #series-info-display #series-info-next-part {
+    color: #f3f4f6 !important;
+}
+
 /* Writing Assistant button styles */
 .assistant-btn {
     padding: 0.5rem 0.75rem;
@@ -785,28 +802,35 @@ main {
                 <!-- Existing Series Section (shown when "Add to Existing Series" is selected) -->
                 <div id="existing-series-group" style="display: none;">
                     <div class="form-group">
-                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Select a Series</label>
-                        <select name="existing_series_id" id="existing_series_id" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
-                            <option value="">-- Choose a series --</option>
-                            @foreach($seriesList as $seriesTitle => $posts)
-                                <option value="{{ $seriesTitle }}" data-posts-count="{{ count($posts) }}">
-                                    {{ $seriesTitle }} ({{ count($posts) }} posts)
-                                </option>
-                            @endforeach
+                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Select a Past Post</label>
+                        <select name="existing_post_id" id="existing_post_id" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                            <option value="">-- Choose a past tutorial post --</option>
+                            @if(isset($allPosts))
+                                @foreach($allPosts as $post)
+                                    <option value="{{ $post->id }}"
+                                            data-series-title="{{ $post->series_title }}"
+                                            data-series-part="{{ $post->series_part }}"
+                                            data-series-total="{{ $post->series_total_parts }}"
+                                            data-series-description="{{ $post->series_description }}">
+                                        {{ $post->title }}
+                                        @if($post->series_title)
+                                            ({{ $post->series_title }} - Part {{ $post->series_part }})
+                                        @endif
+                                    </option>
+                                @endforeach
+                            @endif
                         </select>
-                        <p class="input-help-text">Select from your existing tutorial series</p>
+                        <p class="input-help-text">Select a past post to add this as the next tutorial in the series</p>
                     </div>
 
                     <div class="form-group">
-                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Next Part Number</label>
-                        <input type="number"
-                               name="series_part_existing"
-                               id="series_part_existing"
-                               value="{{ old('series_part_existing') }}"
-                               min="1"
-                               placeholder="Auto-calculated based on series"
-                               style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
-                        <p class="input-help-text">This will be auto-calculated as the next part in the series</p>
+                        <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Series Information</label>
+                        <div style="background: #f3f4f6; color: #111827; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1rem; display: none; border-left: 4px solid #2563eb;" id="series-info-display">
+                            <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem;"><strong>Series:</strong> <span id="series-info-title" style="color: #1f2937;"></span></p>
+                            <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem;"><strong>Current Part:</strong> <span id="series-info-current-part" style="color: #1f2937;"></span></p>
+                            <p style="margin: 0; font-size: 0.875rem;"><strong>Next Part:</strong> <span id="series-info-next-part" style="color: #1f2937; font-weight: 600;"></span></p>
+                        </div>
+                        <p class="input-help-text">Series details will auto-populate when you select a post</p>
                     </div>
                 </div>
             </div>
@@ -1036,16 +1060,41 @@ if (seriesModeSelect) {
     }
 }
 
-// Handle existing series selection - auto-calculate next part number
-if (existingSeriesSelect) {
-    existingSeriesSelect.addEventListener('change', function() {
+// Handle existing post selection - auto-populate series information
+const existingPostSelect = document.getElementById('existing_post_id');
+if (existingPostSelect) {
+    existingPostSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        const postsCount = selectedOption.getAttribute('data-posts-count');
-        const nextPart = postsCount ? parseInt(postsCount) + 1 : 1;
+        const seriesTitle = selectedOption.getAttribute('data-series-title');
+        const seriesPart = selectedOption.getAttribute('data-series-part');
+        const seriesTotal = selectedOption.getAttribute('data-series-total');
+        const seriesDescription = selectedOption.getAttribute('data-series-description');
+        const seriesInfoDisplay = document.getElementById('series-info-display');
 
-        const partInput = document.getElementById('series_part_existing');
-        if (partInput) {
-            partInput.value = nextPart;
+        if (this.value) {
+            // Post selected
+            const nextPart = seriesPart ? parseInt(seriesPart) + 1 : 1;
+
+            // Update series fields
+            document.getElementById('series_title').value = seriesTitle || '';
+            document.getElementById('series_part').value = nextPart;
+            document.getElementById('series_total_parts').value = seriesTotal || nextPart;
+            document.getElementById('series_description').value = seriesDescription || '';
+
+            // Show series info display
+            if (seriesTitle) {
+                document.getElementById('series-info-title').textContent = seriesTitle;
+                document.getElementById('series-info-current-part').textContent = 'Part ' + seriesPart;
+                document.getElementById('series-info-next-part').textContent = 'Part ' + nextPart;
+                seriesInfoDisplay.style.display = 'block';
+            }
+        } else {
+            // No post selected
+            seriesInfoDisplay.style.display = 'none';
+            document.getElementById('series_title').value = '';
+            document.getElementById('series_part').value = '';
+            document.getElementById('series_total_parts').value = '';
+            document.getElementById('series_description').value = '';
         }
     });
 }
@@ -1094,18 +1143,15 @@ if (createPostForm) {
             document.getElementById('series_total_parts').value = '';
             document.getElementById('series_description').value = '';
         } else if (seriesMode === 'existing') {
-            // Existing series - populate series_title from selected series
-            const selectedSeries = document.getElementById('existing_series_id').value;
-            const partNum = document.getElementById('series_part_existing').value;
-
-            if (selectedSeries && partNum) {
-                document.getElementById('series_title').value = selectedSeries;
-                document.getElementById('series_part').value = partNum;
-                // Keep series_total_parts as is or calculate from dropdown
-                const selectedOption = document.getElementById('existing_series_id').options[document.getElementById('existing_series_id').selectedIndex];
-                const postsCount = selectedOption.getAttribute('data-posts-count');
-                // Set total parts to at least the next part number
-                document.getElementById('series_total_parts').value = Math.max(partNum, postsCount ? parseInt(postsCount) + 1 : 1);
+            // Existing post selected - series fields already populated by change listener
+            // Just validate that a post was selected
+            const selectedPostId = document.getElementById('existing_post_id').value;
+            if (!selectedPostId) {
+                // Clear series fields if no post selected
+                document.getElementById('series_title').value = '';
+                document.getElementById('series_part').value = '';
+                document.getElementById('series_total_parts').value = '';
+                document.getElementById('series_description').value = '';
             }
         }
     });
