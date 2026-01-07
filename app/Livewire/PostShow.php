@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PostShow extends Component
 {
-    protected RecommendationService $recommendationService;
+    protected ?RecommendationService $recommendationService = null;
 
     public Post $post;
     public bool $showComments = true;
@@ -21,10 +21,12 @@ class PostShow extends Component
     public ?Comment $replyingTo = null;
     public bool $showCommentForm = false;
 
-    public function __construct()
+    protected function getRecommendationService(): RecommendationService
     {
-        parent::__construct();
-        $this->recommendationService = app(RecommendationService::class);
+        if (!$this->recommendationService) {
+            $this->recommendationService = app(RecommendationService::class);
+        }
+        return $this->recommendationService;
     }
 
     public function mount(Post $post)
@@ -197,7 +199,7 @@ class PostShow extends Component
         // Fetch personalized recommendations for authenticated users
         $recommendedPosts = collect();
         if (Auth::check()) {
-            $recommendedPosts = $this->recommendationService->getRecommendationsForUser(Auth::user(), 3);
+            $recommendedPosts = $this->getRecommendationService()->getRecommendationsForUser(Auth::user(), 3);
         }
 
         return view('livewire.post-show', [
