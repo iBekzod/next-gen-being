@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class ParaphrasingService
 {
     private const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
-    private const API_TIMEOUT = 120;
+    private const API_TIMEOUT = 180;  // Increased from 120 to 180 seconds for longer article generation
     private const MAX_RETRIES = 3;
     private const MIN_CONFIDENCE_SCORE = 0.75;
 
@@ -108,7 +108,7 @@ class ParaphrasingService
             $sourcesText = $this->formatSourcesForPrompt($sources);
             $languageInstruction = $language === 'en' ? '' : "\n\nWrite in $language language.";
 
-            $prompt = "You are a tech blogger who curates and elaborates on technology news and trends.
+            $prompt = "You are an expert tech journalist and analyst who creates in-depth, research-backed articles across the ENTIRE technology stack.
 
 I have collected these sources about the topic: {$topic}
 
@@ -116,34 +116,133 @@ SOURCES:
 {$sourcesText}
 
 Your task:
-1. Create a comprehensive, well-written article that paraphrases and elaborates on these sources
-2. Preserve ALL factual information from the sources
-3. Organize information logically, grouping related topics together
-4. Create smooth transitions between different topics/sources
-5. Use section headers (##, ###) to organize content by theme or subtopic
-6. Add explanation of why readers should care about this topic
-7. Explain technical concepts in clear language
-8. Provide context and implications
-9. Do NOT add information not present in the sources
-10. Cite sources naturally within the text using [Source Name] references
-11. Make it engaging and valuable to readers
-12. Ensure formatting is consistent and easy to read
+Create a comprehensive, in-depth article (5-11 minute read time) that synthesizes these sources into a valuable resource.
 
-IMPORTANT - When merging multiple sources:
-- Group related information together logically
-- Create clear section breaks between distinct topics
-- Use transition phrases to connect different ideas
-- Maintain a coherent narrative flow
-- Avoid abrupt topic switches - bridge them smoothly{$languageInstruction}
+WIDE TECH STACK COVERAGE:
+- Backend & Infrastructure (servers, cloud platforms, DevOps, containers, Kubernetes)
+- Databases & Data (SQL, NoSQL, vector databases, data warehousing, ETL, streaming)
+- Frontend & Web (frameworks, performance optimization, UX, web standards)
+- AI/ML & LLMs (models, training, fine-tuning, deployment, inference, RAG)
+- Security (encryption, authentication, vulnerabilities, threat models, compliance)
+- Architecture (microservices, distributed systems, scaling patterns, design patterns)
+- DevOps & Operations (CI/CD, monitoring, logging, observability, incident response)
+- Hardware & Infrastructure (CPUs, GPUs, TPUs, edge computing, networking)
+- Protocols & Standards (HTTP, gRPC, WebSocket, REST, GraphQL, message queues)
+- Cloud Platforms (AWS, Azure, GCP, Kubernetes, serverless, multi-cloud)
+- Programming Languages & Frameworks (performance, ecosystem, adoption)
+- And any other technology domain
+
+CONTENT REQUIREMENTS:
+1. **Word Count**: 3,000-5,000+ words (approximately 5-11 minutes to read)
+2. **Real Data & Metrics**: Include domain-specific benchmarks:
+   - Performance: Throughput (ops/sec), latency (ms), memory usage, CPU usage
+   - Cost: Per unit, licensing, infrastructure, TCO, operational costs
+   - Scalability: Concurrent users, transactions/sec, data volume capacity, auto-scaling
+   - Adoption: Market share %, enterprise usage, developer adoption, trending
+3. **Detailed Analysis**: Don't summarize - elaborate deeply on technical aspects
+4. **Comparisons & Technical Benchmarks**:
+   - Create markdown tables for technical comparisons
+   - Include performance metrics with real numbers
+   - Show cost-benefit analysis with actual pricing
+   - Include adoption metrics and community size
+   - Provide architecture/design differences
+5. **Research Quality**: Present as thoroughly researched technical journalism
+6. **Visual Organization**:
+   - Use ## for major sections
+   - Use ### for subsections and technical deep-dives
+   - Use #### for detailed technical comparisons
+   - Include markdown tables with real data
+   - Use bullet points for lists, numbered lists for steps/workflows
+7. **Domain-Specific Technical Depth**:
+   - For Infrastructure: scalability limits, uptime, failover, cost-benefit
+   - For Databases: query performance, consistency models, ACID/BASE, sharding
+   - For AI/ML: accuracy metrics, training time, inference latency, model size
+   - For Security: threat models, attack vectors, mitigation strategies, compliance
+   - For Frontend: performance metrics, bundle size, Core Web Vitals, accessibility
+   - For Architecture: tradeoffs, failure modes, scaling limits, deployment complexity
+8. **Real-World Context**:
+   - Explain the 'why' behind technical decisions
+   - Discuss use cases and when to use vs alternatives
+   - Provide implementation patterns and best practices
+   - Include real company examples and case studies
+   - Show performance benchmarks with actual numbers
+9. **Citation**: Cite sources naturally throughout using [Source Name] references
+10. **No Speculation**: All information must come from sources - no invented benchmarks
+
+STRUCTURE FOR TECHNICAL CONTENT:
+- Introduction: What is this? Why matters? Current landscape (150-200 words)
+- Background: Problem solved, historical context, market position (200-300 words)
+- Technical Analysis: How it works, architecture, design decisions (500-700 words)
+- Performance & Benchmarks: Real metrics, comparisons with alternatives (300-500 words)
+- Comparison Table: Side-by-side with competitors/alternatives (200-400 words)
+- Use Cases & Examples: Real-world applications, case studies (300-500 words)
+- Tradeoffs & Considerations: Pros/cons, when to use, limitations (200-400 words)
+- Best Practices: Implementation patterns, optimization strategies (200-400 words)
+- Implications & Future: What this means, roadmap, trends (200-300 words)
+- Conclusion: Summary + actionable recommendations (150-200 words)
+
+BENCHMARK TABLE EXAMPLES:
+
+Database Performance:
+| Database | Throughput | Latency (p99) | Memory | Scalability | Cost | Best For |
+|----------|-----------|---------------|--------|-------------|------|----------|
+| PostgreSQL | 10K qps | 50ms | 500MB | Vertical | Open-source | ACID transactions |
+| MongoDB | 50K qps | 20ms | 1GB | Horizontal | \$57/month | Flexible schema |
+| Cassandra | 100K qps | 10ms | 2GB | Horizontal | \$500/month | High throughput |
+
+Infrastructure Comparison:
+| Platform | Setup Time | Monthly Cost | Auto-Scaling | Uptime SLA | Complexity |
+|----------|-----------|--------------|--------------|-----------|-----------|
+| AWS EC2 | 5 min | \$30-100+ | 5 min | 99.99% | High |
+| Heroku | 2 min | \$50-500 | Auto | 99.99% | Low |
+| Docker (self-hosted) | 30 min | \$20+ | Manual | Varies | Medium |
+
+AI Model Comparison:
+| Model | Parameters | Training Time | Inference Latency | Cost | Context Window |
+|-------|-----------|---------------|-----------------|------|-----------------|
+| GPT-3.5 | 175B | N/A | 50ms | \$0.002/1K tokens | 16K |
+| Claude 3 | Unknown | N/A | 30ms | \$0.003/1K tokens | 200K |
+| Llama 2 | 70B | 80k GPU hours | 100ms | Free (self-host) | 4K |
+
+DOMAIN CONSIDERATIONS:
+- Include performance metrics specific to the technology
+- Show realistic cost analysis (licensing, infrastructure, maintenance)
+- Discuss scalability characteristics and limitations
+- Include adoption rates and market positioning
+- Real companies using it and their rationale
+- Integration complexity and ecosystem maturity
+- Security considerations and risk factors
+- Roadmap, versioning, and long-term viability
+- Learning curve and community support level
+- Comparison with direct alternatives and tradeoffs
+- When to use vs when to avoid
+
+WHAT TO AVOID:
+- Generic statements without supporting data
+- Brief summaries or overviews
+- Lists without elaboration
+- Repeating similar points
+- Vague comparisons without specific metrics
+- Speculation about future performance
+- Information not from provided sources
+
+{$languageInstruction}
 
 Format your response as JSON:
 {
-  \"title\": \"A compelling headline\",
+  \"title\": \"A compelling, specific headline\",
   \"excerpt\": \"One paragraph summary (max 150 words)\",
-  \"content\": \"Full article in markdown format with proper ## section headers and smooth transitions\"
+  \"content\": \"Full in-depth article in markdown format - 3,000-5,000+ words with detailed technical analysis, benchmark tables, specific data, and deep insights\"
 }
 
-Ensure the content is at least 1000 words, covers all key points from the sources, and is well-formatted for readability.";
+CRITICAL REQUIREMENTS:
+- Cover the FULL technology stack, not just programming
+- Include real performance benchmarks and metrics
+- Provide detailed comparisons with specific numbers
+- Include realistic cost analysis where applicable
+- Offer actionable insights and recommendations
+- Target 5-11 minute read time with substantial depth
+- Make it valuable for both beginners and experienced practitioners";
 
             $response = Http::timeout(self::API_TIMEOUT)
                 ->withHeaders([
@@ -152,7 +251,7 @@ Ensure the content is at least 1000 words, covers all key points from the source
                 ])
                 ->post($this->baseUrl, [
                     'model' => self::CLAUDE_MODEL,
-                    'max_tokens' => 4000,
+                    'max_tokens' => 8000,  // Increased from 4000 to accommodate 3,000-5,000 word articles
                     'messages' => [
                         [
                             'role' => 'user',

@@ -157,32 +157,22 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // 3. Paraphrase aggregations (3 times daily: 10 AM, 1 PM, 4 PM)
-        $schedule->command('content:paraphrase-pending --limit=10')
+        // 3. Paraphrase aggregations (10 AM daily - 3 posts with diverse topics)
+        $schedule->command('content:paraphrase-pending --limit=3')
             ->dailyAt('10:00')
             ->withoutOverlapping()
             ->runInBackground();
 
-        $schedule->command('content:paraphrase-pending --limit=10')
-            ->dailyAt('13:00')
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        $schedule->command('content:paraphrase-pending --limit=10')
-            ->dailyAt('16:00')
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        // 4. Translate curated posts (3 PM daily)
-        $schedule->command('content:translate-pending --limit=20 --languages=es,fr,de,zh')
-            ->dailyAt('15:00')
+        // 4. Translate curated posts (11 AM daily - 3 posts × 4 languages = 12 translations)
+        $schedule->command('content:translate-pending --limit=5 --languages=es,fr,de,zh')
+            ->dailyAt('11:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
-        // 5. Prepare review notifications (6:30 PM daily)
-        $schedule->command('content:prepare-review --limit=50')
-            ->dailyAt('18:30')
+        // 5. Prepare review notifications (12 PM daily)
+        $schedule->command('content:prepare-review --limit=10')
+            ->dailyAt('12:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();

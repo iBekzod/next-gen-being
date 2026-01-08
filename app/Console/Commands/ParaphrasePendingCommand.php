@@ -24,13 +24,17 @@ class ParaphrasePendingCommand extends Command
             $language = $this->option('language');
 
             // Get pending aggregations (not yet curated)
+            // Only select HIGH-CONFIDENCE, VALUABLE aggregations (75%+ confidence)
+            // Ordered by confidence score (highest quality first)
             $pending = ContentAggregation::notYetCurated()
-                ->latest()
+                ->where('confidence_score', '>=', 0.75)  // Only high-quality aggregations
+                ->orderBy('confidence_score', 'desc')     // Highest quality first (trending/valuable)
                 ->limit($limit)
                 ->get();
 
             if ($pending->isEmpty()) {
-                $this->info('No pending aggregations to process');
+                $this->info('No high-confidence aggregations to process (need 75%+ confidence score)');
+                Log::info('ParaphrasePendingCommand: No high-confidence aggregations available');
                 return 0;
             }
 
