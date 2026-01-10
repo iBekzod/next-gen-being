@@ -228,8 +228,45 @@
         @else
             <!-- Full Content for Free or Premium Subscribers -->
             {!! str($post->content)->markdown() !!}
+
+            <!-- Google AdSense - In-Content Ad (After Article) -->
+            @if(!auth()->check() || !auth()->user()->subscribed())
+            <div class="my-12 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-700">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 text-center font-medium">Advertisement</p>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.google.adsense.client_id') }}"
+                        crossorigin="anonymous"></script>
+                <!-- Display Ad -->
+                <ins class="adsbygoogle"
+                     style="display:block; text-align:center;"
+                     data-ad-layout="in-article"
+                     data-ad-format="fluid"
+                     data-ad-client="{{ config('services.google.adsense.client_id') }}"
+                     data-ad-slot="{{ config('services.google.adsense.slot_display') }}"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            @endif
         @endif
     </div>
+
+    <!-- Google AdSense - Display Ad (Before Newsletter) -->
+    @if(!auth()->check() || !auth()->user()->subscribed())
+    <div class="my-12 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 text-center font-medium">Advertisement</p>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.google.adsense.client_id') }}"
+                crossorigin="anonymous"></script>
+        <!-- Responsive Display Ad -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-format="auto"
+             data-ad-client="{{ config('services.google.adsense.client_id') }}"
+             data-ad-slot="{{ config('services.google.adsense.slot_sidebar') }}"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    @endif
 
     <!-- Newsletter CTA -->
     <div class="my-12 p-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800">

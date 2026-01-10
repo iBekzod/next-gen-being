@@ -176,6 +176,13 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+
+        // 6. Auto-publish approved posts (2 PM daily - 30% premium, 70% free for monetization)
+        $schedule->command('content:publish-approved --limit=10 --premium-percent=30')
+            ->dailyAt('14:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
     }
 
     /**

@@ -64,6 +64,15 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
+
+        // Google AdSense configuration for monetization
+        'adsense' => [
+            'enabled' => env('GOOGLE_ADSENSE_ENABLED', false),
+            'client_id' => env('GOOGLE_ADSENSE_CLIENT_ID'), // ca-pub-xxxxxxxxxxxxxxxx
+            'slot_display' => env('GOOGLE_ADSENSE_SLOT_DISPLAY'), // Main display ad
+            'slot_sidebar' => env('GOOGLE_ADSENSE_SLOT_SIDEBAR'), // Sidebar ad
+            'slot_intext' => env('GOOGLE_ADSENSE_SLOT_INTEXT'), // In-text ads (optional)
+        ],
     ],
 
     'twitter' => [
