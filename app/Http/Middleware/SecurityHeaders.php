@@ -19,8 +19,8 @@ class SecurityHeaders
         $response = $next($request);
 
         // Content Security Policy - Prevents XSS attacks
-        // Added Google AdSense domains for monetization
-        $response->header('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep2.adtrafficquality.google https://tpc.googlesyndication.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.bunny.net https://googleads.g.doubleclick.net; img-src 'self' data: https:; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://fonts.bunny.net; connect-src 'self' https:; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; frame-ancestors 'none';");
+        // Relaxed for Google AdSense monetization - allows all HTTPS external resources
+        $response->header('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:; frame-src https:; frame-ancestors 'none';");
 
         // HTTP Strict Transport Security - Forces HTTPS
         if (config('app.env') === 'production') {
