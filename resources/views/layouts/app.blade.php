@@ -263,6 +263,10 @@
     <script type="application/ld+json">{!! json_encode($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>
 
     @stack('structured-data')
+
+    <!-- Google AdSense Verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8948140381699585"
+            crossorigin="anonymous"></script>
 </head>
 
     <body class="font-sans antialiased">
