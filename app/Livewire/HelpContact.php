@@ -25,6 +25,11 @@ class HelpContact extends Component
 
     protected $listeners = ['show-help-modal' => 'showModal'];
 
+    public function updatedPriority($value)
+    {
+        $this->priority = is_array($value) ? ($value[0] ?? 'normal') : $value;
+    }
+
     public function showModal()
     {
         $this->showModal = true;
