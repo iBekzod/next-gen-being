@@ -7,6 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- Set CSRF token for AJAX requests -->
+    <script>
+        window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    </script>
+
     <title>@yield('title', setting('site_name', 'NextGenBeing'))</title>
     <meta name="description" content="@yield('description', setting('site_description'))">
 
