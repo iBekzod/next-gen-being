@@ -813,6 +813,9 @@
                 });
             }, 60000); // Refresh every 60 seconds
         </script>
+
+        <!-- Cookie Consent Banner (GDPR/CCPA Compliance) -->
+        @include('components.cookie-consent')
     </body>
 
     </html>

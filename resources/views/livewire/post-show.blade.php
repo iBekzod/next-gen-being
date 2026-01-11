@@ -243,14 +243,17 @@
                      data-ad-client="{{ config('services.google.adsense.client_id') }}"
                      data-ad-slot="{{ config('services.google.adsense.slot_display') }}"></ins>
                 <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
+                    // Only show ad if user consented or consent check not applied
+                    if (window.adConsentGiven !== false) {
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    }
                 </script>
             </div>
             @endif
         @endif
     </div>
 
-    <!-- Google AdSense - Display Ad (Before Newsletter) -->
+    <!-- Google AdSense - Display Ad (Before Newsletter) - Respects Consent -->
     @if(!auth()->check() || !auth()->user()->subscribed())
     <div class="my-12 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-700">
         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 text-center font-medium">Advertisement</p>
@@ -263,7 +266,10 @@
              data-ad-client="{{ config('services.google.adsense.client_id') }}"
              data-ad-slot="{{ config('services.google.adsense.slot_sidebar') }}"></ins>
         <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
+            // Only show ad if user consented or consent check not applied
+            if (window.adConsentGiven !== false) {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }
         </script>
     </div>
     @endif
