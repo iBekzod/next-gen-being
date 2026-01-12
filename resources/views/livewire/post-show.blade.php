@@ -242,12 +242,6 @@
                      data-ad-format="fluid"
                      data-ad-client="{{ config('services.google.adsense.client_id') }}"
                      data-ad-slot="{{ config('services.google.adsense.slot_display') }}"></ins>
-                <script>
-                    // Only show ad if user consented or consent check not applied
-                    if (window.adConsentGiven !== false) {
-                        (adsbygoogle = window.adsbygoogle || []).push({});
-                    }
-                </script>
             </div>
             @endif
         @endif
@@ -265,12 +259,6 @@
              data-ad-format="auto"
              data-ad-client="{{ config('services.google.adsense.client_id') }}"
              data-ad-slot="{{ config('services.google.adsense.slot_sidebar') }}"></ins>
-        <script>
-            // Only show ad if user consented or consent check not applied
-            if (window.adConsentGiven !== false) {
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            }
-        </script>
     </div>
     @endif
 

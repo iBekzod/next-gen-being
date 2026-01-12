@@ -65,16 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
         window.adConsentGiven = accepted;
 
         if (accepted) {
-            // Show ads
+            // Show ads (don't re-initialize, just show)
             document.querySelectorAll('.adsbygoogle').forEach(ad => {
                 ad.style.display = 'block';
             });
-            // Re-initialize AdSense
-            if (window.adsbygoogle) {
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            }
         } else {
-            // Hide ads
+            // Hide ads without trying to re-initialize
             document.querySelectorAll('.adsbygoogle').forEach(ad => {
                 ad.style.display = 'none';
             });
