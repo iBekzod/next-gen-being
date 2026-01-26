@@ -17,7 +17,7 @@ class Post extends Model implements HasMedia
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'content_json',
         'featured_image', 'image_attribution', 'gallery', 'status', 'published_at',
-        'scheduled_at', 'publish_strategy', 'is_featured', 'allow_comments', 'is_premium',
+        'scheduled_at', 'publish_strategy', 'is_featured', 'featured_at', 'allow_comments', 'is_premium',
         'premium_tier', 'preview_percentage', 'paywall_message',
         'read_time', 'views_count', 'likes_count', 'comments_count',
         'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
@@ -29,6 +29,7 @@ class Post extends Model implements HasMedia
     protected $casts = [
         'published_at' => 'datetime',
         'scheduled_at' => 'datetime',
+        'featured_at' => 'datetime',
         'moderated_at' => 'datetime',
         'is_featured' => 'boolean',
         'allow_comments' => 'boolean',
@@ -188,6 +189,14 @@ class Post extends Model implements HasMedia
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
+    }
+
+    public function scopeRecentlyFeatured($query)
+    {
+        $durationDays = config('content.featured_posts.featured_duration_days', 30);
+        return $query->where('is_featured', true)
+                     ->where('featured_at', '>', now()->subDays($durationDays))
+                     ->orderBy('featured_at', 'desc');
     }
 
     public function scopePremium($query)

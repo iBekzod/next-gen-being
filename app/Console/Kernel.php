@@ -177,12 +177,17 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // 6. Auto-publish approved posts (2 PM daily - 30% premium, 70% free for monetization)
-        $schedule->command('content:publish-approved --limit=10 --premium-percent=30')
+        // 6. Strategic daily publication (2 PM daily - 1 original AI post + 2 aggregated posts, 70% free, 30% premium)
+        $schedule->command('content:publish-daily')
             ->dailyAt('14:00')
             ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->onOneServer();
+
+        // 7. Update featured posts from trending (6 PM daily - auto-feature top 5 trending posts)
+        $schedule->command('content:update-featured --limit=5 --period=7days')
+            ->dailyAt('18:00')
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**
