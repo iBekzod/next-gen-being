@@ -45,7 +45,7 @@ class FeedController extends Controller
                     $query->where('is_premium', false);
                     break;
                 case 'tutorial':
-                    $query->whereNotNull('tutorial_series_id');
+                    $query->whereNotNull('series_slug');
                     break;
             }
         }
@@ -111,7 +111,7 @@ class FeedController extends Controller
                     $query->where('is_premium', false);
                     break;
                 case 'tutorial':
-                    $query->whereNotNull('tutorial_series_id');
+                    $query->whereNotNull('series_slug');
                     break;
             }
         }
