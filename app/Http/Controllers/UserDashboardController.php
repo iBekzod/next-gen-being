@@ -58,14 +58,21 @@ class UserDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Get earnings data
-        $totalEarnings = $user->earnings()->paid()->sum('amount');
+        // Get earnings data - Include both paid and pending for totals
+        // Total Earnings = All earnings (paid + pending)
+        $totalEarnings = $user->earnings()->sum('amount');
+
+        // This Month Earnings = All this month's earnings (paid + pending)
         $thisMonthEarnings = $user->earnings()
-            ->paid()
-            ->whereYear('paid_at', now()->year)
-            ->whereMonth('paid_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
             ->sum('amount');
+
+        // Pending Payouts = Only earnings that are pending
         $pendingPayouts = $user->earnings()->pending()->sum('amount');
+
+        // Paid Earnings = Only paid earnings
+        $paidEarnings = $user->earnings()->paid()->sum('amount');
 
         // Get top earning posts (from earnings metadata)
         $topPosts = $user->earnings()
@@ -104,6 +111,7 @@ class UserDashboardController extends Controller
             'totalEarnings',
             'thisMonthEarnings',
             'pendingPayouts',
+            'paidEarnings',
             'topPosts',
             'earningsByType',
             'dailyEarnings',

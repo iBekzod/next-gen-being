@@ -23,7 +23,7 @@
 <section class="bg-gray-50 dark:bg-slate-900">
     <div class="px-6 py-12 mx-auto max-w-7xl">
         <!-- Summary Stats Cards -->
-        <div class="grid grid-cols-1 gap-6 mb-12 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-6 mb-12 sm:grid-cols-2 lg:grid-cols-5">
             <!-- Total Earnings Card -->
             <div class="relative overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition">
                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none"></div>
@@ -55,7 +55,7 @@
                             <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 ${{ number_format($thisMonthEarnings, 2) }}
                             </p>
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ now()->format('F Y') }} earnings</p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ now()->format('F Y') }} earnings (all)</p>
                         </div>
                         <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-500/20">
                             <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -66,13 +66,34 @@
                 </div>
             </div>
 
-            <!-- Pending Payouts Card -->
+            <!-- Paid Earnings Card -->
+            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition">
+                <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-transparent pointer-events-none"></div>
+                <div class="relative p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Paid Earnings</p>
+                            <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+                                ${{ number_format($paidEarnings, 2) }}
+                            </p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Successfully paid out</p>
+                        </div>
+                        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 dark:bg-green-500/20">
+                            <svg class="w-6 h-6 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Earnings Card -->
             <div class="relative overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition">
                 <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent pointer-events-none"></div>
                 <div class="relative p-6">
                     <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Payouts</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Earnings</p>
                             <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 ${{ number_format($pendingPayouts, 2) }}
                             </p>
