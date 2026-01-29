@@ -10,7 +10,10 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class RecentComments extends BaseWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
+
+    protected int|string|array $columnSpan = ['md' => 2];
+
     protected function getTableQuery(): Builder|Relation
     {
         return Comment::query()

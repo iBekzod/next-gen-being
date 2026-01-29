@@ -14,6 +14,8 @@ class ContentCurationStatsWidget extends Widget
 {
     protected static string $view = 'filament.widgets.content-curation-stats';
 
+    protected static ?int $sort = 1;
+
     protected int | string | array $columnSpan = 'full';
 
     public function getStats(): array

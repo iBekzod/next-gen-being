@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class RecentPosts extends BaseWidget
 {
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 4;
     protected int|string|array $columnSpan = ['md' => 2];
 
     protected function getTableQuery(): Builder|Relation
