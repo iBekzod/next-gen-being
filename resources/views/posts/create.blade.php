@@ -715,8 +715,8 @@ main {
                 <div class="form-group">
                     <label style="font-size: 0.875rem; font-weight: 500; color: #374151; display: block; margin-bottom: 0.5rem;">Add tags to your post</label>
                     <input type="hidden" name="tags" id="tags" value="{{ old('tags') }}">
-                    <input type="text" id="tags-input" placeholder="Type tag name and press Enter..." style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
-                    <p class="input-help-text">Type and press Enter to add tags</p>
+                    <input type="text" id="tags-input" placeholder="Type to search or select existing tags..." style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;">
+                    <p class="input-help-text">Select from existing tags or create new ones by typing and pressing Enter</p>
                 </div>
             </div>
             @endif
@@ -1098,15 +1098,42 @@ if (existingPostSelect) {
     });
 }
 
-// Initialize tagify for tags input
+// Initialize tagify for tags input with existing tags
 const tagsInput = document.getElementById('tags-input');
 let tagifyInstance = null;
 if (tagsInput) {
+    // Build list of existing tags from PHP data
+    const existingTags = @json($tags->pluck('name')->toArray() ?? []);
+
     tagifyInstance = new Tagify(tagsInput, {
+        whitelist: existingTags,
         dropdown: {
             maxItems: 20,
             enabled: 1,
-            closeOnSelect: false
+            closeOnSelect: false,
+            classname: 'tags-dropdown'
+        },
+        enforceWhitelist: false,  // Allow creating new tags
+        keepInvalidTags: false,
+        skippedDetailsDefaultText: 'No suggestions available',
+        transformTag: function(tagData) {
+            tagData.class = 'tag-item';
+        },
+        validate: function(tagText) {
+            // Allow tag if it's not empty
+            return tagText.trim().length > 0;
+        }
+    });
+
+    // Customize dropdown for better UX
+    tagifyInstance.DOM.scope.addEventListener('click', function(e) {
+        if (e.target.matches('.tagify__dropdown__item')) {
+            // Auto-select and close dropdown on click
+            setTimeout(() => {
+                if (tagsInput.value.length < 200) {  // Prevent too many tags
+                    tagifyInstance.dropdown.hide();
+                }
+            }, 100);
         }
     });
 }
@@ -1120,16 +1147,11 @@ if (createPostForm) {
             const tags = tagifyInstance.getCleanData();
             const tagNames = tags.map(tag => typeof tag === 'string' ? tag : tag.value).join(',');
 
-            // Create or update hidden input with tag data
-            let tagsInput = document.getElementById('tags-hidden');
-            if (!tagsInput) {
-                tagsInput = document.createElement('input');
-                tagsInput.type = 'hidden';
-                tagsInput.name = 'tags';
-                tagsInput.id = 'tags-hidden';
-                this.appendChild(tagsInput);
+            // Update the existing hidden input with tag data
+            const tagsInput = document.getElementById('tags');
+            if (tagsInput) {
+                tagsInput.value = tagNames;
             }
-            tagsInput.value = tagNames;
         }
 
         // Handle series mode data

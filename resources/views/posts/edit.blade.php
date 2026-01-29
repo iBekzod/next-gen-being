@@ -303,11 +303,11 @@ body, main {
                         </label>
                         <input name="tags"
                                id="tags"
-                               placeholder="Add tags... (e.g., laravel, php, web-development)"
+                               placeholder="Search tags or create new ones..."
                                value="{{ old('tags', $post->tags->pluck('name')->join(', ')) }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500">
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Type to see suggestions or create new tags
+                            Select from existing tags or create new ones by typing and pressing Enter
                         </p>
                     </div>
 
@@ -682,13 +682,22 @@ function previewImage(input) {
     }
 }
 
-// Tags input
+// Tags input with existing tags suggestions
 const tagsInput = document.querySelector('input[name=tags]');
+const existingTags = @json($tags->pluck('name')->toArray() ?? []);
 const tagify = new Tagify(tagsInput, {
+    whitelist: existingTags,
     dropdown: {
         maxItems: 20,
-        enabled: 0,
-        closeOnSelect: false
+        enabled: 1,
+        closeOnSelect: false,
+        classname: 'tags-dropdown'
+    },
+    enforceWhitelist: false,  // Allow creating new tags
+    keepInvalidTags: false,
+    skippedDetailsDefaultText: 'No suggestions available',
+    transformTag: function(tagData) {
+        tagData.class = 'tag-item';
     }
 });
 
