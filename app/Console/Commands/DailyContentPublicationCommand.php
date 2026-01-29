@@ -165,8 +165,9 @@ class DailyContentPublicationCommand extends Command
             $posts = Post::where('is_curated', true)
                 ->where('moderation_status', 'approved')
                 ->where('status', 'draft')
+                ->with('sourceReferences')
                 ->orderBy('paraphrase_confidence_score', 'desc')
-                ->limit($count)
+                ->limit($count * 2)  // Fetch more to account for filtering
                 ->get();
 
             if ($posts->isEmpty()) {
@@ -174,6 +175,7 @@ class DailyContentPublicationCommand extends Command
                 return [];
             }
 
+            $selectedPosts = [];
             foreach ($posts as $post) {
                 // Verify it has source references
                 if ($post->sourceReferences()->count() === 0) {
@@ -182,10 +184,16 @@ class DailyContentPublicationCommand extends Command
                 }
 
                 $this->line("  ✅ Selected: {$post->title} (confidence: " . round($post->paraphrase_confidence_score * 100) . "%)");
+                $selectedPosts[] = $post;
                 $this->publishedPosts[] = $post;
+
+                // Stop when we have enough posts
+                if (count($selectedPosts) >= $count) {
+                    break;
+                }
             }
 
-            return $posts->take($count)->toArray();
+            return $selectedPosts;
 
         } catch (\Exception $e) {
             $this->error('  ❌ Error selecting aggregated posts: ' . $e->getMessage());
@@ -217,6 +225,9 @@ class DailyContentPublicationCommand extends Command
 
         foreach ($posts as $index => $post) {
             $isPremium = in_array($index, $premiumIndices);
+
+            // Update the post with premium status
+            $post->update(['is_premium' => $isPremium]);
 
             if ($isPremium) {
                 $this->premiumCount++;
