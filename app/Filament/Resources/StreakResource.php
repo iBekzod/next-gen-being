@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\Streak;
+use App\Filament\Resources\StreakResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,8 @@ class StreakResource extends Resource
 {
     protected static ?string $model = Streak::class;
     protected static ?string $slug = 'streaks';
+    protected static ?string $navigationIcon = 'heroicon-o-fire';
+    protected static ?string $navigationGroup = 'Engagement';
 
     public static function form(Form $form): Form
     {
@@ -63,5 +66,14 @@ class StreakResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListStreaks::route('/'),
+            'create' => Pages\CreateStreak::route('/create'),
+            'edit' => Pages\EditStreak::route('/{record}/edit'),
+        ];
     }
 }

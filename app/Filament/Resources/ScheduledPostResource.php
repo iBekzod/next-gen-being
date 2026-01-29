@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\ScheduledPost;
+use App\Filament\Resources\ScheduledPostResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,8 @@ class ScheduledPostResource extends Resource
 {
     protected static ?string $model = ScheduledPost::class;
     protected static ?string $slug = 'scheduled-posts';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static ?string $navigationGroup = 'Content Management';
 
     public static function form(Form $form): Form
     {
@@ -64,5 +67,14 @@ class ScheduledPostResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListScheduledPosts::route('/'),
+            'create' => Pages\CreateScheduledPost::route('/create'),
+            'edit' => Pages\EditScheduledPost::route('/{record}/edit'),
+        ];
     }
 }

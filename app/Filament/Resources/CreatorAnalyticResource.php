@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\CreatorAnalytic;
+use App\Filament\Resources\CreatorAnalyticResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,8 @@ class CreatorAnalyticResource extends Resource
 {
     protected static ?string $model = CreatorAnalytic::class;
     protected static ?string $slug = 'creator-analytics';
+    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+    protected static ?string $navigationGroup = 'Analytics';
 
     public static function form(Form $form): Form
     {
@@ -69,5 +72,14 @@ class CreatorAnalyticResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListCreatorAnalytics::route('/'),
+            'create' => Pages\CreateCreatorAnalytic::route('/create'),
+            'edit' => Pages\EditCreatorAnalytic::route('/{record}/edit'),
+        ];
     }
 }

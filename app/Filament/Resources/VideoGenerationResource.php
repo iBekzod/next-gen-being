@@ -91,7 +91,8 @@ class VideoGenerationResource extends Resource
                             ->options(function () {
                                 // Get user's connected social media accounts
                                 $accounts = SocialMediaAccount::where('is_active', true)
-                                    ->pluck('platform_name', 'platform')
+                                    ->get()
+                                    ->mapWithKeys(fn($account) => [$account->platform => $account->getPlatformDisplayName()])
                                     ->toArray();
 
                                 return array_merge($accounts, [

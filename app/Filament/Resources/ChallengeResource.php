@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\Challenge;
+use App\Filament\Resources\ChallengeResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,8 @@ class ChallengeResource extends Resource
 {
     protected static ?string $model = Challenge::class;
     protected static ?string $slug = 'challenges';
+    protected static ?string $navigationIcon = 'heroicon-o-star';
+    protected static ?string $navigationGroup = 'Engagement';
 
     public static function form(Form $form): Form
     {
@@ -82,5 +85,14 @@ class ChallengeResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListChallenges::route('/'),
+            'create' => Pages\CreateChallenge::route('/create'),
+            'edit' => Pages\EditChallenge::route('/{record}/edit'),
+        ];
     }
 }

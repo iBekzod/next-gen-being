@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\ReaderPreference;
+use App\Filament\Resources\ReaderPreferenceResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,8 @@ class ReaderPreferenceResource extends Resource
 {
     protected static ?string $model = ReaderPreference::class;
     protected static ?string $slug = 'reader-preferences';
+    protected static ?string $navigationIcon = 'heroicon-o-heart';
+    protected static ?string $navigationGroup = 'User Management';
 
     public static function form(Form $form): Form
     {
@@ -52,5 +55,14 @@ class ReaderPreferenceResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListReaderPreferences::route('/'),
+            'create' => Pages\CreateReaderPreference::route('/create'),
+            'edit' => Pages\EditReaderPreference::route('/{record}/edit'),
+        ];
     }
 }

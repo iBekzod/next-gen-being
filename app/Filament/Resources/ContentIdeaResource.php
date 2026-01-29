@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\ContentIdea;
+use App\Filament\Resources\ContentIdeaResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,8 @@ class ContentIdeaResource extends Resource
 {
     protected static ?string $model = ContentIdea::class;
     protected static ?string $slug = 'content-ideas';
+    protected static ?string $navigationIcon = 'heroicon-o-light-bulb';
+    protected static ?string $navigationGroup = 'Content Management';
 
     public static function form(Form $form): Form
     {
@@ -76,5 +79,14 @@ class ContentIdeaResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListContentIdeas::route('/'),
+            'create' => Pages\CreateContentIdea::route('/create'),
+            'edit' => Pages\EditContentIdea::route('/{record}/edit'),
+        ];
     }
 }

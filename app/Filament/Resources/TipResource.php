@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\Tip;
+use App\Filament\Resources\TipResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -14,6 +15,8 @@ class TipResource extends Resource
     protected static ?string $model = Tip::class;
     protected static ?string $slug = 'tips';
     protected static ?string $recordTitleAttribute = 'id';
+    protected static ?string $navigationIcon = 'heroicon-o-gift';
+    protected static ?string $navigationGroup = 'Community';
 
     public static function form(Form $form): Form
     {
@@ -69,5 +72,14 @@ class TipResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListTips::route('/'),
+            'create' => Pages\CreateTip::route('/create'),
+            'edit' => Pages\EditTip::route('/{record}/edit'),
+        ];
     }
 }

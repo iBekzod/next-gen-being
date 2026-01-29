@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\AffiliateLink;
+use App\Filament\Resources\AffiliateLinkResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,17 +14,21 @@ class AffiliateLinkResource extends Resource
 {
     protected static ?string $model = AffiliateLink::class;
     protected static ?string $slug = 'affiliate-links';
+    protected static ?string $navigationIcon = 'heroicon-o-link';
+    protected static ?string $navigationGroup = 'Marketing';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Section::make('Affiliate Link')
                 ->schema([
-                    Forms\Components\Select::make('user_id')
-                        ->relationship('user', 'name')
+                    Forms\Components\Select::make('creator_id')
+                        ->label('Creator')
+                        ->relationship('creator', 'name')
                         ->searchable()
                         ->required(),
-                    Forms\Components\TextInput::make('code')
+                    Forms\Components\TextInput::make('referral_code')
+                        ->label('Referral Code')
                         ->required()
                         ->unique(ignoreRecord: true),
                     Forms\Components\TextInput::make('url')
@@ -60,5 +65,14 @@ class AffiliateLinkResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListAffiliateLinks::route('/'),
+            'create' => Pages\CreateAffiliateLink::route('/create'),
+            'edit' => Pages\EditAffiliateLink::route('/{record}/edit'),
+        ];
     }
 }
