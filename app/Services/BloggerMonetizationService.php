@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\BloggerEarning;
+use App\Notifications\MilestoneAchievedNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -63,8 +64,12 @@ class BloggerMonetizationService
                         'amount' => $amount,
                     ]);
 
-                    // TODO: Send notification to blogger
-                    // Notification::send($blogger, new MilestoneReachedNotification($milestone, $amount));
+                    // Send notification to blogger
+                    Notification::send($blogger, new MilestoneAchievedNotification(
+                        milestone: $milestone,
+                        amount: $amount,
+                        earning: $earning
+                    ));
                 }
             }
         }

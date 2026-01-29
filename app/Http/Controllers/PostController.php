@@ -228,8 +228,7 @@ class PostController extends Controller
             'excerpt' => 'required|string|max:500',
             'content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'tags' => 'array',
-            'tags.*' => 'exists:tags,id',
+            'tags' => 'nullable|string',
             'featured_image' => 'nullable|image|max:2048',
             'status' => 'required|in:draft,published,scheduled',
             'published_at' => 'nullable|date',
@@ -270,11 +269,26 @@ class PostController extends Controller
             $validated['series_slug'] = \Illuminate\Support\Str::slug($validated['series_title']);
         }
 
+        // Handle tags: convert comma-separated string to tag names
+        $tagIds = [];
+        if (!empty($validated['tags'])) {
+            $tagNames = array_map('trim', explode(',', $validated['tags']));
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = Tag::firstOrCreate(
+                        ['name' => $tagName],
+                        ['slug' => \Illuminate\Support\Str::slug($tagName), 'is_active' => true]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+            }
+        }
+        unset($validated['tags']); // Remove from validated data
+
         $post->update($validated);
 
-        if (isset($validated['tags'])) {
-            $post->tags()->sync($validated['tags']);
-        }
+        // Sync tags
+        $post->tags()->sync($tagIds);
 
         return redirect()->route('posts.show', $post->slug)
             ->with('success', 'Post updated successfully!');

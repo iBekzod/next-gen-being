@@ -41,8 +41,13 @@ class NotificationService
             'data' => $data,
         ]);
 
-        // TODO: Send email notification if user preferences allow
-        // TODO: Broadcast notification for real-time updates
+        // Send email notification if user preferences allow
+        if ($prefs->shouldSendEmailFor($type)) {
+            $this->sendEmailNotification($user, $notification, $actionUrl);
+        }
+
+        // Broadcast notification for real-time updates
+        $this->broadcastNotification($user, $notification);
 
         return $notification;
     }
@@ -405,6 +410,49 @@ class NotificationService
             });
         } catch (\Exception $e) {
             \Log::warning('Failed to send post trending email', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send email notification to user
+     */
+    private function sendEmailNotification(User $user, Notification $notification, ?string $actionUrl): void
+    {
+        try {
+            \Mail::send('emails.notification', [
+                'user' => $user,
+                'notification' => $notification,
+                'actionUrl' => $actionUrl,
+            ], function ($message) use ($user, $notification) {
+                $message->to($user->email)
+                    ->subject($notification->title);
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send notification email', [
+                'user_id' => $user->id,
+                'notification_id' => $notification->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Broadcast notification for real-time updates via WebSocket
+     */
+    private function broadcastNotification(User $user, Notification $notification): void
+    {
+        try {
+            // Broadcast event for real-time notification delivery
+            // Using Laravel Broadcasting with event channels
+            \Illuminate\Support\Facades\Event::dispatch(
+                new \App\Events\NotificationCreated($user, $notification)
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast notification', [
+                'user_id' => $user->id,
+                'notification_id' => $notification->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

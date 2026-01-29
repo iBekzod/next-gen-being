@@ -3,6 +3,7 @@
 namespace App\Filament\Blogger\Pages;
 
 use App\Services\EnhancedAIGenerationService;
+use App\Services\LemonSqueezyService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
@@ -152,7 +153,7 @@ class AISettings extends Page
                                 ->label('Upgrade to Basic')
                                 ->icon('heroicon-o-arrow-up')
                                 ->color('info')
-                                ->url('#') // TODO: Replace with LemonSqueezy checkout URL
+                                ->url(fn () => $this->getCheckoutUrl('basic', $user))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => $user->ai_tier === 'free'),
 
@@ -160,7 +161,7 @@ class AISettings extends Page
                                 ->label('Upgrade to Premium')
                                 ->icon('heroicon-o-arrow-up')
                                 ->color('warning')
-                                ->url('#') // TODO: Replace with LemonSqueezy checkout URL
+                                ->url(fn () => $this->getCheckoutUrl('premium', $user))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => in_array($user->ai_tier, ['free', 'basic'])),
 
@@ -168,7 +169,7 @@ class AISettings extends Page
                                 ->label('Upgrade to Enterprise')
                                 ->icon('heroicon-o-arrow-up')
                                 ->color('danger')
-                                ->url('#') // TODO: Replace with LemonSqueezy checkout URL
+                                ->url(fn () => $this->getCheckoutUrl('enterprise', $user))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => in_array($user->ai_tier, ['free', 'basic', 'premium'])),
                         ]),
@@ -220,7 +221,7 @@ Unsplash offers 50 free image requests per hour.'),
                                 ->label('Manage Billing')
                                 ->icon('heroicon-o-credit-card')
                                 ->color('gray')
-                                ->url('#') // TODO: LemonSqueezy customer portal URL
+                                ->url(fn () => $this->getCustomerPortalUrl($user))
                                 ->openUrlInNewTab(),
 
                             Forms\Components\Actions\Action::make('cancel_subscription')
@@ -231,12 +232,7 @@ Unsplash offers 50 free image requests per hour.'),
                                 ->modalHeading('Cancel AI Subscription?')
                                 ->modalDescription('You will lose access to premium AI features at the end of your billing period.')
                                 ->action(function () use ($user) {
-                                    // TODO: Handle subscription cancellation via LemonSqueezy
-                                    Notification::make()
-                                        ->title('Subscription Cancelled')
-                                        ->body('Your AI subscription has been cancelled.')
-                                        ->warning()
-                                        ->send();
+                                    $this->cancelAISubscription($user);
                                 }),
                         ]),
                     ])
@@ -249,5 +245,90 @@ Unsplash offers 50 free image requests per hour.'),
     {
         $aiService = app(EnhancedAIGenerationService::class);
         return $aiService->getUsageStats(Auth::user());
+    }
+
+    /**
+     * Generate checkout URL for AI subscription upgrade
+     */
+    private function getCheckoutUrl(string $tier, $user): string
+    {
+        $variantId = match($tier) {
+            'basic' => config('services.lemonsqueezy.ai_basic_variant_id'),
+            'premium' => config('services.lemonsqueezy.ai_premium_variant_id'),
+            'enterprise' => config('services.lemonsqueezy.ai_enterprise_variant_id'),
+            default => null,
+        };
+
+        if (!$variantId) {
+            return '#'; // Fallback if variant ID not configured
+        }
+
+        $lemonSqueezy = new LemonSqueezyService();
+        $checkoutUrl = $lemonSqueezy->createCheckout([
+            'variant_id' => $variantId,
+            'email' => $user->email,
+            'name' => $user->name,
+            'checkout_data' => [
+                'custom' => [
+                    'user_id' => $user->id,
+                    'tier' => $tier,
+                ],
+            ],
+        ]);
+
+        return $checkoutUrl ?? '#';
+    }
+
+    /**
+     * Get customer portal URL for subscription management
+     */
+    private function getCustomerPortalUrl($user): string
+    {
+        if (!$user->lemonsqueezy_subscription_id) {
+            return '#';
+        }
+
+        $lemonSqueezy = new LemonSqueezyService();
+        $portalUrl = $lemonSqueezy->getCustomerPortalUrl($user->lemonsqueezy_subscription_id);
+
+        return $portalUrl ?? '#';
+    }
+
+    /**
+     * Cancel AI subscription via LemonSqueezy
+     */
+    private function cancelAISubscription($user): void
+    {
+        if (!$user->lemonsqueezy_subscription_id) {
+            Notification::make()
+                ->title('No Active Subscription')
+                ->body('You don\'t have an active AI subscription to cancel.')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $lemonSqueezy = new LemonSqueezyService();
+        $success = $lemonSqueezy->cancelSubscription($user->lemonsqueezy_subscription_id);
+
+        if ($success) {
+            $user->update([
+                'ai_tier' => 'free',
+                'lemonsqueezy_subscription_id' => null,
+                'ai_tier_expires_at' => null,
+            ]);
+
+            Notification::make()
+                ->title('Subscription Cancelled')
+                ->body('Your AI subscription has been successfully cancelled. You\'ll revert to free tier at the end of your billing period.')
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Cancellation Failed')
+                ->body('Unable to cancel subscription. Please try again or contact support.')
+                ->danger()
+                ->send();
+        }
     }
 }
