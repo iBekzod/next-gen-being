@@ -26,7 +26,9 @@ class ListPostCurations extends ListRecords
 
     protected function runParaphraseJob(): void
     {
-        $pending = \App\Models\ContentAggregation::whereNull('curated_at')->first();
+        $pending = \App\Models\ContentAggregation::whereDoesntHave('posts', function ($q) {
+            $q->where('is_curated', true);
+        })->first();
 
         if (!$pending) {
             \Filament\Notifications\Notification::make()

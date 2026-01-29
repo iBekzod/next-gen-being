@@ -122,7 +122,9 @@ class ContentAggregationResource extends Resource
 
                 Tables\Filters\Filter::make('needs_curation')
                     ->label('Needs Curation')
-                    ->query(fn (Builder $query) => $query->whereNull('curated_at')),
+                    ->query(fn (Builder $query) => $query->whereDoesntHave('posts', function ($q) {
+                        $q->where('is_curated', true);
+                    })),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

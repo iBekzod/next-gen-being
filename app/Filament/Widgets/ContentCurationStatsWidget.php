@@ -27,7 +27,9 @@ class ContentCurationStatsWidget extends Widget
                 'active_sources' => ContentSource::where('scraping_enabled', true)->count(),
                 'articles_today' => CollectedContent::whereDate('created_at', $today)->count(),
                 'articles_total' => CollectedContent::count(),
-                'aggregations_pending' => ContentAggregation::whereNull('curated_at')->count(),
+                'aggregations_pending' => ContentAggregation::whereDoesntHave('posts', function ($q) {
+                    $q->where('is_curated', true);
+                })->count(),
                 'aggregations_total' => ContentAggregation::count(),
                 'curated_posts' => Post::where('is_curated', true)->count(),
                 'draft_posts' => Post::where('is_curated', true)->where('status', 'draft')->count(),
