@@ -9,10 +9,27 @@
         ->get();
     $currentIndex = $seriesPosts->search(fn($p) => $p->id === $post->id);
 
-    // Calculate actual progress based on completed posts (posts before current)
-    $completedCount = $currentIndex !== false ? $currentIndex + 1 : 1; // +1 because index is 0-based
-    $totalParts = $post->series_total_parts;
-    $progress = round(($completedCount / $totalParts) * 100);
+    // Get user's completed posts in this series if authenticated
+    $completedPostIds = [];
+    if (Auth::check()) {
+        $tutorialProgressService = app(\App\Services\Tutorial\TutorialProgressService::class);
+        $seriesProgress = $tutorialProgressService->getSeriesProgress(Auth::user(), $post->series_slug);
+        $completedCount = $seriesProgress['completed'] ?? 0;
+        $totalParts = $seriesProgress['total'] ?? $post->series_total_parts;
+        $progress = $seriesProgress['percentage'] ?? 0;
+
+        // Get IDs of completed posts
+        $completedPostIds = \App\Models\TutorialProgress::where('user_id', Auth::id())
+            ->where('series_slug', $post->series_slug)
+            ->where('completed', true)
+            ->pluck('post_id')
+            ->toArray();
+    } else {
+        // For unauthenticated users, show post order progression only
+        $completedCount = $currentIndex !== false ? $currentIndex : 0;
+        $totalParts = $post->series_total_parts;
+        $progress = round(($completedCount / $totalParts) * 100);
+    }
 @endphp
 
 <!-- Sticky Sidebar -->
@@ -54,7 +71,8 @@
                 @foreach($seriesPosts as $index => $seriesPost)
                 @php
                     $isCurrent = $seriesPost->id === $post->id;
-                    $isCompleted = $index < $currentIndex;
+                    // Check if post is actually completed by user
+                    $isCompleted = Auth::check() ? in_array($seriesPost->id, $completedPostIds) : false;
                     $isLocked = !$isCurrent && !$isCompleted && $seriesPost->is_premium && !auth()->check();
                 @endphp
 

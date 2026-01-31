@@ -4,6 +4,7 @@ namespace App\Livewire;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Services\RecommendationService;
+use App\Services\Tutorial\TutorialProgressService;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,11 @@ class PostShow extends Component
 
         // Record view
         $this->post->recordView(Auth::user());
+
+        // Track tutorial progress if user is authenticated and post is part of a series
+        if (Auth::check() && $this->post->isPartOfSeries()) {
+            app(TutorialProgressService::class)->trackReading(Auth::user(), $this->post);
+        }
 
         // Note: We no longer block premium content completely
         // Instead, we show a preview (handled in the view)
