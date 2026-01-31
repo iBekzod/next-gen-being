@@ -188,6 +188,43 @@ class Kernel extends ConsoleKernel
             ->dailyAt('18:00')
             ->withoutOverlapping()
             ->onOneServer();
+
+        // === AI LEARNING PLATFORM SCHEDULING ===
+
+        // Generate beginner tutorials (Monday, every other week at 8 AM)
+        $schedule->command('ai-learning:generate-weekly --day=Monday')
+            ->mondays()
+            ->at('08:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Generate intermediate tutorials (Wednesday, weekly at 8 AM)
+        $schedule->command('ai-learning:generate-weekly --day=Wednesday')
+            ->wednesdays()
+            ->at('08:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Generate advanced tutorials (Friday, monthly at 8 AM)
+        $schedule->command('ai-learning:generate-weekly --day=Friday')
+            ->fridays()
+            ->at('08:00')
+            ->when(function () {
+                // Only run on first Friday of month
+                return now()->dayOfMonth <= 7;
+            })
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Generate prompt templates (1st of each month at 10 AM - 10 prompts)
+        $schedule->command('ai-learning:generate-prompts --count=10')
+            ->monthlyOn(1, '10:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
     }
 
     /**

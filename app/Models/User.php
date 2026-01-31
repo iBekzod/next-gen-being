@@ -128,6 +128,11 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $this->hasMany(SocialAccount::class);
     }
 
+    public function purchases()
+    {
+        return $this->hasMany(ProductPurchase::class);
+    }
+
     // Role Methods
     public function hasRole(string $role): bool
     {

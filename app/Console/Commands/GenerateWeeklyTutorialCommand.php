@@ -1,0 +1,201 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Post;
+use App\Models\Category;
+use App\Models\Tag;
+use App\Services\AITutorialGenerationService;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+
+class GenerateWeeklyTutorialCommand extends Command
+{
+    protected $signature = 'ai-learning:generate-weekly {--day=} {--dry-run}';
+    protected $description = 'Generate weekly AI learning tutorial based on schedule';
+
+    public function handle(AITutorialGenerationService $tutorialService): int
+    {
+        $day = $this->option('day') ?: now()->format('l'); // Monday, Wednesday, etc.
+        $schedule = config('ai-learning.weekly_schedule.' . strtolower($day));
+
+        if (!$schedule) {
+            $this->warn("No tutorial scheduled for {$day}");
+            return self::SUCCESS;
+        }
+
+        // Check frequency
+        if (!$this->shouldGenerateToday($schedule['frequency'])) {
+            $this->info("Skipping {$day} - frequency is {$schedule['frequency']}");
+            return self::SUCCESS;
+        }
+
+        // Select topic from appropriate difficulty level
+        $topic = $this->selectTopic($schedule['type']);
+
+        if (!$topic) {
+            $this->error("No topics available for {$schedule['type']} level");
+            return self::FAILURE;
+        }
+
+        $this->info("═══════════════════════════════════════════════════════");
+        $this->info("Generating {$schedule['type']} tutorial: {$topic}");
+        $this->info("═══════════════════════════════════════════════════════");
+        $this->newLine();
+
+        if ($this->option('dry-run')) {
+            $this->info("[DRY RUN] Would generate 8-part tutorial series");
+            $this->info("Topics available for {$schedule['type']}: " . count(config("ai-learning.tutorial_topics.{$schedule['type']}")));
+            return self::SUCCESS;
+        }
+
+        try {
+            // Generate 8-part comprehensive tutorial
+            $this->line("Generating content with Claude 3.5 Sonnet...");
+            $parts = $tutorialService->generateComprehensiveTutorial($topic, 8);
+
+            if (empty($parts)) {
+                $this->error("Failed to generate tutorial");
+                return self::FAILURE;
+            }
+
+            $this->line("Creating series in database...");
+
+            // Create series
+            $seriesSlug = Str::slug($topic);
+            $categoryId = $this->getCategoryId('AI Tutorials');
+
+            foreach ($parts as $index => $content) {
+                try {
+                    $post = Post::create([
+                        'user_id' => 1, // Platform account
+                        'title' => $content['title'],
+                        'slug' => Str::slug($content['title'] . ' ' . Str::random(6)),
+                        'excerpt' => $content['excerpt'] ?? substr(strip_tags($content['content']), 0, 500),
+                        'content' => $content['content'],
+                        'category_id' => $categoryId,
+                        'series_title' => $topic,
+                        'series_slug' => $seriesSlug,
+                        'series_part' => $index + 1,
+                        'series_total_parts' => 8,
+                        'status' => 'published',
+                        'published_at' => now(),
+                        'is_premium' => $index >= 5, // Parts 6-8 are premium
+                        'premium_tier' => $index >= 5 ? 'basic' : null,
+                    ]);
+
+                    // Attach tags
+                    $this->attachTags($post, $schedule['type'], $topic);
+
+                    $this->info("  ✅ Published Part " . ($index + 1) . ": {$post->title}");
+                } catch (\Exception $e) {
+                    $this->error("  ❌ Failed to create part " . ($index + 1) . ": " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            $this->newLine();
+            $this->info("═══════════════════════════════════════════════════════");
+            $this->info("🎉 Complete 8-part tutorial published!");
+            $this->info("═══════════════════════════════════════════════════════");
+            $this->newLine();
+
+            return self::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error("Error generating tutorial: " . $e->getMessage());
+            return self::FAILURE;
+        }
+    }
+
+    protected function selectTopic(string $level): ?string
+    {
+        $topics = config("ai-learning.tutorial_topics.{$level}");
+
+        // Get topics used in the last 6 months
+        $usedTopics = Post::where('created_at', '>', now()->subMonths(6))
+            ->whereNotNull('series_slug')
+            ->pluck('series_title')
+            ->unique()
+            ->toArray();
+
+        // Find available topics
+        $availableTopics = array_diff($topics, $usedTopics);
+
+        if (empty($availableTopics)) {
+            // If all topics exhausted, use all topics (reset cycle)
+            $availableTopics = $topics;
+        }
+
+        return !empty($availableTopics) ? $availableTopics[array_rand($availableTopics)] : null;
+    }
+
+    protected function shouldGenerateToday(string $frequency): bool
+    {
+        return match($frequency) {
+            'weekly' => true,
+            'every_other_week' => now()->weekOfYear % 2 === 0,
+            'monthly' => now()->day <= 7, // First week of month
+            default => false,
+        };
+    }
+
+    protected function getCategoryId(string $categoryName): int
+    {
+        return Category::firstOrCreate(
+            ['name' => $categoryName],
+            [
+                'slug' => Str::slug($categoryName),
+                'is_active' => true,
+                'color' => '#3B82F6',
+                'icon' => 'academic-cap',
+            ]
+        )->id;
+    }
+
+    protected function attachTags(Post $post, string $level, string $topic): void
+    {
+        $commonTags = ['ai', 'tutorial', 'learning'];
+        $levelTag = [$level]; // 'beginner', 'intermediate', 'advanced'
+
+        // Extract topic-specific tags from title
+        $topicTags = $this->extractTopicTags($topic);
+
+        $allTags = array_merge($commonTags, $levelTag, $topicTags);
+        $allTags = array_unique($allTags); // Remove duplicates
+
+        foreach ($allTags as $tagName) {
+            if (empty($tagName)) {
+                continue;
+            }
+
+            $tag = Tag::firstOrCreate(
+                ['name' => $tagName],
+                [
+                    'slug' => Str::slug($tagName),
+                    'is_active' => true,
+                ]
+            );
+            $post->tags()->syncWithoutDetaching([$tag->id]);
+        }
+    }
+
+    protected function extractTopicTags(string $title): array
+    {
+        $keywords = [
+            'chatgpt', 'claude', 'midjourney', 'prompt', 'automation',
+            'langchain', 'ai-agent', 'rag', 'fine-tuning', 'api',
+            'gpt', 'llm', 'agent', 'image', 'text', 'speech',
+        ];
+
+        $tags = [];
+        $lowerTitle = strtolower($title);
+
+        foreach ($keywords as $keyword) {
+            if (str_contains($lowerTitle, $keyword)) {
+                $tags[] = $keyword;
+            }
+        }
+
+        return $tags;
+    }
+}

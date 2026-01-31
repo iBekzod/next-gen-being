@@ -254,6 +254,34 @@ class BloggerMonetizationService
     }
 
     /**
+     * Record digital product sale earnings
+     */
+    public function recordDigitalProductSale(User $blogger, $product, float $amount): BloggerEarning
+    {
+        $earning = BloggerEarning::create([
+            'user_id' => $blogger->id,
+            'type' => 'digital_product_sale',
+            'amount' => $amount,
+            'currency' => 'USD',
+            'status' => 'pending',
+            'metadata' => [
+                'product_id' => $product->id,
+                'product_title' => $product->title,
+                'product_type' => $product->type,
+                'revenue_share' => $product->revenue_share_percentage,
+            ],
+        ]);
+
+        Log::info('Digital product sale recorded', [
+            'blogger_id' => $blogger->id,
+            'product_id' => $product->id,
+            'amount' => $amount,
+        ]);
+
+        return $earning;
+    }
+
+    /**
      * Get earnings summary for admin dashboard
      */
     public function getPlatformEarningsSummary(): array

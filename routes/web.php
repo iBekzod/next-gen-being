@@ -54,6 +54,21 @@ Route::get('/blogger/{username}', [BloggerProfileController::class, 'show'])->na
 // Subscription routes
 Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('subscription.plans');
 
+// Digital Products / Resources routes
+use App\Http\Controllers\DigitalProductController;
+
+Route::prefix('resources')->name('digital-products.')->group(function () {
+    Route::get('/', [DigitalProductController::class, 'index'])->name('index');
+    Route::get('/{product:slug}', [DigitalProductController::class, 'show'])->name('show');
+
+    Route::middleware('auth')->group(function () {
+        Route::post('/{product}/purchase', [DigitalProductController::class, 'purchase'])->name('purchase');
+        Route::get('/downloads', [DigitalProductController::class, 'downloadIndex'])->name('download-index');
+        Route::get('/my-purchases', [DigitalProductController::class, 'myPurchases'])->name('my-purchases');
+        Route::get('/purchases/{purchase}/download', [DigitalProductController::class, 'download'])->name('download');
+    });
+});
+
 // Authentication routes
 
 // Protected routes
