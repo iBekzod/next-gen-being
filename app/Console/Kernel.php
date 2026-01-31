@@ -225,6 +225,39 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+
+        // === REVENUE AUTOMATION SCHEDULING ===
+
+        // Insert affiliate links into recent posts (daily at 6 AM - 5 posts)
+        $schedule->command('revenue:insert-affiliate-links --limit=5')
+            ->dailyAt('06:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Send product promotions to free users (Tuesday & Friday at 10 AM)
+        $schedule->command('revenue:send-product-emails --segment=free')
+            ->days([2, 5]) // Tuesday=2, Friday=5
+            ->at('10:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Send product promotions to basic subscribers (Thursday at 10 AM)
+        $schedule->command('revenue:send-product-emails --segment=basic')
+            ->thursdays()
+            ->at('10:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Send product promotions to pro subscribers (Wednesday at 10 AM)
+        $schedule->command('revenue:send-product-emails --segment=pro')
+            ->wednesdays()
+            ->at('10:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
     }
 
     /**

@@ -20,15 +20,6 @@
     </div>
 </section>
 
-<!-- User Progress Section (if logged in) -->
-@auth
-<section class="py-12 bg-slate-900 border-b border-slate-800">
-    <div class="px-6 mx-auto max-w-7xl">
-        <x-learning-progress-card />
-    </div>
-</section>
-@endauth
-
 <!-- Main Content -->
 <section class="py-12 bg-gray-50 dark:bg-slate-900">
     <div class="px-6 mx-auto max-w-7xl">
