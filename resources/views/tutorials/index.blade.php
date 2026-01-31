@@ -17,26 +17,6 @@
             <h1 class="text-4xl font-bold tracking-tight mb-2">Tutorials</h1>
             <p class="text-gray-300">Comprehensive tutorial series to master modern technologies</p>
         </div>
-
-        <!-- Simple Stats Header -->
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 text-sm">
-            <div>
-                <p class="text-2xl font-bold text-white">{{ count($series) }}</p>
-                <p class="text-gray-400">Tutorial Series</p>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-blue-400">{{ count($series->where('is_complete', true)) }}</p>
-                <p class="text-gray-400">Completed</p>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-emerald-400">{{ collect($series)->sum('published_parts') }}</p>
-                <p class="text-gray-400">Total Parts</p>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-amber-400">Beginner+</p>
-                <p class="text-gray-400">All Levels</p>
-            </div>
-        </div>
     </div>
 </section>
 

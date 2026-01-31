@@ -319,13 +319,27 @@ class PostController extends Controller
             ->orderByDesc('last_updated')
             ->get();
 
+        // Get current user progress if authenticated
+        $user = auth()->user();
+        $tutorialProgressService = null;
+        if ($user) {
+            $tutorialProgressService = app(\App\Services\Tutorial\TutorialProgressService::class);
+        }
+
         // For each series, get the first post for the image and category
-        $series = $series->map(function ($item) {
+        $series = $series->map(function ($item) use ($user, $tutorialProgressService) {
             $firstPost = Post::published()
                 ->where('series_slug', $item->series_slug)
                 ->where('series_part', $item->first_part)
                 ->with(['category', 'author'])
                 ->first();
+
+            // Check if user has completed all parts in this series
+            $is_complete = false;
+            if ($user && $tutorialProgressService) {
+                $seriesProgress = $tutorialProgressService->getSeriesProgress($user, $item->series_slug);
+                $is_complete = $seriesProgress['is_complete'];
+            }
 
             return [
                 'slug' => $item->series_slug,
@@ -337,7 +351,7 @@ class PostController extends Controller
                 'featured_image' => $firstPost?->featured_image ?? null,
                 'category' => $firstPost?->category ?? null,
                 'author' => $firstPost?->author ?? null,
-                'is_complete' => ($item->series_total_parts !== null && $item->published_parts >= $item->series_total_parts),
+                'is_complete' => $is_complete,
             ];
         });
 
