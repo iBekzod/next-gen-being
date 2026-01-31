@@ -601,6 +601,21 @@
         <!-- Help Contact Component -->
         @livewire('help-contact')
 
+        <!-- Google AdSense Vertical Ad Unit -->
+        <div class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div class="flex justify-center">
+                    <ins class="adsbygoogle"
+                        style="display:inline-block;width:300px;height:600px"
+                        data-ad-client="ca-pub-8948140381699585"
+                        data-ad-slot="3493407192"></ins>
+                </div>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="border-t border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
             <div class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
