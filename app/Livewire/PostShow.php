@@ -41,25 +41,22 @@ class PostShow extends Component
         // Track tutorial progress if user is authenticated and post is part of a series
         if (Auth::check() && $this->post->isPartOfSeries()) {
             try {
-                Log::debug('Tutorial progress tracking', [
-                    'user_id' => Auth::id(),
-                    'post_id' => $this->post->id,
-                    'series_slug' => $this->post->series_slug,
-                    'series_part' => $this->post->series_part,
-                ]);
-
                 $progressService = app(TutorialProgressService::class);
                 $result = $progressService->trackReading(Auth::user(), $this->post);
 
-                Log::debug('Tutorial progress tracked', [
+                Log::info('Tutorial progress tracked', [
                     'progress_id' => $result->id,
+                    'user_id' => Auth::id(),
+                    'post_id' => $this->post->id,
+                    'series_slug' => $this->post->series_slug,
                     'read_count' => $result->read_count,
                 ]);
             } catch (\Exception $e) {
-                Log::error('Failed to track tutorial progress', [
+                Log::error('Tutorial progress tracking failed', [
                     'error' => $e->getMessage(),
                     'user_id' => Auth::id(),
                     'post_id' => $this->post->id,
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }
@@ -263,6 +260,20 @@ class PostShow extends Component
 
     public function render()
     {
+        // Track tutorial progress if user is authenticated and post is part of a series
+        if (Auth::check() && $this->post->isPartOfSeries()) {
+            try {
+                $progressService = app(TutorialProgressService::class);
+                $progressService->trackReading(Auth::user(), $this->post);
+            } catch (\Exception $e) {
+                Log::error('Tutorial progress tracking failed', [
+                    'error' => $e->getMessage(),
+                    'user_id' => Auth::id(),
+                    'post_id' => $this->post->id,
+                ]);
+            }
+        }
+
         // Fetch personalized recommendations for authenticated users
         $recommendedPosts = collect();
         if (Auth::check()) {
