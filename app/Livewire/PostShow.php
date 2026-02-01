@@ -8,6 +8,7 @@ use App\Services\Tutorial\TutorialProgressService;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PostShow extends Component
 {
@@ -39,7 +40,28 @@ class PostShow extends Component
 
         // Track tutorial progress if user is authenticated and post is part of a series
         if (Auth::check() && $this->post->isPartOfSeries()) {
-            app(TutorialProgressService::class)->trackReading(Auth::user(), $this->post);
+            try {
+                Log::debug('Tutorial progress tracking', [
+                    'user_id' => Auth::id(),
+                    'post_id' => $this->post->id,
+                    'series_slug' => $this->post->series_slug,
+                    'series_part' => $this->post->series_part,
+                ]);
+
+                $progressService = app(TutorialProgressService::class);
+                $result = $progressService->trackReading(Auth::user(), $this->post);
+
+                Log::debug('Tutorial progress tracked', [
+                    'progress_id' => $result->id,
+                    'read_count' => $result->read_count,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to track tutorial progress', [
+                    'error' => $e->getMessage(),
+                    'user_id' => Auth::id(),
+                    'post_id' => $this->post->id,
+                ]);
+            }
         }
 
         // Note: We no longer block premium content completely
@@ -198,6 +220,45 @@ class PostShow extends Component
 
         // Force refresh to update the button state
         $this->post->refresh();
+    }
+
+    public function markTutorialComplete()
+    {
+        if (!Auth::check()) {
+            $this->dispatch('show-auth-modal');
+            return;
+        }
+
+        if (!$this->post->isPartOfSeries()) {
+            return;
+        }
+
+        try {
+            $progressService = app(TutorialProgressService::class);
+            $progressService->markAsCompleted(Auth::user(), $this->post);
+
+            Log::info('Tutorial marked as complete', [
+                'user_id' => Auth::id(),
+                'post_id' => $this->post->id,
+                'series_slug' => $this->post->series_slug,
+            ]);
+
+            $this->dispatch('show-notification', [
+                'type' => 'success',
+                'message' => 'Tutorial part marked as complete!'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to mark tutorial as complete', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'post_id' => $this->post->id,
+            ]);
+
+            $this->dispatch('show-notification', [
+                'type' => 'error',
+                'message' => 'Failed to mark tutorial as complete'
+            ]);
+        }
     }
 
     public function render()

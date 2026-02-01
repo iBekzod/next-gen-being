@@ -24,6 +24,12 @@ class TutorialProgress extends Model
         'time_spent_minutes',
     ];
 
+    protected $attributes = [
+        'read_count' => 0,
+        'time_spent_minutes' => 0,
+        'completed' => false,
+    ];
+
     protected $casts = [
         'completed' => 'boolean',
         'started_at' => 'datetime',
@@ -60,7 +66,7 @@ class TutorialProgress extends Model
     // Methods
     public function markAsRead()
     {
-        $this->read_count++;
+        $this->read_count = ($this->read_count ?? 0) + 1;
         $this->started_at ??= now();
         $this->save();
     }
@@ -74,7 +80,7 @@ class TutorialProgress extends Model
 
     public function addTimeSpent($minutes)
     {
-        $this->time_spent_minutes += $minutes;
+        $this->time_spent_minutes = ($this->time_spent_minutes ?? 0) + $minutes;
         $this->save();
     }
 }

@@ -9,8 +9,9 @@
         ->get();
     $currentIndex = $seriesPosts->search(fn($p) => $p->id === $post->id);
 
-    // Get user's completed posts in this series if authenticated
+    // Get user's progress in this series if authenticated
     $completedPostIds = [];
+    $readPostIds = [];
     if (Auth::check()) {
         $tutorialProgressService = app(\App\Services\Tutorial\TutorialProgressService::class);
         $seriesProgress = $tutorialProgressService->getSeriesProgress(Auth::user(), $post->series_slug);
@@ -18,12 +19,13 @@
         $totalParts = $seriesProgress['total'] ?? $post->series_total_parts;
         $progress = $seriesProgress['percentage'] ?? 0;
 
-        // Get IDs of completed posts
-        $completedPostIds = \App\Models\TutorialProgress::where('user_id', Auth::id())
+        // Get IDs of completed and read posts
+        $progressRecords = \App\Models\TutorialProgress::where('user_id', Auth::id())
             ->where('series_slug', $post->series_slug)
-            ->where('completed', true)
-            ->pluck('post_id')
-            ->toArray();
+            ->get();
+
+        $completedPostIds = $progressRecords->where('completed', true)->pluck('post_id')->toArray();
+        $readPostIds = $progressRecords->where('read_count', '>', 0)->pluck('post_id')->toArray();
     } else {
         // For unauthenticated users, show post order progression only
         $completedCount = $currentIndex !== false ? $currentIndex : 0;
@@ -71,8 +73,9 @@
                 @foreach($seriesPosts as $index => $seriesPost)
                 @php
                     $isCurrent = $seriesPost->id === $post->id;
-                    // Check if post is actually completed by user
+                    // Check if post is completed or read by user
                     $isCompleted = Auth::check() ? in_array($seriesPost->id, $completedPostIds) : false;
+                    $isRead = Auth::check() ? in_array($seriesPost->id, $readPostIds) : false;
                     $isLocked = !$isCurrent && !$isCompleted && $seriesPost->is_premium && !auth()->check();
                 @endphp
 
@@ -80,10 +83,14 @@
                    class="flex items-start gap-3 p-3 transition-all duration-200 rounded-lg group {{ $isCurrent ? 'bg-blue-500 text-white shadow-md' : 'bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700' }} {{ $isLocked ? 'opacity-60 cursor-not-allowed' : '' }}">
 
                     <!-- Part Number Circle -->
-                    <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 text-xs font-bold rounded-full {{ $isCurrent ? 'bg-white text-blue-500' : ($isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300') }}">
+                    <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 text-xs font-bold rounded-full {{ $isCurrent ? 'bg-white text-blue-500' : ($isCompleted ? 'bg-green-500 text-white' : ($isRead ? 'bg-blue-400 text-white' : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300')) }}">
                         @if($isCompleted)
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        @elseif($isRead)
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1 4.5 4.5 0 11-4.384 5.98z"/>
                             </svg>
                         @else
                             {{ $seriesPost->series_part }}
