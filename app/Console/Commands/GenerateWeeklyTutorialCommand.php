@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Services\AITutorialGenerationService;
+use App\Services\ContentEnhancementService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -65,14 +66,26 @@ class GenerateWeeklyTutorialCommand extends Command
             $seriesSlug = Str::slug($topic);
             $categoryId = $this->getCategoryId('AI Tutorials');
 
+            $enhancementService = app(ContentEnhancementService::class);
+
             foreach ($parts as $index => $content) {
                 try {
+                    // Enhance content with E-E-A-T signals
+                    $enhancedContent = $content['content'];
+                    $enhancementService->enhanceTutorialContent(
+                        $enhancedContent,
+                        $topic,
+                        $index + 1,
+                        8,
+                        $schedule['type']
+                    );
+
                     $post = Post::create([
                         'user_id' => 1, // Platform account
                         'title' => $content['title'],
                         'slug' => Str::slug($content['title'] . ' ' . Str::random(6)),
-                        'excerpt' => $content['excerpt'] ?? substr(strip_tags($content['content']), 0, 500),
-                        'content' => $content['content'],
+                        'excerpt' => $content['excerpt'] ?? substr(strip_tags($enhancedContent), 0, 500),
+                        'content' => $enhancedContent,
                         'category_id' => $categoryId,
                         'series_title' => $topic,
                         'series_slug' => $seriesSlug,
@@ -83,6 +96,15 @@ class GenerateWeeklyTutorialCommand extends Command
                         'is_premium' => $index >= 5, // Parts 6-8 are premium
                         'premium_tier' => $index >= 5 ? 'basic' : null,
                     ]);
+
+                    // Add expertise signals and structured data
+                    $enhancementService->addExpertiseSignals($post, $schedule['type']);
+
+                    // Generate and store structured data in seo_meta
+                    $structuredData = $enhancementService->generateStructuredData($post, $schedule['type']);
+                    $seometadata = $post->seo_meta ?? [];
+                    $seometadata['structured_data'] = json_decode($structuredData, true);
+                    $post->update(['seo_meta' => $seometadata]);
 
                     // Attach tags
                     $this->attachTags($post, $schedule['type'], $topic);

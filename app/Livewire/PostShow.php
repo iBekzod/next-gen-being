@@ -261,16 +261,27 @@ class PostShow extends Component
     public function render()
     {
         // Track tutorial progress if user is authenticated and post is part of a series
-        if (Auth::check() && $this->post->isPartOfSeries()) {
-            try {
-                $progressService = app(TutorialProgressService::class);
-                $progressService->trackReading(Auth::user(), $this->post);
-            } catch (\Exception $e) {
-                Log::error('Tutorial progress tracking failed', [
-                    'error' => $e->getMessage(),
-                    'user_id' => Auth::id(),
-                    'post_id' => $this->post->id,
-                ]);
+        if (Auth::check()) {
+            \Log::info('PostShow::render() called', [
+                'is_series' => $this->post->isPartOfSeries(),
+                'series_slug' => $this->post->series_slug ?? 'null',
+                'user_id' => Auth::id(),
+            ]);
+
+            if ($this->post->isPartOfSeries()) {
+                try {
+                    $progressService = app(TutorialProgressService::class);
+                    \Log::info('Calling trackReading', ['post_id' => $this->post->id]);
+                    $result = $progressService->trackReading(Auth::user(), $this->post);
+                    \Log::info('trackReading succeeded', ['result_id' => $result->id]);
+                } catch (\Exception $e) {
+                    \Log::error('Tutorial progress tracking failed', [
+                        'error' => $e->getMessage(),
+                        'user_id' => Auth::id(),
+                        'post_id' => $this->post->id,
+                        'trace' => substr($e->getTraceAsString(), 0, 500),
+                    ]);
+                }
             }
         }
 

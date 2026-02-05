@@ -108,6 +108,24 @@ class AITutorialGenerationService
     }
 
     /**
+     * Wrapper method for backward compatibility
+     * Generate comprehensive tutorial and return as array format
+     */
+    public function generateComprehensiveTutorial(string $topic, int $parts = 8): array
+    {
+        $posts = $this->generateComprehensiveSeries($topic, $parts, true);
+
+        // Convert to content array format for compatibility
+        return array_map(function ($post) {
+            return [
+                'title' => $post->title,
+                'excerpt' => $post->excerpt,
+                'content' => $post->content,
+            ];
+        }, $posts);
+    }
+
+    /**
      * Generate single part with retry logic
      */
     private function generatePartWithRetry(

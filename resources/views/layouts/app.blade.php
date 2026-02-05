@@ -269,6 +269,13 @@
 
     @stack('structured-data')
 
+    <!-- Post-Specific Structured Data (JSON-LD) -->
+    @if (isset($post) && $post->seo_meta && isset($post->seo_meta['structured_data']))
+        <script type="application/ld+json">
+            {!! json_encode($post->seo_meta['structured_data'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        </script>
+    @endif
+
     <!-- Google AdSense Verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8948140381699585"
             crossorigin="anonymous"></script>
