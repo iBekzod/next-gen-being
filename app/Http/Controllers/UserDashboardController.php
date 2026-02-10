@@ -674,9 +674,17 @@ class UserDashboardController extends Controller
     {
         $user = Auth::user();
 
+        // Gracefully handle subscription query failures
+        try {
+            $subscription = $user->subscription();
+        } catch (\Exception $e) {
+            \Log::error('Failed to load user subscription in settings: ' . $e->getMessage());
+            $subscription = null;
+        }
+
         return view('dashboard.settings', [
             'user' => $user,
-            'subscription' => $user->subscription(),
+            'subscription' => $subscription,
         ]);
     }
 

@@ -306,54 +306,73 @@ class PostController extends Controller
 
     public function tutorials()
     {
-        // Get all unique series - group by series_slug only to avoid duplicates from NULL values
-        $series = Post::published()
-            ->whereNotNull('series_slug')
-            ->select('series_slug', 'series_title', 'series_description')
-            ->selectRaw('MAX(series_total_parts) as series_total_parts')
-            ->selectRaw('MIN(series_part) as first_part')
-            ->selectRaw('MAX(published_at) as last_updated')
-            ->selectRaw('COUNT(*) as published_parts')
-            ->with(['category'])
-            ->groupBy('series_slug', 'series_title', 'series_description')
-            ->orderByDesc('last_updated')
-            ->get();
+        try {
+            // Get all unique series - group by series_slug only to avoid duplicates from NULL values
+            $series = Post::published()
+                ->whereNotNull('series_slug')
+                ->select('series_slug', 'series_title', 'series_description')
+                ->selectRaw('MAX(series_total_parts) as series_total_parts')
+                ->selectRaw('MIN(series_part) as first_part')
+                ->selectRaw('MAX(published_at) as last_updated')
+                ->selectRaw('COUNT(*) as published_parts')
+                ->with(['category'])
+                ->groupBy('series_slug', 'series_title', 'series_description')
+                ->orderByDesc('last_updated')
+                ->get();
+        } catch (\Exception $e) {
+            \Log::error('Failed to load tutorial series: ' . $e->getMessage());
+            $series = collect();
+        }
 
         // Get current user progress if authenticated
         $user = auth()->user();
         $tutorialProgressService = null;
         if ($user) {
-            $tutorialProgressService = app(\App\Services\Tutorial\TutorialProgressService::class);
+            try {
+                $tutorialProgressService = app(\App\Services\Tutorial\TutorialProgressService::class);
+            } catch (\Exception $e) {
+                \Log::error('Failed to load TutorialProgressService: ' . $e->getMessage());
+                $tutorialProgressService = null;
+            }
         }
 
         // For each series, get the first post for the image and category
         $series = $series->map(function ($item) use ($user, $tutorialProgressService) {
-            $firstPost = Post::published()
-                ->where('series_slug', $item->series_slug)
-                ->where('series_part', $item->first_part)
-                ->with(['category', 'author'])
-                ->first();
+            try {
+                $firstPost = Post::published()
+                    ->where('series_slug', $item->series_slug)
+                    ->where('series_part', $item->first_part)
+                    ->with(['category', 'author'])
+                    ->first();
 
-            // Check if user has completed all parts in this series
-            $is_complete = false;
-            if ($user && $tutorialProgressService) {
-                $seriesProgress = $tutorialProgressService->getSeriesProgress($user, $item->series_slug);
-                $is_complete = $seriesProgress['is_complete'];
+                // Check if user has completed all parts in this series
+                $is_complete = false;
+                if ($user && $tutorialProgressService) {
+                    try {
+                        $seriesProgress = $tutorialProgressService->getSeriesProgress($user, $item->series_slug);
+                        $is_complete = $seriesProgress['is_complete'];
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to get series progress: ' . $e->getMessage());
+                    }
+                }
+
+                return [
+                    'slug' => $item->series_slug,
+                    'title' => $item->series_title,
+                    'description' => $item->series_description,
+                    'total_parts' => $item->series_total_parts,
+                    'published_parts' => $item->published_parts,
+                    'last_updated' => \Carbon\Carbon::parse($item->last_updated),
+                    'featured_image' => $firstPost?->featured_image ?? null,
+                    'category' => $firstPost?->category ?? null,
+                    'author' => $firstPost?->author ?? null,
+                    'is_complete' => $is_complete,
+                ];
+            } catch (\Exception $e) {
+                \Log::error('Failed to process tutorial series item: ' . $e->getMessage());
+                return null;
             }
-
-            return [
-                'slug' => $item->series_slug,
-                'title' => $item->series_title,
-                'description' => $item->series_description,
-                'total_parts' => $item->series_total_parts,
-                'published_parts' => $item->published_parts,
-                'last_updated' => \Carbon\Carbon::parse($item->last_updated),
-                'featured_image' => $firstPost?->featured_image ?? null,
-                'category' => $firstPost?->category ?? null,
-                'author' => $firstPost?->author ?? null,
-                'is_complete' => $is_complete,
-            ];
-        });
+        })->filter(); // Remove null entries from failed mappings
 
         return view('tutorials.index', compact('series'));
     }
