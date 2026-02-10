@@ -102,12 +102,12 @@ class AppServiceProvider extends ServiceProvider
             HandleLemonSqueezyWebhook::class
         );
 
-        // === REGISTER MODEL OBSERVERS (Optional) ===
-        // Uncomment to enable automatic audit logging or event handling
+        // === REGISTER MODEL OBSERVERS ===
+        // Enable automatic audit logging and event handling
 
-        // \App\Models\Tip::observe(\App\Observers\TipObserver::class);
-        // \App\Models\Streak::observe(\App\Observers\StreakObserver::class);
-        // \App\Models\Challenge::observe(\App\Observers\ChallengeObserver::class);
-        // \App\Models\AffiliateLink::observe(\App\Observers\AffiliateLinkObserver::class);
+        \App\Models\Tip::observe(\App\Observers\TipObserver::class);
+        \App\Models\Streak::observe(\App\Observers\StreakObserver::class);
+        \App\Models\Challenge::observe(\App\Observers\ChallengeObserver::class);
+        \App\Models\AffiliateLink::observe(\App\Observers\AffiliateLinkObserver::class);
     }
 }
