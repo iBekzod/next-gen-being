@@ -61,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 'Commerce',
                 'Marketing',
                 'Analytics',
+                'System',
                 'Settings',
             ])
             ->middleware([

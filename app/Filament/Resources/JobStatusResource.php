@@ -238,7 +238,8 @@ class JobStatusResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        // Admin panel shows all job statuses
-        return parent::getEloquentQuery();
+        // Admin panel shows all job statuses with eager loaded relationships
+        return parent::getEloquentQuery()
+            ->with(['user', 'trackable']);
     }
 }

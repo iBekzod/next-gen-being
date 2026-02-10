@@ -393,6 +393,11 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $this->hasMany(SocialMediaAccount::class);
     }
 
+    public function jobStatuses()
+    {
+        return $this->hasMany(JobStatus::class);
+    }
+
     public function videoGenerations()
     {
         return $this->hasMany(VideoGeneration::class);

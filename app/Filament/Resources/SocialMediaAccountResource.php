@@ -48,7 +48,7 @@ class SocialMediaAccountResource extends Resource
                     ->options([
                         'personal' => 'Personal',
                         'business' => 'Business',
-                        'official' => 'Official (NextGen Being)',
+                        'platform_official' => 'Official (NextGen Being)',
                     ])
                     ->default('personal')
                     ->required(),
@@ -110,7 +110,7 @@ class SocialMediaAccountResource extends Resource
                     ->colors([
                         'primary' => 'personal',
                         'success' => 'business',
-                        'warning' => 'official',
+                        'warning' => 'platform_official',
                     ]),
 
                 Tables\Columns\IconColumn::make('auto_publish')
