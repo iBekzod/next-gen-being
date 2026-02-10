@@ -51,12 +51,9 @@ class ContentEnhancementService
             $anchor = Str::slug($headerText);
             $levelNum = strlen($level);
 
-            // Handle nesting
-            if ($levelNum > $previousLevel) {
-                $indent = str_repeat("  ", $levelNum - 2);
-            } else {
-                $indent = str_repeat("  ", $levelNum - 2);
-            }
+            // Handle nesting - ensure indent is never negative
+            $indentLevel = max(0, $levelNum - 2);
+            $indent = str_repeat("  ", $indentLevel);
 
             $toc .= "{$indent}- [{$headerText}](#{$anchor})\n";
             $previousLevel = $levelNum;
