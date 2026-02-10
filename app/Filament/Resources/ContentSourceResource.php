@@ -82,7 +82,7 @@ class ContentSourceResource extends Resource
                             ->minValue(1)
                             ->maxValue(10),
 
-                        Forms\Components\TextInput::make('css_selectors')
+                        Forms\Components\Textarea::make('css_selectors')
                             ->label('CSS Selectors (JSON)')
                             ->hint('Optional: Override default article extraction selectors')
                             ->columnSpanFull()

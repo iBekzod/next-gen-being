@@ -13,47 +13,40 @@ class ListSocialMediaAccounts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('connect_account')
-                ->label('Connect Platform')
-                ->icon('heroicon-o-plus-circle')
+            Actions\Action::make('connect_youtube')
+                ->label('Connect YouTube')
+                ->icon('heroicon-o-play')
+                ->color('danger')
+                ->url(fn () => route('social.auth.redirect', 'youtube'))
+                ->openUrlInNewTab(),
+
+            Actions\Action::make('connect_instagram')
+                ->label('Connect Instagram')
+                ->icon('heroicon-o-camera')
+                ->color('warning')
+                ->url(fn () => route('social.auth.redirect', 'instagram'))
+                ->openUrlInNewTab(),
+
+            Actions\Action::make('connect_facebook')
+                ->label('Connect Facebook')
+                ->icon('heroicon-o-users')
+                ->color('info')
+                ->url(fn () => route('social.auth.redirect', 'facebook'))
+                ->openUrlInNewTab(),
+
+            Actions\Action::make('connect_twitter')
+                ->label('Connect Twitter / X')
+                ->icon('heroicon-o-chat-bubble-left')
+                ->color('primary')
+                ->url(fn () => route('social.auth.redirect', 'twitter'))
+                ->openUrlInNewTab(),
+
+            Actions\Action::make('connect_linkedin')
+                ->label('Connect LinkedIn')
+                ->icon('heroicon-o-briefcase')
                 ->color('success')
-                ->dropdown()
-                ->dropdownActions([
-                    Actions\Action::make('connect_youtube')
-                        ->label('YouTube')
-                        ->icon('heroicon-o-play')
-                        ->url(fn () => route('social.auth.redirect', 'youtube'))
-                        ->color('danger')
-                        ->openUrlInNewTab(),
-
-                    Actions\Action::make('connect_instagram')
-                        ->label('Instagram')
-                        ->icon('heroicon-o-camera')
-                        ->url(fn () => route('social.auth.redirect', 'instagram'))
-                        ->color('warning')
-                        ->openUrlInNewTab(),
-
-                    Actions\Action::make('connect_facebook')
-                        ->label('Facebook')
-                        ->icon('heroicon-o-users')
-                        ->url(fn () => route('social.auth.redirect', 'facebook'))
-                        ->color('info')
-                        ->openUrlInNewTab(),
-
-                    Actions\Action::make('connect_twitter')
-                        ->label('Twitter / X')
-                        ->icon('heroicon-o-chat-bubble-left')
-                        ->url(fn () => route('social.auth.redirect', 'twitter'))
-                        ->color('primary')
-                        ->openUrlInNewTab(),
-
-                    Actions\Action::make('connect_linkedin')
-                        ->label('LinkedIn')
-                        ->icon('heroicon-o-briefcase')
-                        ->url(fn () => route('social.auth.redirect', 'linkedin'))
-                        ->color('success')
-                        ->openUrlInNewTab(),
-                ]),
+                ->url(fn () => route('social.auth.redirect', 'linkedin'))
+                ->openUrlInNewTab(),
         ];
     }
 }
