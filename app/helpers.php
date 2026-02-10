@@ -13,15 +13,21 @@ if (!function_exists('setting')) {
      */
     function setting(string $key, $default = null)
     {
-        $cacheKey = Setting::cacheKey($key);
+        try {
+            $cacheKey = Setting::cacheKey($key);
 
-        $value = Cache::rememberForever($cacheKey, function () use ($key) {
-            $setting = Setting::query()->where('key', $key)->first();
+            $value = Cache::rememberForever($cacheKey, function () use ($key) {
+                $setting = Setting::query()->where('key', $key)->first();
 
-            return $setting?->value ?? Setting::CACHE_MISS;
-        });
+                return $setting?->value ?? Setting::CACHE_MISS;
+            });
 
-        return $value === Setting::CACHE_MISS ? $default : $value;
+            return $value === Setting::CACHE_MISS ? $default : $value;
+        } catch (\Exception $e) {
+            // Log error but don't break the page
+            \Log::error("Setting helper error for key '{$key}': " . $e->getMessage());
+            return $default;
+        }
     }
 }
 

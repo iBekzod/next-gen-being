@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Pricing Plans - ' . setting('site_name'))
+@section('title', 'Pricing Plans - ' . setting('site_name', config('app.name', 'NextGen Being')))
 @section('description', 'Choose the plan that unlocks your momentum')
 
 @section('content')
