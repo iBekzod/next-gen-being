@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class AITutorialGenerationService
 {
-    private const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
+    private const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
     private const API_TIMEOUT = 60;
     private const MAX_RETRIES = 3;
 
