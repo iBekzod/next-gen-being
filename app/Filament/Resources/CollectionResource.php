@@ -22,8 +22,12 @@ class CollectionResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('Collection Details')
                 ->schema([
-                    Forms\Components\TextInput::make('title')
+                    Forms\Components\TextInput::make('name')
+                        ->label('Collection Name')
                         ->required()
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('slug')
+                        ->unique(ignoreRecord: true)
                         ->maxLength(255),
                     Forms\Components\Textarea::make('description')
                         ->maxLength(1000),
@@ -31,10 +35,14 @@ class CollectionResource extends Resource
                         ->relationship('user', 'name')
                         ->searchable()
                         ->required(),
+                    Forms\Components\FileUpload::make('cover_image_url')
+                        ->label('Cover Image')
+                        ->image()
+                        ->nullable(),
                     Forms\Components\Toggle::make('is_public')
+                        ->default(true),
+                    Forms\Components\Toggle::make('is_featured')
                         ->default(false),
-                    Forms\Components\TextInput::make('tags')
-                        ->maxLength(500),
                 ]),
         ]);
     }
@@ -43,11 +51,30 @@ class CollectionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->searchable(),
-                Tables\Columns\TextColumn::make('user.name')->label('Creator'),
-                Tables\Columns\TextColumn::make('posts_count')->counts('posts')->label('Posts'),
-                Tables\Columns\BooleanColumn::make('is_public'),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Collection Name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Creator')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('posts_count')
+                    ->counts('posts')
+                    ->label('Posts')
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('is_public')
+                    ->boolean()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->boolean()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('view_count')
+                    ->label('Views')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_public'),

@@ -37,6 +37,14 @@ class Collection extends Model
     }
 
     /**
+     * Alias for creator() to work with Filament resources
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Get all posts in this collection
      */
     public function posts(): BelongsToMany

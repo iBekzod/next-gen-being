@@ -26,7 +26,8 @@
       "Bash(timeout 120 docker-compose exec:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "WebFetch(domain:nextgenbeing.com)"
     ],
     "deny": [],
     "ask": []
