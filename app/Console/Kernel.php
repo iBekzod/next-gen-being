@@ -226,6 +226,15 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
+        // === CONTENT QUALITY MANAGEMENT ===
+
+        // Evaluate and unpublish low-quality posts (daily at 3 AM UTC)
+        $schedule->command('content:evaluate-quality')
+            ->dailyAt('03:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
         // === REVENUE AUTOMATION SCHEDULING ===
 
         // Insert affiliate links into recent posts (daily at 6 AM - 5 posts)
