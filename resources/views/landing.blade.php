@@ -174,9 +174,29 @@
 
     <!-- Featured Articles for SEO -->
     @php
-        $featuredPost = \App\Models\Post::published()->with(['category', 'author'])->orderByDesc('views_count')->first();
-        $topHeadlines = \App\Models\Post::published()->with(['category', 'author'])->orderByDesc('views_count')->limit(4)->get();
-        $featuredCategories = \App\Models\Category::active()->with('publishedPosts')->orderBy('sort_order')->limit(3)->get();
+        // Get most viewed posts from last 2 months to keep homepage fresh
+        $twoMonthsAgo = now()->subMonths(2);
+
+        $featuredPost = \App\Models\Post::published()
+            ->where('published_at', '>', $twoMonthsAgo)
+            ->with(['category', 'author'])
+            ->orderByDesc('views_count')
+            ->first();
+
+        $topHeadlines = \App\Models\Post::published()
+            ->where('published_at', '>', $twoMonthsAgo)
+            ->with(['category', 'author'])
+            ->orderByDesc('views_count')
+            ->limit(4)
+            ->get();
+
+        $featuredCategories = \App\Models\Category::active()
+            ->with(['publishedPosts' => function($q) use ($twoMonthsAgo) {
+                $q->where('published_at', '>', $twoMonthsAgo);
+            }])
+            ->orderBy('sort_order')
+            ->limit(3)
+            ->get();
     @endphp
 
     @if($featuredPost)
