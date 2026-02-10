@@ -215,11 +215,14 @@ CONTENT REQUIREMENTS:
    - Include terminal/CLI examples
    - Add estimated read time (roughly {$this->estimatePartReadTime($partNumber, $totalParts)} minutes)
 
-6. **Length & Completeness**:
-   - 2000-3500 words
-   - Enough code for full understanding
-   - Practical enough to implement immediately
-   - Answer "how" and "why" questions
+6. **Length & Completeness** (CRITICAL):
+   - MINIMUM 2500 words (10+ minute read)
+   - TARGET 3000-4000 words (13-18 minute read)
+   - Enough code for full understanding and implementation
+   - Practical enough to implement immediately into production
+   - Thoroughly answer "how", "why", and "when" questions
+   - Include edge cases, gotchas, and lessons learned
+   - Every section must add value - no filler content
 
 PART SPECIFICS FOR {$partNumber}:
 
@@ -245,7 +248,7 @@ PROMPT;
             ->timeout(self::API_TIMEOUT)
             ->post($this->baseUrl, [
                 'model' => self::CLAUDE_MODEL,
-                'max_tokens' => 4000,
+                'max_tokens' => 8000,
                 'messages' => [
                     [
                         'role' => 'user',

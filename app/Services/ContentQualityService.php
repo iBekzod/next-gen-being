@@ -10,10 +10,10 @@ class ContentQualityService
     /**
      * Quality scoring thresholds
      */
-    private const MIN_QUALITY_SCORE = 50;
-    private const MIN_WORD_COUNT = 1500;
-    private const MIN_HEADERS = 3;
-    private const MIN_CODE_BLOCKS = 0;
+    private const MIN_QUALITY_SCORE = 60;  // Increased from 50 for stricter quality
+    private const MIN_WORD_COUNT = 2500;   // Increased from 1500 for deeper content (10+ min reads)
+    private const MIN_HEADERS = 4;         // Increased from 3 for better structure
+    private const MIN_CODE_BLOCKS = 1;     // Increased from 0 - tutorials must have code
 
     /**
      * Evaluate all posts and unpublish low-quality ones
