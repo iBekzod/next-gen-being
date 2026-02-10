@@ -54,9 +54,9 @@ return [
     ],
 
     'weekly_schedule' => [
-        'monday' => ['type' => 'beginner', 'frequency' => 'every_other_week'],
+        'monday' => ['type' => 'beginner', 'frequency' => 'weekly'],
         'wednesday' => ['type' => 'intermediate', 'frequency' => 'weekly'],
-        'friday' => ['type' => 'advanced', 'frequency' => 'monthly'],
+        'friday' => ['type' => 'advanced', 'frequency' => 'weekly'],
     ],
 
     'content_mix' => [
