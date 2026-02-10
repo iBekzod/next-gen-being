@@ -93,14 +93,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/leaderboard', [UserDashboardController::class, 'leaderboard'])->name('dashboard.learning-leaderboard');
     Route::get('/dashboard/settings', [UserDashboardController::class, 'settings'])->name('dashboard.settings');
 
-    // Webhook management routes
-    Route::get('/webhooks/create', [WebhookController::class, 'create'])->name('webhooks.create');
-    Route::post('/webhooks', [WebhookController::class, 'store'])->name('webhooks.store');
-    Route::get('/webhooks/{webhook}', [WebhookController::class, 'show'])->name('webhooks.show');
-    Route::get('/webhooks/{webhook}/edit', [WebhookController::class, 'edit'])->name('webhooks.edit');
-    Route::put('/webhooks/{webhook}', [WebhookController::class, 'update'])->name('webhooks.update');
-    Route::delete('/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('webhooks.destroy');
-
     // Notification management routes
     Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notification.mark-read');
     Route::post('/notifications/{notification}/mark-unread', [NotificationController::class, 'markAsUnread'])->name('notification.mark-unread');
