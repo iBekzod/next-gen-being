@@ -55,11 +55,9 @@ class PostCurationResource extends Resource
                             ->relationship('contentAggregation', 'topic')
                             ->disabled(),
 
-                        Forms\Components\Slider::make('paraphrase_confidence_score')
+                        Forms\Components\TextInput::make('paraphrase_confidence_score')
                             ->label('Paraphrase Confidence')
-                            ->minValue(0)
-                            ->maxValue(1)
-                            ->step(0.01)
+                            ->numeric()
                             ->disabled()
                             ->formatStateUsing(fn ($state) => $state ? (int) ($state * 100) : 0),
 

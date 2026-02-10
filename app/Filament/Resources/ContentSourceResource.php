@@ -61,8 +61,9 @@ class ContentSourceResource extends Resource
 
                 Forms\Components\Section::make('Trust & Configuration')
                     ->schema([
-                        Forms\Components\Slider::make('trust_level')
+                        Forms\Components\TextInput::make('trust_level')
                             ->label('Trust Level (0-100)')
+                            ->numeric()
                             ->minValue(0)
                             ->maxValue(100)
                             ->default(75)
@@ -199,7 +200,7 @@ class ContentSourceResource extends Resource
 
     protected static function testScraping(ContentSource $source): void
     {
-        \Illuminate\Support\Facades\Notification::make()
+        \Filament\Notifications\Notification::make()
             ->title('Scraping Test Started')
             ->body("Testing {$source->name}...")
             ->info()
@@ -208,7 +209,7 @@ class ContentSourceResource extends Resource
         // Queue a job to test scraping
         \App\Jobs\ScrapeSingleSourceJob::dispatch($source->id, 5);
 
-        \Illuminate\Support\Facades\Notification::make()
+        \Filament\Notifications\Notification::make()
             ->title('Test Queued')
             ->body('Scraping test has been queued. Check the database in a few seconds.')
             ->success()
