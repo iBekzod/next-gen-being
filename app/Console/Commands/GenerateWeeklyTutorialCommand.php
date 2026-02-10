@@ -80,12 +80,16 @@ class GenerateWeeklyTutorialCommand extends Command
                         $schedule['type']
                     );
 
+                    // Fetch featured image for the tutorial
+                    $featuredImage = $this->fetchTutorialImage($topic);
+
                     $post = Post::create([
                         'user_id' => 1, // Platform account
                         'title' => $content['title'],
                         'slug' => Str::slug($content['title'] . ' ' . Str::random(6)),
                         'excerpt' => $content['excerpt'] ?? substr(strip_tags($enhancedContent), 0, 500),
                         'content' => $enhancedContent,
+                        'featured_image' => $featuredImage,
                         'category_id' => $categoryId,
                         'series_title' => $topic,
                         'series_slug' => $seriesSlug,
@@ -219,5 +223,40 @@ class GenerateWeeklyTutorialCommand extends Command
         }
 
         return $tags;
+    }
+
+    /**
+     * Fetch a featured image from Unsplash API for the tutorial topic
+     */
+    protected function fetchTutorialImage(string $topic): ?string
+    {
+        try {
+            $apiKey = config('services.unsplash.key') ?? env('UNSPLASH_ACCESS_KEY');
+
+            if (!$apiKey) {
+                return null;
+            }
+
+            $response = Http::get('https://api.unsplash.com/search/photos', [
+                'query' => $topic,
+                'per_page' => 1,
+                'order_by' => 'relevant',
+                'client_id' => $apiKey,
+            ]);
+
+            if ($response->successful() && $response->json('results.0.urls.regular')) {
+                return $response->json('results.0.urls.regular');
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            // Log error but don't fail the tutorial generation
+            \Illuminate\Support\Facades\Log::warning('Failed to fetch image from Unsplash', [
+                'topic' => $topic,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 }
