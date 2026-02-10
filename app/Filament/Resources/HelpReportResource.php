@@ -237,7 +237,6 @@ class HelpReportResource extends Resource
                         ->visible(fn ($record) => $record->status === 'resolved')
                         ->requiresConfirmation(),
 
-                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ]),

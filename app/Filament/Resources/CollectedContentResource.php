@@ -179,6 +179,7 @@ class CollectedContentResource extends Resource
     {
         return [
             'index' => Pages\ListCollectedContent::route('/'),
+            'view' => Pages\ViewCollectedContent::route('/{record}'),
         ];
     }
 

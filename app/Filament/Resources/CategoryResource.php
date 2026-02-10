@@ -114,7 +114,6 @@ class CategoryResource extends Resource
                     ->query(fn ($query) => $query->where('is_active', true)),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

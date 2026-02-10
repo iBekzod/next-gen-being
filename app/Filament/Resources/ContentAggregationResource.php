@@ -147,6 +147,7 @@ class ContentAggregationResource extends Resource
     {
         return [
             'index' => Pages\ListContentAggregations::route('/'),
+            'view' => Pages\ViewContentAggregation::route('/{record}'),
         ];
     }
 }
