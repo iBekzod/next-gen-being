@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 class AITutorialGenerationService
 {
     private const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
-    private const API_TIMEOUT = 60;
+    private const API_TIMEOUT = 180;  // 3 minutes - allows for large token responses (8000 tokens)
     private const MAX_RETRIES = 3;
 
     protected $apiKey;
