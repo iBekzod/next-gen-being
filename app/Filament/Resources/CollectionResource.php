@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Form;
+use Illuminate\Database\Eloquent\Builder;
 
 class CollectionResource extends Resource
 {
@@ -60,9 +61,11 @@ class CollectionResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('posts_count')
-                    ->counts('posts')
                     ->label('Posts')
-                    ->sortable(),
+                    ->getStateUsing(fn (Collection $record): int => $record->posts()->count())
+                    ->sortable(query: fn ($query, string $direction): Builder =>
+                        $query->withCount('posts')->orderBy('posts_count', $direction)
+                    ),
                 Tables\Columns\IconColumn::make('is_public')
                     ->boolean()
                     ->sortable(),

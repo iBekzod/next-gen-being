@@ -114,8 +114,9 @@ class JobStatusResource extends Resource
                     ])
                     ->sortable(),
 
-                Tables\Columns\ProgressColumn::make('progress')
+                Tables\Columns\TextColumn::make('progress')
                     ->label('Progress')
+                    ->formatStateUsing(fn ($state): string => $state ? "{$state}%" : '0%')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('attempts')

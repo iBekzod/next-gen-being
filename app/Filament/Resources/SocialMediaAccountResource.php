@@ -118,9 +118,9 @@ class SocialMediaAccountResource extends Resource
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('token_expires_at')
+                Tables\Columns\TextColumn::make('token_status')
                     ->label('Token Status')
-                    ->formatStateUsing(function ($record) {
+                    ->getStateUsing(function ($record) {
                         if (!$record->token_expires_at) {
                             return 'Never expires';
                         }
@@ -131,7 +131,7 @@ class SocialMediaAccountResource extends Resource
 
                         return '✓ Valid until ' . $record->token_expires_at->format('M d, Y');
                     })
-                    ->color(fn ($record) => $record?->isTokenExpired() ? 'danger' : 'success'),
+                    ->color(fn ($record) => $record->isTokenExpired() ? 'danger' : 'success'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Connected')
