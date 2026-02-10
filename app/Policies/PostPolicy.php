@@ -88,7 +88,7 @@ class PostPolicy
      */
     public function manageCollaborators(User $user, Post $post): bool
     {
-        $collaborationService = app('CollaborationService');
+        $collaborationService = app(\App\Services\CollaborationService::class);
         return $collaborationService->canManageCollaborators($post, $user);
     }
 }

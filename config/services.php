@@ -51,7 +51,7 @@ return [
         'ai_premium_variant_id' => env('LEMONSQUEEZY_AI_PREMIUM_VARIANT_ID'),
         'ai_enterprise_variant_id' => env('LEMONSQUEEZY_AI_ENTERPRISE_VARIANT_ID'),
 
-        'test_mode' => env('LEMONSQUEEZY_TEST_MODE', true), // Set to false after verification
+        'test_mode' => env('LEMONSQUEEZY_TEST_MODE', false), // Production default is false
     ],
 
     'github' => [

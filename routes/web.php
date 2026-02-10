@@ -119,8 +119,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/dashboard/settings/password', [UserDashboardController::class, 'updatePassword'])->name('dashboard.settings.password');
     Route::delete('/dashboard/settings', [UserDashboardController::class, 'deleteAccount'])->name('dashboard.settings.delete');
 
-    // Admin moderation routes (add role check middleware later)
-    Route::prefix('admin/moderation')->name('admin.moderation.')->group(function () {
+    // Admin moderation routes
+    Route::prefix('admin/moderation')->name('admin.moderation.')->middleware('admin')->group(function () {
         Route::get('/', [ModerationController::class, 'index'])->name('index');
         Route::get('/{post}', [ModerationController::class, 'show'])->name('show');
         Route::post('/{post}/approve', [ModerationController::class, 'approve'])->name('approve');

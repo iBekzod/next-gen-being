@@ -23,7 +23,11 @@ class Post extends Model implements HasMedia
         'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
         'series_title', 'series_slug', 'series_part', 'series_total_parts', 'series_description',
         'moderation_status', 'moderated_by', 'moderated_at', 'moderation_notes', 'ai_moderation_check',
-        'post_type', 'video_url', 'video_duration', 'video_thumbnail', 'video_captions_url'
+        'post_type', 'video_url', 'video_duration', 'video_thumbnail', 'video_captions_url',
+        // Content Curation Fields
+        'content_source_type', 'content_aggregation_id', 'is_curated', 'source_ids',
+        'base_language', 'base_post_id', 'paraphrase_confidence_score',
+        'is_fact_verified', 'verification_notes', 'references'
     ];
 
     protected $casts = [
@@ -34,10 +38,15 @@ class Post extends Model implements HasMedia
         'is_featured' => 'boolean',
         'allow_comments' => 'boolean',
         'is_premium' => 'boolean',
+        'is_curated' => 'boolean',
+        'is_fact_verified' => 'boolean',
         'gallery' => 'array',
         'seo_meta' => 'array',
         'image_attribution' => 'array',
         'ai_moderation_check' => 'array',
+        'source_ids' => 'array',
+        'references' => 'array',
+        'paraphrase_confidence_score' => 'float',
     ];
 
     public function getSlugOptions(): SlugOptions
