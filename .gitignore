@@ -18,6 +18,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/.laravel_setup_done
 /storage/pail
 /vendor
 Homestead.json
