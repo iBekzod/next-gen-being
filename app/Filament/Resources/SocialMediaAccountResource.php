@@ -58,11 +58,10 @@ class SocialMediaAccountResource extends Resource
                     ->helperText('Automatically publish generated videos to this account')
                     ->default(false),
 
-                Forms\Components\KeyValue::make('publish_schedule')
-                    ->label('Publishing Schedule')
-                    ->helperText('Define when to auto-publish (optional)')
-                    ->keyLabel('Day')
-                    ->valueLabel('Time')
+                Forms\Components\Textarea::make('publish_schedule')
+                    ->label('Publishing Schedule (JSON)')
+                    ->helperText('Define when to auto-publish (optional). Example: {"days":["mon","wed"],"times":["09:00","18:00"]}')
+                    ->rows(3)
                     ->nullable(),
 
                 Forms\Components\Placeholder::make('token_expires_at')

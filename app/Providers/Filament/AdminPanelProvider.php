@@ -56,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Content',
                 'Content Curation',
+                'Distribution',
                 'User Management',
                 'Commerce',
                 'Marketing',

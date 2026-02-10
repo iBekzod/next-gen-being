@@ -52,8 +52,9 @@ class UserInteractionResource extends Resource
                                     ->numeric()
                                     ->required(),
                             ]),
-                        Forms\Components\KeyValue::make('metadata')
-                            ->label('Metadata')
+                        Forms\Components\Textarea::make('metadata')
+                            ->label('Metadata (JSON)')
+                            ->rows(4)
                             ->columnSpanFull(),
                     ]),
             ]);

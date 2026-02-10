@@ -107,14 +107,11 @@ class SocialMediaAccountResource extends Resource
                 Forms\Components\Section::make('Platform-Specific Settings')
                     ->description('Additional settings for this platform')
                     ->schema([
-                        Forms\Components\KeyValue::make('publish_schedule')
-                            ->label('Publishing Schedule (Optional)')
-                            ->helperText('Define specific days and times to auto-publish. Leave empty to publish immediately.')
-                            ->keyLabel('Day')
-                            ->valueLabel('Time')
-                            ->nullable()
-                            ->reorderable()
-                            ->addActionLabel('Add time slot'),
+                        Forms\Components\Textarea::make('publish_schedule')
+                            ->label('Publishing Schedule (JSON, Optional)')
+                            ->helperText('Define specific days and times to auto-publish in JSON format. Example: {"days":["mon","wed"],"times":["09:00","18:00"]}. Leave empty to publish immediately.')
+                            ->rows(3)
+                            ->nullable(),
                     ])
                     ->collapsible()
                     ->collapsed(),

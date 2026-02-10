@@ -29,8 +29,6 @@ if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ] || [ ! -f "vendor/compose
     echo "✅ Composer installation complete."
 else
     echo "✅ Vendor directory exists and looks good."
-    # Even if vendor exists, ensure autoloader is updated (skip --optimize as it can hang)
-    composer dump-autoload
 fi
 
 # Verify vendor directory is working

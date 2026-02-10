@@ -30,8 +30,8 @@ class ReaderPreferenceResource extends Resource
                     Forms\Components\Textarea::make('preferred_authors'),
                     Forms\Components\Textarea::make('preferred_tags'),
                     Forms\Components\Textarea::make('disliked_content'),
-                    Forms\Components\KeyValue::make('content_type_scores')
-                        ->label('Content Type Scores'),
+                    Forms\Components\Textarea::make('content_type_scores')
+                        ->label('Content Type Scores (JSON)'),
                     Forms\Components\Textarea::make('reading_patterns'),
                 ]),
         ]);

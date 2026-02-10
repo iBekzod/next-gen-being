@@ -86,11 +86,9 @@ class HelpReportResource extends Resource
 
                 Forms\Components\Section::make('Technical Information')
                     ->schema([
-                        Forms\Components\KeyValue::make('metadata')
-                            ->label('Additional Data')
-                            ->keyLabel('Property')
-                            ->valueLabel('Value')
-                            ->reorderable()
+                        Forms\Components\Textarea::make('metadata')
+                            ->label('Additional Data (JSON)')
+                            ->rows(4)
                             ->columnSpanFull(),
                     ])->collapsible()->collapsed(),
             ]);

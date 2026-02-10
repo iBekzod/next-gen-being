@@ -61,7 +61,9 @@ class JobStatusResource extends Resource
                     ->disabled()
                     ->rows(3),
 
-                Forms\Components\KeyValue::make('metadata')
+                Forms\Components\Textarea::make('metadata')
+                    ->label('Metadata (JSON)')
+                    ->rows(3)
                     ->disabled(),
 
                 Forms\Components\TextInput::make('attempts')
