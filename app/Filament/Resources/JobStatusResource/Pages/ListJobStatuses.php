@@ -31,7 +31,10 @@ class ListJobStatuses extends ListRecords
                         ->where('created_at', '<', now()->subDays(7))
                         ->delete();
 
-                    $this->notify('success', "Deleted {$deleted} old job records");
+                    \Filament\Notifications\Notification::make()
+                        ->success()
+                        ->title("Deleted {$deleted} old job records")
+                        ->send();
                 }),
         ];
     }
