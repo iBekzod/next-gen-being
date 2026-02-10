@@ -697,7 +697,10 @@
                             <li><a href="{{ route('tutorials.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Tutorial
                                     Series</a></li>
-                            @foreach ($navCategories->take(3) as $category)
+                            <li><a href="{{ route('about') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">About
+                                    Us</a></li>
+                            @foreach ($navCategories->take(2) as $category)
                                 <li><a href="{{ route('categories.show', $category->slug) }}"
                                         class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">{{ $category->name }}</a>
                                 </li>

@@ -19,6 +19,9 @@ use App\Http\Controllers\WriteEarnController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
+Route::get('/about', function () {
+    return view('pages.about');
+})->name('about');
 Route::get('/write', [WriteEarnController::class, 'show'])->name('write.earn');
 Route::post('/landing/subscribe', [LandingPageController::class, 'store'])->name('landing.subscribe');
 Route::get('/health', HealthCheckController::class)->name('health.check');
