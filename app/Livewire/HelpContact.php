@@ -25,6 +25,21 @@ class HelpContact extends Component
 
     protected $listeners = ['show-help-modal' => 'showModal'];
 
+    public function updatedType($value)
+    {
+        $this->type = is_array($value) ? ($value[0] ?? 'help') : $value;
+    }
+
+    public function updatedSubject($value)
+    {
+        $this->subject = is_array($value) ? ($value[0] ?? '') : $value;
+    }
+
+    public function updatedDescription($value)
+    {
+        $this->description = is_array($value) ? ($value[0] ?? '') : $value;
+    }
+
     public function updatedPriority($value)
     {
         $this->priority = is_array($value) ? ($value[0] ?? 'normal') : $value;

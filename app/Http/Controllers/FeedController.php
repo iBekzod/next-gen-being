@@ -162,4 +162,22 @@ class FeedController extends Controller
             'currentCategory' => $request->category,
         ]);
     }
+
+    /**
+     * Generate RSS feed of published posts
+     */
+    public function rss()
+    {
+        $posts = Post::where('status', 'published')
+            ->where('moderation_status', 'approved')
+            ->with(['author'])
+            ->latest('published_at')
+            ->limit(50)
+            ->get();
+
+        return response()->view('feed.rss', [
+            'posts' => $posts,
+            'lastBuildDate' => $posts->first()?->updated_at ?? now(),
+        ])->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+    }
 }
