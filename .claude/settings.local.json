@@ -24,7 +24,8 @@
       "Bash(docker logs:*)",
       "Bash(docker-compose:*)",
       "Bash(timeout 120 docker-compose exec:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

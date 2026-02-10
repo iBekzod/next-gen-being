@@ -281,7 +281,7 @@
             crossorigin="anonymous"></script>
 </head>
 
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased pt-16">
         @php
             $navCategories = collect();
             if (
@@ -292,7 +292,7 @@
             }
         @endphp
         <!-- Navigation -->
-        <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95"
+        <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 border-b border-gray-200 dark:bg-gray-900/95 dark:border-gray-700 backdrop-blur-sm"
             x-data="{ mobileMenuOpen: false }">
             <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
