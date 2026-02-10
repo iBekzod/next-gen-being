@@ -93,8 +93,8 @@ class GenerateWeeklyTutorialCommand extends Command
                         'series_total_parts' => 8,
                         'status' => 'published',
                         'published_at' => now(),
-                        'is_premium' => $index >= 5, // Parts 6-8 are premium
-                        'premium_tier' => $index >= 5 ? 'basic' : null,
+                        'is_premium' => $index >= 6, // Parts 7-8 are premium (70% free, 30% premium)
+                        'premium_tier' => $index >= 6 ? 'basic' : null,
                     ]);
 
                     // Add expertise signals and structured data
