@@ -192,7 +192,7 @@ class PostCurationResource extends Resource
                     ->label('View Sources')
                     ->icon('heroicon-o-link')
                     ->color('info')
-                    ->url(fn (Post $record) => static::getResource()::getUrl('sources', ['record' => $record]))
+                    ->url(fn (Post $record) => route('posts.show', $record))
                     ->openUrlInNewTab(),
                 Tables\Actions\Action::make('translate')
                     ->label('Create Translations')

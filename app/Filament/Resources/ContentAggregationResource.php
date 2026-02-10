@@ -132,7 +132,7 @@ class ContentAggregationResource extends Resource
                     ->label('Create Curated Post')
                     ->icon('heroicon-o-pencil-square')
                     ->color('success')
-                    ->url(fn (ContentAggregation $record) => static::getResource()::getUrl('curate', ['record' => $record]))
+                    ->url(fn (ContentAggregation $record) => route('posts.create', ['aggregation_id' => $record->id]))
                     ->openUrlInNewTab(),
             ])
             ->defaultSort('created_at', 'desc');

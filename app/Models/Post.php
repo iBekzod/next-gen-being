@@ -696,19 +696,19 @@ class Post extends Model implements HasMedia
     // Reader Tracking Helper Methods
     public function getLiveReaderCount(): int
     {
-        $readerTrackingService = app('ReaderTrackingService');
+        $readerTrackingService = app(\App\Services\ReaderTrackingService::class);
         return $readerTrackingService->getActiveReaderCount($this->id);
     }
 
     public function getReaderBreakdown(): array
     {
-        $readerTrackingService = app('ReaderTrackingService');
+        $readerTrackingService = app(\App\Services\ReaderTrackingService::class);
         return $readerTrackingService->getReaderBreakdown($this->id);
     }
 
     public function getTopCountries(int $limit = 5): array
     {
-        $readerTrackingService = app('ReaderTrackingService');
+        $readerTrackingService = app(\App\Services\ReaderTrackingService::class);
         return $readerTrackingService->getTopCountries($this->id, $limit);
     }
 

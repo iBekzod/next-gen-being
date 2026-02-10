@@ -51,7 +51,16 @@ return [
         'ai_premium_variant_id' => env('LEMONSQUEEZY_AI_PREMIUM_VARIANT_ID'),
         'ai_enterprise_variant_id' => env('LEMONSQUEEZY_AI_ENTERPRISE_VARIANT_ID'),
 
+        // Tip/donation variant ID (for one-time tips to creators)
+        'tip_variant_id' => env('LEMONSQUEEZY_TIP_VARIANT_ID'),
+
         'test_mode' => env('LEMONSQUEEZY_TEST_MODE', false), // Production default is false
+    ],
+
+    'webhook' => [
+        'secret' => env('WEBHOOK_SECRET', env('APP_KEY')), // Fallback to APP_KEY if not set
+        'timeout' => env('WEBHOOK_TIMEOUT', 30),
+        'retry_attempts' => env('WEBHOOK_RETRY_ATTEMPTS', 3),
     ],
 
     'github' => [

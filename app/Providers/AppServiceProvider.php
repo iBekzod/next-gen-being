@@ -84,6 +84,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\WritingAssistantService::class, function ($app) {
             return new \App\Services\WritingAssistantService();
         });
+
+        // Reader tracking service
+        $this->app->singleton(\App\Services\ReaderTrackingService::class, function ($app) {
+            return new \App\Services\ReaderTrackingService();
+        });
     }
 
     /**

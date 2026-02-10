@@ -659,7 +659,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser
         return $this->hasMany(Streak::class);
     }
 
-    public function getStreakBySys($type = 'reading')
+    public function getStreakByType($type = 'reading')
     {
         return $this->streaks()->where('type', $type)->first();
     }
