@@ -243,28 +243,38 @@
 </main>
 
 @push('structured-data')
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "AboutPage",
-  "mainEntity": {
-    "@type": "Organization",
-    "name": "{{ setting('site_name', 'NextGenBeing') }}",
-    "url": "{{ config('app.url') }}",
-    "logo": "{{ asset('uploads/logo.png') }}",
-    "description": "AI Learning & Tutorials Platform - Production-grade tutorials for developers, entrepreneurs, and creators",
-    "foundingDate": "2025",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "Customer Service",
-      "email": "{{ setting('support_email', 'support@nextgenbeing.com') }}"
-    },
-    "sameAs": [
-      "{{ setting('social_links.twitter', '#') ?? '#' }}",
-      "{{ setting('social_links.linkedin', '#') ?? '#' }}",
-      "{{ setting('social_links.github', '#') ?? '#' }}"
-    ]
-  }
+@php
+$socialLinks = setting('social_links', []);
+$sameAs = [];
+if (isset($socialLinks['twitter']) && !empty($socialLinks['twitter'])) {
+    $sameAs[] = $socialLinks['twitter'];
 }
+if (isset($socialLinks['linkedin']) && !empty($socialLinks['linkedin'])) {
+    $sameAs[] = $socialLinks['linkedin'];
+}
+if (isset($socialLinks['github']) && !empty($socialLinks['github'])) {
+    $sameAs[] = $socialLinks['github'];
+}
+$schemaData = [
+    "@context" => "https://schema.org",
+    "@type" => "AboutPage",
+    "mainEntity" => [
+        "@type" => "Organization",
+        "name" => setting('site_name', 'NextGenBeing'),
+        "url" => config('app.url'),
+        "logo" => asset('uploads/logo.png'),
+        "description" => "AI Learning & Tutorials Platform - Production-grade tutorials for developers, entrepreneurs, and creators",
+        "foundingDate" => "2025",
+        "contactPoint" => [
+            "@type" => "ContactPoint",
+            "contactType" => "Customer Service",
+            "email" => setting('support_email', 'support@nextgenbeing.com'),
+        ],
+        "sameAs" => $sameAs,
+    ],
+];
+@endphp
+<script type="application/ld+json">
+{!! json_encode($schemaData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
 </script>
 @endpush

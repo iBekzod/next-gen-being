@@ -23,7 +23,8 @@
       "Bash(php artisan:*)",
       "Bash(docker logs:*)",
       "Bash(docker-compose:*)",
-      "Bash(timeout 120 docker-compose exec:*)"
+      "Bash(timeout 120 docker-compose exec:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
