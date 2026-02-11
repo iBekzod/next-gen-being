@@ -50,7 +50,7 @@ class AffiliateLinkResource extends Resource
                 Tables\Columns\TextColumn::make('code')->searchable(),
                 Tables\Columns\TextColumn::make('clicks_count')->counts('clicks')->label('Clicks'),
                 Tables\Columns\TextColumn::make('conversions_count')->counts('conversions')->label('Conversions'),
-                Tables\Columns\BooleanColumn::make('is_active'),
+                Tables\Columns\IconColumn::make('is_active')->boolean(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([

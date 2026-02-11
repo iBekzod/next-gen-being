@@ -49,13 +49,14 @@ class JobStatusResource extends Resource
                         'engagement-metrics' => 'Engagement Metrics',
                         default => ucwords(str_replace('-', ' ', $state)),
                     })
-                    ->colors([
-                        'primary' => 'video-generation',
-                        'success' => 'social-media-publish',
-                        'info' => 'engagement-metrics',
-                        'warning' => 'publish-platform',
-                        'gray' => 'telegram',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'video-generation' => 'primary',
+                        'social-media-publish' => 'success',
+                        'engagement-metrics' => 'info',
+                        'publish-platform' => 'warning',
+                        'telegram' => 'gray',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('trackable.title')
@@ -66,12 +67,13 @@ class JobStatusResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'gray' => 'pending',
-                        'info' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'gray',
+                        'processing' => 'info',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->icon(fn (string $state): string => match($state) {
                         'pending' => 'heroicon-o-clock',
                         'processing' => 'heroicon-o-arrow-path',
@@ -81,8 +83,9 @@ class JobStatusResource extends Resource
                     })
                     ->sortable(),
 
-                Tables\Columns\ProgressColumn::make('progress')
+                Tables\Columns\TextColumn::make('progress')
                     ->label('Progress')
+                    ->formatStateUsing(fn ($state): string => $state ? "{$state}%" : '0%')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('progress_message')

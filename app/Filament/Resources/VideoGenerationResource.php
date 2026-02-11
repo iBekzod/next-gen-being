@@ -177,31 +177,34 @@ class VideoGenerationResource extends Resource
                 Tables\Columns\TextColumn::make('video_type')
                     ->label('Type')
                     ->badge()
-                    ->colors([
-                        'primary' => 'youtube',
-                        'success' => 'tiktok',
-                        'warning' => 'reel',
-                        'danger' => 'short',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'youtube' => 'primary',
+                        'tiktok' => 'success',
+                        'reel' => 'warning',
+                        'short' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'secondary' => 'queued',
-                        'info' => 'scheduled',
-                        'warning' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'queued' => 'gray',
+                        'scheduled' => 'info',
+                        'processing' => 'warning',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('priority')
                     ->badge()
-                    ->colors([
-                        'secondary' => 'low',
-                        'primary' => 'normal',
-                        'warning' => 'high',
-                        'danger' => 'urgent',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'low' => 'gray',
+                        'normal' => 'primary',
+                        'high' => 'warning',
+                        'urgent' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('scheduled_at')

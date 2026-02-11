@@ -90,12 +90,13 @@ class JobStatusResource extends Resource
 
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
-                    ->colors([
-                        'primary' => 'video-generation',
-                        'success' => 'social-media-publish',
-                        'info' => 'engagement-metrics',
-                        'warning' => 'publish-platform',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'video-generation' => 'primary',
+                        'social-media-publish' => 'success',
+                        'engagement-metrics' => 'info',
+                        'publish-platform' => 'warning',
+                        default => 'gray',
+                    })
                     ->sortable()
                     ->searchable(),
 
@@ -106,12 +107,13 @@ class JobStatusResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'gray' => 'pending',
-                        'info' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'gray',
+                        'processing' => 'info',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('progress')

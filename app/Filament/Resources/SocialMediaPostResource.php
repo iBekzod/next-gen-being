@@ -151,12 +151,13 @@ class SocialMediaPostResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->colors([
-                        'gray' => 'draft',
-                        'info' => 'scheduled',
-                        'success' => 'published',
-                        'danger' => 'failed',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'scheduled' => 'info',
+                        'published' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('likes_count')

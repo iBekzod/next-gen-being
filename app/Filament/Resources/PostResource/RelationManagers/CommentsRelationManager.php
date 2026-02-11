@@ -81,17 +81,19 @@ class CommentsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => fn ($state) => in_array($state, ['rejected', 'spam']),
-                    ])
-                    ->icons([
-                        'heroicon-o-clock' => 'pending',
-                        'heroicon-o-check-circle' => 'approved',
-                        'heroicon-o-x-circle' => 'rejected',
-                        'heroicon-o-exclamation-triangle' => 'spam',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected', 'spam' => 'danger',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'pending' => 'heroicon-o-clock',
+                        'approved' => 'heroicon-o-check-circle',
+                        'rejected' => 'heroicon-o-x-circle',
+                        'spam' => 'heroicon-o-exclamation-triangle',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('likes_count')

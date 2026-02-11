@@ -133,11 +133,12 @@ class WebhookResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->colors([
-                        'success' => 'active',
-                        'gray' => 'inactive',
-                        'danger' => 'failed',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'gray',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('last_triggered_at')

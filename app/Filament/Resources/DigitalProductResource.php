@@ -8,7 +8,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\IconColumn;
 
 class DigitalProductResource extends Resource
 {
@@ -210,12 +210,13 @@ class DigitalProductResource extends Resource
 
                 TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'gray' => 'draft',
-                        'warning' => 'pending_review',
-                        'success' => 'published',
-                        'danger' => 'archived',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'pending_review' => 'warning',
+                        'published' => 'success',
+                        'archived' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 TextColumn::make('published_at')

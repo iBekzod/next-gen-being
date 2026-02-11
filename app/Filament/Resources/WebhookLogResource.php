@@ -44,9 +44,8 @@ class WebhookLogResource extends Resource
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\IconColumn::make('success')
+                        Forms\Components\Toggle::make('success')
                             ->label('Success')
-                            ->boolean()
                             ->disabled(),
 
                         Forms\Components\TextInput::make('response_time_ms')

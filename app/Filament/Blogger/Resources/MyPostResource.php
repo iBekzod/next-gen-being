@@ -806,11 +806,13 @@ class MyPostResource extends Resource
                     ->badge()
                     ->color('info'),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'secondary' => 'draft',
-                        'success' => 'published',
-                    ])
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'published' => 'success',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_premium')
@@ -837,12 +839,13 @@ class MyPostResource extends Resource
                         if (!$video) return 'No video';
                         return ucfirst($video->status);
                     })
-                    ->colors([
-                        'gray' => 'No video',
-                        'warning' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'No video' => 'gray',
+                        'Processing' => 'warning',
+                        'Completed' => 'success',
+                        'Failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->icon(fn (string $state): string => match($state) {
                         'No video' => 'heroicon-o-x-mark',
                         'processing' => 'heroicon-o-arrow-path',
@@ -863,10 +866,7 @@ class MyPostResource extends Resource
                         if ($publishedCount === 0) return 'Not published';
                         return "{$publishedCount} platforms";
                     })
-                    ->colors([
-                        'gray' => 'Not published',
-                        'success' => fn ($state) => $state !== 'Not published',
-                    ])
+                    ->color(fn (string $state): string => $state === 'Not published' ? 'gray' : 'success')
                     ->icon(fn (string $state): string => $state === 'Not published' ? 'heroicon-o-x-mark' : 'heroicon-o-share')
                     ->sortable(),
 

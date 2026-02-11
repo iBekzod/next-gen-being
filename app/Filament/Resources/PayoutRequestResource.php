@@ -165,18 +165,20 @@ class PayoutRequestResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'info' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'rejected',
-                    ])
-                    ->icons([
-                        'heroicon-o-clock' => 'pending',
-                        'heroicon-o-arrow-path' => 'processing',
-                        'heroicon-o-check-circle' => 'completed',
-                        'heroicon-o-x-circle' => 'rejected',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'processing' => 'info',
+                        'completed' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'pending' => 'heroicon-o-clock',
+                        'processing' => 'heroicon-o-arrow-path',
+                        'completed' => 'heroicon-o-check-circle',
+                        'rejected' => 'heroicon-o-x-circle',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')

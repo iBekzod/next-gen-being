@@ -107,11 +107,12 @@ class SocialMediaAccountResource extends Resource
 
                 Tables\Columns\TextColumn::make('account_type')
                     ->badge()
-                    ->colors([
-                        'primary' => 'personal',
-                        'success' => 'business',
-                        'warning' => 'platform_official',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'personal' => 'primary',
+                        'business' => 'success',
+                        'platform_official' => 'warning',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\IconColumn::make('auto_publish')
                     ->label('Auto-publish')

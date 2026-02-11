@@ -43,15 +43,17 @@ class RecentActivityWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'gray' => 'pending',
-                        'info' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'gray',
+                        'processing' => 'info',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    }),
 
-                Tables\Columns\ProgressColumn::make('progress')
-                    ->label('Progress'),
+                Tables\Columns\TextColumn::make('progress')
+                    ->label('Progress')
+                    ->formatStateUsing(fn ($state): string => $state ? "{$state}%" : '0%'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Started')
