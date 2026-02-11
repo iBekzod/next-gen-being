@@ -85,7 +85,7 @@ class GenerateWeeklyTutorialCommand extends Command
                     $featuredImage = $this->fetchTutorialImage($topic);
 
                     $post = Post::create([
-                        'user_id' => 1, // Platform account
+                        'author_id' => 1, // Platform account
                         'title' => $content['title'],
                         'slug' => Str::slug($content['title'] . ' ' . Str::random(6)),
                         'excerpt' => $content['excerpt'] ?? substr(strip_tags($enhancedContent), 0, 500),
