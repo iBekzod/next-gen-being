@@ -9,6 +9,7 @@ use App\Services\AITutorialGenerationService;
 use App\Services\ContentEnhancementService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class GenerateWeeklyTutorialCommand extends Command
 {
