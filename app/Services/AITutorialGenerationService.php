@@ -108,21 +108,56 @@ class AITutorialGenerationService
     }
 
     /**
-     * Wrapper method for backward compatibility
-     * Generate comprehensive tutorial and return as array format
+     * Generate comprehensive tutorial content for manual creation and enhancement
+     * Does NOT create posts - returns content array for caller to handle
      */
     public function generateComprehensiveTutorial(string $topic, int $parts = 8): array
     {
-        $posts = $this->generateComprehensiveSeries($topic, $parts, true);
+        $seriesTitle = $this->generateSeriesTitle($topic, $parts);
+        $contentParts = [];
 
-        // Convert to content array format for compatibility
-        return array_map(function ($post) {
-            return [
-                'title' => $post->title,
-                'excerpt' => $post->excerpt,
-                'content' => $post->content,
-            ];
-        }, $posts);
+        for ($partNumber = 1; $partNumber <= $parts; $partNumber++) {
+            try {
+                Log::info("Generating content for part {$partNumber}/{$parts}", ['topic' => $topic]);
+
+                // Generate content with retry logic
+                $content = $this->generatePartWithRetry($topic, $partNumber, $parts, $seriesTitle);
+
+                if (!$content) {
+                    Log::error("Failed to generate content for part {$partNumber} after retries", ['topic' => $topic]);
+                    continue;
+                }
+
+                // Validate content quality
+                if (!$this->validateContentQuality($content)) {
+                    Log::warning("Content quality check failed for part {$partNumber}", ['topic' => $topic]);
+                }
+
+                $contentParts[] = [
+                    'title' => $this->extractTitle($topic, $partNumber, $parts),
+                    'excerpt' => $this->extractExcerpt($content),
+                    'content' => $content,
+                ];
+
+                // Rate limiting - wait between requests
+                if ($partNumber < $parts) {
+                    sleep(2);
+                }
+
+            } catch (\Exception $e) {
+                Log::error("Error generating content for part {$partNumber}", [
+                    'topic' => $topic,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        Log::info("Tutorial content generation complete", [
+            'topic' => $topic,
+            'generated_parts' => count($contentParts),
+        ]);
+
+        return $contentParts;
     }
 
     /**
