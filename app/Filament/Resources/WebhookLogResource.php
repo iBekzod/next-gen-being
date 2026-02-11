@@ -35,17 +35,27 @@ class WebhookLogResource extends Resource
                             ->searchable()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('event')
-                            ->label('Event')
+                        Forms\Components\TextInput::make('event_type')
+                            ->label('Event Type')
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('status_code')
+                        Forms\Components\TextInput::make('response_status')
                             ->label('HTTP Status Code')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\Textarea::make('request_body')
-                            ->label('Request Body')
+                        Forms\Components\IconColumn::make('success')
+                            ->label('Success')
+                            ->boolean()
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('response_time_ms')
+                            ->label('Response Time (ms)')
+                            ->numeric()
+                            ->disabled(),
+
+                        Forms\Components\Textarea::make('request_payload')
+                            ->label('Request Payload')
                             ->rows(4)
                             ->disabled()
                             ->columnSpanFull(),
@@ -58,12 +68,6 @@ class WebhookLogResource extends Resource
 
                         Forms\Components\TextInput::make('error_message')
                             ->label('Error Message')
-                            ->disabled()
-                            ->columnSpanFull(),
-
-                        Forms\Components\Textarea::make('headers')
-                            ->label('Response Headers (JSON)')
-                            ->rows(3)
                             ->disabled()
                             ->columnSpanFull(),
                     ]),
@@ -80,20 +84,31 @@ class WebhookLogResource extends Resource
                     ->limit(30)
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('event')
+                Tables\Columns\TextColumn::make('event_type')
                     ->label('Event')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('status_code')
+                Tables\Columns\TextColumn::make('response_status')
                     ->label('Status')
                     ->badge()
-                    ->colors([
-                        'success' => 200,
-                        'warning' => [201, 202],
-                        'danger' => fn ($state) => (int)$state >= 400,
-                    ])
+                    ->color(fn ($state) => match (true) {
+                        $state >= 200 && $state < 300 => 'success',
+                        $state >= 300 && $state < 400 => 'warning',
+                        $state >= 400 => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
+
+                Tables\Columns\IconColumn::make('success')
+                    ->label('Success')
+                    ->boolean()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('response_time_ms')
+                    ->label('Time (ms)')
+                    ->sortable()
+                    ->alignRight(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Attempted')
@@ -101,16 +116,8 @@ class WebhookLogResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status_code')
-                    ->label('Status')
-                    ->options([
-                        '200' => '200 Success',
-                        '201' => '201 Created',
-                        '400' => '400 Bad Request',
-                        '401' => '401 Unauthorized',
-                        '404' => '404 Not Found',
-                        '500' => '500 Server Error',
-                    ]),
+                Tables\Filters\TernaryFilter::make('success')
+                    ->label('Success'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

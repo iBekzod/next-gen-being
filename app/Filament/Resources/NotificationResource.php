@@ -36,6 +36,12 @@ class NotificationResource extends Resource
                             ->required()
                             ->disabled(),
 
+                        Forms\Components\Select::make('actor_id')
+                            ->label('Triggered By')
+                            ->relationship('actor', 'name')
+                            ->searchable()
+                            ->disabled(),
+
                         Forms\Components\TextInput::make('type')
                             ->label('Type')
                             ->disabled(),
@@ -55,8 +61,8 @@ class NotificationResource extends Resource
                             ->url()
                             ->disabled(),
 
-                        Forms\Components\Toggle::make('is_read')
-                            ->label('Read')
+                        Forms\Components\DateTimePicker::make('read_at')
+                            ->label('Read At')
                             ->disabled(),
 
                         Forms\Components\Textarea::make('data')
@@ -80,12 +86,6 @@ class NotificationResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->badge()
-                    ->colors([
-                        'info' => 'info',
-                        'success' => 'success',
-                        'warning' => 'warning',
-                        'danger' => 'error',
-                    ])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('title')
@@ -93,10 +93,11 @@ class NotificationResource extends Resource
                     ->searchable()
                     ->limit(50),
 
-                Tables\Columns\IconColumn::make('is_read')
+                Tables\Columns\TextColumn::make('read_at')
                     ->label('Read')
-                    ->boolean()
-                    ->sortable(),
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Unread'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
@@ -104,15 +105,20 @@ class NotificationResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_read')
-                    ->label('Read'),
+                Tables\Filters\TernaryFilter::make('read_at')
+                    ->label('Read')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('read_at'),
+                        false: fn (Builder $query) => $query->whereNull('read_at'),
+                    ),
 
                 Tables\Filters\SelectFilter::make('type')
                     ->options([
-                        'info' => 'Info',
-                        'success' => 'Success',
-                        'warning' => 'Warning',
-                        'error' => 'Error',
+                        'comment' => 'Comment',
+                        'like' => 'Like',
+                        'follow' => 'Follow',
+                        'mention' => 'Mention',
+                        'system' => 'System',
                     ]),
             ])
             ->actions([
@@ -123,8 +129,7 @@ class NotificationResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn (Builder $query) => $query->latest());
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array

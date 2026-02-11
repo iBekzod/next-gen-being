@@ -33,6 +33,10 @@ class BadgeResource extends Resource
                             ->required()
                             ->maxLength(255),
 
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Slug')
+                            ->maxLength(255),
+
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
                             ->rows(3)
@@ -47,15 +51,16 @@ class BadgeResource extends Resource
                             ->placeholder('#000000')
                             ->maxLength(7),
 
-                        Forms\Components\FileUpload::make('image_url')
-                            ->label('Badge Image')
-                            ->image()
-                            ->directory('badges'),
-
-                        Forms\Components\TextInput::make('points_required')
-                            ->label('Points Required')
+                        Forms\Components\TextInput::make('order')
+                            ->label('Display Order')
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->default(0),
+
+                        Forms\Components\KeyValue::make('requirements')
+                            ->label('Requirements')
+                            ->keyLabel('Metric')
+                            ->valueLabel('Required Value'),
 
                         Forms\Components\Toggle::make('is_active')
                             ->label('Active')
@@ -73,12 +78,16 @@ class BadgeResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('slug')
+                    ->label('Slug')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('description')
                     ->label('Description')
                     ->limit(50),
 
-                Tables\Columns\TextColumn::make('points_required')
-                    ->label('Points Required')
+                Tables\Columns\TextColumn::make('order')
+                    ->label('Order')
                     ->sortable()
                     ->alignRight(),
 
@@ -105,7 +114,7 @@ class BadgeResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('order', 'asc');
     }
 
     public static function getPages(): array

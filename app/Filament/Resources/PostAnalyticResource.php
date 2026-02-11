@@ -35,51 +35,56 @@ class PostAnalyticResource extends Resource
                             ->searchable()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('views_count')
+                        Forms\Components\DatePicker::make('date')
+                            ->label('Date')
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('views')
                             ->label('Views')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('unique_visitors')
-                            ->label('Unique Visitors')
+                        Forms\Components\TextInput::make('unique_readers')
+                            ->label('Unique Readers')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('avg_time_on_page')
-                            ->label('Avg Time on Page (seconds)')
+                        Forms\Components\TextInput::make('likes')
+                            ->label('Likes')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('bounce_rate')
-                            ->label('Bounce Rate (%)')
-                            ->numeric()
-                            ->disabled(),
-
-                        Forms\Components\TextInput::make('shares_count')
-                            ->label('Shares')
-                            ->numeric()
-                            ->disabled(),
-
-                        Forms\Components\TextInput::make('comments_count')
+                        Forms\Components\TextInput::make('comments')
                             ->label('Comments')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('impressions')
-                            ->label('Impressions')
+                        Forms\Components\TextInput::make('shares')
+                            ->label('Shares')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('clicks')
-                            ->label('Clicks')
+                        Forms\Components\TextInput::make('avg_read_time')
+                            ->label('Avg Read Time (seconds)')
                             ->numeric()
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('ctr')
-                            ->label('Click Through Rate (%)')
+                        Forms\Components\TextInput::make('scroll_depth')
+                            ->label('Scroll Depth (%)')
                             ->numeric()
                             ->disabled(),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Traffic Data')
+                    ->schema([
+                        Forms\Components\KeyValue::make('traffic_sources')
+                            ->label('Traffic Sources')
+                            ->disabled(),
+
+                        Forms\Components\KeyValue::make('device_breakdown')
+                            ->label('Device Breakdown')
+                            ->disabled(),
+                    ])->collapsed(),
             ]);
     }
 
@@ -93,32 +98,41 @@ class PostAnalyticResource extends Resource
                     ->sortable()
                     ->limit(40),
 
-                Tables\Columns\TextColumn::make('views_count')
+                Tables\Columns\TextColumn::make('date')
+                    ->label('Date')
+                    ->date()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('views')
                     ->label('Views')
                     ->sortable()
                     ->alignRight(),
 
-                Tables\Columns\TextColumn::make('unique_visitors')
-                    ->label('Visitors')
+                Tables\Columns\TextColumn::make('unique_readers')
+                    ->label('Readers')
                     ->sortable()
                     ->alignRight(),
 
-                Tables\Columns\TextColumn::make('avg_time_on_page')
-                    ->label('Avg Time')
+                Tables\Columns\TextColumn::make('likes')
+                    ->label('Likes')
+                    ->sortable()
+                    ->alignRight(),
+
+                Tables\Columns\TextColumn::make('comments')
+                    ->label('Comments')
+                    ->sortable()
+                    ->alignRight(),
+
+                Tables\Columns\TextColumn::make('shares')
+                    ->label('Shares')
+                    ->sortable()
+                    ->alignRight(),
+
+                Tables\Columns\TextColumn::make('avg_read_time')
+                    ->label('Avg Read')
                     ->formatStateUsing(fn ($state) => $state ? round($state) . 's' : '-')
                     ->sortable()
                     ->alignRight(),
-
-                Tables\Columns\TextColumn::make('bounce_rate')
-                    ->label('Bounce Rate')
-                    ->formatStateUsing(fn ($state) => $state ? round($state, 1) . '%' : '-')
-                    ->sortable()
-                    ->alignRight(),
-
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Last Updated')
-                    ->dateTime()
-                    ->sortable(),
             ])
             ->filters([
                 //
@@ -129,7 +143,7 @@ class PostAnalyticResource extends Resource
             ->bulkActions([
                 //
             ])
-            ->defaultSort('views_count', 'desc')
+            ->defaultSort('date', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query->with('post'));
     }
 

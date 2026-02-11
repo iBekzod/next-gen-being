@@ -36,40 +36,14 @@ class NewsletterSubscriptionResource extends Resource
                             ->maxLength(255)
                             ->disabled(),
 
-                        Forms\Components\TextInput::make('name')
-                            ->label('Name')
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('source')
-                            ->label('Subscription Source')
+                        Forms\Components\Select::make('user_id')
+                            ->label('User')
+                            ->relationship('user', 'name')
+                            ->searchable()
                             ->disabled(),
 
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Active')
-                            ->disabled(),
-
-                        Forms\Components\TextInput::make('verification_token')
-                            ->label('Verification Token')
-                            ->disabled()
-                            ->maxLength(255),
-
-                        Forms\Components\DateTimePicker::make('verified_at')
-                            ->label('Verified At')
-                            ->disabled(),
-
-                        Forms\Components\DateTimePicker::make('created_at')
-                            ->label('Subscribed At')
-                            ->disabled(),
-
-                        Forms\Components\DateTimePicker::make('unsubscribed_at')
-                            ->label('Unsubscribed At')
-                            ->disabled(),
-                    ]),
-
-                Forms\Components\Section::make('Preferences')
-                    ->schema([
-                        Forms\Components\CheckboxList::make('frequency')
-                            ->label('Email Frequency')
+                        Forms\Components\Select::make('frequency')
+                            ->label('Frequency')
                             ->options([
                                 'daily' => 'Daily',
                                 'weekly' => 'Weekly',
@@ -77,14 +51,32 @@ class NewsletterSubscriptionResource extends Resource
                             ])
                             ->disabled(),
 
-                        Forms\Components\CheckboxList::make('categories')
-                            ->label('Interested Categories')
-                            ->options([
-                                'technology' => 'Technology',
-                                'business' => 'Business',
-                                'lifestyle' => 'Lifestyle',
-                                'news' => 'News',
-                            ])
+                        Forms\Components\TextInput::make('token')
+                            ->label('Token')
+                            ->disabled()
+                            ->maxLength(255),
+
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Active')
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('verified_at')
+                            ->label('Verified At')
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('last_sent_at')
+                            ->label('Last Sent At')
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('created_at')
+                            ->label('Subscribed At')
+                            ->disabled(),
+                    ]),
+
+                Forms\Components\Section::make('Preferences')
+                    ->schema([
+                        Forms\Components\KeyValue::make('preferences')
+                            ->label('Preferences')
                             ->disabled(),
                     ]),
             ]);
@@ -99,9 +91,14 @@ class NewsletterSubscriptionResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('User')
                     ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('frequency')
+                    ->label('Frequency')
+                    ->badge()
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
@@ -109,15 +106,17 @@ class NewsletterSubscriptionResource extends Resource
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('verified_at')
+                Tables\Columns\TextColumn::make('verified_at')
                     ->label('Verified')
-                    ->boolean(fn ($record) => $record->verified_at !== null)
-                    ->sortable(),
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Not verified'),
 
-                Tables\Columns\TextColumn::make('source')
-                    ->label('Source')
-                    ->badge()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('last_sent_at')
+                    ->label('Last Sent')
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Never'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Subscribed')
@@ -135,11 +134,11 @@ class NewsletterSubscriptionResource extends Resource
                         false: fn (Builder $query) => $query->whereNull('verified_at'),
                     ),
 
-                Tables\Filters\SelectFilter::make('source')
+                Tables\Filters\SelectFilter::make('frequency')
                     ->options([
-                        'landing_page' => 'Landing Page',
-                        'blog' => 'Blog',
-                        'email' => 'Email',
+                        'daily' => 'Daily',
+                        'weekly' => 'Weekly',
+                        'monthly' => 'Monthly',
                     ]),
             ])
             ->actions([

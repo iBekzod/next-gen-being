@@ -28,6 +28,11 @@ class WebhookResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Webhook Configuration')
                     ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Name')
+                            ->required()
+                            ->maxLength(255),
+
                         Forms\Components\TextInput::make('url')
                             ->label('Webhook URL')
                             ->url()
@@ -40,6 +45,10 @@ class WebhookResource extends Resource
                             ->searchable()
                             ->required(),
 
+                        Forms\Components\TextInput::make('event_type')
+                            ->label('Event Type')
+                            ->maxLength(255),
+
                         Forms\Components\CheckboxList::make('events')
                             ->label('Events to Subscribe To')
                             ->options([
@@ -49,17 +58,56 @@ class WebhookResource extends Resource
                                 'comment.created' => 'Comment Created',
                                 'user.registered' => 'User Registered',
                                 'subscription.created' => 'Subscription Created',
+                            ]),
+
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'active' => 'Active',
+                                'inactive' => 'Inactive',
+                                'failed' => 'Failed',
                             ])
+                            ->default('active')
                             ->required(),
 
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Active')
+                        Forms\Components\Toggle::make('verify_ssl')
+                            ->label('Verify SSL')
                             ->default(true),
 
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
-                            ->rows(3),
+                        Forms\Components\TextInput::make('max_retries')
+                            ->label('Max Retries')
+                            ->numeric()
+                            ->default(3)
+                            ->minValue(0),
+
+                        Forms\Components\KeyValue::make('headers')
+                            ->label('Custom Headers')
+                            ->keyLabel('Header')
+                            ->valueLabel('Value'),
                     ]),
+
+                Forms\Components\Section::make('Status Information')
+                    ->schema([
+                        Forms\Components\TextInput::make('retry_count')
+                            ->label('Current Retry Count')
+                            ->numeric()
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('last_triggered_at')
+                            ->label('Last Triggered')
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('last_failed_at')
+                            ->label('Last Failed')
+                            ->disabled(),
+
+                        Forms\Components\Textarea::make('last_error')
+                            ->label('Last Error')
+                            ->rows(2)
+                            ->disabled()
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsed(),
             ]);
     }
 
@@ -67,6 +115,11 @@ class WebhookResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Owner')
                     ->searchable()
@@ -77,10 +130,21 @@ class WebhookResource extends Resource
                     ->searchable()
                     ->limit(50),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Active')
-                    ->boolean()
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->colors([
+                        'success' => 'active',
+                        'gray' => 'inactive',
+                        'danger' => 'failed',
+                    ])
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('last_triggered_at')
+                    ->label('Last Triggered')
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Never'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
@@ -88,8 +152,12 @@ class WebhookResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active'),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'active' => 'Active',
+                        'inactive' => 'Inactive',
+                        'failed' => 'Failed',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

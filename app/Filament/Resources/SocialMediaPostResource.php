@@ -31,7 +31,7 @@ class SocialMediaPostResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('social_media_account_id')
                             ->label('Account')
-                            ->relationship('account', 'platform_username')
+                            ->relationship('socialMediaAccount', 'platform_username')
                             ->searchable()
                             ->required()
                             ->disabled(),
@@ -42,17 +42,37 @@ class SocialMediaPostResource extends Resource
                             ->searchable()
                             ->disabled(),
 
+                        Forms\Components\TextInput::make('platform')
+                            ->label('Platform')
+                            ->disabled(),
+
                         Forms\Components\TextInput::make('platform_post_id')
                             ->label('Platform Post ID')
                             ->disabled(),
 
-                        Forms\Components\Textarea::make('content')
+                        Forms\Components\TextInput::make('content_type')
+                            ->label('Content Type')
+                            ->disabled(),
+
+                        Forms\Components\Textarea::make('content_text')
                             ->label('Content')
                             ->rows(4)
                             ->disabled()
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('platform_url')
+                        Forms\Components\Textarea::make('caption')
+                            ->label('Caption')
+                            ->rows(2)
+                            ->disabled()
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('content_media_url')
+                            ->label('Media URL')
+                            ->url()
+                            ->disabled()
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('platform_post_url')
                             ->label('Platform URL')
                             ->url()
                             ->disabled()
@@ -74,6 +94,37 @@ class SocialMediaPostResource extends Resource
                             ->disabled()
                             ->columnSpanFull(),
                     ]),
+
+                Forms\Components\Section::make('Engagement')
+                    ->schema([
+                        Forms\Components\TextInput::make('likes_count')
+                            ->label('Likes')
+                            ->numeric()
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('comments_count')
+                            ->label('Comments')
+                            ->numeric()
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('shares_count')
+                            ->label('Shares')
+                            ->numeric()
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('views_count')
+                            ->label('Views')
+                            ->numeric()
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('scheduled_at')
+                            ->label('Scheduled At')
+                            ->disabled(),
+
+                        Forms\Components\DateTimePicker::make('published_at')
+                            ->label('Published At')
+                            ->disabled(),
+                    ])->columns(2),
             ]);
     }
 
@@ -81,9 +132,14 @@ class SocialMediaPostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('account.platform_username')
+                Tables\Columns\TextColumn::make('socialMediaAccount.platform_username')
                     ->label('Account')
                     ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('platform')
+                    ->label('Platform')
+                    ->badge()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('post.title')
@@ -103,6 +159,11 @@ class SocialMediaPostResource extends Resource
                     ])
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('likes_count')
+                    ->label('Likes')
+                    ->sortable()
+                    ->alignRight(),
+
                 Tables\Columns\TextColumn::make('published_at')
                     ->label('Published')
                     ->dateTime()
@@ -121,6 +182,14 @@ class SocialMediaPostResource extends Resource
                         'published' => 'Published',
                         'failed' => 'Failed',
                     ]),
+
+                Tables\Filters\SelectFilter::make('platform')
+                    ->options([
+                        'twitter' => 'Twitter',
+                        'facebook' => 'Facebook',
+                        'instagram' => 'Instagram',
+                        'linkedin' => 'LinkedIn',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -131,7 +200,7 @@ class SocialMediaPostResource extends Resource
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['account', 'post']));
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['socialMediaAccount', 'post']));
     }
 
     public static function getPages(): array
