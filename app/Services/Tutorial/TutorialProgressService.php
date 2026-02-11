@@ -13,9 +13,12 @@ class TutorialProgressService
 {
     /**
      * Track when a user reads a tutorial part
+     * Auto-marks as completed on first read to reflect engagement
      */
     public function trackReading(User $user, Post $post): TutorialProgress
     {
+        $isFirstRead = false;
+
         $progress = TutorialProgress::firstOrCreate(
             [
                 'user_id' => $user->id,
@@ -27,7 +30,18 @@ class TutorialProgressService
             ]
         );
 
+        // Track if this is the first read
+        if ($progress->read_count === 0) {
+            $isFirstRead = true;
+        }
+
         $progress->markAsRead();
+
+        // Auto-mark as completed on first read
+        // User has already navigated to the page to read it, so this indicates engagement
+        if ($isFirstRead && !$progress->completed) {
+            $progress->markAsCompleted();
+        }
 
         // Check for achievements after reading
         $this->checkAndAwardAchievements($user);
