@@ -199,7 +199,7 @@ class VerifyTutorialSetup extends Command
                     'content-type' => 'application/json',
                 ])
                 ->post('https://api.anthropic.com/v1/messages', [
-                    'model' => 'claude-3-5-sonnet-20241022',
+                    'model' => 'claude-sonnet-4-5-20250929',
                     'max_tokens' => 10,
                     'messages' => [
                         [
