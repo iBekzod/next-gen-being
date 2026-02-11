@@ -261,13 +261,13 @@ class SubscriptionResource extends Resource
                             ->schema([
                                 Infolists\Components\TextEntry::make('trial_ends_at')
                                     ->label('Trial Ends')
-                                    ->dateTime()
+                                    ->dateTime(),
                                 Infolists\Components\TextEntry::make('renews_at')
                                     ->label('Renews At')
-                                    ->dateTime()
+                                    ->dateTime(),
                                 Infolists\Components\TextEntry::make('ends_at')
                                     ->label('Ends At')
-                                    ->dateTime()
+                                    ->dateTime(),
                             ]),
                         Infolists\Components\Grid::make(2)
                             ->schema([
