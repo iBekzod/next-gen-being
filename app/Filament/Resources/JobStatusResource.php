@@ -130,13 +130,11 @@ class JobStatusResource extends Resource
                 Tables\Columns\TextColumn::make('started_at')
                     ->label('Started')
                     ->dateTime()
-                    ->since()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('completed_at')
                     ->label('Completed')
                     ->dateTime()
-                    ->since()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('user.name')
@@ -147,7 +145,6 @@ class JobStatusResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Queued')
                     ->dateTime()
-                    ->since()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

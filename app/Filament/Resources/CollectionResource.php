@@ -28,11 +28,14 @@ class CollectionResource extends Resource
                         ->required()
                         ->maxLength(255),
                     Forms\Components\TextInput::make('slug')
+                        ->label('Slug')
                         ->unique(ignoreRecord: true)
                         ->maxLength(255),
                     Forms\Components\Textarea::make('description')
+                        ->label('Description')
                         ->maxLength(1000),
                     Forms\Components\Select::make('user_id')
+                        ->label('Creator')
                         ->relationship('user', 'name')
                         ->searchable()
                         ->required(),
@@ -41,8 +44,10 @@ class CollectionResource extends Resource
                         ->image()
                         ->nullable(),
                     Forms\Components\Toggle::make('is_public')
+                        ->label('Public')
                         ->default(true),
                     Forms\Components\Toggle::make('is_featured')
+                        ->label('Featured')
                         ->default(false),
                 ]),
         ]);

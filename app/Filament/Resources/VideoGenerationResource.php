@@ -174,8 +174,9 @@ class VideoGenerationResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('video_type')
+                Tables\Columns\TextColumn::make('video_type')
                     ->label('Type')
+                    ->badge()
                     ->colors([
                         'primary' => 'youtube',
                         'success' => 'tiktok',
@@ -183,7 +184,8 @@ class VideoGenerationResource extends Resource
                         'danger' => 'short',
                     ]),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->colors([
                         'secondary' => 'queued',
                         'info' => 'scheduled',
@@ -192,7 +194,8 @@ class VideoGenerationResource extends Resource
                         'danger' => 'failed',
                     ]),
 
-                Tables\Columns\BadgeColumn::make('priority')
+                Tables\Columns\TextColumn::make('priority')
+                    ->badge()
                     ->colors([
                         'secondary' => 'low',
                         'primary' => 'normal',

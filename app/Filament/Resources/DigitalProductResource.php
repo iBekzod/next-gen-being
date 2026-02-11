@@ -26,17 +26,20 @@ class DigitalProductResource extends Resource
                         Forms\Components\Section::make('Product Information')
                             ->schema([
                                 Forms\Components\TextInput::make('title')
+                                    ->label('Title')
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(fn(Forms\Set $set, ?string $state) => $set('slug', \Illuminate\Support\Str::slug($state ?? ''))),
 
                                 Forms\Components\TextInput::make('slug')
+                                    ->label('Slug')
                                     ->disabled()
                                     ->dehydrated()
                                     ->unique(DigitalProduct::class, 'slug', ignoreRecord: true),
 
                                 Forms\Components\Select::make('type')
+                                    ->label('Type')
                                     ->options([
                                         'prompt' => 'Prompt Template',
                                         'template' => 'Template',
@@ -48,6 +51,7 @@ class DigitalProductResource extends Resource
                                     ->required(),
 
                                 Forms\Components\Textarea::make('short_description')
+                                    ->label('Short Description')
                                     ->maxLength(255)
                                     ->columnSpanFull(),
 
@@ -64,9 +68,11 @@ class DigitalProductResource extends Resource
                         Forms\Components\Section::make('Pricing & Access')
                             ->schema([
                                 Forms\Components\Toggle::make('is_free')
+                                    ->label('Free Product')
                                     ->reactive(),
 
                                 Forms\Components\TextInput::make('price')
+                                    ->label('Price')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
@@ -74,6 +80,7 @@ class DigitalProductResource extends Resource
                                     ->required(fn(Forms\Get $get) => !$get('is_free')),
 
                                 Forms\Components\TextInput::make('original_price')
+                                    ->label('Original Price')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
@@ -89,6 +96,7 @@ class DigitalProductResource extends Resource
                                     ->default('free'),
 
                                 Forms\Components\TextInput::make('revenue_share_percentage')
+                                    ->label('Revenue Share (%)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->maxValue(100)
@@ -133,12 +141,14 @@ class DigitalProductResource extends Resource
                                     ->default('draft')
                                     ->required(),
 
-                                Forms\Components\DateTimePicker::make('published_at'),
+                                Forms\Components\DateTimePicker::make('published_at')
+                                    ->label('Published At'),
                             ]),
 
                         Forms\Components\Section::make('Metadata')
                             ->schema([
-                                Forms\Components\TextInput::make('category'),
+                                Forms\Components\TextInput::make('category')
+                                    ->label('Category'),
 
                                 Forms\Components\TagsInput::make('tags')
                                     ->placeholder('Add tags'),
@@ -198,7 +208,8 @@ class DigitalProductResource extends Resource
                     ->label('Downloads')
                     ->sortable(),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
+                    ->badge()
                     ->colors([
                         'gray' => 'draft',
                         'warning' => 'pending_review',

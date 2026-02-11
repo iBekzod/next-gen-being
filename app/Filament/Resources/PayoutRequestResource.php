@@ -162,8 +162,9 @@ class PayoutRequestResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
+                    ->badge()
                     ->colors([
                         'warning' => 'pending',
                         'info' => 'processing',
@@ -182,7 +183,6 @@ class PayoutRequestResource extends Resource
                     ->label('Requested')
                     ->dateTime('M d, Y H:i')
                     ->sortable()
-                    ->since()
                     ->description(fn (PayoutRequest $record): string =>
                         $record->created_at->format('M d, Y H:i')
                     ),

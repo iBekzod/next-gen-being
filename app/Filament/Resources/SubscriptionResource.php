@@ -34,6 +34,7 @@ class SubscriptionResource extends Resource
                                     ->required()
                                     ->label('User'),
                                 Forms\Components\TextInput::make('name')
+                                    ->label('Name')
                                     ->required()
                                     ->maxLength(255),
                             ]),
@@ -49,6 +50,7 @@ class SubscriptionResource extends Resource
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('variant_id')
+                                    ->label('Variant ID')
                                     ->maxLength(255),
                                 Forms\Components\Select::make('status')
                                     ->options([
@@ -68,8 +70,10 @@ class SubscriptionResource extends Resource
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('card_brand')
+                                    ->label('Card Brand')
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('card_last_four')
+                                    ->label('Card Last Four')
                                     ->maxLength(4)
                                     ->length(4),
                             ]),
@@ -143,12 +147,10 @@ class SubscriptionResource extends Resource
                 Tables\Columns\TextColumn::make('renews_at')
                     ->dateTime()
                     ->sortable()
-                    ->since()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('ends_at')
                     ->dateTime()
                     ->sortable()
-                    ->since()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -260,15 +262,12 @@ class SubscriptionResource extends Resource
                                 Infolists\Components\TextEntry::make('trial_ends_at')
                                     ->label('Trial Ends')
                                     ->dateTime()
-                                    ->since(),
                                 Infolists\Components\TextEntry::make('renews_at')
                                     ->label('Renews At')
                                     ->dateTime()
-                                    ->since(),
                                 Infolists\Components\TextEntry::make('ends_at')
                                     ->label('Ends At')
                                     ->dateTime()
-                                    ->since(),
                             ]),
                         Infolists\Components\Grid::make(2)
                             ->schema([

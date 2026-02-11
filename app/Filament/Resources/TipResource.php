@@ -57,7 +57,7 @@ class TipResource extends Resource
                 Tables\Columns\TextColumn::make('fromUser.name')->label('From User'),
                 Tables\Columns\TextColumn::make('toUser.name')->label('To User'),
                 Tables\Columns\TextColumn::make('amount')->sortable(),
-                Tables\Columns\BadgeColumn::make('status'),
+                Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([

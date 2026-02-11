@@ -52,7 +52,7 @@ class ScheduledPostResource extends Resource
                 Tables\Columns\TextColumn::make('title')->searchable(),
                 Tables\Columns\TextColumn::make('user.name')->label('Creator'),
                 Tables\Columns\TextColumn::make('scheduled_at')->dateTime(),
-                Tables\Columns\BadgeColumn::make('status'),
+                Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([

@@ -136,7 +136,6 @@ class SocialMediaAccountResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Connected')
                     ->dateTime()
-                    ->since()
                     ->sortable(),
             ])
             ->filters([

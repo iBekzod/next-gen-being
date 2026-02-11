@@ -51,7 +51,6 @@ class LandingLeadResource extends Resource
                     ->label('Submitted')
                     ->dateTime()
                     ->sortable()
-                    ->since()
                     ->description(fn ($record) => $record->created_at->format('M d, Y H:i')),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()

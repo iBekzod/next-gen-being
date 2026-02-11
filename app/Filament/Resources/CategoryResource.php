@@ -38,8 +38,11 @@ class CategoryResource extends Resource
                             ->maxLength(1000)
                             ->rows(3),
 
-                        Forms\Components\ColorPicker::make('color')
-                            ->hex(),
+                        Forms\Components\TextInput::make('color')
+                            ->label('Color (Hex)')
+                            ->placeholder('#000000')
+                            ->maxLength(7)
+                            ->regex('/^#[0-9a-f]{6}$/i'),
 
                         Forms\Components\FileUpload::make('image')
                             ->image()

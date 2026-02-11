@@ -225,13 +225,11 @@ class PostResource extends Resource
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable()
-                    ->since()
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->since()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

@@ -113,7 +113,6 @@ class CommentsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Posted')
-                    ->since()
                     ->sortable()
                     ->description(fn (Comment $record): string =>
                         $record->created_at->format('M d, Y h:i A')

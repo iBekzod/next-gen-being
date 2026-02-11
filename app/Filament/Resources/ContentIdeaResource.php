@@ -63,7 +63,7 @@ class ContentIdeaResource extends Resource
                 Tables\Columns\TextColumn::make('title')->searchable(),
                 Tables\Columns\TextColumn::make('content_type')->badge(),
                 Tables\Columns\TextColumn::make('difficulty_score'),
-                Tables\Columns\BadgeColumn::make('status'),
+                Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([

@@ -106,7 +106,6 @@ class UserInteractionResource extends Resource
                     ->label('Date')
                     ->dateTime()
                     ->sortable()
-                    ->since()
                     ->description(fn ($record) => $record->created_at->format('M d, Y H:i')),
             ])
             ->filters([

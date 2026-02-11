@@ -30,9 +30,11 @@ class UserResource extends Resource
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('name')
+                                    ->label('Name')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('email')
+                                    ->label('Email')
                                     ->email()
                                     ->required()
                                     ->unique(ignoreRecord: true)
@@ -41,15 +43,18 @@ class UserResource extends Resource
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('password')
+                                    ->label('Password')
                                     ->password()
                                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                                     ->dehydrated(fn ($state) => filled($state))
                                     ->required(fn (string $context): bool => $context === 'create')
                                     ->maxLength(255),
                                 Forms\Components\Toggle::make('is_active')
+                                    ->label('Active')
                                     ->default(true),
                             ]),
                         Forms\Components\Textarea::make('bio')
+                            ->label('Bio')
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
@@ -59,12 +64,15 @@ class UserResource extends Resource
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\TextInput::make('website')
+                                    ->label('Website')
                                     ->url()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('twitter')
+                                    ->label('Twitter')
                                     ->maxLength(255)
                                     ->prefix('@'),
                                 Forms\Components\TextInput::make('linkedin')
+                                    ->label('LinkedIn')
                                     ->maxLength(255),
                             ]),
                     ]),
@@ -127,7 +135,6 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('last_seen_at')
                     ->dateTime()
                     ->sortable()
-                    ->since(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -201,7 +208,6 @@ class UserResource extends Resource
                                         ->dateTime(),
                                     Infolists\Components\TextEntry::make('last_seen_at')
                                         ->dateTime()
-                                        ->since(),
                                 ]),
                             ]),
                         Infolists\Components\TextEntry::make('bio')
