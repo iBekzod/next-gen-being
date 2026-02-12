@@ -163,11 +163,17 @@ class WebResearchService
             }
 
             $articles = array_map(function ($item) {
+                // Convert HN timestamp (string or int) to Unix timestamp
+                $timestamp = $item['created_at'] ?? time();
+                if (is_string($timestamp)) {
+                    $timestamp = strtotime($timestamp) ?: time();
+                }
+
                 return [
                     'title' => $item['title'] ?? $item['story_title'] ?? '',
                     'url' => $item['url'] ?? "https://news.ycombinator.com/item?id={$item['objectID']}",
                     'author' => $item['author'] ?? 'Anonymous',
-                    'published_at' => date('c', $item['created_at'] ?? time()),
+                    'published_at' => date('c', (int)$timestamp),
                     'comments' => $item['num_comments'] ?? 0,
                     'points' => $item['points'] ?? 0,
                     'source' => 'HackerNews',
