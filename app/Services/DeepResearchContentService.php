@@ -114,7 +114,7 @@ class DeepResearchContentService
     private function gatherResearch(string $topic): array
     {
         $researchService = app(WebResearchService::class);
-        return $researchService->gatherResearch($topic, limit: 3);
+        return $researchService->gatherResearch($topic, 3);
     }
 
     /**
