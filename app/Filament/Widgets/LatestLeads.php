@@ -23,14 +23,15 @@ class LatestLeads extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
                     ->copyable()
                     ->icon('heroicon-o-envelope'),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Submitted')
                     ->dateTime()
-                    ->since()
-                    ->description(fn ($record) => $record->created_at->format('M d, Y H:i')),
+                    ->description(fn ($record) => $record->created_at->diffForHumans()),
             ])
             ->actions([
                 Tables\Actions\Action::make('send_email')

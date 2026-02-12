@@ -20,40 +20,76 @@ class BloggerEarningResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Blogger Earning Details')
+            Forms\Components\Section::make('Earning Details')
                 ->schema([
                     Forms\Components\Select::make('user_id')
+                        ->label('Blogger')
                         ->relationship('user', 'name')
                         ->searchable()
+                        ->required()
                         ->disabled(),
-                    Forms\Components\TextInput::make('type')
+
+                    Forms\Components\Select::make('type')
+                        ->label('Type')
+                        ->options([
+                            'follower_milestone' => 'Follower Milestone',
+                            'premium_content' => 'Premium Content',
+                            'engagement_bonus' => 'Engagement Bonus',
+                        ])
                         ->disabled(),
+
                     Forms\Components\TextInput::make('amount')
+                        ->label('Amount')
                         ->numeric()
                         ->disabled(),
+
                     Forms\Components\TextInput::make('currency')
+                        ->label('Currency')
                         ->default('USD')
                         ->disabled(),
+
                     Forms\Components\TextInput::make('milestone_value')
+                        ->label('Milestone Value')
                         ->numeric()
                         ->disabled(),
+
                     Forms\Components\Select::make('status')
+                        ->label('Status')
                         ->options([
                             'pending' => 'Pending',
                             'paid' => 'Paid',
                             'cancelled' => 'Cancelled',
                         ])
                         ->disabled(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Payout Details')
+                ->schema([
                     Forms\Components\DateTimePicker::make('paid_at')
+                        ->label('Paid At')
                         ->disabled(),
+
                     Forms\Components\TextInput::make('payout_method')
+                        ->label('Payout Method')
                         ->disabled(),
+
                     Forms\Components\TextInput::make('payout_reference')
+                        ->label('Payout Reference')
                         ->disabled(),
+                ])->columns(3),
+
+            Forms\Components\Section::make('Additional Info')
+                ->schema([
                     Forms\Components\Textarea::make('notes')
-                        ->disabled(),
+                        ->label('Notes')
+                        ->rows(3)
+                        ->disabled()
+                        ->columnSpanFull(),
+
                     Forms\Components\KeyValue::make('metadata')
-                        ->disabled(),
+                        ->label('Metadata')
+                        ->disabled()
+                        ->columnSpanFull(),
                 ]),
         ]);
     }

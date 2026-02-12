@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\CreatorAnalyticResource\Pages;
 
 use App\Filament\Resources\CreatorAnalyticResource;
-use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class CreateCreatorAnalytic extends CreateRecord
+class ViewCreatorAnalytic extends ViewRecord
 {
     protected static string $resource = CreatorAnalyticResource::class;
 }
