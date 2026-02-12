@@ -25,7 +25,7 @@ class BlogStatsOverview extends BaseWidget
         return [
             Card::make('Published posts', number_format($publishedCount))
                 ->description('Active articles live on the site')
-                ->descriptionIcon('heroicon-o-globe-alt')
+                ->descriptionIcon('heroicon-o-globe')
                 ->color('success'),
             Card::make('Drafts & scheduled', number_format($draftCount + Post::query()->where('status', 'scheduled')->count()))
                 ->description('Ready for review or awaiting publish')

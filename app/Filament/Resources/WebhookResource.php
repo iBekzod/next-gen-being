@@ -14,7 +14,7 @@ class WebhookResource extends Resource
 {
     protected static ?string $model = Webhook::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static ?string $navigationIcon = 'heroicon-o-globe';
 
     protected static ?string $navigationLabel = 'Webhooks';
 

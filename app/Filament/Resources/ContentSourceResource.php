@@ -15,7 +15,7 @@ class ContentSourceResource extends Resource
 {
     protected static ?string $model = ContentSource::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static ?string $navigationIcon = 'heroicon-o-globe';
 
     protected static ?string $navigationLabel = 'Content Sources';
 

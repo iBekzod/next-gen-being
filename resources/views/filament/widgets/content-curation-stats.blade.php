@@ -18,7 +18,7 @@
                     </p>
                 </div>
                 <div class="text-blue-500 text-4xl">
-                    <i class="heroicon-o-globe-alt"></i>
+                    <i class="heroicon-o-globe"></i>
                 </div>
             </div>
         </div>
