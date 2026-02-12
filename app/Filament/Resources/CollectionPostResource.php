@@ -14,7 +14,7 @@ class CollectionPostResource extends Resource
 {
     protected static ?string $model = CollectionPost::class;
     protected static ?string $slug = 'collection-posts';
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
     protected static ?string $navigationGroup = 'Content';
 
     public static function form(Form $form): Form
