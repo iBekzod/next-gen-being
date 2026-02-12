@@ -20,25 +20,38 @@ class AffiliateLinkResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Affiliate Link')
+            Forms\Components\Section::make('Affiliate Link Details')
                 ->schema([
                     Forms\Components\Select::make('creator_id')
                         ->label('Creator')
                         ->relationship('creator', 'name')
                         ->searchable()
                         ->required(),
+
                     Forms\Components\TextInput::make('referral_code')
                         ->label('Referral Code')
                         ->required()
-                        ->unique(ignoreRecord: true),
-                    Forms\Components\TextInput::make('url')
+                        ->unique('affiliate_links', 'referral_code', ignoreRecord: true),
+
+                    Forms\Components\TextInput::make('affiliate_url')
+                        ->label('Affiliate URL')
                         ->url()
                         ->required(),
-                    Forms\Components\TextInput::make('description')
-                        ->maxLength(500),
+
+                    Forms\Components\TextInput::make('commission_rate')
+                        ->label('Commission Rate (%)')
+                        ->numeric()
+                        ->step(0.01),
+
+                    Forms\Components\Textarea::make('description')
+                        ->label('Description')
+                        ->maxLength(500)
+                        ->rows(3),
+
                     Forms\Components\Toggle::make('is_active')
+                        ->label('Active')
                         ->default(true),
-                ]),
+                ])->columns(2),
         ]);
     }
 
@@ -46,15 +59,36 @@ class AffiliateLinkResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')->label('Creator'),
-                Tables\Columns\TextColumn::make('code')->searchable(),
-                Tables\Columns\TextColumn::make('clicks_count')->counts('clicks')->label('Clicks'),
-                Tables\Columns\TextColumn::make('conversions_count')->counts('conversions')->label('Conversions'),
-                Tables\Columns\IconColumn::make('is_active')->boolean(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Creator')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('referral_code')
+                    ->label('Referral Code')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('commission_rate')
+                    ->label('Commission')
+                    ->formatStateUsing(fn ($state) => "{$state}%")
+                    ->numeric()
+                    ->sortable()
+                    ->alignRight(),
+
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Active')
+                    ->boolean()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active'),
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Active'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -64,7 +98,8 @@ class AffiliateLinkResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
