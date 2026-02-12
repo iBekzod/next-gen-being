@@ -41,7 +41,7 @@ class InvoiceController extends Controller
             $filename = $this->invoiceService->getInvoiceFilename($payout);
 
             return response()->streamDownload(
-                fn () => echo $content,
+                function () use ($content) { echo $content; },
                 $filename,
                 ['Content-Type' => 'application/pdf']
             );
@@ -104,7 +104,7 @@ class InvoiceController extends Controller
             $filename = "Earnings-Invoice-{$startDate->format('Y-m-d')}-to-{$endDate->format('Y-m-d')}.pdf";
 
             return response()->streamDownload(
-                fn () => echo $content,
+                function () use ($content) { echo $content; },
                 $filename,
                 ['Content-Type' => 'application/pdf']
             );
@@ -178,7 +178,7 @@ class InvoiceController extends Controller
             $filename = $this->invoiceService->getTaxFormFilename($user, $year);
 
             return response()->streamDownload(
-                fn () => echo $content,
+                function () use ($content) { echo $content; },
                 $filename,
                 ['Content-Type' => 'application/pdf']
             );
