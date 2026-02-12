@@ -32,13 +32,16 @@ class StreakResource extends Resource
                             'writing' => 'Writing',
                         ])
                         ->required(),
-                    Forms\Components\TextInput::make('current_streak')
+                    Forms\Components\TextInput::make('current_count')
                         ->numeric()
-                        ->required(),
-                    Forms\Components\TextInput::make('longest_streak')
-                        ->numeric(),
+                        ->default(0),
+                    Forms\Components\TextInput::make('longest_count')
+                        ->numeric()
+                        ->default(0),
                     Forms\Components\DatePicker::make('last_activity_date'),
-                    Forms\Components\DatePicker::make('started_at')->required(),
+                    Forms\Components\DateTimePicker::make('broken_at'),
+                    Forms\Components\KeyValue::make('metadata')
+                        ->label('Metadata'),
                 ]),
         ]);
     }
@@ -48,11 +51,20 @@ class StreakResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')->label('User'),
-                Tables\Columns\TextColumn::make('type')->badge(),
-                Tables\Columns\TextColumn::make('current_streak')->label('Current'),
-                Tables\Columns\TextColumn::make('longest_streak')->label('Longest'),
-                Tables\Columns\TextColumn::make('last_activity_date')->date(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match($state) {
+                        'reading' => 'info',
+                        'writing' => 'success',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('current_count')->label('Current')->numeric(),
+                Tables\Columns\TextColumn::make('longest_count')->label('Longest')->numeric(),
+                Tables\Columns\TextColumn::make('last_activity_date')->date()->sortable(),
+                Tables\Columns\BooleanColumn::make('broken_at')
+                    ->label('Active')
+                    ->getStateUsing(fn ($record) => $record->broken_at === null),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type'),
