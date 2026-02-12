@@ -14,7 +14,7 @@ class LearningPathItemResource extends Resource
 {
     protected static ?string $model = LearningPathItem::class;
     protected static ?string $slug = 'learning-path-items';
-    protected static ?string $navigationIcon = 'heroicon-o-book-mark';
+    protected static ?string $navigationIcon = 'heroicon-o-bookmark';
     protected static ?string $navigationGroup = 'Learning';
 
     public static function form(Form $form): Form
