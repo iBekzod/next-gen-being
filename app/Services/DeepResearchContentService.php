@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\WebResearchService;
 
 class DeepResearchContentService
 {
@@ -68,7 +69,7 @@ class DeepResearchContentService
     /**
      * Generate deep research-based blog post
      */
-    public function generateDeepResearchPost(string $topic = null): array
+    public function generateDeepResearchPost(?string $topic = null): array
     {
         $selectedTopic = $topic ?? $this->selectTrendingTopic();
 
@@ -108,25 +109,12 @@ class DeepResearchContentService
 
     /**
      * Gather research from multiple sources
-     * In production, this would scrape articles from Medium, Dev.to, HackerNews, etc.
+     * Uses WebResearchService to scrape articles from Medium, Dev.to, HackerNews, etc.
      */
     private function gatherResearch(string $topic): array
     {
-        $research = [
-            'sources' => [],
-            'keyPoints' => [],
-            'caseStudies' => [],
-            'bestPractices' => [],
-        ];
-
-        // In production, implement actual web scraping:
-        // 1. Search for top articles on topic
-        // 2. Fetch and parse content
-        // 3. Extract key points, code examples, insights
-        // 4. Store references for attribution
-
-        // For now, return structure for integration
-        return $research;
+        $researchService = app(WebResearchService::class);
+        return $researchService->gatherResearch($topic, limit: 3);
     }
 
     /**
