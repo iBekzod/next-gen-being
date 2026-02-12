@@ -249,6 +249,7 @@ PROMPT;
 
             $response = Http::timeout(180)
                 ->withHeader('x-api-key', config('services.anthropic.key'))
+                ->withHeader('anthropic-version', '2023-06-01')
                 ->post('https://api.anthropic.com/v1/messages', [
                     'model' => 'claude-opus-4-6',
                     'max_tokens' => 8000,
@@ -295,6 +296,7 @@ PROMPT;
 
             $response = Http::timeout(180)
                 ->withHeader('x-api-key', config('services.anthropic.key'))
+                ->withHeader('anthropic-version', '2023-06-01')
                 ->post('https://api.anthropic.com/v1/messages', [
                     'model' => 'claude-opus-4-6',
                     'max_tokens' => 4000,

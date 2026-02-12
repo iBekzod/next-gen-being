@@ -27,6 +27,7 @@ class CreatorToolsService
             if ($useAI) {
                 // Call Claude API for AI-powered ideas
                 $response = Http::withToken(config('services.anthropic.key'))
+                    ->withHeader('anthropic-version', '2023-06-01')
                     ->post('https://api.anthropic.com/v1/messages', [
                         'model' => 'claude-opus-4-1-20250805',
                         'max_tokens' => 2000,
