@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Models\ContentPlan;
 use App\Services\ImageGenerationService;
 use App\Services\ContentModerationService;
+use App\Services\WebResearchService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -648,11 +649,27 @@ Return ONLY a JSON object:
             $isPremium = $this->option('premium') || (!$this->option('free') && rand(1, 100) <= 70);
         }
 
+        // 🔍 GATHER DEEP RESEARCH FROM MULTIPLE SOURCES
+        $this->info("   🔍 Gathering research from multiple sources...");
+        try {
+            $researchService = app(WebResearchService::class);
+            $research = $researchService->gatherResearch($topic['title'], 3);
+            $researchContext = $this->buildResearchContext($research);
+        } catch (\Exception $e) {
+            $this->warn("   ⚠️  Research gathering failed, continuing with prompt-only generation");
+            Log::warning('Research gathering failed for topic', ['title' => $topic['title'], 'error' => $e->getMessage()]);
+            $researchContext = '';
+        }
+
         $conversionStrategy = $isPremium ? $this->getPremiumContentStrategy() : '';
         $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
         $conclusionExtra = $isPremium ? '- Subtle mention of deeper expertise available' : '';
 
-        $prompt = "Write a comprehensive, professional blog post about: {$topic['title']}
+        $prompt = "Write a comprehensive, deep-research blog post about: {$topic['title']}
+
+LENGTH REQUIREMENT: **MINIMUM 4000-5000 WORDS (15+ MINUTE READ)** - This is a deep research post, not a quick tip.
+
+{$researchContext}
 
 CONTENT STRATEGY:
 {$conversionStrategy}
@@ -1036,13 +1053,13 @@ Return ONLY this JSON (ensure proper escaping):
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, professional, and highly practical content. Your articles are educational, honest, and packed with real working code examples and actionable insights. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
+                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, professional, and highly practical content. Your articles are deep-research educational pieces (4000-5000 words, 15+ minute reads), honest, and packed with real working code examples and actionable insights from multiple sources. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 5000, 0.7, false); // Disable strict JSON mode due to Groq limitations with large content
+        ], 8000, 0.7, false); // Increased to 8000 for deep research content (4000-5000 word articles)
 
         // Parse JSON response - try multiple approaches
         $postData = $this->parseAIResponse($response);
@@ -1996,5 +2013,54 @@ Return ONLY this JSON (ensure proper escaping):
   \"keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],
   \"tags\": [\"tag1\", \"tag2\", \"tag3\"]
 }";
+    }
+
+    /**
+     * Build research context from gathered sources
+     * Formats research data for inclusion in AI prompts
+     */
+    private function buildResearchContext(array $research): string
+    {
+        if (empty($research['sources']) || empty(array_filter($research['sources']))) {
+            return '';
+        }
+
+        $context = "📚 RESEARCH CONTEXT (from multiple authoritative sources):\n\n";
+
+        // Add key insights
+        if (!empty($research['keyInsights'])) {
+            $context .= "KEY INSIGHTS FROM RESEARCH:\n";
+            foreach (array_slice($research['keyInsights'], 0, 5) as $insight) {
+                $context .= "- {$insight}\n";
+            }
+            $context .= "\n";
+        }
+
+        // Add best practices
+        if (!empty($research['bestPractices'])) {
+            $context .= "BEST PRACTICES IDENTIFIED:\n";
+            foreach (array_slice($research['bestPractices'], 0, 5) as $practice) {
+                $context .= "- {$practice}\n";
+            }
+            $context .= "\n";
+        }
+
+        // Add case studies
+        if (!empty($research['caseStudies'])) {
+            $context .= "REAL-WORLD CASE STUDIES:\n";
+            foreach (array_slice($research['caseStudies'], 0, 3) as $study) {
+                $context .= "- {$study}\n";
+            }
+            $context .= "\n";
+        }
+
+        // Add source summary
+        $sources = array_filter($research['sources']);
+        if (!empty($sources)) {
+            $context .= "SOURCES: Aggregated from " . count($sources) . " authoritative sources (Medium, Dev.to, HackerNews, GitHub)\n";
+            $context .= "Use this research context to write a post that synthesizes these real-world insights into practical, actionable content.\n\n";
+        }
+
+        return $context;
     }
 }
