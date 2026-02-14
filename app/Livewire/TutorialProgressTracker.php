@@ -6,9 +6,9 @@ use Livewire\Component;
 
 class TutorialProgressTracker extends Component
 {
-    public $tutorialId = null;
-    public $progress = [];
-    public $isLoading = false;
+    public ?int $tutorialId = null;
+    public array $progress = [];
+    public bool $isLoading = false;
 
     public function mount($tutorialId = null)
     {

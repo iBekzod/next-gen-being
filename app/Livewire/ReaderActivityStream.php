@@ -6,10 +6,10 @@ use Livewire\Component;
 
 class ReaderActivityStream extends Component
 {
-    public $postId = null;
-    public $activities = [];
-    public $isLoading = false;
-    public $pollInterval = 5000; // 5 seconds
+    public ?int $postId = null;
+    public array $activities = [];
+    public bool $isLoading = false;
+    public int $pollInterval = 5000; // 5 seconds
 
     public function mount($postId = null)
     {

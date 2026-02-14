@@ -9,10 +9,10 @@ class WebhookLogsBrowser extends Component
 {
     use WithPagination;
 
-    public $logs = [];
-    public $webhookId = null;
-    public $isLoading = false;
-    public $filterStatus = 'all';
+    public array $logs = [];
+    public ?int $webhookId = null;
+    public bool $isLoading = false;
+    public string $filterStatus = 'all';
 
     public function mount($webhookId = null)
     {

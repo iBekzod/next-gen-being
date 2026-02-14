@@ -12,12 +12,12 @@ class ContentCalendar extends Component
     use WithPagination;
 
     public ContentCalendarService $calendarService;
-    public $scheduledPosts = [];
-    public $drafts = [];
-    public $view = 'month'; // month, week, list
-    public $month = null;
-    public $year = null;
-    public $isLoading = true;
+    public array $scheduledPosts = [];
+    public array $drafts = [];
+    public string $view = 'month'; // month, week, list
+    public ?int $month = null;
+    public ?int $year = null;
+    public bool $isLoading = true;
 
     public function mount()
     {

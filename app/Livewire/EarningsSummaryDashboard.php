@@ -6,10 +6,10 @@ use Livewire\Component;
 
 class EarningsSummaryDashboard extends Component
 {
-    public $summaryData = [];
-    public $earningsTrend = [];
-    public $isLoading = false;
-    public $timeRange = '30days';
+    public array $summaryData = [];
+    public array $earningsTrend = [];
+    public bool $isLoading = false;
+    public string $timeRange = '30days';
 
     public function mount()
     {

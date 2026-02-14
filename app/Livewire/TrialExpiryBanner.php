@@ -6,8 +6,8 @@ use Livewire\Component;
 
 class TrialExpiryBanner extends Component
 {
-    public $showBanner = false;
-    public $daysLeft = 0;
+    public bool $showBanner = false;
+    public int $daysLeft = 0;
 
     public function mount()
     {

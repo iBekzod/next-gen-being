@@ -11,10 +11,10 @@ class CollectionBrowser extends Component
     use WithPagination;
 
     public CollectionService $collectionService;
-    public $collections = [];
-    public $view = 'grid'; // grid, list
-    public $sort = 'latest'; // latest, popular, trending
-    public $isLoading = true;
+    public array $collections = [];
+    public string $view = 'grid'; // grid, list
+    public string $sort = 'latest'; // latest, popular, trending
+    public bool $isLoading = true;
 
     public function mount()
     {

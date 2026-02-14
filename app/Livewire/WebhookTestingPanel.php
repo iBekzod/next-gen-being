@@ -6,10 +6,10 @@ use Livewire\Component;
 
 class WebhookTestingPanel extends Component
 {
-    public $webhooks = [];
-    public $selectedWebhook = null;
-    public $testResponse = null;
-    public $isTestingLoading = false;
+    public array $webhooks = [];
+    public ?int $selectedWebhook = null;
+    public ?array $testResponse = null;
+    public bool $isTestingLoading = false;
 
     public function mount()
     {

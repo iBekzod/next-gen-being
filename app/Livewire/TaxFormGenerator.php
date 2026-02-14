@@ -6,10 +6,10 @@ use Livewire\Component;
 
 class TaxFormGenerator extends Component
 {
-    public $taxForms = [];
-    public $isLoading = false;
-    public $selectedYear = null;
-    public $availableYears = [];
+    public array $taxForms = [];
+    public bool $isLoading = false;
+    public ?int $selectedYear = null;
+    public array $availableYears = [];
 
     public function mount()
     {

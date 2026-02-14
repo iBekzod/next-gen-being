@@ -10,9 +10,9 @@ class StreakWidget extends Component
 {
     public StreakService $streakService;
     public Collection $streaks;
-    public $readingStreak;
-    public $writingStreak;
-    public $isLoading = true;
+    public ?array $readingStreak = null;
+    public ?array $writingStreak = null;
+    public bool $isLoading = true;
 
     public function mount()
     {

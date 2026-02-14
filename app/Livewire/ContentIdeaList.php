@@ -11,9 +11,9 @@ class ContentIdeaList extends Component
     use WithPagination;
 
     public CreatorToolsService $toolsService;
-    public $ideas = [];
-    public $filter = 'active'; // active, archived, all
-    public $isLoading = true;
+    public array $ideas = [];
+    public string $filter = 'active'; // active, archived, all
+    public bool $isLoading = true;
 
     public function mount()
     {

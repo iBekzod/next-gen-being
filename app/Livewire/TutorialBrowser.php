@@ -9,10 +9,10 @@ class TutorialBrowser extends Component
 {
     use WithPagination;
 
-    public $tutorials = [];
-    public $isLoading = false;
-    public $filterCategory = 'all';
-    public $searchQuery = '';
+    public array $tutorials = [];
+    public bool $isLoading = false;
+    public string $filterCategory = 'all';
+    public string $searchQuery = '';
 
     public function mount()
     {

@@ -6,9 +6,9 @@ use Livewire\Component;
 
 class PayoutHistory extends Component
 {
-    public $payouts = [];
-    public $isLoading = false;
-    public $selectedPayout = null;
+    public array $payouts = [];
+    public bool $isLoading = false;
+    public ?int $selectedPayout = null;
 
     public function mount()
     {

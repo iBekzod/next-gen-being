@@ -14,11 +14,11 @@ class TipButton extends Component
     public ?Post $post = null;
     public TipService $tipService;
 
-    public $showModal = false;
-    public $tipAmount = 5;
-    public $message = '';
-    public $isAnonymous = false;
-    public $isProcessing = false;
+    public bool $showModal = false;
+    public int|float $tipAmount = 5;
+    public string $message = '';
+    public bool $isAnonymous = false;
+    public bool $isProcessing = false;
 
     public function mount(User $recipient, ?Post $post = null)
     {

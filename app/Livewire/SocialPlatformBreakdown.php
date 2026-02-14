@@ -6,7 +6,7 @@ use Livewire\Component;
 
 class SocialPlatformBreakdown extends Component
 {
-    public $platformData = [
+    public array $platformData = [
         ['platform' => 'twitter', 'name' => 'Twitter', 'shares' => 0, 'icon' => '𝕏'],
         ['platform' => 'facebook', 'name' => 'Facebook', 'shares' => 0, 'icon' => 'f'],
         ['platform' => 'linkedin', 'name' => 'LinkedIn', 'shares' => 0, 'icon' => 'in'],

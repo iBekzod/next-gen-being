@@ -11,9 +11,9 @@ class DiscoveryFeed extends Component
     use WithPagination;
 
     public PersonalizedFeedService $feedService;
-    public $feedType = 'discovery'; // discovery, home, reading_list, personalized, trending, followed
-    public $posts = [];
-    public $isLoading = true;
+    public string $feedType = 'discovery'; // discovery, home, reading_list, personalized, trending, followed
+    public array $posts = [];
+    public bool $isLoading = true;
 
     protected $queryString = ['feedType'];
 

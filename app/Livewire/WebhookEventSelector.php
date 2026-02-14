@@ -6,8 +6,8 @@ use Livewire\Component;
 
 class WebhookEventSelector extends Component
 {
-    public $availableEvents = [];
-    public $selectedEvents = [];
+    public array $availableEvents = [];
+    public array $selectedEvents = [];
 
     public function mount()
     {

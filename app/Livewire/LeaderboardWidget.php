@@ -11,11 +11,11 @@ class LeaderboardWidget extends Component
     use WithPagination;
 
     public LeaderboardService $leaderboardService;
-    public $type = 'creators'; // creators, readers, engagers, trending
-    public $timeRange = '30days'; // 7days, 30days, 90days, all
-    public $leaderboard = [];
-    public $userRank = null;
-    public $isLoading = true;
+    public string $type = 'creators'; // creators, readers, engagers, trending
+    public string $timeRange = '30days'; // 7days, 30days, 90days, all
+    public array $leaderboard = [];
+    public ?array $userRank = null;
+    public bool $isLoading = true;
 
     protected $queryString = ['type', 'timeRange'];
 

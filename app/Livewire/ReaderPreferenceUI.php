@@ -8,12 +8,12 @@ use App\Services\ReaderPreferenceService;
 class ReaderPreferenceUI extends Component
 {
     public ReaderPreferenceService $preferenceService;
-    public $preference = null;
-    public $selectedCategories = [];
-    public $selectedAuthors = [];
-    public $selectedTags = [];
-    public $contentTypeScores = [];
-    public $isLoading = true;
+    public ?array $preference = null;
+    public array $selectedCategories = [];
+    public array $selectedAuthors = [];
+    public array $selectedTags = [];
+    public array $contentTypeScores = [];
+    public bool $isLoading = true;
 
     public function mount()
     {

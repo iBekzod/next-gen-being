@@ -8,12 +8,12 @@ use App\Services\CreatorAnalyticsService;
 class AnalyticsDashboard extends Component
 {
     public CreatorAnalyticsService $analyticsService;
-    public $stats = [];
-    public $trends = [];
-    public $topPosts = [];
-    public $revenueData = [];
-    public $timeRange = '30days'; // 7days, 30days, 90days, all
-    public $isLoading = true;
+    public array $stats = [];
+    public array $trends = [];
+    public array $topPosts = [];
+    public array $revenueData = [];
+    public string $timeRange = '30days'; // 7days, 30days, 90days, all
+    public bool $isLoading = true;
 
     public function mount()
     {

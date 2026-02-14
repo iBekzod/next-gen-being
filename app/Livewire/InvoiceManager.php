@@ -9,10 +9,10 @@ class InvoiceManager extends Component
 {
     use WithPagination;
 
-    public $search = '';
-    public $filterStatus = 'all';
-    public $selectedInvoice = null;
-    public $isLoading = false;
+    public string $search = '';
+    public string $filterStatus = 'all';
+    public ?int $selectedInvoice = null;
+    public bool $isLoading = false;
 
     protected $queryString = ['search', 'filterStatus'];
 

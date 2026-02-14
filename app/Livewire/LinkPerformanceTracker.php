@@ -9,9 +9,9 @@ class LinkPerformanceTracker extends Component
 {
     use WithPagination;
 
-    public $links = [];
-    public $isLoading = false;
-    public $sortBy = 'clicks';
+    public array $links = [];
+    public bool $isLoading = false;
+    public string $sortBy = 'clicks';
 
     public function mount()
     {

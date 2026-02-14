@@ -10,11 +10,11 @@ use Livewire\Component;
 class ProgressivePaywall extends Component
 {
     public Post $post;
-    public $remainingFreeArticles;
-    public $paywallType;
-    public $tierDisplayName;
-    public $tierPrice;
-    public $showPaywall = false;
+    public ?int $remainingFreeArticles = null;
+    public ?string $paywallType = null;
+    public ?string $tierDisplayName = null;
+    public ?float $tierPrice = null;
+    public bool $showPaywall = false;
 
     protected ContentMeteringService $meteringService;
     protected ContentAccessService $accessService;

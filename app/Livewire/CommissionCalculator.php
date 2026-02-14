@@ -6,9 +6,9 @@ use Livewire\Component;
 
 class CommissionCalculator extends Component
 {
-    public $saleAmount = '';
-    public $commissionRate = 10;
-    public $estimatedCommission = 0;
+    public string|float $saleAmount = '';
+    public int|float $commissionRate = 10;
+    public float $estimatedCommission = 0;
 
     public function updatedSaleAmount()
     {

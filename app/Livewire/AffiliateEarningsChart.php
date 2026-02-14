@@ -6,9 +6,9 @@ use Livewire\Component;
 
 class AffiliateEarningsChart extends Component
 {
-    public $earningsData = [];
-    public $isLoading = false;
-    public $timeRange = '30days';
+    public array $earningsData = [];
+    public bool $isLoading = false;
+    public string $timeRange = '30days';
 
     public function mount()
     {

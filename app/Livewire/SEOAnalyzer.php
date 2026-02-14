@@ -8,12 +8,12 @@ use App\Services\CreatorToolsService;
 class SEOAnalyzer extends Component
 {
     public CreatorToolsService $toolsService;
-    public $title = '';
-    public $description = '';
-    public $content = '';
-    public $seoAnalysis = null;
-    public $recommendations = [];
-    public $isAnalyzing = false;
+    public string $title = '';
+    public string $description = '';
+    public string $content = '';
+    public ?array $seoAnalysis = null;
+    public array $recommendations = [];
+    public bool $isAnalyzing = false;
 
     public function mount()
     {

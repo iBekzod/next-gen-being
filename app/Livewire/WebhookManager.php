@@ -9,11 +9,11 @@ class WebhookManager extends Component
 {
     use WithPagination;
 
-    public $webhooks = [];
-    public $isLoading = false;
-    public $showCreateForm = false;
-    public $webhookData = ['url' => '', 'events' => [], 'active' => true];
-    public $editingWebhook = null;
+    public array $webhooks = [];
+    public bool $isLoading = false;
+    public bool $showCreateForm = false;
+    public array $webhookData = ['url' => '', 'events' => [], 'active' => true];
+    public ?array $editingWebhook = null;
 
     public function mount()
     {

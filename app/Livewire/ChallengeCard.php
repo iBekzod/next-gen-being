@@ -11,9 +11,9 @@ class ChallengeCard extends Component
 {
     public Challenge $challenge;
     public ChallengeService $challengeService;
-    public $isJoined = false;
-    public $userProgress = 0;
-    public $isProcessing = false;
+    public bool $isJoined = false;
+    public int|float $userProgress = 0;
+    public bool $isProcessing = false;
 
     public function mount(Challenge $challenge)
     {

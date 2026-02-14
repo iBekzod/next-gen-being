@@ -6,10 +6,10 @@ use Livewire\Component;
 
 class SocialShareAnalytics extends Component
 {
-    public $postId = null;
-    public $shareData = [];
-    public $isLoading = false;
-    public $timeRange = '30days';
+    public ?int $postId = null;
+    public array $shareData = [];
+    public bool $isLoading = false;
+    public string $timeRange = '30days';
 
     public function mount($postId = null)
     {

@@ -6,9 +6,9 @@ use Livewire\Component;
 
 class ReaderBehaviorInsights extends Component
 {
-    public $postId = null;
-    public $insights = [];
-    public $isLoading = false;
+    public ?int $postId = null;
+    public array $insights = [];
+    public bool $isLoading = false;
 
     public function mount($postId = null)
     {

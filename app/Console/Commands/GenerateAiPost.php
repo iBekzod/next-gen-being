@@ -665,9 +665,27 @@ Return ONLY a JSON object:
         $advancedTipsExtra = $isPremium ? '- Hint at deeper premium content' : '';
         $conclusionExtra = $isPremium ? '- Subtle mention of deeper expertise available' : '';
 
-        $prompt = "Write a comprehensive, deep-research blog post about: {$topic['title']}
+        $prompt = "🔥 CRITICAL: You must write a COMPREHENSIVE DEEP-RESEARCH BLOG POST (4000-5000 WORDS) - NOT a short article.
 
-LENGTH REQUIREMENT: **MINIMUM 4000-5000 WORDS (15+ MINUTE READ)** - This is a deep research post, not a quick tip.
+Topic: {$topic['title']}
+
+⚠️ THIS IS NOT A 500-2000 WORD ARTICLE. THIS IS A 4000-5000 WORD DEEP RESEARCH POST.
+
+Your word count MUST be:
+- MINIMUM: 3500 words (non-negotiable)
+- TARGET: 4000-5000 words (comprehensive coverage)
+- ABSOLUTE MAXIMUM: Don't stop at 3000 or 3500 - keep going until you hit 4000+
+
+This is a DEEP RESEARCH POST, not a quick tip or overview. You are writing for intermediate/advanced professionals, not beginners.
+
+🔥 **LENGTH REQUIREMENT (CRITICAL & NON-NEGOTIABLE): MINIMUM 4000-5000 WORDS (15+ MINUTE READ)**
+- This is a DEEP RESEARCH POST, not a 3-5 minute quick tip
+- If your content is under 3500 words, it FAILS and will be rejected
+- Aim for 4000-5000 words of actual content (not counting code blocks excessively)
+- A 15+ minute read means substantial depth, multiple sections, real examples, and practical value
+- DO NOT abbreviate - write COMPLETELY and COMPREHENSIVELY
+- EXPAND each section - add more detail, more examples, more real-world scenarios
+- If you think a section is complete, add MORE: edge cases, performance tips, variations, alternatives
 
 {$researchContext}
 
@@ -716,7 +734,7 @@ CONTENT STRATEGY:
 17. Include PERFORMANCE TESTING METHODOLOGY: \"I used load-testing with Hey because...\"
 18. Show SCALING PATTERNS: \"This approach works until 10k users, then you need...\"
 
-**PRACTICAL VALUE (COPY-PASTE READY WITH CONTEXT):**
+**PRACTICAL VALUE (COPY-PASTE READY WITH CONTEXT) - CRITICAL FOR DEPTH:**
 19. Every code block must be COMPLETE: imports, env vars, migrations, configs, tests shown
 20. Show ACTUAL COMMAND OUTPUT: Not \"run command X\", but \"$ command\" followed by actual output with timestamps/numbers
 21. Include ERROR MESSAGES: \"When you hit this error: [exact message], here's why and how to fix it\"
@@ -724,6 +742,11 @@ CONTENT STRATEGY:
 23. Include DEBUGGING OUTPUT: dd() dumps, var_export, log outputs, queries explained
 24. Show DATABASE SCHEMA: EXPLAIN queries, index recommendations, N+1 problems found
 25. Include ACTUAL NUMBERS: Response times, memory usage, query counts, cost per operation
+26. EXPAND each section substantially - add 2-3x more content than your first instinct
+27. Use multiple code examples per section, not just one
+28. Include before/after comparisons with metrics
+29. Add multiple real-world scenarios, not just one example
+30. STRETCH: If a section feels complete, add more edge cases, performance tips, or alternative approaches
 
 **VOICE & PERSONALITY (THIS DETERMINES IF IT SOUNDS HUMAN):**
 26. Use CONTRACTIONS: \"don't\" not \"do not\", \"can't\" not \"cannot\", \"it's\" not \"it is\" - MANDATORY for conversational tone
@@ -859,6 +882,15 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
 ⚠️ DO NOT limit yourself - write as much as needed to FULLY explain the topic.
 ⚠️ DO NOT use same headings every time. Be natural and varied.
 ⚠️ WRITE THE COMPLETE TUTORIAL - not a teaser or overview.
+⚠️ TARGET WORD COUNT BREAKDOWN (THIS IS HOW TO HIT 4000-5000 WORDS):
+   - Introduction/Hook: 300-400 words (context, problem, why this matters)
+   - Section 1 (main concept): 700-900 words (detailed explanation with examples)
+   - Section 2 (deep dive): 800-1000 words (advanced details, comparisons, code examples)
+   - Section 3 (practical application): 800-1000 words (real scenarios, implementation, gotchas)
+   - Section 4 (advanced/optimization): 600-800 words (optimization, performance, edge cases)
+   - Case studies/real-world examples: 400-600 words (specific companies/scenarios)
+   - Conclusion/lessons learned: 300-400 words (wrap-up, recommendations, next steps)
+   - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
 - Story style: \"Last month, our team ran into...\"
@@ -872,9 +904,9 @@ MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Examples of good headings:
   * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
   * \"How It Works\", \"Implementation\", \"Gotchas and Edge Cases\"
-  * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\"
-  * \"Option A: Using Library X\", \"Option B: Rolling Your Own\"
-  * \"What the Docs Don't Tell You\", \"Common Mistakes\", \"My Workflow\"
+  * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\", \"Step 4: Production\"
+  * \"Option A: Using Library X\", \"Option B: Rolling Your Own\", \"Option C: Hybrid Approach\"
+  * \"What the Docs Don't Tell You\", \"Common Mistakes We Made\", \"My Workflow & Shortcuts\", \"Performance Optimization\"
 
 AVOID rigid templates like:
 ❌ \"Opening Hook\"
@@ -988,11 +1020,12 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 - Include author credibility signals
 
 📊 Content Length Guidelines:
-- 400-600 words: Breaking news or quick tips
-- 600-800 words: Short how-tos or opinion pieces
-- 1,500-2,000 words: Full tutorials and guides
-- 2,000-2,500 words: In-depth guides and comprehensive comparisons
-- 1,800-2,200 words: Comparison articles
+- **THIS POST MUST BE 4000-5000 WORDS (15+ MINUTE READ)** - This is CRITICAL and NON-NEGOTIABLE
+- Breaking news or quick tips: 400-600 words
+- Short how-tos or opinion pieces: 600-800 words
+- Full tutorials and guides: 1,500-2,000 words
+- In-depth guides: 2,000-2,500 words
+- **DEEP RESEARCH POSTS (YOUR STYLE): 4000-5000+ WORDS** ← THIS IS YOU
 
 🎯 Keyword Integration:
 - Use primary keyword in: Title (essential), first 100 words (essential), at least 1x per section
@@ -1039,10 +1072,19 @@ Generate these separately and return in the JSON response:
 
 ⚠️ CRITICAL: The \"content\" field should ONLY contain the article markdown. DO NOT include the Excerpt, Meta Title, Meta Description, Keywords, or Tags in the article content itself. Those fields belong ONLY in the JSON response fields, not in the content markdown.
 
+⚠️ **WORD COUNT IS CRITICAL** - The \"content\" field MUST be 4000-5000 WORDS MINIMUM. If your response is under 3500 words, it FAILS. Count your words as you write. A 15+ minute read is approximately 4000-5000 words. Expand with:
+- More sections and depth
+- Additional code examples
+- More real-world scenarios
+- Expanded explanations
+- Case studies and production examples
+- Performance benchmarks
+- Gotchas and edge cases
+
 Return ONLY this JSON (ensure proper escaping):
 {
   \"title\": \"[Professional, educational title - NO clickbait phrases like '10x', 'turbocharge', 'unlock']\",
-  \"content\": \"[ONLY the full markdown article content. NO metadata, NO excerpt, NO meta fields. Start with intro heading, end with conclusion.]\",
+  \"content\": \"[FULL markdown article - MUST BE 4000-5000 WORDS MINIMUM. Include intro, main sections, code examples, real scenarios, gotchas, and wrap-up. NO metadata, NO excerpt, NO meta fields. This is the COMPLETE article, not abbreviated.]\",
   \"excerpt\": \"[Specific benefit that creates curiosity - SEPARATE from content, NOT included in article]\",
   \"meta_title\": \"[SEO title with benefit - SEPARATE from content]\",
   \"meta_description\": \"[Value proposition with outcome - SEPARATE from content]\",
@@ -1053,13 +1095,13 @@ Return ONLY this JSON (ensure proper escaping):
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, professional, and highly practical content. Your articles are deep-research educational pieces (4000-5000 words, 15+ minute reads), honest, and packed with real working code examples and actionable insights from multiple sources. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
+                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, in-depth content. CRITICAL: Your articles MUST be 4000-5000 words (15+ minute reads), NOT short tips or quick guides. You are writing DEEP RESEARCH posts, not blog fluff. Each post must include: multiple sections with depth, real code examples, production scenarios, real-world case studies, performance benchmarks, gotchas and edge cases, and honest trade-off discussions. Pack your posts with practical, actionable insights from multiple sources. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. Your response MUST be packed with content - aim for maximum depth and practical value. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 8000, 0.7, false); // Increased to 8000 for deep research content (4000-5000 word articles)
+        ], 20000, 0.7, false); // Increased to 20000 for deep research content (4000-5000 word articles ≈ 5000-6000 tokens = 20000 budget)
 
         // Parse JSON response - try multiple approaches
         $postData = $this->parseAIResponse($response);
@@ -1070,6 +1112,25 @@ Return ONLY this JSON (ensure proper escaping):
             if (!isset($postData[$field])) {
                 throw new \Exception("Missing required field: {$field}");
             }
+        }
+
+        // Validate word count - MUST be 4000-5000 words minimum
+        $wordCount = str_word_count(strip_tags($postData['content']));
+        if ($wordCount < 3500) {
+            Log::warning('Generated content below minimum word count', [
+                'required_min' => 3500,
+                'actual_words' => $wordCount,
+                'title' => $postData['title'],
+            ]);
+            throw new \Exception("Content too short: {$wordCount} words. Minimum required: 3500 words for a 15+ minute read. This is a deep research post, not a quick tip. Please expand with more sections, code examples, real scenarios, case studies, and detailed explanations.");
+        }
+
+        // Log if word count is below target range
+        if ($wordCount < 4000) {
+            Log::info('Content below ideal range but acceptable', [
+                'words' => $wordCount,
+                'target' => '4000-5000',
+            ]);
         }
 
         return $postData;
@@ -1823,6 +1884,15 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
 ⚠️ DO NOT limit yourself - write as much as needed to FULLY explain the topic.
 ⚠️ DO NOT use same headings every time. Be natural and varied.
 ⚠️ WRITE THE COMPLETE TUTORIAL - not a teaser or overview.
+⚠️ TARGET WORD COUNT BREAKDOWN (THIS IS HOW TO HIT 4000-5000 WORDS):
+   - Introduction/Hook: 300-400 words (context, problem, why this matters)
+   - Section 1 (main concept): 700-900 words (detailed explanation with examples)
+   - Section 2 (deep dive): 800-1000 words (advanced details, comparisons, code examples)
+   - Section 3 (practical application): 800-1000 words (real scenarios, implementation, gotchas)
+   - Section 4 (advanced/optimization): 600-800 words (optimization, performance, edge cases)
+   - Case studies/real-world examples: 400-600 words (specific companies/scenarios)
+   - Conclusion/lessons learned: 300-400 words (wrap-up, recommendations, next steps)
+   - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
 - Story style: \"Last month, our team ran into...\"
@@ -1836,9 +1906,9 @@ MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Examples of good headings:
   * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
   * \"How It Works\", \"Implementation\", \"Gotchas and Edge Cases\"
-  * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\"
-  * \"Option A: Using Library X\", \"Option B: Rolling Your Own\"
-  * \"What the Docs Don't Tell You\", \"Common Mistakes\", \"My Workflow\"
+  * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\", \"Step 4: Production\"
+  * \"Option A: Using Library X\", \"Option B: Rolling Your Own\", \"Option C: Hybrid Approach\"
+  * \"What the Docs Don't Tell You\", \"Common Mistakes We Made\", \"My Workflow & Shortcuts\", \"Performance Optimization\"
 
 AVOID rigid templates like:
 ❌ \"Opening Hook\"
@@ -1952,11 +2022,12 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 - Include author credibility signals
 
 📊 Content Length Guidelines:
-- 400-600 words: Breaking news or quick tips
-- 600-800 words: Short how-tos or opinion pieces
-- 1,500-2,000 words: Full tutorials and guides
-- 2,000-2,500 words: In-depth guides and comprehensive comparisons
-- 1,800-2,200 words: Comparison articles
+- **THIS POST MUST BE 4000-5000 WORDS (15+ MINUTE READ)** - This is CRITICAL and NON-NEGOTIABLE
+- Breaking news or quick tips: 400-600 words
+- Short how-tos or opinion pieces: 600-800 words
+- Full tutorials and guides: 1,500-2,000 words
+- In-depth guides: 2,000-2,500 words
+- **DEEP RESEARCH POSTS (YOUR STYLE): 4000-5000+ WORDS** ← THIS IS YOU
 
 🎯 Keyword Integration:
 - Use primary keyword in: Title (essential), first 100 words (essential), at least 1x per section
@@ -2003,10 +2074,19 @@ Generate these separately and return in the JSON response:
 
 ⚠️ CRITICAL: The \"content\" field should ONLY contain the article markdown. DO NOT include the Excerpt, Meta Title, Meta Description, Keywords, or Tags in the article content itself. Those fields belong ONLY in the JSON response fields, not in the content markdown.
 
+⚠️ **WORD COUNT IS CRITICAL** - The \"content\" field MUST be 4000-5000 WORDS MINIMUM. If your response is under 3500 words, it FAILS. Count your words as you write. A 15+ minute read is approximately 4000-5000 words. Expand with:
+- More sections and depth
+- Additional code examples
+- More real-world scenarios
+- Expanded explanations
+- Case studies and production examples
+- Performance benchmarks
+- Gotchas and edge cases
+
 Return ONLY this JSON (ensure proper escaping):
 {
   \"title\": \"[Professional, educational title - NO clickbait phrases like '10x', 'turbocharge', 'unlock']\",
-  \"content\": \"[ONLY the full markdown article content. NO metadata, NO excerpt, NO meta fields. Start with intro heading, end with conclusion.]\",
+  \"content\": \"[FULL markdown article - MUST BE 4000-5000 WORDS MINIMUM. Include intro, main sections, code examples, real scenarios, gotchas, and wrap-up. NO metadata, NO excerpt, NO meta fields. This is the COMPLETE article, not abbreviated.]\",
   \"excerpt\": \"[Specific benefit that creates curiosity - SEPARATE from content, NOT included in article]\",
   \"meta_title\": \"[SEO title with benefit - SEPARATE from content]\",
   \"meta_description\": \"[Value proposition with outcome - SEPARATE from content]\",

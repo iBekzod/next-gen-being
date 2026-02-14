@@ -6,10 +6,10 @@ use Livewire\Component;
 
 class ReaderAnalyticsDashboard extends Component
 {
-    public $postId = null;
-    public $analyticsData = [];
-    public $isLoading = false;
-    public $timeRange = '30days';
+    public ?int $postId = null;
+    public array $analyticsData = [];
+    public bool $isLoading = false;
+    public string $timeRange = '30days';
 
     public function mount($postId = null)
     {
