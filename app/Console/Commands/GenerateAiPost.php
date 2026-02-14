@@ -1114,26 +1114,119 @@ Return ONLY this JSON (ensure proper escaping):
             }
         }
 
-        // Validate word count - MUST be 4000-5000 words minimum
+        // Validate word count - check initial Pass 1
         $wordCount = str_word_count(strip_tags($postData['content']));
+
+        // If content is below target, attempt Pass 2: Expansion
         if ($wordCount < 3500) {
-            Log::warning('Generated content below minimum word count', [
+            $this->info("   📝 Pass 1 generated {$wordCount} words. Running Pass 2: Expanding content...");
+
+            try {
+                $postData = $this->expandPostContent($postData);
+                $wordCount = str_word_count(strip_tags($postData['content']));
+                $this->info("   ✅ Pass 2 expansion successful! Final word count: {$wordCount} words");
+            } catch (\Exception $e) {
+                Log::error('Post expansion failed', ['error' => $e->getMessage()]);
+                $this->warn("   ⚠️  Expansion attempt failed: {$e->getMessage()}");
+
+                // If expansion fails, reject the content
+                throw new \Exception("Content too short after expansion attempt: {$wordCount} words. Minimum required: 3500 words for a 15+ minute read.");
+            }
+        }
+
+        // Final validation - must meet minimum
+        if ($wordCount < 3500) {
+            Log::warning('Generated content below minimum word count after expansion', [
                 'required_min' => 3500,
                 'actual_words' => $wordCount,
                 'title' => $postData['title'],
             ]);
-            throw new \Exception("Content too short: {$wordCount} words. Minimum required: 3500 words for a 15+ minute read. This is a deep research post, not a quick tip. Please expand with more sections, code examples, real scenarios, case studies, and detailed explanations.");
+            throw new \Exception("Content too short: {$wordCount} words after expansion. Minimum required: 3500 words for a 15+ minute read.");
         }
 
-        // Log if word count is below target range
+        // Log if word count is below ideal range
         if ($wordCount < 4000) {
-            Log::info('Content below ideal range but acceptable', [
+            Log::info('Content meets minimum but below ideal range', [
                 'words' => $wordCount,
                 'target' => '4000-5000',
             ]);
         }
 
         return $postData;
+    }
+
+    /**
+     * PASS 2: Expand content from initial generation to reach 4000-5000 words
+     * Takes the initial post and asks AI to expand each section significantly
+     * Includes retry logic with exponential backoff for rate limiting
+     */
+    private function expandPostContent(array $postData, int $retryCount = 0, int $maxRetries = 2): array
+    {
+        $currentWordCount = str_word_count(strip_tags($postData['content']));
+        $wordsNeeded = 4000 - $currentWordCount;
+
+        $expandPrompt = "You are a senior technical writer. Below is a blog post that is currently {$currentWordCount} words. It needs to be expanded to 4000+ words ({$wordsNeeded} more words needed).
+
+Your task: Expand the article significantly while maintaining quality. DO NOT just repeat content - add NEW depth, examples, and value:
+
+ORIGINAL ARTICLE:
+---
+{$postData['content']}
+---
+
+EXPANSION REQUIREMENTS:
+1. Add 2-3x more content to each major section
+2. Include additional code examples (if technical)
+3. Add more real-world scenarios and case studies
+4. Include performance benchmarks or metrics
+5. Add edge cases and gotchas not in original
+6. Expand on implementation details
+7. Add more detailed explanations of complex concepts
+8. Include additional warnings or best practices
+
+TARGET: Expand to approximately 4000+ words total (about {$wordsNeeded} additional words).
+
+Return the EXPANDED article content as pure markdown (no JSON, no metadata). Write naturally and comprehensively - this should read like a complete, authoritative deep-dive article, not a padded version.
+
+Start your response directly with the expanded content (no intro or preamble).";
+
+        try {
+            $expandedContent = $this->callOpenAI([
+                [
+                    'role' => 'system',
+                    'content' => 'You are a senior technical writer specializing in expanding articles while maintaining quality and authenticity. Expand content significantly by adding real examples, depth, and practical value. Your expansions add genuine new information, not padding.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $expandPrompt
+                ]
+            ], 12000, 0.7, false); // Reduced to 12000 tokens to stay under rate limits
+
+            // Clean up the response (remove any markdown code blocks if present)
+            $expandedContent = preg_replace('/^```[a-z]*\n?/i', '', $expandedContent);
+            $expandedContent = preg_replace('/\n?```$/i', '', $expandedContent);
+
+            // Update the post data with expanded content
+            $postData['content'] = trim($expandedContent);
+
+            return $postData;
+
+        } catch (\Exception $e) {
+            // Check if it's a rate limit error
+            if (str_contains($e->getMessage(), 'rate_limit') && $retryCount < $maxRetries) {
+                $waitTime = 20 + ($retryCount * 10); // 20s, 30s backoff
+                $this->warn("   ⏸️  Rate limit hit. Waiting {$waitTime}s before retry...");
+                sleep($waitTime);
+                return $this->expandPostContent($postData, $retryCount + 1, $maxRetries);
+            }
+
+            Log::error('Content expansion failed', [
+                'error' => $e->getMessage(),
+                'title' => $postData['title'],
+                'retry_count' => $retryCount,
+            ]);
+            throw new \Exception("Failed to expand content: " . $e->getMessage());
+        }
     }
 
     private function parseAIResponse(string $response): array
