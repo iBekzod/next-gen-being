@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Log;
 class AITutorialGenerationService
 {
     private const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
-    private const API_TIMEOUT = 180;  // 3 minutes - allows for large token responses (8000 tokens)
+    private const API_TIMEOUT = 240;  // 4 minutes - allows for large token responses (12000+ tokens)
     private const MAX_RETRIES = 3;
+    private const TOKEN_BUDGET = 12000;  // Increased from 8000 for deeper content
 
     protected $apiKey;
     protected $baseUrl = 'https://api.anthropic.com/v1/messages';
@@ -209,63 +210,92 @@ SERIES METADATA:
 CONTENT REQUIREMENTS:
 
 1. **Audience & Quality** (CRITICAL):
-   - Write for INTERMEDIATE to ADVANCED developers
-   - Assume audience understands basic concepts
-   - Focus on real-world implementation patterns
-   - Include common pitfalls and solutions
-   - Reference industry best practices
+   - Write for INTERMEDIATE to ADVANCED developers (3+ years experience)
+   - Assume audience understands basic concepts, not for beginners
+   - Focus on real-world implementation patterns used in production
+   - Include common pitfalls and solutions (what we've learned the hard way)
+   - Reference industry best practices from companies like Netflix, Stripe, Uber
+   - Share lessons learned from actual production deployments
 
-2. **Code Examples** (CRITICAL):
-   - Every example must be COMPLETE and RUNNABLE
-   - Include full code, not snippets
-   - Add error handling and validation
-   - Show multiple approaches when relevant
-   - Include database migrations, configuration files
-   - Add inline comments explaining WHY not just WHAT
-   - Use recent versions (Laravel 12, PHP 8.4, etc)
+2. **Code Examples** (CRITICAL - THIS IS THE HEART OF THE TUTORIAL):
+   - EVERY code block must be COMPLETE, RUNNABLE, and COPY-PASTE READY
+   - Show FULL code with imports, configuration, setup - not snippets
+   - Include: error handling, validation, logging, and monitoring code
+   - Show MULTIPLE approaches with pros/cons explained
+   - Include database migrations, config files, environment setup
+   - Add inline comments explaining WHY this approach, not just WHAT it does
+   - Use current stable versions (Laravel 12, PHP 8.4, AWS SDK 3.x, etc)
+   - Include actual command output and terminal examples
+   - Show debugging techniques and troubleshooting steps
+   - Add performance testing code or load-testing examples
 
-3. **Content Structure**:
-   - Clear table of contents at top
-   - Logical progression through topic
-   - Real-world problem solving
-   - Step-by-step implementation guide
-   - Architecture diagrams in ASCII when helpful
-   - Key takeaways at end
-   - Preview of next part
+3. **Content Structure** (MUST BE COMPREHENSIVE):
+   - Table of contents with quick navigation at top
+   - Logical progression: foundation → complexity → optimization
+   - Real-world problem scenario that motivates the solution
+   - Step-by-step implementation guide you can follow exactly
+   - Architecture diagrams in ASCII/text when helpful
+   - Before/after comparisons with actual metrics/numbers
+   - Common mistakes section (what NOT to do)
+   - Key takeaways and lessons learned
+   - Preview/teaser of next part
 
-4. **Technical Depth**:
-   - Cover architecture patterns
-   - Discuss performance implications
-   - Address security considerations
-   - Include scaling strategies
-   - Troubleshooting common issues
-   - Integration with popular tools/services
+4. **Technical Depth** (GO DEEPER THAN OBVIOUS):
+   - Explain architecture patterns and WHY they work
+   - Discuss performance implications with actual numbers
+   - Address security considerations (not just "use HTTPS")
+   - Include scaling strategies for real-world growth
+   - Troubleshooting section: common issues and solutions
+   - Integration patterns with popular tools/services
+   - Edge cases and gotchas specific to this technology
+   - When to use this solution vs alternatives
 
-5. **Format & Style**:
-   - Use proper Markdown
-   - Include ### Headers, #### Subheaders
-   - Use code blocks with language tags
-   - Bold important concepts (**concept**)
-   - Create tables for comparisons
-   - Include terminal/CLI examples
-   - Add estimated read time (roughly {$this->estimatePartReadTime($partNumber, $totalParts)} minutes)
+5. **Format & Style** (PROFESSIONAL TUTORIAL QUALITY):
+   - Proper Markdown with ### Headers, #### Subheaders
+   - Use code blocks with language tags (```php, ```sql, ```bash, etc)
+   - **Bold** important concepts and critical points
+   - > Blockquotes for important notes and warnings
+   - Use tables for comparisons and specification matrices
+   - Include actual terminal/CLI examples with $ prompts and output
+   - Use consistent code style throughout
+   - Estimated read time: ~{$this->estimatePartReadTime($partNumber, $totalParts)} minutes
 
-6. **Length & Completeness** (CRITICAL):
-   - MINIMUM 2500 words (10+ minute read)
-   - TARGET 3000-4000 words (13-18 minute read)
-   - Enough code for full understanding and implementation
-   - Practical enough to implement immediately into production
-   - Thoroughly answer "how", "why", and "when" questions
-   - Include edge cases, gotchas, and lessons learned
-   - Every section must add value - no filler content
+6. **Length & Completeness** (CRITICAL FOR PRODUCTION-GRADE):
+   - MINIMUM 2500 words (this is non-negotiable for this length)
+   - TARGET 3500-4500 words (18-22 minute deep dive)
+   - Enough code to FULLY understand and implement feature
+   - Must be immediately implementable into production systems
+   - Thoroughly answer: WHAT (what is it), WHY (why do this), HOW (how to implement), WHEN (when to use)
+   - Include edge cases, gotchas, lessons learned
+   - Address common questions before people ask them
+   - Every section MUST add value - NO filler, fluff, or repetition
 
 PART SPECIFICS FOR {$partNumber}:
 
 {$this->getPartSpecificGuidance($partNumber, $totalParts)}
 
+PRODUCTION READINESS CHECKLIST (EVERY CODE EXAMPLE MUST HAVE):
+✅ Proper error handling (try-catch, if statements, validation)
+✅ Logging statements for debugging
+✅ Configuration management (environment variables, config files)
+✅ Security considerations (input validation, authorization checks)
+✅ Performance implications mentioned
+✅ Database migration or schema shown
+✅ Tests or verification steps
+✅ Real-world context and use case
+
+CRITICAL SUCCESS FACTORS:
+1. Every code block MUST be copy-paste ready and runnable
+2. Include actual command output, not just "here's what happens"
+3. Show what the user will see, not just what the code does
+4. Explain trade-offs and why you chose this approach
+5. Make it obvious what to change for their specific use case
+6. Include troubleshooting section for common issues
+
 Now generate Part {$partNumber} of "{$seriesTitle}" focusing on {$partFocus}.
 
-Write production-grade content that senior developers would publish on their blogs.
+Generate comprehensive, production-grade tutorial content that senior developers would reference in their projects.
+Focus on depth, practical code, and real-world applicability. Make it so valuable they bookmark and share it.
 PROMPT;
     }
 
@@ -283,7 +313,7 @@ PROMPT;
             ->timeout(self::API_TIMEOUT)
             ->post($this->baseUrl, [
                 'model' => self::CLAUDE_MODEL,
-                'max_tokens' => 8000,
+                'max_tokens' => self::TOKEN_BUDGET,  // Increased for deeper, more comprehensive tutorial content
                 'messages' => [
                     [
                         'role' => 'user',
@@ -354,7 +384,17 @@ PROMPT;
     private function checkLength(string $content): bool
     {
         $wordCount = str_word_count(strip_tags($content));
-        return $wordCount >= 1000; // Minimum 1000 words
+        // Strengthened requirement: minimum 2000 words for production-grade tutorial
+        $isValid = $wordCount >= 2000;
+
+        if (!$isValid) {
+            Log::warning("Tutorial content below minimum word count", [
+                'required' => 2000,
+                'actual' => $wordCount,
+            ]);
+        }
+
+        return $isValid;
     }
 
     private function hasSections(string $content): bool
@@ -431,13 +471,77 @@ PROMPT;
 
     private function getPartSpecificGuidance(int $partNumber, int $totalParts): string
     {
-        if ($partNumber === 1) {
-            return "Include comprehensive setup guide, architecture overview, technology choices, and initial project setup with examples.";
-        } elseif ($partNumber === $totalParts) {
-            return "Focus on production readiness, deployment strategies, monitoring, and next steps for scaling.";
-        } else {
-            return "Dive deep into implementation details with complete code examples and best practices.";
-        }
+        $guidanceMap = [
+            1 => "PART 1 - FOUNDATIONS & SETUP:\n"
+                . "- Explain WHY this technology matters and when to use it\n"
+                . "- Architecture overview with ASCII diagrams\n"
+                . "- Complete environment setup with all dependencies\n"
+                . "- Initial project configuration and scaffolding\n"
+                . "- First working example (small but complete)\n"
+                . "- Common setup mistakes and how to avoid them",
+
+            2 => "PART 2 - CORE IMPLEMENTATION:\n"
+                . "- Deep dive into main functionality\n"
+                . "- Complete working code with error handling\n"
+                . "- Design patterns used and WHY\n"
+                . "- Database schema, migrations, and queries\n"
+                . "- Authentication and authorization implementation\n"
+                . "- API endpoints with full request/response examples",
+
+            3 => "PART 3 - ADVANCED FEATURES:\n"
+                . "- Complex features and edge cases\n"
+                . "- Integration with third-party services\n"
+                . "- Caching strategies and implementation\n"
+                . "- Background jobs and queue processing\n"
+                . "- WebSocket or real-time updates\n"
+                . "- Advanced configuration options",
+
+            4 => "PART 4 - SCALING & OPTIMIZATION:\n"
+                . "- Performance optimization techniques\n"
+                . "- Database query optimization (EXPLAIN analysis)\n"
+                . "- Caching layers and CDN integration\n"
+                . "- Load balancing strategies\n"
+                . "- Horizontal scaling considerations\n"
+                . "- Benchmarking and metrics",
+
+            5 => "PART 5 - DEPLOYMENT & DEVOPS:\n"
+                . "- Containerization with Docker\n"
+                . "- Kubernetes orchestration (if applicable)\n"
+                . "- CI/CD pipeline setup\n"
+                . "- Infrastructure as Code\n"
+                . "- Blue-green deployments\n"
+                . "- Monitoring and alerting setup",
+
+            6 => "PART 6 - SECURITY & BEST PRACTICES:\n"
+                . "- Security considerations and hardening\n"
+                . "- Input validation and sanitization\n"
+                . "- OWASP top 10 relevance\n"
+                . "- Data protection and encryption\n"
+                . "- Rate limiting and DDoS protection\n"
+                . "- Security testing and auditing",
+
+            7 => "PART 7 - TESTING & RELIABILITY:\n"
+                . "- Unit testing with complete examples\n"
+                . "- Integration testing strategies\n"
+                . "- Load testing and stress testing\n"
+                . "- Error handling and recovery\n"
+                . "- Debugging techniques\n"
+                . "- Logging and tracing",
+
+            8 => "PART 8 - PRODUCTION & BEYOND:\n"
+                . "- Production deployment checklist\n"
+                . "- Monitoring in production\n"
+                . "- Incident response procedures\n"
+                . "- Cost optimization\n"
+                . "- Scaling strategies beyond current setup\n"
+                . "- Next steps and advanced topics to explore"
+        ];
+
+        return $guidanceMap[$partNumber] ?? "PART {$partNumber} - ADVANCED TOPICS:\n"
+            . "- Dive deep into implementation details with complete code examples\n"
+            . "- Include best practices, patterns, and anti-patterns\n"
+            . "- Reference other parts of the series\n"
+            . "- Prepare transition to next topic";
     }
 
     private function estimatePartReadTime(int $partNumber, int $totalParts): int
