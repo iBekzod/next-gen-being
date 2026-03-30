@@ -1118,39 +1118,33 @@ Return ONLY this JSON (ensure proper escaping):
         $wordCount = str_word_count(strip_tags($postData['content']));
 
         // If content is below target, attempt Pass 2: Expansion
-        if ($wordCount < 3500) {
+        if ($wordCount < 2500) {
             $this->info("   📝 Pass 1 generated {$wordCount} words. Running Pass 2: Expanding content...");
 
             try {
                 $postData = $this->expandPostContent($postData);
                 $wordCount = str_word_count(strip_tags($postData['content']));
-                $this->info("   ✅ Pass 2 expansion successful! Final word count: {$wordCount} words");
+                $this->info("   ✅ Pass 2 expansion complete! Final word count: {$wordCount} words");
             } catch (\Exception $e) {
-                Log::error('Post expansion failed', ['error' => $e->getMessage()]);
-                $this->warn("   ⚠️  Expansion attempt failed: {$e->getMessage()}");
-
-                // If expansion fails, reject the content
-                throw new \Exception("Content too short after expansion attempt: {$wordCount} words. Minimum required: 3500 words for a 15+ minute read.");
+                Log::warning('Post expansion failed, using Pass 1 content', ['error' => $e->getMessage()]);
+                $this->warn("   ⚠️  Expansion failed, using Pass 1 content ({$wordCount} words)");
             }
+        } else {
+            $this->info("   ✅ Pass 1 sufficient: {$wordCount} words");
         }
 
-        // Final validation - must meet minimum
-        if ($wordCount < 3500) {
-            Log::warning('Generated content below minimum word count after expansion', [
-                'required_min' => 3500,
+        // Final validation - minimum 2000 words for a solid 10+ minute read
+        if ($wordCount < 2000) {
+            Log::warning('Generated content below minimum word count', [
+                'required_min' => 2000,
                 'actual_words' => $wordCount,
                 'title' => $postData['title'],
             ]);
-            throw new \Exception("Content too short: {$wordCount} words after expansion. Minimum required: 3500 words for a 15+ minute read.");
+            throw new \Exception("Content too short: {$wordCount} words. Minimum required: 2000 words for a 10+ minute deep read.");
         }
 
-        // Log if word count is below ideal range
-        if ($wordCount < 4000) {
-            Log::info('Content meets minimum but below ideal range', [
-                'words' => $wordCount,
-                'target' => '4000-5000',
-            ]);
-        }
+        $readMinutes = ceil($wordCount / 250);
+        $this->info("   📖 Final: {$wordCount} words (~{$readMinutes} min read)");
 
         return $postData;
     }
@@ -1439,20 +1433,36 @@ Start your response directly with the expanded content (no intro or preamble).";
             if ($author) {
                 return $author;
             }
-            $this->warn("Author ID {$authorId} not found. Using default author.");
+            $this->warn("Author ID {$authorId} not found. Using random blogger.");
         }
 
-        // Get first admin or first user
+        // Pick a random blogger (users with 'blogger' role)
         $author = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
-        })->first();
+            $query->where('slug', 'blogger');
+        })->inRandomOrder()->first();
 
+        // Fallback: any active user with @nextgenbeing.com email (seeded bloggers)
+        if (!$author) {
+            $author = User::where('email', 'like', '%@nextgenbeing.com')
+                ->where('is_active', true)
+                ->inRandomOrder()
+                ->first();
+        }
+
+        // Fallback: first admin
+        if (!$author) {
+            $author = User::whereHas('roles', function ($query) {
+                $query->where('slug', 'admin');
+            })->first();
+        }
+
+        // Fallback: any user
         if (!$author) {
             $author = User::first();
         }
 
         if (!$author) {
-            throw new \Exception('No users found in the system. Please create a user first.');
+            throw new \Exception('No users found. Run: php artisan db:seed --class=UserSeeder');
         }
 
         return $author;

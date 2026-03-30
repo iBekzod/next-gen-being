@@ -589,15 +589,32 @@ PROMPT;
 
     private function getOrCreateAuthor(): User
     {
-        return User::firstOrCreate(
-            ['email' => 'ai-tutorials@' . config('app.domain', 'example.com')],
-            [
-                'name' => 'AI Tutorial Generator',
-                'password' => bcrypt(Str::random(32)),
-                'email_verified_at' => now(),
-                'role' => 'admin',
-            ]
-        );
+        // Pick a random blogger (users with 'blogger' role)
+        $author = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'blogger');
+        })->inRandomOrder()->first();
+
+        // Fallback: any active seeded blogger
+        if (!$author) {
+            $author = User::where('email', 'like', '%@nextgenbeing.com')
+                ->where('is_active', true)
+                ->inRandomOrder()
+                ->first();
+        }
+
+        // Fallback: create a default author
+        if (!$author) {
+            $author = User::firstOrCreate(
+                ['email' => 'ai-tutorials@' . config('app.domain', 'example.com')],
+                [
+                    'name' => 'Tech Editorial Team',
+                    'password' => bcrypt(Str::random(32)),
+                    'email_verified_at' => now(),
+                ]
+            );
+        }
+
+        return $author;
     }
 
     private function getOrCreateCategory(): Category
