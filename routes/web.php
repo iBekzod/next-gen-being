@@ -151,6 +151,10 @@ Route::view('/terms', 'terms')->name('terms');
 
 Route::view('/refund-policy', 'refund')->name('refund');
 
+Route::get('/contact', function () {
+    return view('pages.contact');
+})->name('contact');
+
 // Newsletter Routes
 use App\Http\Controllers\NewsletterController;
 

@@ -713,9 +713,8 @@
                         <h3 class="mb-4 text-sm font-semibold tracking-wider text-gray-900 uppercase dark:text-white">
                             Support</h3>
                         <ul class="space-y-3">
-                            <li><button @click="$dispatch('show-help-modal')"
-                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Help
-                                    Center</button></li>
+                            <li><a href="{{ route('contact') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Contact Us</a></li>
                             @if (setting('enable_subscriptions'))
                                 <li><a href="{{ route('subscription.plans') }}"
                                         class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Pricing</a>
@@ -726,13 +725,13 @@
                                         class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Manage
                                         Subscription</a></li>
                             @endauth
-                            <li><a href="/privacy"
+                            <li><a href="{{ route('privacy') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Privacy
                                     Policy</a></li>
-                            <li><a href="/refund-policy"
+                            <li><a href="{{ route('refund') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Refund
                                     Policy</a></li>
-                            <li><a href="/terms"
+                            <li><a href="{{ route('terms') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Terms &amp; Conditions</a></li>
                         </ul>
                     </div>

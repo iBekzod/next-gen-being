@@ -45,5 +45,5 @@ User-agent: AhrefsBot
 Crawl-delay: 10
 
 # Sitemap location
-Sitemap: https://nextgenbeingcom/sitemap.xml
-Sitemap: https://nextgenbeingcom/feed.xml
+Sitemap: https://nextgenbeing.com/sitemap.xml
+Sitemap: https://nextgenbeing.com/feed.xml

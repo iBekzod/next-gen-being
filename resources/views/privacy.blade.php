@@ -69,11 +69,36 @@
                 <li>Data portability</li>
             </ul>
 
-            <h2>6. Cookies</h2>
+            <h2>6. Cookies and Tracking Technologies</h2>
             <p>
                 We use cookies and similar tracking technologies to track activity on our service and
                 hold certain information. You can instruct your browser to refuse all cookies or to
                 indicate when a cookie is being sent.
+            </p>
+
+            <h3>6.1 Google AdSense and Advertising Cookies</h3>
+            <p>
+                We use Google AdSense to display advertisements on our website. Google AdSense uses cookies,
+                including the DoubleClick cookie, to serve ads based on your prior visits to our website and
+                other websites on the Internet. Google's use of advertising cookies enables it and its partners
+                to serve ads to you based on your visit to our site and/or other sites on the Internet.
+            </p>
+            <p>
+                You may opt out of personalized advertising by visiting
+                <a href="https://www.google.com/settings/ads" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>.
+                Alternatively, you can opt out of third-party vendor cookies for personalized advertising by visiting
+                <a href="https://www.aboutads.info/choices/" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>.
+            </p>
+            <p>
+                For more information about how Google uses data when you use our site, please visit
+                <a href="https://policies.google.com/technologies/partner-sites" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">Google's Privacy & Terms</a>.
+            </p>
+
+            <h3>6.2 Other Cookies</h3>
+            <p>
+                In addition to advertising cookies, we may use session cookies to remember your preferences,
+                analytics cookies to understand how visitors interact with our website, and essential cookies
+                required for the website to function properly.
             </p>
 
             <h2>7. Children's Privacy</h2>

@@ -373,13 +373,15 @@
                     </ul>
                 </div>
 
-                <!-- Support -->
+                <!-- Support & Legal -->
                 <div>
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Support</h3>
                     <ul class="mt-4 space-y-2">
-                        <li><a href="#" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Help Center</a></li>
-                        <li><a href="#" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Contact Us</a></li>
-                        <li><a href="#" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Privacy Policy</a></li>
+                        <li><a href="{{ route('contact') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Contact Us</a></li>
+                        <li><a href="{{ route('about') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">About Us</a></li>
+                        <li><a href="{{ route('privacy') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Privacy Policy</a></li>
+                        <li><a href="{{ route('terms') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Terms & Conditions</a></li>
+                        <li><a href="{{ route('refund') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Refund Policy</a></li>
                     </ul>
                 </div>
 
@@ -387,11 +389,11 @@
                 <div>
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Follow Us</h3>
                     <div class="mt-4 flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
+                        <a href="https://facebook.com/nextgenbeing" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20v-7.21H5.41V9.25h2.88V7.82c0-2.85 1.74-4.41 4.29-4.41 1.22 0 2.27.09 2.57.13v2.98h-1.76c-1.38 0-1.65.66-1.65 1.62v2.12h3.29l-.43 3.54h-2.86V20h-2.78z"/></svg>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7"/></svg>
+                        <a href="https://x.com/nextgenbeing" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         </a>
                     </div>
                 </div>
