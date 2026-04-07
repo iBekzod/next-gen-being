@@ -56,7 +56,7 @@ class GenerateVideoCommand extends Command
         }
 
         // Check user's video tier
-        $user = $post->user;
+        $user = $post->author;
         if (!$user->canGenerateVideo()) {
             $this->error("User has reached their monthly video generation limit.");
             $this->info("Current tier: {$user->video_tier}");

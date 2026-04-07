@@ -108,7 +108,7 @@ class TrendingService
             ->where('posts.status', 'published')
             ->select('tags.*')
             ->selectRaw('COUNT(*) as usage_count')
-            ->selectRaw('SUM(COALESCE(posts.view_count, 0)) as total_views')
+            ->selectRaw('SUM(COALESCE(posts.views_count, 0)) as total_views')
             ->groupBy('tags.id', 'tags.name', 'tags.slug', 'tags.created_at', 'tags.updated_at')
             ->orderBy('usage_count', 'desc')
             ->orderBy('total_views', 'desc')
@@ -127,9 +127,9 @@ class TrendingService
             ->where('posts.created_at', '>=', now()->subDays(30))
             ->select('users.*')
             ->selectRaw('COUNT(posts.id) as published_posts')
-            ->selectRaw('SUM(COALESCE(posts.view_count, 0)) as total_views')
+            ->selectRaw('SUM(COALESCE(posts.views_count, 0)) as total_views')
             ->selectRaw('SUM(COALESCE(posts.likes_count, 0)) as total_likes')
-            ->selectRaw('(SUM(COALESCE(posts.likes_count, 0)) * 5 + SUM(COALESCE(posts.view_count, 0)) * 0.5) as engagement_score')
+            ->selectRaw('(SUM(COALESCE(posts.likes_count, 0)) * 5 + SUM(COALESCE(posts.views_count, 0)) * 0.5) as engagement_score')
             ->groupBy(
                 'users.id', 'users.name', 'users.email', 'users.password',
                 'users.avatar', 'users.bio', 'users.website', 'users.twitter',
@@ -152,9 +152,9 @@ class TrendingService
             ->whereNotNull('series_slug')
             ->select('series_slug', 'series_title', 'series_description')
             ->selectRaw('COUNT(*) as part_count')
-            ->selectRaw('SUM(COALESCE(view_count, 0)) as total_views')
+            ->selectRaw('SUM(COALESCE(views_count, 0)) as total_views')
             ->selectRaw('SUM(COALESCE(likes_count, 0)) as total_likes')
-            ->selectRaw('(SUM(COALESCE(likes_count, 0)) * 5 + SUM(COALESCE(view_count, 0)) * 0.5) as score')
+            ->selectRaw('(SUM(COALESCE(likes_count, 0)) * 5 + SUM(COALESCE(views_count, 0)) * 0.5) as score')
             ->groupBy('series_slug', 'series_title', 'series_description')
             ->orderBy('score', 'desc')
             ->limit($limit)
@@ -188,10 +188,10 @@ class TrendingService
         return [
             'views' => $views,
             'likes' => $likes,
-            'total_views' => $post->view_count ?? 0,
+            'total_views' => $post->views_count ?? 0,
             'total_likes' => $post->likes_count ?? 0,
-            'engagement_rate' => $post->view_count > 0
-                ? round((($post->likes_count + $post->comments_count) / $post->view_count) * 100, 2)
+            'engagement_rate' => $post->views_count > 0
+                ? round((($post->likes_count + $post->comments_count) / $post->views_count) * 100, 2)
                 : 0,
         ];
     }

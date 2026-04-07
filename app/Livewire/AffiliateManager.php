@@ -33,8 +33,9 @@ class AffiliateManager extends Component
                 ->with('clicks', 'conversions')
                 ->paginate(10);
 
-            $this->stats = $this->affiliateService->getAffiliateStats($user);
-            $this->totalEarnings = $this->affiliateService->getAffiliateEarnings($user);
+            $earnings = $this->affiliateService->getCreatorAffiliateEarnings($user);
+            $this->stats = $earnings;
+            $this->totalEarnings = $earnings['total_earnings'] ?? 0;
         } finally {
             $this->isLoading = false;
         }
@@ -50,8 +51,10 @@ class AffiliateManager extends Component
         try {
             $result = $this->affiliateService->createAffiliateLink(
                 auth()->user(),
-                $url,
-                $description
+                [
+                    'affiliate_url' => $url,
+                    'description' => $description,
+                ]
             );
 
             if ($result['success']) {

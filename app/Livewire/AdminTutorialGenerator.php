@@ -2,6 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\Post;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class AdminTutorialGenerator extends Component
@@ -21,13 +24,20 @@ class AdminTutorialGenerator extends Component
     {
         $this->isLoading = true;
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => 'Bearer ' . auth()->user()->api_token ?? auth()->user()->id,
-            ])->get('/api/v1/tutorials/status', [
-                'status' => $this->filterStatus !== 'all' ? $this->filterStatus : null,
-            ]);
+            $query = Post::whereNotNull('series_title')->orderBy('created_at', 'desc');
 
-            $this->tutorials = $response->json('data') ?? [];
+            if ($this->filterStatus !== 'all') {
+                $query->where('status', $this->filterStatus);
+            }
+
+            $this->tutorials = $query->get()->map(fn($post) => [
+                'id' => $post->id,
+                'title' => $post->title,
+                'series' => $post->series_title,
+                'part' => $post->series_part,
+                'status' => $post->status,
+                'created_at' => $post->created_at?->toIso8601String(),
+            ])->toArray();
         } finally {
             $this->isLoading = false;
         }
@@ -40,34 +50,39 @@ class AdminTutorialGenerator extends Component
             return;
         }
 
-        $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Authorization' => 'Bearer ' . auth()->user()->api_token ?? auth()->user()->id,
-        ])->post('/api/v1/tutorials/trigger', [
-            'topic' => $this->generationTopic,
-        ]);
+        if (!auth()->user()?->isAdmin()) {
+            session()->flash('error', 'Unauthorized');
+            return;
+        }
 
-        if ($response->ok()) {
+        try {
+            Artisan::call('tutorial:generate', ['topic' => $this->generationTopic, '--parts' => 3]);
+
             $this->showGenerateForm = false;
             $this->generationTopic = '';
             $this->loadTutorials();
             session()->flash('success', 'Tutorial generation started!');
-        } else {
-            session()->flash('error', 'Failed to generate tutorial');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to generate tutorial: ' . $e->getMessage());
         }
     }
 
     public function publishTutorial($tutorialId)
     {
-        $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Authorization' => 'Bearer ' . auth()->user()->api_token ?? auth()->user()->id,
-        ])->post("/api/v1/tutorials/publish", [
-            'tutorial_id' => $tutorialId,
-        ]);
-
-        if ($response->ok()) {
-            $this->loadTutorials();
-            session()->flash('success', 'Tutorial published successfully!');
+        if (!auth()->user()?->isAdmin()) {
+            session()->flash('error', 'Unauthorized');
+            return;
         }
+
+        $post = Post::find($tutorialId);
+        if (!$post) {
+            session()->flash('error', 'Tutorial not found');
+            return;
+        }
+
+        $post->update(['status' => 'published', 'published_at' => now()]);
+        $this->loadTutorials();
+        session()->flash('success', 'Tutorial published successfully!');
     }
 
     public function updatedFilterStatus()

@@ -133,17 +133,18 @@ class ScheduledPost extends Model
         try {
             // Create the post from scheduled post data
             $post = Post::create([
-                'user_id' => $this->user_id,
+                'author_id' => $this->user_id,
                 'title' => $this->title,
                 'content' => $this->content,
                 'excerpt' => $this->excerpt,
-                'featured_image_url' => $this->featured_image_url,
+                'featured_image' => $this->featured_image_url,
                 'category_id' => $this->category_id,
+                'status' => 'published',
                 'published_at' => now(),
             ]);
 
             if ($this->tags) {
-                $post->syncTags($this->tags);
+                $post->tags()->sync($this->tags);
             }
 
             $this->update([
