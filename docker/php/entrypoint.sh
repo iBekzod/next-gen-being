@@ -34,6 +34,13 @@ fi
 
 SETUP_MARKER="/var/www/html/storage/.laravel_setup_done"
 
+# Allow containers like scheduler to skip all Laravel setup
+if [ "${SKIP_SETUP:-0}" = "1" ]; then
+    echo "Skipping Laravel setup (SKIP_SETUP=1)."
+    exec "$@"
+    exit 0
+fi
+
 # Check if .env file exists before running Laravel commands
 if [ -f ".env" ]; then
     # Full setup only on first run or when forced

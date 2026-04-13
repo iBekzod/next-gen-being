@@ -131,6 +131,7 @@ services:
     volumes:
       - ./:/var/www/html
       - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/entrypoint.sh:/usr/local/bin/entrypoint.sh
       - ./docker/cron/supervisord.conf:/etc/supervisord.conf
     command: >
       sh -c "apk add --no-cache supervisor &&
@@ -138,6 +139,8 @@ services:
              touch /var/log/supervisord.log /var/log/laravel-worker.log /var/log/laravel-schedule.log &&
              chown appuser:appgroup /var/log/*.log &&
              supervisord -c /etc/supervisord.conf"
+    environment:
+      SKIP_SETUP: "1"
     networks:
       - laravel
     restart: unless-stopped
