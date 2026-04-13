@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Log;
 
 class NewsletterSubscribe extends Component
 {
-    public $email = '';
-    public $frequency = 'weekly';
-    public $subscribed = false;
-    public $error = '';
-    public $compact = false;
+    public string $email = '';
+    public string $frequency = 'weekly';
+    public bool $subscribed = false;
+    public string $error = '';
+    public bool $compact = false;
 
     protected $rules = [
         'email' => 'required|email|max:255',
