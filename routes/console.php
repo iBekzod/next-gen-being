@@ -18,6 +18,8 @@ Artisan::command('inspire', function () {
 Schedule::command('ai:generate-post')
     ->dailyAt('09:00')
     ->timezone(config('app.timezone'))
+    ->runInBackground()
+    ->withoutOverlapping(30)
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Morning AI post generated from content plan');
     })
@@ -25,14 +27,12 @@ Schedule::command('ai:generate-post')
         \Illuminate\Support\Facades\Log::error('Morning AI post generation failed');
     });
 
-// Note: Generate 1 post per day = 30 posts per month
-// This follows the strategic plan: 24 FREE (80%) + 6 PREMIUM (20%)
-// If you want MORE posts per day, uncomment additional schedules below:
-
-// Afternoon post (2 PM) - OPTIONAL: Enable for 2 posts/day
+// Afternoon post (2 PM)
 Schedule::command('ai:generate-post')
     ->dailyAt('14:00')
     ->timezone(config('app.timezone'))
+    ->runInBackground()
+    ->withoutOverlapping(30)
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Afternoon AI post generated from content plan');
     })
@@ -40,10 +40,12 @@ Schedule::command('ai:generate-post')
         \Illuminate\Support\Facades\Log::error('Afternoon AI post generation failed');
     });
 
-// Evening post (7 PM) - OPTIONAL: Enable for 3 posts/day
+// Evening post (7 PM)
 Schedule::command('ai:generate-post')
     ->dailyAt('19:00')
     ->timezone(config('app.timezone'))
+    ->runInBackground()
+    ->withoutOverlapping(30)
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Evening AI post generated from content plan');
     })
@@ -206,13 +208,6 @@ Schedule::command('social:update-engagement')
         \Illuminate\Support\Facades\Log::error('Social media engagement update failed');
     });
 
-// Clean up temporary video files (daily at 3 AM)
-Schedule::command('app:cleanup-temp-files')
-    ->dailyAt('03:00')
-    ->timezone(config('app.timezone'))
-    ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Temporary video files cleaned up');
-    });
 
 // Monitor video generation quota usage (weekly)
 Schedule::call(function () {

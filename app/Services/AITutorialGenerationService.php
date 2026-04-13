@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class AITutorialGenerationService
 {
-    private const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
+    private const CLAUDE_MODEL = 'claude-sonnet-4-5';
     private const API_TIMEOUT = 240;  // 4 minutes - allows for large token responses (12000+ tokens)
     private const MAX_RETRIES = 3;
     private const TOKEN_BUDGET = 12000;  // Increased from 8000 for deeper content
