@@ -149,6 +149,88 @@ class Post extends Model implements HasMedia
         return self::cleanExcerptText($stored, 200);
     }
 
+    /** Memoized markdown render with heading IDs + table of contents */
+    private ?array $renderedCache = null;
+    private function renderContentInternal(): array
+    {
+        if ($this->renderedCache !== null) return $this->renderedCache;
+        $html = \Illuminate\Support\Str::markdown($this->content ?? '');
+        $toc = [];
+        $usedSlugs = [];
+        $html = preg_replace_callback(
+            '/<(h[2-4])>(.+?)<\/\1>/i',
+            function ($m) use (&$toc, &$usedSlugs) {
+                $level = (int) substr($m[1], 1);
+                $text = trim(strip_tags($m[2]));
+                $base = \Illuminate\Support\Str::slug($text) ?: 'section';
+                $slug = $base;
+                $n = 2;
+                while (isset($usedSlugs[$slug])) {
+                    $slug = $base . '-' . $n++;
+                }
+                $usedSlugs[$slug] = true;
+                $toc[] = ['level' => $level, 'text' => $text, 'slug' => $slug];
+                return '<' . $m[1] . ' id="' . $slug . '">' . $m[2] . '</' . $m[1] . '>';
+            },
+            $html
+        );
+        return $this->renderedCache = ['html' => $html, 'toc' => $toc];
+    }
+
+    public function getRenderedContentAttribute(): string
+    {
+        return $this->renderContentInternal()['html'];
+    }
+
+    public function getTableOfContentsAttribute(): array
+    {
+        return $this->renderContentInternal()['toc'];
+    }
+
+    /** Related posts by category + tag overlap, cached for 1 hour */
+    public function getRelatedPostsAttribute()
+    {
+        return \Illuminate\Support\Facades\Cache::remember(
+            "post:{$this->id}:related:v1",
+            3600,
+            function () {
+                $tagIds = $this->tags()->pluck('tags.id');
+                $q = self::query()
+                    ->where('status', 'published')
+                    ->where('id', '!=', $this->id);
+                if ($tagIds->isNotEmpty()) {
+                    $q->where(function ($qq) use ($tagIds) {
+                        $qq->where('category_id', $this->category_id)
+                           ->orWhereHas('tags', fn($tq) => $tq->whereIn('tags.id', $tagIds));
+                    });
+                } else {
+                    $q->where('category_id', $this->category_id);
+                }
+                return $q->with(['author', 'category'])
+                    ->orderByDesc('views_count')
+                    ->limit(3)
+                    ->get();
+            }
+        );
+    }
+
+    /** HowTo schema steps for tutorial posts (uses H2s as steps) */
+    public function getHowToStepsAttribute(): array
+    {
+        $toc = $this->table_of_contents;
+        return collect($toc)
+            ->where('level', 2)
+            ->take(15)
+            ->values()
+            ->map(fn($h, $i) => [
+                '@type' => 'HowToStep',
+                'position' => $i + 1,
+                'name' => $h['text'],
+                'url' => route('posts.show', $this->slug) . '#' . $h['slug'],
+            ])
+            ->toArray();
+    }
+
     // Accessors
     public function getFeaturedImageAttribute($value)
     {

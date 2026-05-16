@@ -129,26 +129,21 @@ $breadcrumbItems[] = [
 @endif
 
 @if($post->series_slug && $post->post_type === 'article')
-<!-- HowTo Schema for Tutorial Series -->
+<!-- HowTo Schema for Tutorial Series (uses real H2 headings as steps for rich snippets) -->
+@php $howToSteps = $post->how_to_steps; @endphp
+@if(!empty($howToSteps))
 <script type="application/ld+json">
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'HowTo',
-    'name' => $post->series_title ?? $post->title,
-    'description' => $post->excerpt,
-    'totalTime' => 'PT' . (($post->series_total_parts ?? 1) * ($post->read_time ?? 5)) . 'M',
+    'name' => $post->title,
+    'description' => $post->clean_excerpt,
+    'totalTime' => 'PT' . ($post->read_time ?? 5) . 'M',
     'image' => [$shareImage],
-    'step' => [
-        [
-            '@type' => 'HowToStep',
-            'position' => $post->series_part ?? 1,
-            'name' => $post->title,
-            'url' => route('posts.show', $post->slug),
-            'text' => $post->excerpt,
-        ]
-    ]
+    'step' => $howToSteps,
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
+@endif
 @endif
 @endpush
 
@@ -196,3 +191,67 @@ $breadcrumbItems[] = [
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<style>
+.prose pre { position: relative; }
+.copy-code-btn {
+    position: absolute; top: 8px; right: 8px;
+    padding: 4px 10px; font-size: 11px; font-weight: 600;
+    border-radius: 6px; cursor: pointer;
+    background: rgba(255,255,255,0.1); color: #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.15);
+    opacity: 0; transition: opacity 0.15s, background 0.15s;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+}
+.prose pre:hover .copy-code-btn { opacity: 1; }
+.copy-code-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.copy-code-btn.copied { background: rgba(34,197,94,0.25); color: #86efac; border-color: rgba(34,197,94,0.4); }
+.reading-progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    z-index: 100; width: 0%;
+    transition: width 80ms linear;
+}
+</style>
+<div class="reading-progress" id="rp-bar"></div>
+<script>
+// Code-block copy buttons
+document.querySelectorAll('article pre, .prose pre, main pre').forEach(pre => {
+    if (pre.querySelector('.copy-code-btn')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-code-btn';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+        const code = pre.querySelector('code')?.textContent || pre.textContent;
+        try {
+            await navigator.clipboard.writeText(code.replace(/Copy$/, '').trim());
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+        } catch (e) {
+            btn.textContent = 'Press Ctrl+C';
+        }
+    });
+    pre.appendChild(btn);
+});
+
+// Reading-progress bar
+(function(){
+    const bar = document.getElementById('rp-bar');
+    if (!bar) return;
+    const article = document.querySelector('article, main .prose, .preview-prose');
+    function tick() {
+        const target = article || document.body;
+        const start = target.offsetTop;
+        const end = start + target.scrollHeight - window.innerHeight;
+        const scrolled = window.scrollY - start;
+        const pct = Math.max(0, Math.min(100, (scrolled / (end - start)) * 100));
+        bar.style.width = pct + '%';
+    }
+    document.addEventListener('scroll', tick, { passive: true });
+    tick();
+})();
+</script>
+@endpush
