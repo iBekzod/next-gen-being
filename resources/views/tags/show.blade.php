@@ -150,6 +150,34 @@ $tagPosts = $tag->publishedPosts()->latest()->limit(10)->get();
     </div>
 </section>
 
+<!-- Top authors using this tag -->
+@php
+    $topAuthors = \App\Models\User::whereHas('posts.tags', fn($q) => $q->where('tags.id', $tag->id))
+        ->whereHas('posts', fn($q) => $q->where('status','published'))
+        ->withCount(['posts' => fn($q) => $q->where('status','published')->whereHas('tags', fn($tq) => $tq->where('tags.id', $tag->id))])
+        ->orderByDesc('posts_count')
+        ->limit(4)
+        ->get();
+@endphp
+@if($topAuthors->isNotEmpty())
+<section class="py-12 px-4 sm:px-6 lg:px-8 bg-gray-100 dark:bg-slate-900/50">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Top authors writing about #{{ $tag->name }}</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            @foreach($topAuthors as $author)
+            <a href="{{ $author->slug ? route('authors.show', $author->slug) : '#' }}" class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 hover:shadow-md transition">
+                <img src="{{ $author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($author->name) . '&background=059669&color=fff' }}" alt="{{ $author->name }}" class="w-10 h-10 rounded-full" loading="lazy">
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $author->name }}</p>
+                    <p class="text-xs text-gray-500">{{ $author->posts_count }} {{ \Illuminate\Support\Str::plural('post', $author->posts_count) }}</p>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- Related Tags -->
 <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
     <div class="max-w-7xl mx-auto">

@@ -226,11 +226,54 @@
                 </div>
             </div>
         @else
+            <!-- Table of Contents (auto-built from H2/H3) -->
+            @if(count($post->table_of_contents) >= 3)
+            <details class="not-prose mb-8 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50" open>
+                <summary class="px-4 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                        Table of contents · {{ count(collect($post->table_of_contents)->where('level', 2)) }} sections
+                    </span>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform [details[open]_&]:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <nav class="px-4 pb-4 pt-1 text-sm">
+                    <ol class="space-y-1.5">
+                        @foreach($post->table_of_contents as $h)
+                            @if($h['level'] <= 3)
+                            <li class="{{ $h['level'] === 3 ? 'pl-5' : '' }}">
+                                <a href="#{{ $h['slug'] }}" class="text-blue-600 dark:text-blue-400 hover:underline {{ $h['level'] === 2 ? 'font-medium' : 'text-gray-600 dark:text-gray-400' }}">{{ $h['text'] }}</a>
+                            </li>
+                            @endif
+                        @endforeach
+                    </ol>
+                </nav>
+            </details>
+            @endif
+
             <!-- Full Content for Free or Premium Subscribers -->
-            {!! str($post->content)->markdown() !!}
+            {!! $post->rendered_content !!}
         @endif
     </div>
 
+
+    <!-- Related posts widget (boosts pages-per-visit + internal linking) -->
+    @php $related = $post->related_posts; @endphp
+    @if($related->isNotEmpty())
+    <div class="my-12">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Keep reading</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            @foreach($related as $rel)
+            <a href="{{ route('posts.show', $rel->slug) }}" class="block p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition">
+                @if($rel->category)
+                <span class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">{{ $rel->category->name }}</span>
+                @endif
+                <h3 class="mt-2 text-sm font-bold text-gray-900 dark:text-white line-clamp-3 leading-snug">{{ $rel->title }}</h3>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ $rel->read_time }} min · {{ number_format($rel->views_count) }} views</p>
+            </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     <!-- Author Bio Card (AdSense E-E-A-T signal) -->
     @if($post->author && ($post->author->bio || $post->author->website || $post->author->linkedin))

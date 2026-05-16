@@ -24,9 +24,9 @@ class SearchService
         if (!empty($filters['q'])) {
             $searchTerm = $filters['q'];
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('title', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('excerpt', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('content', 'LIKE', "%{$searchTerm}%");
+                $q->where('title', 'ILIKE', "%{$searchTerm}%")
+                    ->orWhere('excerpt', 'ILIKE', "%{$searchTerm}%")
+                    ->orWhere('content', 'ILIKE', "%{$searchTerm}%");
             });
         }
 
@@ -170,7 +170,7 @@ class SearchService
 
         // Post suggestions
         $posts = Post::published()
-            ->where('title', 'LIKE', "%{$query}%")
+            ->where('title', 'ILIKE', "%{$query}%")
             ->limit(3)
             ->get(['id', 'title', 'slug']);
 
@@ -184,7 +184,7 @@ class SearchService
 
         // Category suggestions
         $categories = Category::active()
-            ->where('name', 'LIKE', "%{$query}%")
+            ->where('name', 'ILIKE', "%{$query}%")
             ->limit(2)
             ->get(['id', 'name', 'slug']);
 
@@ -197,7 +197,7 @@ class SearchService
         }
 
         // Tag suggestions
-        $tags = Tag::where('name', 'LIKE', "%{$query}%")
+        $tags = Tag::where('name', 'ILIKE', "%{$query}%")
             ->limit(3)
             ->get(['id', 'name', 'slug']);
 
@@ -210,7 +210,7 @@ class SearchService
         }
 
         // Author suggestions
-        $authors = User::where('name', 'LIKE', "%{$query}%")
+        $authors = User::where('name', 'ILIKE', "%{$query}%")
             ->whereHas('posts', function ($q) {
                 $q->where('status', 'published');
             })
@@ -284,9 +284,9 @@ class SearchService
     {
         $posts = Post::published()
             ->where(function ($q) use ($query) {
-                $q->where('title', 'LIKE', "%{$query}%")
-                    ->orWhere('excerpt', 'LIKE', "%{$query}%")
-                    ->orWhere('content', 'LIKE', "%{$query}%");
+                $q->where('title', 'ILIKE', "%{$query}%")
+                    ->orWhere('excerpt', 'ILIKE', "%{$query}%")
+                    ->orWhere('content', 'ILIKE', "%{$query}%");
             })
             ->get();
 

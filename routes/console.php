@@ -248,3 +248,8 @@ Schedule::call(function () {
     ->timezone(config('app.timezone'))
     ->name('auto-publish-pending-tutorials');
 
+// Cache pre-warm: hit top URLs every 6 hours to keep DB/view caches hot
+Schedule::command('cache:prewarm', ['--limit=10'])
+    ->everySixHours()
+    ->withoutOverlapping()
+    ->runInBackground();

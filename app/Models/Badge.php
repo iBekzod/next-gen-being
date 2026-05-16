@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Casts\AsJson;
+
 
 class Badge extends Model
 {
@@ -21,7 +21,7 @@ class Badge extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'requirements' => AsJson::class,
+        'requirements' => 'array',
     ];
 
     /**

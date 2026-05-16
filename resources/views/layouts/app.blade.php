@@ -348,6 +348,12 @@
                                 Authors
                             </a>
 
+                            <!-- Paths -->
+                            <a href="{{ route('learning-paths.index') }}"
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                Paths
+                            </a>
+
                             <!-- Pricing -->
                             @if (setting('enable_subscriptions'))
                                 <a href="{{ route('subscription.plans') }}"
@@ -709,6 +715,10 @@
                                     Series</a></li>
                             <li><a href="{{ route('authors.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Authors</a></li>
+                            <li><a href="{{ route('learning-paths.index') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Learning Paths</a></li>
+                            <li><a href="{{ route('tutorial-collections.index') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Collections</a></li>
                             <li><a href="{{ route('about') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">About
                                     Us</a></li>
