@@ -219,3 +219,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/api/readers/cleanup', [ReaderTrackingController::class, 'cleanupInactive'])->name('readers.cleanup');
 });
+
+use App\Http\Controllers\LearningPathController;
+use App\Http\Controllers\TutorialCollectionController;
+Route::get('/paths', [LearningPathController::class, 'index'])->name('learning-paths.index');
+Route::get('/paths/{learningPath}', [LearningPathController::class, 'show'])->name('learning-paths.show');
+Route::get('/collections', [TutorialCollectionController::class, 'index'])->name('tutorial-collections.index');
+Route::get('/collections/{slug}', [TutorialCollectionController::class, 'show'])->name('tutorial-collections.show');
