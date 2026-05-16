@@ -404,4 +404,73 @@ document.querySelectorAll('article pre, .prose pre, main pre').forEach(pre => {
 })();
 </script>
 
+
+<!-- Prism.js syntax highlighting (added by enhance tier 5) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<style>
+/* Polish the Prism output so it matches the rest of the site */
+.prose pre[class*=language-], .preview-prose pre[class*=language-] {
+    background: #0f172a !important;
+    border-radius: 10px !important;
+    padding: 1.1em 1.2em !important;
+    margin: 1.2em 0 !important;
+    font-size: 0.86em !important;
+    line-height: 1.55 !important;
+    overflow-x: auto;
+    border: 1px solid #1e293b;
+    position: relative;
+}
+.prose pre[class*=language-] code, .preview-prose pre[class*=language-] code {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    color: #e2e8f0 !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+/* Inline code stays distinct */
+.prose code:not([class*=language-]), .preview-prose code:not([class*=language-]) {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: ui-monospace, monospace;
+}
+.dark .prose code:not([class*=language-]), .dark .preview-prose code:not([class*=language-]) {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+}
+/* Prism Tomorrow theme tokens tweaks for our background */
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: #64748b; }
+.token.string, .token.attr-value { color: #86efac; }
+.token.keyword, .token.boolean { color: #c084fc; font-weight: 600; }
+.token.function { color: #93c5fd; }
+.token.number { color: #fbbf24; }
+.token.tag, .token.selector { color: #f472b6; }
+.token.property, .token.constant, .token.symbol { color: #f87171; }
+.token.punctuation { color: #94a3b8; }
+.token.operator { color: #fb923c; }
+/* Make copy button visible on Prism-highlighted blocks */
+.prose pre[class*=language-] .copy-code-btn,
+.preview-prose pre[class*=language-] .copy-code-btn {
+    background: rgba(255,255,255,0.08);
+    color: #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.12);
+    z-index: 5;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Prism === 'undefined') {
+        // Try again shortly if Prism not yet loaded
+        setTimeout(() => { if (typeof Prism !== 'undefined') Prism.highlightAll(); }, 500);
+        return;
+    }
+    Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';
+    Prism.highlightAll();
+});
+</script>
+
 @endpush
