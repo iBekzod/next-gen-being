@@ -152,6 +152,63 @@ $categoryPosts = $category->publishedPosts()->limit(10)->get();
     </div>
 </section>
 
+<!-- Top authors + popular tags in this category -->
+@php
+    $topAuthors = \App\Models\User::whereHas('posts', fn($q) => $q->where('category_id', $category->id)->where('status','published'))
+        ->withCount(['posts' => fn($q) => $q->where('category_id', $category->id)->where('status','published')])
+        ->orderByDesc('posts_count')
+        ->limit(4)
+        ->get();
+
+    $popularTags = \Illuminate\Support\Facades\DB::table('tags')
+        ->join('post_tags', 'tags.id', '=', 'post_tags.tag_id')
+        ->join('posts', 'post_tags.post_id', '=', 'posts.id')
+        ->where('posts.category_id', $category->id)
+        ->where('posts.status', 'published')
+        ->select('tags.id', 'tags.name', 'tags.slug')
+        ->selectRaw('COUNT(*) as post_count')
+        ->groupBy('tags.id', 'tags.name', 'tags.slug')
+        ->orderByDesc('post_count')
+        ->limit(10)
+        ->get();
+@endphp
+@if($topAuthors->isNotEmpty() || $popularTags->isNotEmpty())
+<section class="py-12 px-4 sm:px-6 lg:px-8 bg-gray-100 dark:bg-slate-900/50">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        @if($topAuthors->isNotEmpty())
+        <div>
+            <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Top authors in {{ $category->name }}</h2>
+            <div class="space-y-3">
+                @foreach($topAuthors as $author)
+                <a href="{{ $author->slug ? route('authors.show', $author->slug) : '#' }}" class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 hover:shadow-md transition">
+                    <img src="{{ $author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($author->name) . '&background=2563eb&color=fff' }}" alt="{{ $author->name }}" class="w-10 h-10 rounded-full" loading="lazy">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $author->name }}</p>
+                        <p class="text-xs text-gray-500">{{ $author->posts_count }} {{ \Illuminate\Support\Str::plural('article', $author->posts_count) }}</p>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        @if($popularTags->isNotEmpty())
+        <div>
+            <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Popular tags in {{ $category->name }}</h2>
+            <div class="flex flex-wrap gap-2">
+                @foreach($popularTags as $tag)
+                <a href="{{ route('tags.show', $tag->slug) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-gray-700 dark:text-gray-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                    <span>#{{ $tag->name }}</span>
+                    <span class="text-xs text-gray-400">{{ $tag->post_count }}</span>
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+</section>
+@endif
+
 <!-- Related Categories -->
 <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
     <div class="max-w-7xl mx-auto">
