@@ -27,7 +27,7 @@
                             {{ $blog->created_at->format('M d, Y') }}
                         </p>
                         <p class="mt-2 text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                            {{ $blog->excerpt }}
+                            {{ $blog->clean_excerpt }}
                         </p>
                         <a href="{{ route('blog.show', $blog->slug) }}"
                            class="inline-block mt-4 text-sm text-blue-500 hover:underline">Read more →</a>

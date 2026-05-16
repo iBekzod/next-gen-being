@@ -1,6 +1,6 @@
 <div class="mt-12">
     <!-- Pricing Grid -->
-    <div class="grid gap-8 lg:grid-cols-3">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($plans as $key => $plan)
             <div
                 class="relative flex flex-col rounded-lg shadow-lg overflow-hidden {{ $key === 'pro' ? 'border-2 border-blue-500' : 'border border-gray-200 dark:border-gray-700' }}">
@@ -14,7 +14,9 @@
                 <div class="px-6 py-8 bg-white dark:bg-gray-800">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $plan['name'] }}</h3>
                     <p class="mt-2 text-gray-500 dark:text-gray-400">
-                        @if ($key === 'basic')
+                        @if ($key === 'free')
+                            Start reading and bookmarking
+                        @elseif ($key === 'basic')
                             Perfect for casual readers
                         @elseif($key === 'pro')
                             Best for professionals
@@ -45,6 +47,19 @@
                     </ul>
 
                     <div class="mt-8">
+                        @if ($key === 'free')
+                            @auth
+                                <button disabled
+                                    class="w-full px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-md cursor-not-allowed dark:bg-gray-700 dark:text-gray-400">
+                                    You're on Free
+                                </button>
+                            @else
+                                <a href="{{ route('register') }}"
+                                    class="block w-full px-4 py-2 text-sm font-semibold text-center text-white transition-colors bg-emerald-600 rounded-md hover:bg-emerald-700">
+                                    Create free account →
+                                </a>
+                            @endauth
+                        @else
                         @auth
                             @php
                                 $subscription = $currentSubscription;
@@ -85,6 +100,7 @@
                                 Sign in to subscribe
                             </a>
                         @endauth
+                        @endif
                     </div>
                 </div>
             </div>

@@ -89,7 +89,7 @@
 
         <!-- Footer -->
         <div class="sticky bottom-0 px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <a href="{{ route('notifications.index') }}"
+            <a href="{{ route('dashboard.notifications') }}"
                 class="text-sm text-center block text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium">
                 View all notifications
             </a>

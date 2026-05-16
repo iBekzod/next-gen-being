@@ -29,7 +29,6 @@ class AdvancedSearch extends Component
     public array $availableFilters = [];
     public array $searchStats = [];
 
-    protected $searchService;
     protected $queryString = [
         'query' => ['except' => ''],
         'selectedCategories' => ['except' => []],
@@ -39,8 +38,7 @@ class AdvancedSearch extends Component
 
     public function mount()
     {
-        $this->searchService = app(SearchService::class);
-        $this->availableFilters = $this->searchService->getAvailableFilters();
+        $this->availableFilters = app(SearchService::class)->getAvailableFilters();
         $this->performSearch();
     }
 
@@ -49,7 +47,7 @@ class AdvancedSearch extends Component
         $this->resetPage();
 
         if (!empty($this->query)) {
-            $this->searchStats = $this->searchService->getSearchStats($this->query);
+            $this->searchStats = app(SearchService::class)->getSearchStats($this->query);
         }
     }
 
@@ -117,7 +115,7 @@ class AdvancedSearch extends Component
 
     public function getResults()
     {
-        return $this->searchService->search([
+        return app(SearchService::class)->search([
             'q' => $this->query,
             'categories' => $this->selectedCategories,
             'tags' => $this->selectedTags,

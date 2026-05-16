@@ -88,7 +88,7 @@
                             {{ $seriesPost->title }}
                         </h4>
                         <p class="mt-1 text-xs {{ $isCurrent ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400' }} line-clamp-1">
-                            {{ $seriesPost->excerpt }}
+                            {{ $seriesPost->clean_excerpt }}
                         </p>
                         <div class="flex items-center gap-3 mt-2 text-xs {{ $isCurrent ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400' }}">
                             <span>{{ $seriesPost->read_time }} min read</span>

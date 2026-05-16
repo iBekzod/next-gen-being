@@ -370,8 +370,33 @@ class WebResearchService
     {
         $formatted = "Research gathered on: {$research['topic']}\n\n";
 
-        // Sources summary
-        $formatted .= "SOURCES:\n";
+        // Collect all article URLs across sources so the AI can cite them
+        $sourceArticles = [];
+        foreach ($research['sources'] as $source) {
+            if (empty($source) || empty($source['articles'])) continue;
+            foreach ($source['articles'] as $article) {
+                if (empty($article['url'])) continue;
+                $sourceArticles[] = [
+                    'title' => $article['title'] ?? 'Untitled',
+                    'url' => $article['url'],
+                    'author' => $article['author'] ?? null,
+                    'source' => $source['source'] ?? 'unknown',
+                ];
+            }
+        }
+
+        if (!empty($sourceArticles)) {
+            $formatted .= "SOURCE ARTICLES (cite these inline using markdown links — DO NOT invent URLs):\n";
+            foreach (array_slice($sourceArticles, 0, 12) as $i => $a) {
+                $num = $i + 1;
+                $author = $a['author'] ? " by {$a['author']}" : '';
+                $formatted .= "[{$num}] \"{$a['title']}\"{$author} ({$a['source']}) — {$a['url']}\n";
+            }
+            $formatted .= "\n";
+        }
+
+        // Sources summary (counts)
+        $formatted .= "SOURCE COUNTS:\n";
         foreach ($research['sources'] as $source) {
             if (!empty($source) && isset($source['count']) && $source['count'] > 0) {
                 $formatted .= "- {$source['source']}: {$source['count']} articles\n";
@@ -386,21 +411,32 @@ class WebResearchService
             }
         }
 
-        // Case studies
+        // Case studies with URLs
         if (!empty($research['caseStudies'])) {
-            $formatted .= "\nRELEVANT CASE STUDIES:\n";
-            foreach (array_slice($research['caseStudies'], 0, 3) as $study) {
-                $formatted .= "- {$study['title']} ({$study['source']})\n";
+            $formatted .= "\nRELEVANT CASE STUDIES (cite by URL):\n";
+            foreach (array_slice($research['caseStudies'], 0, 5) as $study) {
+                $url = $study['url'] ?? '';
+                $urlPart = $url ? " — {$url}" : '';
+                $formatted .= "- {$study['title']} ({$study['source']}){$urlPart}\n";
             }
         }
 
-        // Best practices
+        // Best practices with URLs
         if (!empty($research['bestPractices'])) {
-            $formatted .= "\nBEST PRACTICE REFERENCES:\n";
-            foreach (array_slice($research['bestPractices'], 0, 3) as $practice) {
-                $formatted .= "- {$practice['title']}\n";
+            $formatted .= "\nBEST PRACTICE REFERENCES (cite by URL):\n";
+            foreach (array_slice($research['bestPractices'], 0, 5) as $practice) {
+                $url = $practice['url'] ?? '';
+                $urlPart = $url ? " — {$url}" : '';
+                $formatted .= "- {$practice['title']}{$urlPart}\n";
             }
         }
+
+        $formatted .= "\nCITATION RULES:\n";
+        $formatted .= "- When you reference a fact, technique, or comparison from one of the source articles above, you MUST cite it as a markdown link to its URL inline.\n";
+        $formatted .= "- Example: \"As [Jane Smith explains in her benchmarks](https://dev.to/example), the latency dropped by 40%.\"\n";
+        $formatted .= "- Aim for AT LEAST 3 inline citations to source articles in the final post.\n";
+        $formatted .= "- NEVER fabricate a URL. Only use URLs from the SOURCE ARTICLES list above.\n";
+        $formatted .= "- If you cannot fit a source naturally into the article, do not force it — but try.\n";
 
         return $formatted;
     }

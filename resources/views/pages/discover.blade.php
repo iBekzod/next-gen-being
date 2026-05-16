@@ -59,7 +59,7 @@
                                 <span class="font-bold text-lg text-blue-600">#{{ $i }}</span>
                                 <div>
                                     <p class="font-semibold">Creator {{ $i }}</p>
-                                    <p class="text-xs text-gray-500">{{ rand(1000, 100000) }} followers</p>
+                                    <p class="text-xs text-gray-500">— followers</p>
                                 </div>
                             </div>
                             <button class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">

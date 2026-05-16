@@ -78,18 +78,22 @@ class TutorialProgressService
      */
     public function getSeriesProgress(User $user, string $seriesSlug): array
     {
-        $progress = TutorialProgress::forUser($user->id)
-            ->inSeries($seriesSlug)
-            ->get();
+        // Real total = number of published parts in this series
+        $totalCount = \App\Models\Post::where('series_slug', $seriesSlug)
+            ->where('status', 'published')
+            ->count();
 
-        $completedCount = $progress->filter(fn($p) => $p->completed)->count();
-        $totalCount = $progress->count();
+        $completedCount = TutorialProgress::forUser($user->id)
+            ->inSeries($seriesSlug)
+            ->where('completed', true)
+            ->count();
 
         return [
             'completed' => $completedCount,
             'total' => $totalCount,
-            'percentage' => $totalCount > 0 ? ($completedCount / $totalCount) * 100 : 0,
-            'is_complete' => $completedCount === $totalCount && $totalCount > 0,
+            'percentage' => $totalCount > 0 ? min(100, ($completedCount / $totalCount) * 100) : 0,
+            'is_complete' => $totalCount > 0 && $completedCount >= $totalCount,
+            'has_started' => $completedCount > 0,
         ];
     }
 

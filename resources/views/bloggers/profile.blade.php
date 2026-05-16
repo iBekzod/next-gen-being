@@ -154,7 +154,7 @@
                                         </h3>
 
                                         <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-3">
-                                            {{ $post->excerpt }}
+                                            {{ $post->clean_excerpt }}
                                         </p>
 
                                         <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">

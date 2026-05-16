@@ -231,6 +231,40 @@
         @endif
     </div>
 
+
+    <!-- Author Bio Card (AdSense E-E-A-T signal) -->
+    @if($post->author && ($post->author->bio || $post->author->website || $post->author->linkedin))
+    <div class="my-12 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div class="flex items-start gap-4">
+            <img src="{{ $post->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->author->name) . '&background=2563eb&color=fff&size=120' }}"
+                 alt="{{ $post->author->name }}"
+                 class="w-20 h-20 rounded-full object-cover flex-shrink-0"
+                 loading="lazy">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ $post->author->name }}</h3>
+                    <span class="text-xs uppercase tracking-wide text-gray-500">Author</span>
+                </div>
+                @if($post->author->bio)
+                <p class="text-sm text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">{{ $post->author->bio }}</p>
+                @endif
+                <div class="flex flex-wrap gap-3 text-sm">
+                    @if($post->author->website && !str_contains($post->author->website, '/authors/'))
+                    <a href="{{ $post->author->website }}" rel="author" class="text-blue-600 hover:underline dark:text-blue-400">Website</a>
+                    @endif
+                    @if($post->author->linkedin)
+                    <a href="{{ $post->author->linkedin }}" target="_blank" rel="author noopener" class="text-blue-600 hover:underline dark:text-blue-400">LinkedIn</a>
+                    @endif
+                    @if($post->author->twitter)
+                    <a href="{{ $post->author->twitter }}" target="_blank" rel="author noopener" class="text-blue-600 hover:underline dark:text-blue-400">More work</a>
+                    @endif
+                    <a href="{{ $post->author->slug ? route('authors.show', $post->author->slug) : '#' }}" class="text-blue-600 hover:underline dark:text-blue-400">More articles by {{ $post->author->name }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Google AdSense Auto Ads (managed by Google) -->
 
     <!-- Newsletter CTA -->

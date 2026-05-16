@@ -23,6 +23,39 @@ class ContentModerationService
      */
     public function moderateContent(string $title, string $content, string $excerpt): array
     {
+        // Hard pre-checks: cheap deterministic filters that don't need an AI call
+        $wordCount = str_word_count(strip_tags($content));
+
+        if ($wordCount < 1500) {
+            return [
+                'passed' => false,
+                'score' => 20,
+                'flags' => ['too_short'],
+                'recommendations' => ["Content is only {$wordCount} words; minimum 1500 required"],
+                'reason' => "Word count {$wordCount} below 1500 minimum",
+            ];
+        }
+
+        if (!preg_match('/[.!?]\s*$/', trim($content))) {
+            return [
+                'passed' => false,
+                'score' => 25,
+                'flags' => ['truncated'],
+                'recommendations' => ['Content appears truncated - no sentence terminator at end'],
+                'reason' => 'Content does not end with a sentence terminator',
+            ];
+        }
+
+        if (substr_count($content, '```') % 2 !== 0) {
+            return [
+                'passed' => false,
+                'score' => 25,
+                'flags' => ['unclosed_code_block'],
+                'recommendations' => ['Unclosed code block detected (odd ``` fence count)'],
+                'reason' => 'Unclosed code block',
+            ];
+        }
+
         $apiKey = config('services.groq.api_key');
 
         if (!$apiKey) {

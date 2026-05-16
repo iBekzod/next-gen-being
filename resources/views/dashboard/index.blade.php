@@ -36,7 +36,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Views</p>
                         <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ number_format(\Auth::user()->posts()->sum('views_count')) }}</p>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">+{{ rand(50, 500) }} this week</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">{{ $stats["total_views"] > 0 ? "+" . number_format(intval($stats["total_views"] / 4)) . " est. this week" : "—" }}</p>
                     </div>
                     <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition">
                         <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,8 +68,12 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Earnings</p>
-                        <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">${{ number_format(rand(1000, 50000), 2) }}</p>
-                        <p class="mt-1 text-sm text-green-600 dark:text-green-400">+{{ rand(10, 100) }}% this month</p>
+                        @php
+                            $totalEarn = \App\Models\BloggerEarning::where('user_id', \Auth::id())->sum('amount') ?? 0;
+                            $thisMonthEarn = \App\Models\BloggerEarning::where('user_id', \Auth::id())->where('created_at', '>=', now()->startOfMonth())->sum('amount') ?? 0;
+                        @endphp
+                        <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">${{ number_format($totalEarn, 2) }}</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">{{ $thisMonthEarn > 0 ? "+\$" . number_format($thisMonthEarn, 2) . " this month" : "No earnings yet" }}</p>
                     </div>
                     <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition">
                         <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,8 +88,11 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Engagement Rate</p>
-                        <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ rand(2, 12) }}%</p>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">+{{ rand(0, 2) }}% vs last week</p>
+                        @php
+                            $engRate = $stats['total_views'] > 0 ? round((($stats['total_likes'] + $stats['total_comments']) / $stats['total_views']) * 100, 1) : 0;
+                        @endphp
+                        <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ $engRate }}%</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">{{ $stats['total_likes'] + $stats['total_comments'] }} interactions / {{ number_format($stats['total_views']) }} views</p>
                     </div>
                     <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition">
                         <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +183,7 @@
                         @endforeach
                     </div>
                     @if($aiRecommendations->count() > 3)
-                    <a href="{{ route('recommendations.index') }}" class="mt-4 block text-center py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                    <a href="{{ route('dashboard.posts') }}" class="mt-4 block text-center py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                         View All {{ $aiRecommendations->count() }} Recommendations →
                     </a>
                     @endif

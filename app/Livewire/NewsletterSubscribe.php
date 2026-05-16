@@ -26,7 +26,31 @@ class NewsletterSubscribe extends Component
 
     public function mount($compact = false)
     {
-        $this->compact = $compact;
+        $this->compact = (bool) (is_array($compact) ? ($compact[0] ?? false) : $compact);
+    }
+
+    // Coerce array → string/bool because Livewire v3 strict typing crashes if
+    // bot/external traffic sends arrays into typed properties.
+    public function updatedEmail($value)
+    {
+        $this->email = is_array($value) ? ($value[0] ?? '') : (string) $value;
+    }
+    public function updatedFrequency($value)
+    {
+        $val = is_array($value) ? ($value[0] ?? 'weekly') : (string) $value;
+        $this->frequency = in_array($val, ['daily','weekly','monthly']) ? $val : 'weekly';
+    }
+    public function updatedSubscribed($value)
+    {
+        $this->subscribed = (bool) (is_array($value) ? ($value[0] ?? false) : $value);
+    }
+    public function updatedError($value)
+    {
+        $this->error = is_array($value) ? ($value[0] ?? '') : (string) $value;
+    }
+    public function updatedCompact($value)
+    {
+        $this->compact = (bool) (is_array($value) ? ($value[0] ?? false) : $value);
     }
 
     public function subscribe()

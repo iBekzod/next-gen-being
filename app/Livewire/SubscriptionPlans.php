@@ -8,6 +8,19 @@ use Illuminate\Support\Facades\Auth;
 class SubscriptionPlans extends Component
 {
     public array $plans = [
+        'free' => [
+            'name' => 'Free',
+            'price' => 0.00,
+            'interval' => 'forever',
+            'features' => [
+                'Read all public articles',
+                'Save bookmarks across devices',
+                'Weekly newsletter',
+                'Comment and follow authors'
+            ],
+            'price_id' => null,
+            'trial_days' => 0,
+        ],
         'basic' => [
             'name' => 'Basic',
             'price' => 9.99,

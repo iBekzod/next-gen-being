@@ -111,7 +111,7 @@ $tagPosts = $tag->publishedPosts()->latest()->limit(10)->get();
                                 {{ $post->title }}
                             </a>
                         </h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ $post->excerpt }}</p>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ $post->clean_excerpt }}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
                             @foreach($post->tags->take(3) as $postTag)
                                 <a href="{{ route('tags.show', $postTag->slug) }}" class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors">

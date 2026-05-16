@@ -16,7 +16,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser
     use HasFactory, Notifiable, Billable, InteractsWithMedia;
 
     protected $fillable = [
-        'name', 'email', 'password', 'avatar', 'bio', 'website',
+        'name', 'slug', 'email', 'password', 'avatar', 'bio', 'website',
         'twitter', 'linkedin', 'is_active', 'last_seen_at',
         'ai_tier', 'groq_api_key', 'openai_api_key', 'unsplash_api_key',
         'ai_posts_generated', 'ai_images_generated', 'ai_tier_starts_at',

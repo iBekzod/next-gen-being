@@ -13,6 +13,7 @@ use App\Http\Controllers\SeoController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\BloggerProfileController;
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\WriteEarnController;
@@ -53,6 +54,8 @@ Route::get('/explore', [FeedController::class, 'global'])->name('feed.global');
 // Blogger routes
 Route::get('/bloggers', [BloggerProfileController::class, 'index'])->name('bloggers.index');
 Route::get('/blogger/{username}', [BloggerProfileController::class, 'show'])->name('bloggers.profile');
+Route::get('/authors', [AuthorController::class, 'index'])->name('authors.index');
+Route::get('/authors/{slug}', [AuthorController::class, 'show'])->name('authors.show');
 
 // Subscription routes
 Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('subscription.plans');

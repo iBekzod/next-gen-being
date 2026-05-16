@@ -401,11 +401,11 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-sm opacity-90">Active Today</span>
-                                    <span class="font-semibold">{{ rand(10, 50) }}</span>
+                                    <span class="font-semibold">{{ \App\Models\User::whereNotNull("last_seen_at")->where("last_seen_at", ">=", now()->subDay())->count() }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-sm opacity-90">New This Week</span>
-                                    <span class="font-semibold">{{ rand(5, 15) }}</span>
+                                    <span class="font-semibold">{{ \App\Models\User::where("created_at", ">=", now()->subWeek())->count() }}</span>
                                 </div>
                             </div>
                         </div>

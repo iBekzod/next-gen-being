@@ -28,7 +28,7 @@
                         <h2 class="text-white font-bold {{ $index === 0 ? 'text-2xl lg:text-3xl' : 'text-xl' }} line-clamp-2 mb-2">
                             {{ $post->title }}
                         </h2>
-                        <p class="mb-3 text-sm text-white/90 line-clamp-2">{{ $post->excerpt }}</p>
+                        <p class="mb-3 text-sm text-white/90 line-clamp-2">{{ $post->clean_excerpt }}</p>
                         <div class="flex items-center justify-between">
                             @if($post->author)
                                 <div class="flex items-center space-x-3">
@@ -186,7 +186,7 @@
                     <a href="{{ route('posts.show', $post->slug) }}">{{ $post->title }}</a>
                 </h3>
 
-                <p class="mb-4 text-sm text-gray-600 line-clamp-3">{{ $post->excerpt }}</p>
+                <p class="mb-4 text-sm text-gray-600 line-clamp-3">{{ $post->clean_excerpt }}</p>
 
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-3">

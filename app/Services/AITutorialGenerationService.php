@@ -15,7 +15,7 @@ class AITutorialGenerationService
     private const CLAUDE_MODEL = 'claude-sonnet-4-5';
     private const API_TIMEOUT = 240;  // 4 minutes - allows for large token responses (12000+ tokens)
     private const MAX_RETRIES = 3;
-    private const TOKEN_BUDGET = 12000;  // Increased from 8000 for deeper content
+    private const TOKEN_BUDGET = 16000;  // Claude Sonnet 4.5: 16K for complete 4000-6000 word tutorial parts
 
     protected $apiKey;
     protected $baseUrl = 'https://api.anthropic.com/v1/messages';
@@ -201,6 +201,20 @@ class AITutorialGenerationService
         return <<<PROMPT
 You are a senior software engineer creating a comprehensive production-grade tutorial series.
 
+AUTHOR & REPOSITORY INFO:
+- GitHub: https://github.com/iBekzod
+- Blog: https://nextgenbeing.com
+- IMPORTANT: Only reference these EXISTING repositories on iBekzod GitHub - do not invent new repo names:
+  * https://github.com/iBekzod/laravel-saas-platform (SaaS tutorials)
+  * https://github.com/iBekzod/laravel-rest-api-tutorial (REST API tutorials)
+  * https://github.com/iBekzod/laravel-ecommerce-platform (E-commerce tutorials)
+  * https://github.com/iBekzod/laravel-scalable-api (general Laravel scaling)
+  * https://github.com/iBekzod/aws-lambda-cloud-native (Lambda/serverless)
+  * https://github.com/iBekzod/aws-serverless-api-gateway (API Gateway)
+- If your tutorial topic does NOT map cleanly to one of these repos, OMIT the repo link entirely. Do not invent a new repo name.
+- The companion blog (https://nextgenbeing.com) is always safe to link.
+- NEVER use placeholder text like "your-repo", "@yourusername", "your-invite" - always use the real iBekzod GitHub profile
+
 SERIES METADATA:
 - Title: {$seriesTitle}
 - Topic: {$topic}
@@ -284,6 +298,36 @@ PRODUCTION READINESS CHECKLIST (EVERY CODE EXAMPLE MUST HAVE):
 ✅ Tests or verification steps
 ✅ Real-world context and use case
 
+**ANTI-FABRICATION RULES (CRITICAL - GOOGLE AND READERS WILL CATCH THIS):**
+
+Inventing technical facts is the fastest way to destroy credibility. The following lead to INSTANT FAIL:
+
+A. **VERSION NUMBERS MUST BE REAL.** Never invent version numbers. If you are unsure of a version, write 'a recent stable version' instead. Examples of forbidden invention: 'Pyston 1.2' (Pyston was discontinued, no such version), 'Laravel 13' (does not exist as of writing), 'PHP 8.5' (check first).
+
+B. **API METHODS AND CLASS NAMES MUST BE REAL.** Do not invent methods like 'graph.add_nodes()' that look plausible but are not in the actual library. If you are not 100 percent sure a method exists, either: (1) reference the official docs URL where it lives, or (2) use a different, simpler example with stdlib functions you are certain about.
+
+C. **STATS AND BENCHMARKS MUST BE SHOWN, NOT CLAIMED.** Forbidden: 'reduced energy waste by 15 percent', '10,000 requests per second with sub-10ms latency'. If you write a number, you MUST also show: the test setup, hardware/instance specs, the command used, and the raw output. If you cannot show all three, REMOVE the number.
+
+D. **NEVER FABRICATE COMPANY CASE STUDIES.** Forbidden: 'A utility company we worked with reduced costs by 30 percent.' If the story is not directly verifiable, frame it as a hypothesis ('Here is the math on how this would work for a utility with N customers...') rather than as a past event.
+
+E. **DATES MUST BE PLAUSIBLE.** Do not date posts in the future. Do not reference events that have not happened.
+
+**ANTI-REPETITION RULES (DESTROYS QUALITY SCORE):**
+
+F. **NO SCENARIO MAY REPEAT.** A scenario like 'Suppose a utility company wants to optimize energy distribution' or 'To illustrate the power of X, let us consider an example' may appear AT MOST ONCE in the entire article. If you find yourself reusing a setup, you are padding - cut it and move on.
+
+G. **NO PARAGRAPH TEMPLATE MAY BE REUSED.** If section 3 starts with 'To illustrate, let us consider...' then section 5 cannot start the same way. Vary openings.
+
+H. **EVERY CODE EXAMPLE MUST BE DIFFERENT.** Do not show the same RabbitMQ pub/sub pattern twice with cosmetic changes. Each code block must demonstrate something the previous ones did not.
+
+I. **WORD-LEVEL UNIQUENESS:** Avoid using these phrases more than twice in the whole article: 'in conclusion', 'furthermore', 'moreover', 'to illustrate', 'real-world example', 'as developers'.
+
+**SOURCE CITATION RULES:**
+
+J. When citing external information, link to the canonical URL ('https://laravel.com/docs/12.x/eloquent') not a vague reference ('the Laravel documentation'). If you cannot produce a real URL, do not cite.
+
+K. Inline links are preferred over a 'References' section. If you have a references list, every entry must be a working URL.
+
 CRITICAL SUCCESS FACTORS:
 1. Every code block MUST be copy-paste ready and runnable
 2. Include actual command output, not just "here's what happens"
@@ -336,7 +380,45 @@ PROMPT;
                 throw new \Exception('Invalid API response format');
             }
 
-            return $data['content'][0]['text'];
+            $text = $data['content'][0]['text'];
+            $stopReason = $data['stop_reason'] ?? '';
+
+            // Auto-continue if response was truncated by max_tokens
+            $continuationCount = 0;
+            while ($stopReason === 'max_tokens' && $continuationCount < 2) {
+                $continuationCount++;
+                Log::info('Tutorial response truncated, requesting continuation', ['attempt' => $continuationCount]);
+
+                $contResponse = Http::withHeaders([
+                    'x-api-key' => $this->apiKey,
+                    'anthropic-version' => '2023-06-01',
+                    'content-type' => 'application/json',
+                ])
+                ->timeout(self::API_TIMEOUT)
+                ->post($this->baseUrl, [
+                    'model' => self::CLAUDE_MODEL,
+                    'max_tokens' => self::TOKEN_BUDGET,
+                    'messages' => [
+                        ['role' => 'user', 'content' => $prompt],
+                        ['role' => 'assistant', 'content' => $text],
+                        ['role' => 'user', 'content' => 'Continue exactly where you left off. Do not repeat anything. Do not add any introduction or summary. Just continue the text directly.'],
+                    ],
+                ]);
+
+                if (!$contResponse->successful()) {
+                    break;
+                }
+
+                $contData = $contResponse->json();
+                if (!isset($contData['content'][0]['text'])) {
+                    break;
+                }
+
+                $text .= $contData['content'][0]['text'];
+                $stopReason = $contData['stop_reason'] ?? '';
+            }
+
+            return $text;
 
         } catch (\Exception $e) {
             Log::error('Claude API error', [
@@ -420,7 +502,10 @@ PROMPT;
         $excerpt = $this->extractExcerpt($content);
         $readTime = $this->estimateReadTime($content);
 
-        return Post::create([
+        $seriesSlug = \Illuminate\Support\Str::slug($seriesTitle);
+        $featuredImage = $this->generateFeaturedImageForPart($title, $topic);
+
+        $postData = [
             'author_id' => $author->id,
             'category_id' => $category->id,
             'title' => $title,
@@ -434,6 +519,7 @@ PROMPT;
             'is_premium' => false,
             'read_time' => $readTime,
             'series_title' => $seriesTitle,
+            'series_slug' => $seriesSlug,
             'series_part' => $partNumber,
             'series_total_parts' => $totalParts,
             'series_description' => "A comprehensive {$totalParts}-part tutorial series on {$topic}.",
@@ -442,7 +528,30 @@ PROMPT;
                 'description' => $excerpt,
                 'keywords' => $this->generateKeywords($topic, $partNumber),
             ],
-        ]);
+        ];
+
+        if ($featuredImage && isset($featuredImage['url'])) {
+            $postData['featured_image'] = $featuredImage['url'];
+        }
+
+        return Post::create($postData);
+    }
+
+    private function generateFeaturedImageForPart(string $title, string $topic): ?array
+    {
+        try {
+            $imageService = app(\App\Services\ImageGenerationService::class);
+            if (!$imageService->isAvailable()) {
+                return null;
+            }
+            return $imageService->generateFeaturedImage($title, $topic);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Tutorial featured image failed', [
+                'title' => $title,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
     }
 
     /**

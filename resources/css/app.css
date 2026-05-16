@@ -79,11 +79,12 @@
   }
 
   /* Fix gradient backgrounds in LIGHT MODE ONLY */
-  html:not(.dark) .bg-gradient-to-br,
-  html:not(.dark) .bg-gradient-to-r,
-  html:not(.dark) .bg-gradient-to-l,
-  html:not(.dark) .bg-gradient-to-t,
-  html:not(.dark) .bg-gradient-to-b {
+  /* Override generic gradients in LIGHT MODE - but skip intentional dark overlays (from-black) */
+  html:not(.dark) .bg-gradient-to-br:not([class*="from-black"]):not([class*="to-black"]):not([class*="via-black"]),
+  html:not(.dark) .bg-gradient-to-r:not([class*="from-black"]):not([class*="to-black"]):not([class*="via-black"]),
+  html:not(.dark) .bg-gradient-to-l:not([class*="from-black"]):not([class*="to-black"]):not([class*="via-black"]),
+  html:not(.dark) .bg-gradient-to-t:not([class*="from-black"]):not([class*="to-black"]):not([class*="via-black"]),
+  html:not(.dark) .bg-gradient-to-b:not([class*="from-black"]):not([class*="to-black"]):not([class*="via-black"]) {
     background: #ffffff !important;
   }
 

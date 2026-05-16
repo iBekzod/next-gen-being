@@ -16,7 +16,7 @@
             <content:encoded><![CDATA[{!! $post->content !!}]]></content:encoded>
             <author>{{ $post->author->email }} ({{ $post->author->name }})</author>
             <category>{{ $post->category->name }}</category>
-            <pubDate>{{ $post->published_at->toRssString() }}</pubDate>
+            <pubDate>{{ ($post->published_at ?? $post->created_at ?? now())->toRssString() }}</pubDate>
             <guid isPermaLink="true">{{ route('posts.show', $post->slug) }}</guid>
         </item>
         @endforeach

@@ -14,43 +14,17 @@ Artisan::command('inspire', function () {
 // Generates posts from the monthly content plan (80% free, 20% premium)
 // Posts automatically follow the conversion funnel strategy
 
-// Morning post (9 AM) - From content plan (auto FREE/PREMIUM based on plan)
+// Daily AI post (9 AM) - From content plan (auto FREE/PREMIUM based on plan)
 Schedule::command('ai:generate-post')
     ->dailyAt('09:00')
     ->timezone(config('app.timezone'))
     ->runInBackground()
-    ->withoutOverlapping(30)
+    ->withoutOverlapping(60)
     ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Morning AI post generated from content plan');
+        \Illuminate\Support\Facades\Log::info('Daily AI post generated from content plan');
     })
     ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('Morning AI post generation failed');
-    });
-
-// Afternoon post (2 PM)
-Schedule::command('ai:generate-post')
-    ->dailyAt('14:00')
-    ->timezone(config('app.timezone'))
-    ->runInBackground()
-    ->withoutOverlapping(30)
-    ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Afternoon AI post generated from content plan');
-    })
-    ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('Afternoon AI post generation failed');
-    });
-
-// Evening post (7 PM)
-Schedule::command('ai:generate-post')
-    ->dailyAt('19:00')
-    ->timezone(config('app.timezone'))
-    ->runInBackground()
-    ->withoutOverlapping(30)
-    ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Evening AI post generated from content plan');
-    })
-    ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('Evening AI post generation failed');
+        \Illuminate\Support\Facades\Log::error('Daily AI post generation failed');
     });
 
 // ========================================
@@ -220,3 +194,57 @@ Schedule::call(function () {
         \Illuminate\Support\Facades\Log::warning("High video generation usage this week: {$quotaUsage} videos");
     }
 })->weeklyOn(1, '10:00')->name('monitor-video-quota');
+
+// ========================================
+// TUTORIAL GENERATION (Weekly)
+// ========================================
+// Generate multi-part tutorial series every Monday at 9 AM
+Schedule::command('tutorials:scheduled')
+    ->weeklyOn(1, '9:00')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Weekly tutorial generation completed');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Weekly tutorial generation failed');
+    });
+
+// Auto-publish draft tutorials older than 24 hours - WITH quality gates
+Schedule::call(function () {
+    \App\Models\Post::where('status', 'draft')
+        ->whereNotNull('series_title')
+        ->where('created_at', '<', now()->subHours(24))
+        ->chunk(50, function ($posts) {
+            foreach ($posts as $post) {
+                // Gate 1: word count >= 1500
+                $wordCount = str_word_count(strip_tags($post->content));
+                if ($wordCount < 1500) {
+                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} too short ({$wordCount} words)");
+                    continue;
+                }
+                // Gate 2: ends with proper sentence terminator (not truncated)
+                if (!preg_match('/[.!?]\s*$/', trim($post->content))) {
+                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} appears truncated");
+                    continue;
+                }
+                // Gate 3: balanced code fences
+                if (substr_count($post->content, '```') % 2 !== 0) {
+                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} has unclosed code blocks");
+                    continue;
+                }
+                // Gate 4: respect moderation_status if it was set to 'pending' explicitly
+                if ($post->moderation_status === 'pending') {
+                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} is moderation_status=pending");
+                    continue;
+                }
+                $post->update(['status' => 'published', 'published_at' => now()]);
+            }
+        });
+})
+    ->dailyAt('18:00')
+    ->timezone(config('app.timezone'))
+    ->name('auto-publish-pending-tutorials');
+

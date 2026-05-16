@@ -43,7 +43,13 @@ class GenerateAiPost extends Command
     public function handle(): int
     {
         // Determine provider
-        $this->provider = $this->option('provider') ?? config('ai.provider', 'groq');
+        $this->provider = $this->option('provider') ?? config('services.ai.provider', 'groq');
+
+        // Short-circuit if API credits were exhausted in the last 24h
+        if (\Illuminate\Support\Facades\Cache::has("ai_provider_exhausted:{$this->provider}")) {
+            $this->warn("AI provider [{$this->provider}] credits were exhausted recently. Add credits and run: php artisan cache:forget ai_provider_exhausted:{$this->provider}");
+            return self::SUCCESS; // exit cleanly so cron stops alerting
+        }
 
         // Set up API credentials based on provider
         $this->setupProvider();
@@ -131,6 +137,15 @@ class GenerateAiPost extends Command
                     } catch (\Exception $retryError) {
                         $this->error("❌ Retry failed: " . $retryError->getMessage());
                     }
+                } elseif (str_contains($errorMessage, 'credit balance is too low') || str_contains($errorMessage, 'insufficient_quota')) {
+                    // API credits exhausted - back off for 24h so the cron stops spamming errors
+                    \Illuminate\Support\Facades\Cache::put("ai_provider_exhausted:{$this->provider}", true, now()->addHours(24));
+                    Log::critical("AI provider credits exhausted - generation paused for 24h", [
+                        'provider' => $this->provider,
+                        'error' => $errorMessage,
+                    ]);
+                    $this->error("AI credits exhausted. Generation paused for 24 hours.");
+                    break; // stop the post-generation loop
                 } else {
                     // Log non-rate-limit errors
                     Log::error("AI post generation failed for post {$i}", [
@@ -202,10 +217,32 @@ class GenerateAiPost extends Command
             $postData['excerpt']
         );
 
-        // AI-generated content gets auto-approved if high quality
-        $moderation_status = ($moderationResult['passed'] && $moderationResult['score'] >= 85)
+        // Hard quality gates BEFORE AI moderation - block obviously bad content
+        $wordCount = str_word_count(strip_tags($postData['content']));
+        $hardGateFailed = false;
+        $hardGateReason = '';
+
+        if ($wordCount < 1500) {
+            $hardGateFailed = true;
+            $hardGateReason = "Word count {$wordCount} below 1500 minimum";
+        } elseif (!preg_match('/[.!?]\s*$/', trim($postData['content']))) {
+            $hardGateFailed = true;
+            $hardGateReason = 'Content does not end with a sentence terminator (likely truncated)';
+        } elseif (substr_count($postData['content'], '```') % 2 !== 0) {
+            $hardGateFailed = true;
+            $hardGateReason = 'Unclosed code block detected';
+        }
+
+        // Approve only if AI passed AND hard gates passed
+        $moderation_status = ($moderationResult['passed'] && $moderationResult['score'] >= 85 && !$hardGateFailed)
             ? 'approved'
             : 'pending';
+
+        if ($hardGateFailed) {
+            $this->warn("Hard quality gate FAILED: {$hardGateReason}");
+            $moderationResult['flags'][] = 'hard_gate_failed';
+            $moderationResult['recommendations'][] = $hardGateReason;
+        }
 
         if ($moderation_status === 'approved') {
             $this->info("✅ Content passed moderation (score: {$moderationResult['score']})");
@@ -222,8 +259,9 @@ class GenerateAiPost extends Command
             'image_attribution' => $imageData['attribution'] ?? null,
             'author_id' => $author->id,
             'category_id' => $category->id,
-            'status' => $this->option('draft') ? 'draft' : 'published',
-            'published_at' => $this->option('draft') ? null : now(),
+            // Respect moderation gate: pending posts MUST be draft regardless of --draft flag
+            'status' => ($this->option('draft') || $moderation_status !== 'approved') ? 'draft' : 'published',
+            'published_at' => ($this->option('draft') || $moderation_status !== 'approved') ? null : now(),
             'is_premium' => $isPremium,
             'is_featured' => $isPremium,
             'allow_comments' => true,
@@ -775,6 +813,36 @@ CONTENT STRATEGY:
 45. END WITH IMPACT/LEARNING: \"This reduced our costs by...\", \"Now we handle...without...\", \"What I'd do differently next time...\"
 46. USE SHORT PARAGRAPHS: 2-3 sentences max. Break up walls of text with bullets, code, examples.
 
+**ANTI-FABRICATION RULES (CRITICAL - GOOGLE AND READERS WILL CATCH THIS):**
+
+Inventing technical facts is the fastest way to destroy credibility. The following lead to INSTANT FAIL:
+
+A. **VERSION NUMBERS MUST BE REAL.** Never invent version numbers. If you are unsure of a version, write 'a recent stable version' instead. Examples of forbidden invention: 'Pyston 1.2' (Pyston was discontinued, no such version), 'Laravel 13' (does not exist as of writing), 'PHP 8.5' (check first).
+
+B. **API METHODS AND CLASS NAMES MUST BE REAL.** Do not invent methods like 'graph.add_nodes()' that look plausible but are not in the actual library. If you are not 100 percent sure a method exists, either: (1) reference the official docs URL where it lives, or (2) use a different, simpler example with stdlib functions you are certain about.
+
+C. **STATS AND BENCHMARKS MUST BE SHOWN, NOT CLAIMED.** Forbidden: 'reduced energy waste by 15 percent', '10,000 requests per second with sub-10ms latency'. If you write a number, you MUST also show: the test setup, hardware/instance specs, the command used, and the raw output. If you cannot show all three, REMOVE the number.
+
+D. **NEVER FABRICATE COMPANY CASE STUDIES.** Forbidden: 'A utility company we worked with reduced costs by 30 percent.' If the story is not directly verifiable, frame it as a hypothesis ('Here is the math on how this would work for a utility with N customers...') rather than as a past event.
+
+E. **DATES MUST BE PLAUSIBLE.** Do not date posts in the future. Do not reference events that have not happened.
+
+**ANTI-REPETITION RULES (DESTROYS QUALITY SCORE):**
+
+F. **NO SCENARIO MAY REPEAT.** A scenario like 'Suppose a utility company wants to optimize energy distribution' or 'To illustrate the power of X, let us consider an example' may appear AT MOST ONCE in the entire article. If you find yourself reusing a setup, you are padding - cut it and move on.
+
+G. **NO PARAGRAPH TEMPLATE MAY BE REUSED.** If section 3 starts with 'To illustrate, let us consider...' then section 5 cannot start the same way. Vary openings.
+
+H. **EVERY CODE EXAMPLE MUST BE DIFFERENT.** Do not show the same RabbitMQ pub/sub pattern twice with cosmetic changes. Each code block must demonstrate something the previous ones did not.
+
+I. **WORD-LEVEL UNIQUENESS:** Avoid using these phrases more than twice in the whole article: 'in conclusion', 'furthermore', 'moreover', 'to illustrate', 'real-world example', 'as developers'.
+
+**SOURCE CITATION RULES:**
+
+J. When citing external information, link to the canonical URL ('https://laravel.com/docs/12.x/eloquent') not a vague reference ('the Laravel documentation'). If you cannot produce a real URL, do not cite.
+
+K. Inline links are preferred over a 'References' section. If you have a references list, every entry must be a working URL.
+
 **VERIFICATION CHECKLIST (IF ANY OF THESE ARE FALSE, REWRITE):**
 ✅ Does this sound like something a REAL ENGINEER with this experience would write?
 ✅ Could I not write this content by just reading official docs?
@@ -1101,7 +1169,7 @@ Return ONLY this JSON (ensure proper escaping):
                 'role' => 'user',
                 'content' => $prompt
             ]
-        ], 20000, 0.7, false); // Increased to 20000 for deep research content (4000-5000 word articles ≈ 5000-6000 tokens = 20000 budget)
+        ], 16000, 0.7, false); // Claude Sonnet 4.5: 16000 tokens for 4000-6000 word complete articles
 
         // Parse JSON response - try multiple approaches
         $postData = $this->parseAIResponse($response);
@@ -1118,7 +1186,7 @@ Return ONLY this JSON (ensure proper escaping):
         $wordCount = str_word_count(strip_tags($postData['content']));
 
         // If content is below target, attempt Pass 2: Expansion
-        if ($wordCount < 2500) {
+        if ($wordCount < 1500) { // Only expand if really short
             $this->info("   📝 Pass 1 generated {$wordCount} words. Running Pass 2: Expanding content...");
 
             try {
@@ -1194,7 +1262,7 @@ Start your response directly with the expanded content (no intro or preamble).";
                     'role' => 'user',
                     'content' => $expandPrompt
                 ]
-            ], 12000, 0.7, false); // Reduced to 12000 tokens to stay under rate limits
+            ], 4000, 0.7, false); // Pass 2 expansion: 4000 tokens for additional content
 
             // Clean up the response (remove any markdown code blocks if present)
             $expandedContent = preg_replace('/^```[a-z]*\n?/i', '', $expandedContent);
@@ -1354,6 +1422,12 @@ Start your response directly with the expanded content (no intro or preamble).";
                 $this->model = config('services.openai.model', 'gpt-4');
                 break;
 
+            case 'anthropic':
+                $this->apiKey = config('services.anthropic.key');
+                $this->baseUrl = 'https://api.anthropic.com/v1/messages';
+                $this->model = 'claude-sonnet-4-5';
+                break;
+
             default:
                 throw new \Exception("Unsupported AI provider: {$this->provider}");
         }
@@ -1370,6 +1444,10 @@ Start your response directly with the expanded content (no intro or preamble).";
 
     private function callOpenAI(array $messages, int $maxTokens = 2000, float $temperature = 0.7, bool $jsonMode = false): string
     {
+        if ($this->provider === 'anthropic') {
+            return $this->callAnthropic($messages, $maxTokens, $temperature);
+        }
+
         $payload = [
             'model' => $this->model,
             'messages' => $messages,
@@ -1396,6 +1474,120 @@ Start your response directly with the expanded content (no intro or preamble).";
         return $response->json()['choices'][0]['message']['content'];
     }
 
+    private function callAnthropic(array $messages, int $maxTokens, float $temperature): string
+    {
+        $system = '';
+        $filteredMessages = [];
+        foreach ($messages as $msg) {
+            if ($msg['role'] === 'system') {
+                $system = $msg['content'];
+            } else {
+                $filteredMessages[] = $msg;
+            }
+        }
+
+        // For main post generation: override JSON format with delimiter format to avoid
+        // JSON-escaping issues when embedding 4000+ word markdown articles.
+        // Skip this for expansion calls (they return plain markdown, not structured data).
+        $isExpansionCall = str_contains($system, 'technical writer') || str_contains($system, 'expanding articles');
+
+        if (!$isExpansionCall) {
+            $system = preg_replace(
+                '/You MUST return ONLY valid JSON[^.]+\..*?Wrap your response in ```json code blocks\./s',
+                'You MUST use EXACTLY this format:\n===META===\n{"title":"...","excerpt":"...","meta_title":"...","meta_description":"...","keywords":["k1","k2","k3"],"tags":["t1","t2","t3"]}\n===CONTENT===\n(full markdown article, no JSON escaping)\n===END===\nDo NOT wrap in JSON or code blocks.',
+                $system
+            );
+        }
+
+        $payload = [
+            'model' => $this->model,
+            'max_tokens' => $maxTokens,
+            'temperature' => $temperature,
+            'messages' => $filteredMessages,
+        ];
+        if ($system) {
+            $payload['system'] = $system;
+        }
+
+        $response = Http::timeout(300)
+            ->withHeaders([
+                'x-api-key' => $this->apiKey,
+                'anthropic-version' => '2023-06-01',
+                'Content-Type' => 'application/json',
+            ])
+            ->post($this->baseUrl, $payload);
+
+        if (!$response->successful()) {
+            throw new \Exception('anthropic API request failed: ' . $response->body());
+        }
+
+        $responseData = $response->json();
+        $rawText = $responseData['content'][0]['text'] ?? '';
+        $stopReason = $responseData['stop_reason'] ?? '';
+
+        // If response was truncated by max_tokens, ask Claude to continue
+        if ($stopReason === 'max_tokens' && !empty($rawText)) {
+            $continuation = $this->continueAnthropicResponse($filteredMessages, $system, $rawText, $maxTokens, $temperature);
+            $rawText .= $continuation;
+        }
+
+        return $this->convertDelimitedToJson($rawText);
+    }
+
+    private function continueAnthropicResponse(array $messages, string $system, string $partial, int $maxTokens, float $temperature): string
+    {
+        $continueMessages = $messages;
+        $continueMessages[] = ['role' => 'assistant', 'content' => $partial];
+        $continueMessages[] = ['role' => 'user', 'content' => 'Continue exactly where you left off. Do not repeat anything. Do not add any introduction or summary. Just continue the text directly.'];
+
+        $payload = [
+            'model' => $this->model,
+            'max_tokens' => $maxTokens,
+            'temperature' => $temperature,
+            'messages' => $continueMessages,
+        ];
+        if ($system) {
+            $payload['system'] = $system;
+        }
+
+        $response = Http::timeout(300)
+            ->withHeaders([
+                'x-api-key' => $this->apiKey,
+                'anthropic-version' => '2023-06-01',
+                'Content-Type' => 'application/json',
+            ])
+            ->post($this->baseUrl, $payload);
+
+        if (!$response->successful()) {
+            return ''; // Return what we have if continuation fails
+        }
+
+        return $response->json()['content'][0]['text'] ?? '';
+    }
+
+    private function convertDelimitedToJson(string $text): string
+    {
+        if (!preg_match('/===META===\s*(\{.*?\})\s*===CONTENT===/s', $text, $metaMatch)) {
+            return $text; // fall back to raw text for standard parser
+        }
+
+        $meta = json_decode($metaMatch[1], true);
+        if (!$meta) {
+            return $text;
+        }
+
+        // Extract content after ===CONTENT=== (===END=== may be cut off by token limit)
+        if (preg_match('/===CONTENT===\s*(.+?)\s*===END===/s', $text, $contentMatch)) {
+            $articleContent = $contentMatch[1];
+        } elseif (preg_match('/===CONTENT===\s*(.+)$/s', $text, $contentMatch)) {
+            $articleContent = trim($contentMatch[1]);
+        } else {
+            return $text;
+        }
+
+        $meta['content'] = $articleContent;
+        return json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
     private function getCategory()
     {
         $categorySlug = $this->option('category');
@@ -2207,43 +2399,6 @@ Return ONLY this JSON (ensure proper escaping):
         if (empty($research['sources']) || empty(array_filter($research['sources']))) {
             return '';
         }
-
-        $context = "📚 RESEARCH CONTEXT (from multiple authoritative sources):\n\n";
-
-        // Add key insights
-        if (!empty($research['keyInsights'])) {
-            $context .= "KEY INSIGHTS FROM RESEARCH:\n";
-            foreach (array_slice($research['keyInsights'], 0, 5) as $insight) {
-                $context .= "- {$insight}\n";
-            }
-            $context .= "\n";
-        }
-
-        // Add best practices
-        if (!empty($research['bestPractices'])) {
-            $context .= "BEST PRACTICES IDENTIFIED:\n";
-            foreach (array_slice($research['bestPractices'], 0, 5) as $practice) {
-                $context .= "- {$practice}\n";
-            }
-            $context .= "\n";
-        }
-
-        // Add case studies
-        if (!empty($research['caseStudies'])) {
-            $context .= "REAL-WORLD CASE STUDIES:\n";
-            foreach (array_slice($research['caseStudies'], 0, 3) as $study) {
-                $context .= "- {$study}\n";
-            }
-            $context .= "\n";
-        }
-
-        // Add source summary
-        $sources = array_filter($research['sources']);
-        if (!empty($sources)) {
-            $context .= "SOURCES: Aggregated from " . count($sources) . " authoritative sources (Medium, Dev.to, HackerNews, GitHub)\n";
-            $context .= "Use this research context to write a post that synthesizes these real-world insights into practical, actionable content.\n\n";
-        }
-
-        return $context;
+        return app(\App\Services\WebResearchService::class)->formatForContentGeneration($research);
     }
 }

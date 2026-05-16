@@ -23,7 +23,7 @@ class HelpContact extends Component
     #[Validate('required|in:low,normal,high,urgent')]
     public string $priority = 'normal';
 
-    protected $listeners = ['show-help-modal' => 'showModal'];
+    protected $listeners = ['show-help-modal' => 'openModal'];
 
     public function updatedType($value)
     {
@@ -45,7 +45,7 @@ class HelpContact extends Component
         $this->priority = is_array($value) ? ($value[0] ?? 'normal') : $value;
     }
 
-    public function showModal()
+    public function openModal()
     {
         $this->showModal = true;
     }

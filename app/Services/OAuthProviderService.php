@@ -36,7 +36,7 @@ class OAuthProviderService
         }
 
         try {
-            return Socialite::driver($provider)->user();
+            return Socialite::driver($provider)->stateless()->user();
         } catch (\Exception $e) {
             Log::error("OAuth Error for provider {$provider}: " . $e->getMessage());
             throw new \Exception("Failed to authenticate with {$provider}: " . $e->getMessage());
@@ -197,7 +197,7 @@ class OAuthProviderService
             throw new \Exception("Provider '{$provider}' credentials are not configured.");
         }
 
-        return Socialite::driver($provider)->redirect();
+        return Socialite::driver($provider)->stateless()->redirect();
     }
 
     /**

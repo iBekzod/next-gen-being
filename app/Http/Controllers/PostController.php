@@ -27,10 +27,8 @@ class PostController extends Controller
         // Get content based on user access
         $content = $showPaywall ? $post->getPreviewContent() : $post->content;
 
-        // Track view (only for public or subscribed users)
-        if (!$showPaywall) {
-            $post->increment('views_count');
-        }
+        // View tracking happens inside the Livewire post-show component
+        // via Post::recordView(), which dedups bots/authors/repeat hits.
 
         return view('posts.show', [
             'post' => $post,
@@ -39,6 +37,7 @@ class PostController extends Controller
             'paywallMessage' => $post->getPaywallMessage(),
         ]);
     }
+
 
     public function create(Request $request)
     {
@@ -345,12 +344,15 @@ class PostController extends Controller
                     ->with(['category', 'author'])
                     ->first();
 
-                // Check if user has completed all parts in this series
+                // Per-user reading progress: 'Complete' when user has read every published part,
+                // 'In Progress' for everyone else (logged-out or part-read).
                 $is_complete = false;
+                $has_started = false;
                 if ($user && $tutorialProgressService) {
                     try {
                         $seriesProgress = $tutorialProgressService->getSeriesProgress($user, $item->series_slug);
                         $is_complete = $seriesProgress['is_complete'];
+                        $has_started = $seriesProgress['has_started'];
                     } catch (\Exception $e) {
                         \Log::error('Failed to get series progress: ' . $e->getMessage());
                     }

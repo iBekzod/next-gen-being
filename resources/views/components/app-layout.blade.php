@@ -254,7 +254,7 @@
                                 <div class="bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                     <a href="{{ route('dashboard') }}"
                                         class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 first:rounded-t-lg transition-colors">Dashboard</a>
-                                    <a href="{{ route('profile.edit') }}"
+                                    <a href="{{ route('dashboard.settings') }}"
                                         class="block px-4 py-3 text-sm text-gray-900 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Settings</a>
                                     <hr class="my-1 border-gray-300 dark:border-gray-700">
                                     <form method="POST" action="{{ route('logout') }}">

@@ -56,6 +56,99 @@ class Post extends Model implements HasMedia
             ->saveSlugsTo('slug');
     }
 
+    /**
+     * Strip markdown chars and TOC/header noise from a string for display.
+     */
+    public static function cleanExcerptText(?string $text, int $limit = 200): string
+    {
+        if (empty($text)) return '';
+        $s = $text;
+        // Strip HTML tags (anchor tags, etc. embedded in markdown)
+        $s = strip_tags($s);
+        // Remove code blocks
+        $s = preg_replace('/```[\s\S]*?```/', ' ', $s);
+        // Remove inline code
+        $s = preg_replace('/`[^`]+`/', ' ', $s);
+        // Convert [text](url) -> text
+        $s = preg_replace('/\[([^\]]+)\]\([^)]+\)/', '$1', $s);
+        // Convert ![alt](url) -> ''
+        $s = preg_replace('/!\[[^\]]*\]\([^)]+\)/', '', $s);
+        // Strip blockquote markers, list bullets, headings at line start
+        $s = preg_replace('/^\s*[>#\-*+]+\s*/m', '', $s);
+        // Strip numbered list items at line start (e.g., "1. ")
+        $s = preg_replace('/^\s*\d+\.\s+/m', '', $s);
+        // Bold/italic markers
+        $s = preg_replace('/\*\*([^*]+)\*\*/', '$1', $s);
+        $s = preg_replace('/\*([^*]+)\*/', '$1', $s);
+        $s = preg_replace('/__([^_]+)__/', '$1', $s);
+        $s = preg_replace('/_([^_]+)_/', '$1', $s);
+        // Strip remaining markdown chars
+        $s = preg_replace('/[#>*_~|]/', ' ', $s);
+        // Collapse whitespace
+        $s = preg_replace('/\s+/', ' ', $s);
+        $s = trim($s);
+        return mb_strimwidth($s, 0, $limit, $limit > 0 ? '…' : '');
+    }
+
+    /**
+     * Try to extract a clean first prose paragraph from content. Falls back to title.
+     */
+    public static function extractExcerptFromContent(?string $content, ?string $fallbackTitle = '', int $limit = 200): string
+    {
+        if (empty($content)) return self::cleanExcerptText($fallbackTitle, $limit);
+        // Strip code blocks
+        $body = preg_replace('/```[\s\S]*?```/', '', $content);
+        $body = strip_tags($body);
+        $paragraphs = preg_split('/\n\s*\n/', trim($body));
+        foreach ($paragraphs as $p) {
+            $p = trim($p);
+            if ($p === '') continue;
+            // Skip blocks that are clearly TOC entries, headings, or metadata
+            // Multiple lines starting with link/list markers -> TOC
+            $lines = preg_split('/\n/', $p);
+            $linkLineCount = 0;
+            foreach ($lines as $line) {
+                if (preg_match('/^\s*(?:\d+\.\s*)?\[[^\]]+\]\(#/', $line)) $linkLineCount++;
+            }
+            if ($linkLineCount >= 2) continue;
+            // Skip if starts with #, |, *Estimated, *Skill, *Last, etc.
+            if (preg_match('/^(#|\||---|\*Estimated|\*Skill|\*Last|\*Read|>)/', $p)) continue;
+            // Skip if it's mostly markdown metadata (contains | bars or bold-only metadata)
+            if (preg_match('/^\*\*[^*]+:\*\*/', $p)) continue;
+            // Skip metadata blocks (read time / skill / last updated / view repository)
+            if (preg_match('/(Read time|Reading time|Estimated Reading|Skill Level|Last Updated|View Repository)/i', $p) && mb_strlen($p) < 400) continue;
+            // Skip paragraphs with > 2 pipe separators (metadata bar pattern)
+            if (substr_count($p, '|') >= 2) continue;
+            // Skip if it's mostly a single horizontal rule or separator
+            if (preg_match('/^[\-=*_\s]+$/', $p)) continue;
+            // Skip if very short
+            $clean = self::cleanExcerptText($p, $limit);
+            if (mb_strlen($clean) < 40) continue;
+            return $clean;
+        }
+        return self::cleanExcerptText($fallbackTitle ?: substr($content, 0, $limit), $limit);
+    }
+
+    /**
+     * Accessor: clean excerpt for use in cards. Strips markdown from the stored excerpt,
+     * or regenerates from content if the stored excerpt is missing/garbage.
+     */
+    public function getCleanExcerptAttribute(): string
+    {
+        $stored = $this->excerpt ?? '';
+        // Detect garbage excerpts: TOC entries, raw markdown blockquote, mostly markdown syntax
+        $isGarbage =
+            preg_match('/^\s*\d+\.\s*\[[^\]]+\]\(#/', $stored) ||
+            preg_match('/^\s*>/', $stored) ||
+            preg_match('/^\s*\*\*[^*]+\*\*\s*\|/', $stored) ||
+            preg_match('/^\s*\[[^\]]+\]\(#/', $stored) ||
+            mb_strlen(trim($stored)) < 30;
+        if ($isGarbage) {
+            return self::extractExcerptFromContent($this->content, $this->title, 200);
+        }
+        return self::cleanExcerptText($stored, 200);
+    }
+
     // Accessors
     public function getFeaturedImageAttribute($value)
     {
@@ -421,23 +514,107 @@ class Post extends Model implements HasMedia
 
     public function recordView(?User $user = null): void
     {
-        if ($user) {
-            $this->interactions()->updateOrCreate([
-                'user_id' => $user->id,
-                'type' => 'view'
-            ], [
-                'created_at' => now()
-            ]);
+        $request = request();
+        $ua = (string) $request->userAgent();
+
+        // 1. Bot filter
+        if (preg_match('/(bot|crawler|spider|preview|scrape|pingdom|curl|wget|httpie|monitor|headless|lighthouse|axios)/i', $ua)) {
+            return;
         }
 
+        // 2. Skip the author's own visits
+        if ($user && $user->id === $this->author_id) {
+            return;
+        }
+
+        // 3. Dedup: same user OR same session/IP within 6 hours
+        $sessionId = $request->hasSession() ? $request->session()->getId() : null;
+        $ip = $request->ip();
+        $dedupWindow = now()->subHours(6);
+
+        $recentlyViewed = ContentView::where('post_id', $this->id)
+            ->where('viewed_at', '>=', $dedupWindow)
+            ->where(function ($q) use ($user, $sessionId, $ip) {
+                if ($user) {
+                    $q->where('user_id', $user->id);
+                } else {
+                    $q->where(function ($qq) use ($sessionId, $ip) {
+                        if ($sessionId) $qq->where('session_id', $sessionId);
+                        $qq->orWhere('ip_address', $ip);
+                    });
+                }
+            })
+            ->exists();
+
+        if ($recentlyViewed) {
+            return;
+        }
+
+        // 4. Record detailed view
+        ContentView::create([
+            'user_id'            => $user?->id,
+            'post_id'            => $this->id,
+            'session_id'         => $sessionId,
+            'ip_address'         => $ip,
+            'user_agent'         => mb_substr($ua, 0, 500),
+            'is_premium_content' => (bool) $this->is_premium,
+            'referrer'           => mb_substr((string) $request->headers->get('referer'), 0, 250),
+            'viewed_at'          => now(),
+        ]);
+
+        // 5. Lightweight legacy interaction row (for logged-in users only)
+        if ($user) {
+            $this->interactions()->updateOrCreate(
+                ['user_id' => $user->id, 'type' => 'view'],
+                ['created_at' => now()]
+            );
+        }
+
+        // 6. Increment the cached counter that powers the UI
         $this->increment('views_count');
     }
 
     public function calculateReadTime(): int
     {
-        $wordsPerMinute = 200;
-        $wordCount = str_word_count(strip_tags($this->content));
-        return max(1, ceil($wordCount / $wordsPerMinute));
+        if (empty($this->content)) {
+            return 1;
+        }
+
+        $content = $this->content;
+
+        // Images add focused attention time (separate from word pace)
+        $imageCount = preg_match_all('/!\[[^\]]*\]\([^)]+\)/', $content);
+
+        // Strip markdown structure for word count.
+        // Code blocks: keep the words inside (variable names, comments) but at half weight,
+        // because readers skim them - we represent this by counting them once but at the
+        // overall WPM pace, which is calibrated for mixed tech content.
+        $stripped = preg_replace('/```[\\s\\S]*?```/', ' ', $content);
+        $stripped = preg_replace('/`[^`]+`/', ' code ', $stripped);
+        $stripped = preg_replace('/!\[[^\]]*\]\([^)]+\)/', ' ', $stripped);
+        $stripped = preg_replace('/\[([^\]]+)\]\([^)]+\)/', '$1', $stripped);
+        $stripped = preg_replace('/[#*_>~|]+/', ' ', $stripped);
+        $stripped = preg_replace('/\s+/', ' ', $stripped);
+
+        $proseWords = str_word_count($stripped);
+
+        // Code line count: each line adds a small fixed scan time.
+        $codeLineCount = 0;
+        if (preg_match_all('/```[\\s\\S]*?```/', $content, $codeBlocks)) {
+            foreach ($codeBlocks[0] as $block) {
+                $codeLineCount += max(0, substr_count($block, "\n") - 1);
+            }
+        }
+
+        // Pace model:
+        //   - Prose at 240 wpm (skilled tech reader)
+        //   - Code: 1 second per line (skim)
+        //   - Images: 8 seconds each
+        $seconds = ($proseWords / 240) * 60
+                 + $codeLineCount * 1.0
+                 + $imageCount * 8;
+
+        return max(1, (int) ceil($seconds / 60));
     }
 
     protected static function boot()
@@ -445,7 +622,9 @@ class Post extends Model implements HasMedia
         parent::boot();
 
         static::saving(function ($post) {
-            if (!$post->read_time) {
+            // Always recalculate when content changes, so length stays accurate
+            // after Pass-2 expansion or auto-continuation
+            if ($post->isDirty('content') || !$post->read_time) {
                 $post->read_time = $post->calculateReadTime();
             }
         });

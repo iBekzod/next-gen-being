@@ -107,7 +107,7 @@
     <!-- View More -->
     @if($recommendations->count() > $limit)
     <div class="px-6 py-4 text-center border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50">
-        <a href="{{ route('recommendations.index') }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+        <a href="{{ route('dashboard.posts') }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
             View All {{ $recommendations->count() }} Recommendations →
         </a>
     </div>

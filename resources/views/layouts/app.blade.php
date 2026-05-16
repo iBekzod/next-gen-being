@@ -342,6 +342,12 @@
                                 Tutorials
                             </a>
 
+                            <!-- Authors -->
+                            <a href="{{ route('authors.index') }}"
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                Authors
+                            </a>
+
                             <!-- Pricing -->
                             @if (setting('enable_subscriptions'))
                                 <a href="{{ route('subscription.plans') }}"
@@ -569,6 +575,10 @@
                             class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
                     </div>
 
+                    <!-- Authors -->
+                    <a href="{{ route('authors.index') }}"
+                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Authors</a>
+
                     <!-- Pricing -->
                     @if (setting('enable_subscriptions'))
                         <a href="{{ route('subscription.plans') }}"
@@ -697,6 +707,8 @@
                             <li><a href="{{ route('tutorials.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Tutorial
                                     Series</a></li>
+                            <li><a href="{{ route('authors.index') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Authors</a></li>
                             <li><a href="{{ route('about') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">About
                                     Us</a></li>

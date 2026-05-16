@@ -23,9 +23,9 @@
             </div>
         @endif
 
-        @if($error)
+        @if($error && !is_array($error))
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
-                <p class="text-sm text-red-600 dark:text-red-400">{{ $error }}</p>
+                <p class="text-sm text-red-600 dark:text-red-400">{{ is_string($error) ? $error : '' }}</p>
             </div>
         @endif
 

@@ -49,10 +49,10 @@
                             <span class="font-bold text-xl text-blue-600">#{{ $i }}</span>
                             <div>
                                 <p class="font-semibold">Creator Name</p>
-                                <p class="text-xs text-gray-500">{{ rand(1000, 10000) }} followers</p>
+                                <p class="text-xs text-gray-500">— followers</p>
                             </div>
                         </div>
-                        <span class="font-bold text-blue-600">{{ rand(100, 9999) }} pts</span>
+                        <span class="font-bold text-blue-600">—</span>
                     </div>
                 @endfor
             </div>
@@ -68,10 +68,10 @@
                             <span class="font-bold text-xl text-green-600">#{{ $i }}</span>
                             <div>
                                 <p class="font-semibold">Reader Name</p>
-                                <p class="text-xs text-gray-500">{{ rand(100, 1000) }} posts read</p>
+                                <p class="text-xs text-gray-500">— posts read</p>
                             </div>
                         </div>
-                        <span class="font-bold text-green-600">{{ rand(100, 9999) }} pts</span>
+                        <span class="font-bold text-green-600">—</span>
                     </div>
                 @endfor
             </div>
@@ -87,10 +87,10 @@
                             <span class="font-bold text-xl text-purple-600">#{{ $i }}</span>
                             <div>
                                 <p class="font-semibold">User Name</p>
-                                <p class="text-xs text-gray-500">{{ rand(100, 1000) }} interactions</p>
+                                <p class="text-xs text-gray-500">— interactions</p>
                             </div>
                         </div>
-                        <span class="font-bold text-purple-600">{{ rand(100, 9999) }} pts</span>
+                        <span class="font-bold text-purple-600">—</span>
                     </div>
                 @endfor
             </div>

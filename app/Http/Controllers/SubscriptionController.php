@@ -9,6 +9,18 @@ class SubscriptionController extends Controller
     public function plans()
     {
         $plans = [
+            'free' => [
+                'name' => 'Free',
+                'price' => '$0',
+                'interval' => 'forever',
+                'price_id' => null,
+                'features' => [
+                    'Read all public articles',
+                    'Save bookmarks across devices',
+                    'Weekly newsletter',
+                    'Comment and follow authors',
+                ]
+            ],
             'basic' => [
                 'name' => 'Basic',
                 'price' => '$9.99',

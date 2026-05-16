@@ -81,13 +81,13 @@
                         <div class="mt-2">
                             <div class="flex justify-between text-sm mb-2">
                                 <span>Progress</span>
-                                <span>{{ rand(10, 90) }}%</span>
+                                <span class="text-gray-400">—</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full" style="width: {{ rand(10, 90) }}%"></div>
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
                             </div>
                         </div>
-                        <p class="text-sm text-gray-600 mt-2">Reward: +{{ rand(10, 100) }} points</p>
+                        <p class="text-sm text-gray-600 mt-2">Reward: points</p>
                     </div>
                 @endfor
             </div>
