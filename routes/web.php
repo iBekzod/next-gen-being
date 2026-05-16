@@ -226,3 +226,15 @@ Route::get('/paths', [LearningPathController::class, 'index'])->name('learning-p
 Route::get('/paths/{learningPath}', [LearningPathController::class, 'show'])->name('learning-paths.show');
 Route::get('/collections', [TutorialCollectionController::class, 'index'])->name('tutorial-collections.index');
 Route::get('/collections/{slug}', [TutorialCollectionController::class, 'show'])->name('tutorial-collections.show');
+
+// Quick newsletter subscribe (used by exit-intent popup and inline CTAs)
+Route::post('/newsletter/quick-subscribe', function (\Illuminate\Http\Request $req) {
+    $validated = $req->validate(['email' => 'required|email|max:255']);
+    try {
+        app(\App\Services\NewsletterService::class)->subscribe($validated['email'], auth()->id());
+        return response()->json(['ok' => true]);
+    } catch (\Throwable $e) {
+        \Log::warning('Quick subscribe failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'Could not subscribe'], 422);
+    }
+})->middleware('throttle:5,1')->name('newsletter.quick-subscribe');

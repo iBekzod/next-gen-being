@@ -654,6 +654,12 @@ class Post extends Model implements HasMedia
 
         // 6. Increment the cached counter that powers the UI
         $this->increment('views_count');
+
+        // 7. Fire-and-forget: evaluate this user's achievements (5-min internal cache prevents spam)
+        if ($user) {
+            try { app(\App\Services\AchievementService::class)->evaluateAll($user); }
+            catch (\Throwable $e) { \Log::warning('Achievement eval failed: ' . $e->getMessage()); }
+        }
     }
 
     public function calculateReadTime(): int
