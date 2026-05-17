@@ -65,12 +65,24 @@ class BotPostController extends Controller
         $categoryId ??= Category::where('slug', 'web-development')->value('id')
             ?? Category::query()->value('id');
 
+        // Auto-pick a featured image via existing ImageGenerationService (Stability/Unsplash).
+        $imageTopic = trim(implode(' ', array_slice($data['tags'] ?? [], 0, 3)) . ' ' . $data['title']);
+        $imageData = null;
+        try {
+            $imageData = app(\App\Services\ImageGenerationService::class)
+                ->generateFeaturedImage($data['title'], $imageTopic);
+        } catch (\Throwable $e) {
+            Log::warning('Image fetch failed for bot post: ' . $e->getMessage());
+        }
+
         $post = Post::create([
             'title' => $data['title'],
             'excerpt' => $data['excerpt'],
             'content' => $data['content'],
             'author_id' => $data['author_id'],
             'category_id' => $categoryId,
+            'featured_image' => $imageData['url'] ?? null,
+            'image_attribution' => $imageData['attribution'] ?? null,
             'status' => 'draft',
             'is_premium' => false,
             'allow_comments' => true,
