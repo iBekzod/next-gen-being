@@ -45,6 +45,8 @@ class BotPostController extends Controller
             'tags.*' => 'string|max:60',
             'category_slug' => 'nullable|string|max:100',
             'author_id' => 'required|integer|exists:users,id',
+            'featured_image_url' => 'nullable|url|max:2048',
+            'image_attribution' => 'nullable|array',
         ]);
 
         // Quality gate — same one we apply to AI-generated posts
@@ -65,14 +67,22 @@ class BotPostController extends Controller
         $categoryId ??= Category::where('slug', 'web-development')->value('id')
             ?? Category::query()->value('id');
 
-        // Auto-pick a featured image via existing ImageGenerationService (Stability/Unsplash).
-        $imageTopic = trim(implode(' ', array_slice($data['tags'] ?? [], 0, 3)) . ' ' . $data['title']);
+        // Use bot's pre-picked image if provided, otherwise fall back to server-side picker
         $imageData = null;
-        try {
-            $imageData = app(\App\Services\ImageGenerationService::class)
-                ->generateFeaturedImage($data['title'], $imageTopic);
-        } catch (\Throwable $e) {
-            Log::warning('Image fetch failed for bot post: ' . $e->getMessage());
+        if (!empty($data['featured_image_url'])) {
+            $imageData = [
+                'url' => $data['featured_image_url'],
+                'attribution' => $data['image_attribution'] ?? null,
+            ];
+        } else {
+            // Bot didn't pick one — server falls back to ImageGenerationService
+            $imageTopic = trim(implode(' ', array_slice($data['tags'] ?? [], 0, 3)) . ' ' . $data['title']);
+            try {
+                $imageData = app(\App\Services\ImageGenerationService::class)
+                    ->generateFeaturedImage($data['title'], $imageTopic);
+            } catch (\Throwable $e) {
+                Log::warning('Image fetch failed for bot post: ' . $e->getMessage());
+            }
         }
 
         $post = Post::create([
