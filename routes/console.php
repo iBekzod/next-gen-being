@@ -14,18 +14,30 @@ Artisan::command('inspire', function () {
 // Generates posts from the monthly content plan (80% free, 20% premium)
 // Posts automatically follow the conversion funnel strategy
 
-// Daily AI post (9 AM) - From content plan (auto FREE/PREMIUM based on plan)
-Schedule::command('ai:generate-post')
+// Daily content cron - bot-first, API fallback only when local bot is offline >25h.
+// The local blog-bot (D:/projects/MyProjects/blog-bot) generates via Claude Code CLI
+// using the Max plan subscription. The bot sends a heartbeat every 15 min while alive.
+Schedule::call(function () {
+    $lastSeen = \Illuminate\Support\Facades\Cache::get('bot:last_seen');
+    if ($lastSeen) {
+        try {
+            $age = \Carbon\Carbon::parse($lastSeen)->diffInHours(now());
+            if ($age < 25) {
+                \Illuminate\Support\Facades\Log::info('Daily AI cron: skipping API gen (bot heartbeat fresh)', ['last_seen' => $lastSeen, 'hours_ago' => $age]);
+                return; // bot is alive and will handle generation
+            }
+        } catch (\Throwable $e) {
+            // fall through to API
+        }
+    }
+
+    \Illuminate\Support\Facades\Log::warning('Daily AI cron: bot offline, falling back to API generation');
+    \Illuminate\Support\Facades\Artisan::call('ai:generate-post');
+})
+    ->name('daily-content-bot-or-api')
     ->dailyAt('09:00')
     ->timezone(config('app.timezone'))
-    ->runInBackground()
-    ->withoutOverlapping(60)
-    ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Daily AI post generated from content plan');
-    })
-    ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('Daily AI post generation failed');
-    });
+    ->withoutOverlapping(60);
 
 // ========================================
 // CONTENT PLANNING (Monthly)

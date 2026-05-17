@@ -183,3 +183,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/config', [TutorialGenerationController::class, 'configuration'])->name('config');
     });
 });
+
+// Blog-bot endpoints (HMAC-authenticated; bot runs locally on dev laptop,
+// posts drafts here so we don't have to spend Anthropic API credits)
+Route::post('/bot/post', [\App\Http\Controllers\Api\BotPostController::class, 'submitPost'])
+    ->middleware('throttle:10,1')->name('api.bot.post');
+Route::post('/bot/heartbeat', [\App\Http\Controllers\Api\BotPostController::class, 'heartbeat'])
+    ->middleware('throttle:30,1')->name('api.bot.heartbeat');
