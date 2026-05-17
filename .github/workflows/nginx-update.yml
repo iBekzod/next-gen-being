@@ -1,0 +1,49 @@
+name: Update Nginx Config on Server
+
+on:
+  workflow_dispatch:
+      inputs:
+            confirm:
+                    description: 'Type YES to apply nginx config from docker/nginx/prod.conf to server'
+                            required: true
+                                    default: ''
+
+                                    jobs:
+                                      update-nginx:
+                                          runs-on: ubuntu-latest
+                                              if: github.event.inputs.confirm == 'YES'
+                                                  steps:
+                                                        - name: Checkout code
+                                                                uses: actions/checkout@v4
+
+                                                                      - name: Deploy Nginx config via SSH
+                                                                              uses: appleboy/ssh-action@v1.0.3
+                                                                                      with:
+                                                                                                host: ${{ secrets.SERVER_IP }}
+                                                                                                          username: ${{ secrets.SSH_USER }}
+                                                                                                                    key: ${{ secrets.SSH_PRIVATE_KEY }}
+                                                                                                                              script: |
+                                                                                                                                          APP=/var/www/nextgenbeing
+                                                                                                                                                      NGINX_SITE=/etc/nginx/sites-available/nextgenbeing
+                                                                                                                                                      
+                                                                                                                                                                  echo "=== Backing up current nginx config ==="
+                                                                                                                                                                              sudo cp $NGINX_SITE ${NGINX_SITE}.bak.$(date +%Y%m%d%H%M%S)
+                                                                                                                                                                              
+                                                                                                                                                                                          echo "=== Copying new nginx config from repo ==="
+                                                                                                                                                                                                      sudo cp $APP/docker/nginx/prod.conf $NGINX_SITE
+                                                                                                                                                                                                      
+                                                                                                                                                                                                                  echo "=== Fixing paths (docker->bare-metal) ==="
+                                                                                                                                                                                                                              sudo sed -i "s|/var/www/html/public|$APP/public|g" $NGINX_SITE
+                                                                                                                                                                                                                                          sudo sed -i "s|/var/www/html/storage|$APP/storage|g" $NGINX_SITE
+                                                                                                                                                                                                                                                      sudo sed -i "s|ngb-app:9000|unix:/var/run/php/php8.4-fpm.sock|g" $NGINX_SITE
+                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                  echo "=== Testing nginx config ==="
+                                                                                                                                                                                                                                                                              sudo nginx -t
+                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                          echo "=== Reloading nginx ==="
+                                                                                                                                                                                                                                                                                                      sudo systemctl reload nginx
+                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                  echo "=== Verifying www redirect ==="
+                                                                                                                                                                                                                                                                                                                              curl -sI https://www.nextgenbeing.com/ | head -5
+                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                          echo "DONE - nginx config updated successfully"
