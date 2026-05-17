@@ -25,18 +25,28 @@ jobs:
           script: |
             APP=/var/www/nextgenbeing
             NGINX_SITE=/etc/nginx/sites-available/nextgenbeing
+
             echo "=== Backing up current nginx config ==="
             sudo cp "$NGINX_SITE" "${NGINX_SITE}.bak.$(date +%Y%m%d%H%M%S)"
-            echo "=== Copying new nginx config from repo ==="
+
+            echo "=== Copying rate-limits.conf to /etc/nginx/conf.d/ ==="
+            sudo cp "$APP/docker/nginx/conf.d/rate-limits.conf" /etc/nginx/conf.d/rate-limits.conf
+
+            echo "=== Copying new nginx site config from repo ==="
             sudo cp "$APP/docker/nginx/prod.conf" "$NGINX_SITE"
-            echo "=== Fixing paths (docker->bare-metal) ==="
+
+            echo "=== Fixing paths (docker -> bare-metal) ==="
             sudo sed -i "s|/var/www/html/public|$APP/public|g" "$NGINX_SITE"
             sudo sed -i "s|/var/www/html/storage|$APP/storage|g" "$NGINX_SITE"
             sudo sed -i "s|ngb-app:9000|unix:/var/run/php/php8.4-fpm.sock|g" "$NGINX_SITE"
+
             echo "=== Testing nginx config ==="
             sudo nginx -t
+
             echo "=== Reloading nginx ==="
             sudo systemctl reload nginx
+
             echo "=== Verifying www redirect ==="
-            curl -sI https://www.nextgenbeing.com/ | head -5
+            curl -sI --max-time 10 https://www.nextgenbeing.com/ | head -5 || echo "curl failed (may be Cloudflare blocking)"
+
             echo "DONE - nginx config updated successfully"
