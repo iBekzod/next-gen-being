@@ -168,4 +168,7 @@ return [
         'key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    'blog_bot' => [
+        'secret' => env('BOT_API_SECRET'),
+    ],
 ];
