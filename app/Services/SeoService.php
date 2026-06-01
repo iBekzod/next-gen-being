@@ -32,8 +32,9 @@ class SeoService
                 ->setPriority(0.9)
         );
 
-        // Add published posts
+        // Add published posts (exclude noindex'd ones — they shouldn't be in the sitemap)
         Post::published()
+            ->where('noindex', false)
             ->select(['slug', 'updated_at'])
             ->chunk(1000, function ($posts) use ($sitemap) {
                 foreach ($posts as $post) {

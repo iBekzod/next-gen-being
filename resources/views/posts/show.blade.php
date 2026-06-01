@@ -21,7 +21,7 @@
 @section('canonical', route('posts.show', $post->slug))
 @section('share_image', $shareImage)
 @section('author', $post->author->name)
-@section('robots', $post->is_premium ? 'index, follow, noarchive' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1')
+@section('robots', $post->noindex ? 'noindex, nofollow' : ($post->is_premium ? 'index, follow, noarchive' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'))
 
 
 @push('head')

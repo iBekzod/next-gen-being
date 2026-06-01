@@ -18,6 +18,15 @@ Artisan::command('inspire', function () {
 // The local blog-bot (D:/projects/MyProjects/blog-bot) generates via Claude Code CLI
 // using the Max plan subscription. The bot sends a heartbeat every 15 min while alive.
 Schedule::call(function () {
+    // Hard-gated by env: while we de-AI-ify the existing corpus to recover from
+    // the AdSense rejection, both the bot-driven path AND the API fallback are
+    // disabled by default. Flip BLOG_AUTO_PUBLISH=true in .env when ready to
+    // resume automated publishing.
+    if (! filter_var(env('BLOG_AUTO_PUBLISH', false), FILTER_VALIDATE_BOOLEAN)) {
+        \Illuminate\Support\Facades\Log::info('Daily AI cron: skipped (BLOG_AUTO_PUBLISH disabled)');
+        return;
+    }
+
     $lastSeen = \Illuminate\Support\Facades\Cache::get('bot:last_seen');
     if ($lastSeen) {
         try {

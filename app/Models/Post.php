@@ -27,7 +27,8 @@ class Post extends Model implements HasMedia
         // Content Curation Fields
         'content_source_type', 'content_aggregation_id', 'is_curated', 'source_ids',
         'base_language', 'base_post_id', 'paraphrase_confidence_score',
-        'is_fact_verified', 'verification_notes', 'references'
+        'is_fact_verified', 'verification_notes', 'references',
+        'noindex', 'noindex_reason',
     ];
 
     protected $casts = [
@@ -40,6 +41,7 @@ class Post extends Model implements HasMedia
         'is_premium' => 'boolean',
         'is_curated' => 'boolean',
         'is_fact_verified' => 'boolean',
+        'noindex' => 'boolean',
         'gallery' => 'array',
         'seo_meta' => 'array',
         'image_attribution' => 'array',

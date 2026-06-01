@@ -75,6 +75,7 @@ class SeoController extends Controller
         }
 
         Post::published()
+            ->where('noindex', false)
             ->with('category')
             ->latest('updated_at')
             ->get()
