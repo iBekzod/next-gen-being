@@ -99,11 +99,7 @@ class SeoService
             'headline' => $post->title,
             'description' => $post->excerpt,
             'image' => $post->featured_image ? asset($post->featured_image) : null,
-            'author' => [
-                '@type' => 'Person',
-                'name' => $post->author->name,
-                'url' => route('authors.show', $post->author->id),
-            ],
+            'author' => $this->buildAuthorSchema($post),
             'publisher' => [
                 '@type' => 'Organization',
                 'name' => config('app.name'),
@@ -123,6 +119,52 @@ class SeoService
             'wordCount' => str_word_count(strip_tags($post->content)),
             'timeRequired' => 'PT' . $post->read_time . 'M',
         ];
+    }
+
+    /**
+     * Build the schema.org Person object for the post's author with full E-E-A-T
+     * signals: the author's real, verifiable identity (`sameAs` → social
+     * profiles), their photo, and bio. These are the machine-readable signals
+     * Google uses to attribute expertise and trust to bylined content — the
+     * difference between "anonymous AI text" and "written by a known person".
+     */
+    protected function buildAuthorSchema(Post $post): array
+    {
+        $author = $post->author;
+
+        $schema = [
+            '@type' => 'Person',
+            'name' => $author->name,
+            'url' => $author->slug
+                ? route('authors.show', $author->slug)
+                : route('authors.show', $author->id),
+        ];
+
+        if (!empty($author->bio)) {
+            $schema['description'] = $author->bio;
+        }
+
+        if (!empty($author->avatar)) {
+            $schema['image'] = str_starts_with($author->avatar, 'http')
+                ? $author->avatar
+                : asset($author->avatar);
+        }
+
+        // sameAs links the byline to the author's external identity. Skip the
+        // internal /authors/ profile URL (that's `url`, not a separate identity).
+        $sameAs = array_values(array_filter([
+            $author->linkedin ?? null,
+            $author->twitter ?? null,
+            (!empty($author->website) && !str_contains($author->website, '/authors/'))
+                ? $author->website
+                : null,
+        ]));
+
+        if (!empty($sameAs)) {
+            $schema['sameAs'] = $sameAs;
+        }
+
+        return $schema;
     }
 
     public function getMetaTags(string $title = null, string $description = null, string $image = null, array $extra = []): array

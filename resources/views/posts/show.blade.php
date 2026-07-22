@@ -69,6 +69,36 @@ $breadcrumbItems[] = [
 @endphp
 
 @push('structured-data')
+@php
+    // E-E-A-T author signals: link the byline to the author's verifiable
+    // identity (sameAs → socials), photo, and bio so Google attributes the
+    // content to a real, known person rather than anonymous AI text.
+    $__author = $post->author;
+    $__authorLd = [
+        '@type' => 'Person',
+        'name' => $__author->name,
+        'url' => $__author->slug
+            ? route('authors.show', $__author->slug)
+            : route('authors.show', $__author->id),
+    ];
+    if (!empty($__author->bio)) {
+        $__authorLd['description'] = $__author->bio;
+    }
+    if (!empty($__author->avatar)) {
+        $__authorLd['image'] = \Illuminate\Support\Str::startsWith($__author->avatar, 'http')
+            ? $__author->avatar
+            : asset($__author->avatar);
+    }
+    $__sameAs = array_values(array_filter([
+        $__author->linkedin ?? null,
+        $__author->twitter ?? null,
+        (!empty($__author->website) && !str_contains($__author->website, '/authors/'))
+            ? $__author->website : null,
+    ]));
+    if (!empty($__sameAs)) {
+        $__authorLd['sameAs'] = $__sameAs;
+    }
+@endphp
 <!-- Article Schema -->
 <script type="application/ld+json">
 {!! json_encode([
@@ -78,10 +108,7 @@ $breadcrumbItems[] = [
     'description' => $post->excerpt,
     'image' => [$shareImage],
     'wordCount' => $wordCount,
-    'author' => [
-        '@type' => 'Person',
-        'name' => $post->author->name,
-    ],
+    'author' => $__authorLd,
     'publisher' => [
         '@type' => 'Organization',
         'name' => $companyName,

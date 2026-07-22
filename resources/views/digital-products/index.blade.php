@@ -1,22 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 py-12">
     <div class="container mx-auto px-4">
         <!-- Header -->
         <div class="mb-12 text-center">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">AI Resources & Templates</h1>
-            <p class="text-xl text-gray-600">Curated prompts, templates, and tutorials to accelerate your AI workflow</p>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">AI Resources & Templates</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400">Curated prompts, templates, and tutorials to accelerate your AI workflow</p>
         </div>
 
         <!-- Search & Filter -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-8">
             <form method="GET" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- Type Filter -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
-                        <select name="type" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Type</label>
+                        <select name="type" class="w-full rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">All Types</option>
                             <option value="prompt" @selected(request('type') === 'prompt')>Prompt Templates</option>
                             <option value="template" @selected(request('type') === 'template')>Templates</option>
@@ -27,8 +27,8 @@
 
                     <!-- Category Filter -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                        <select name="category" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                        <select name="category" class="w-full rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">All Categories</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category }}" @selected(request('category') === $category)>{{ ucfirst($category) }}</option>
@@ -38,8 +38,8 @@
 
                     <!-- Sort -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                        <select name="sort" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+                        <select name="sort" class="w-full rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="newest" @selected(request('sort') === 'newest')>Newest</option>
                             <option value="popular" @selected(request('sort') === 'popular')>Most Popular</option>
                             <option value="price-low" @selected(request('sort') === 'price-low')>Price: Low to High</option>
@@ -61,7 +61,7 @@
         @if($products->count())
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 @foreach($products as $product)
-                    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
+                    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
                         <!-- Product Image -->
                         @if($product->thumbnail)
                             <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden">
@@ -82,24 +82,24 @@
                         <div class="p-5">
                             <!-- Badge -->
                             <div class="flex items-center gap-2 mb-3">
-                                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                                <span class="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded-full">
                                     {{ ucfirst($product->type) }}
                                 </span>
                                 @if($product->is_free)
-                                    <span class="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                                    <span class="inline-block px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-xs font-semibold rounded-full">
                                         FREE
                                     </span>
                                 @endif
                             </div>
 
                             <!-- Title -->
-                            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{{ $product->title }}</h3>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">{{ $product->title }}</h3>
 
                             <!-- Description -->
-                            <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $product->short_description ?? substr($product->description, 0, 100) }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ $product->short_description ?? substr($product->description, 0, 100) }}</p>
 
                             <!-- Stats -->
-                            <div class="flex items-center gap-4 mb-4 text-xs text-gray-500">
+                            <div class="flex items-center gap-4 mb-4 text-xs text-gray-500 dark:text-gray-400">
                                 <div class="flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path>
@@ -115,12 +115,12 @@
                             </div>
 
                             <!-- Price & Button -->
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
                                 <div>
                                     @if($product->is_free)
-                                        <p class="text-lg font-bold text-green-600">FREE</p>
+                                        <p class="text-lg font-bold text-green-600 dark:text-green-400">FREE</p>
                                     @else
-                                        <p class="text-lg font-bold text-gray-900">{{ $product->formatted_price }}</p>
+                                        <p class="text-lg font-bold text-gray-900 dark:text-white">{{ $product->formatted_price }}</p>
                                     @endif
                                 </div>
                                 <a href="{{ route('digital-products.show', $product) }}" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition">
@@ -139,11 +139,11 @@
         @else
             <!-- Empty State -->
             <div class="text-center py-16">
-                <svg class="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-24 h-24 text-gray-300 dark:text-slate-600 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                 </svg>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                <p class="text-gray-600">Try adjusting your filters</p>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No products found</h3>
+                <p class="text-gray-600 dark:text-gray-400">Try adjusting your filters</p>
             </div>
         @endif
     </div>

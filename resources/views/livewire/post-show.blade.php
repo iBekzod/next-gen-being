@@ -310,14 +310,17 @@
 
     <!-- Google AdSense Auto Ads (managed by Google) -->
 
-    <!-- Newsletter CTA -->
+    <!-- Newsletter CTA (lead magnet: free Field Guide) -->
     <div class="my-12 p-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
         <div class="max-w-2xl mx-auto text-center">
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Never Miss an Article
+            <span class="inline-flex items-center gap-1 px-3 py-1 mb-4 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full dark:bg-blue-900/40 dark:text-blue-300">
+                🎁 Free guide
+            </span>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Get the AI-Assisted Developer's Field Guide
             </h3>
             <p class="text-gray-600 dark:text-gray-400 mb-6">
-                Get our best content delivered to your inbox weekly. No spam, unsubscribe anytime.
+                The workflow, prompts, and tools I use to ship faster with AI — <strong>free</strong> when you subscribe. Plus new deep-dives in your inbox. No spam, unsubscribe anytime.
             </p>
             @livewire('newsletter-subscribe', ['compact' => true])
         </div>

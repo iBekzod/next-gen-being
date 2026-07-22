@@ -862,6 +862,13 @@
 
         <!-- Cookie Consent Banner (GDPR/CCPA Compliance) -->
         @include('components.cookie-consent')
+
+        <!-- Exit-intent lead-magnet popup (free Field Guide → newsletter) -->
+        @auth
+        {{-- logged-in users are already known; skip the capture popup --}}
+        @else
+        @include('partials.exit-intent-newsletter')
+        @endauth
     </body>
 
     </html>

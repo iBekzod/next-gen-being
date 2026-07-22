@@ -114,9 +114,38 @@ class DigitalProductController extends Controller
                 ->with('success', 'Product downloaded successfully!');
         }
 
-        // Paid product - would redirect to LemonSqueezy
-        // For now, return placeholder
-        return back()->with('error', 'Payment processing not yet configured');
+        // Paid product → hosted Lemon Squeezy checkout.
+        if (empty($product->lemonsqueezy_variant_id)) {
+            return back()->with('error', 'This product isn\'t available for purchase yet. Please check back soon.');
+        }
+
+        $user = auth()->user();
+
+        $checkoutUrl = app(\App\Services\LemonSqueezyService::class)->createCheckout([
+            'variant_id' => $product->lemonsqueezy_variant_id,
+            'checkout_data' => [
+                'email' => $user->email,
+                'name' => $user->name,
+                // Echoed back on the `order_created` webhook as meta.custom_data,
+                // letting us match the payment to the buyer + product.
+                'custom' => [
+                    'product_id' => (string) $product->id,
+                    'user_id' => (string) $user->id,
+                ],
+            ],
+            'product_options' => [
+                'redirect_url' => route('digital-products.download-index'),
+                'receipt_button_text' => 'Access your download',
+                'receipt_thank_you_note' => 'Thank you! Your purchase is ready in your downloads.',
+            ],
+            'preview' => false,
+        ]);
+
+        if ($checkoutUrl) {
+            return redirect()->away($checkoutUrl);
+        }
+
+        return back()->with('error', 'We couldn\'t start checkout just now. Please try again in a moment.');
     }
 
     /**

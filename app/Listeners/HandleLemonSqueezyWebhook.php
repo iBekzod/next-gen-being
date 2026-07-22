@@ -29,8 +29,47 @@ class HandleLemonSqueezyWebhook
             'subscription_expired' => $this->handleSubscriptionExpired($payload),
             'subscription_paused' => $this->handleSubscriptionPaused($payload),
             'subscription_unpaused' => $this->handleSubscriptionUnpaused($payload),
+            'order_created' => $this->handleOrderCreated($payload),
             default => null,
         };
+    }
+
+    /**
+     * Handle a completed one-time order — used for digital-product purchases.
+     * Only orders that carry our product_id/user_id custom data are ours;
+     * subscription first-payments also emit order_created but are handled via
+     * the subscription_* events, so we ignore those here.
+     */
+    protected function handleOrderCreated(array $payload): void
+    {
+        $customData = $payload['meta']['custom_data'] ?? [];
+
+        if (empty($customData['product_id']) || empty($customData['user_id'])) {
+            return;
+        }
+
+        // Idempotency: Lemon Squeezy may retry webhooks. Never create the
+        // purchase (or pay the creator) twice for the same order.
+        $orderId = $payload['data']['id'] ?? null;
+        if ($orderId && \App\Models\ProductPurchase::where('lemonsqueezy_order_id', $orderId)->exists()) {
+            Log::info('Digital product order already processed', ['order_id' => $orderId]);
+            return;
+        }
+
+        try {
+            $purchase = app(\App\Services\DigitalProductService::class)->processPurchase($payload);
+
+            Log::info('Digital product purchase completed', [
+                'purchase_id' => $purchase->id,
+                'product_id' => $customData['product_id'],
+                'user_id' => $customData['user_id'],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Digital product purchase processing failed', [
+                'error' => $e->getMessage(),
+                'custom_data' => $customData,
+            ]);
+        }
     }
 
     /**
@@ -45,6 +84,19 @@ class HandleLemonSqueezyWebhook
 
         // Find user by LemonSqueezy customer ID
         $user = User::where('lemon_squeezy_customer_id', $customerId)->first();
+
+        // First-time subscribers aren't linked to a customer yet — fall back to
+        // the user_id we passed in checkout custom data, and link the customer
+        // so later subscription_* events resolve by customer_id.
+        if (!$user) {
+            $customUserId = $payload['meta']['custom_data']['user_id'] ?? null;
+            if ($customUserId) {
+                $user = User::find($customUserId);
+                if ($user && $customerId && !$user->lemon_squeezy_customer_id) {
+                    $user->update(['lemon_squeezy_customer_id' => $customerId]);
+                }
+            }
+        }
 
         if (!$user) {
             Log::warning('User not found for LemonSqueezy customer', ['customer_id' => $customerId]);

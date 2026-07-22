@@ -19,6 +19,8 @@ class NewsletterSubscription extends Model
         'is_active',
         'verified_at',
         'last_sent_at',
+        'welcome_step',
+        'welcome_sent_at',
     ];
 
     protected $casts = [
@@ -26,6 +28,8 @@ class NewsletterSubscription extends Model
         'is_active' => 'boolean',
         'verified_at' => 'datetime',
         'last_sent_at' => 'datetime',
+        'welcome_step' => 'integer',
+        'welcome_sent_at' => 'datetime',
     ];
 
     protected static function boot()

@@ -38,6 +38,16 @@ return [
             'report' => false,
         ],
 
+        // Non-public disk for paid digital-product deliverables. Files here are
+        // never web-accessible; they're streamed only through the authorized
+        // download controller after a completed purchase.
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

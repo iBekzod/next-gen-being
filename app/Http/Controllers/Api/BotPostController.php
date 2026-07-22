@@ -47,6 +47,7 @@ class BotPostController extends Controller
             'author_id' => 'required|integer|exists:users,id',
             'featured_image_url' => 'nullable|url|max:2048',
             'image_attribution' => 'nullable|array',
+            'series_title' => 'nullable|string|max:255',
         ]);
 
         // Quality gate — same one we apply to AI-generated posts
@@ -94,6 +95,7 @@ class BotPostController extends Controller
             'featured_image' => $imageData['url'] ?? null,
             'image_attribution' => $imageData['attribution'] ?? null,
             'status' => 'draft',
+            'series_title' => $data['series_title'] ?? null,
             'is_premium' => false,
             'allow_comments' => true,
             'moderation_status' => $moderationStatus,

@@ -12,54 +12,30 @@ class InsertAffiliateLinksCommand extends Command
     protected $description = 'Automatically insert tracked affiliate links into tutorials mentioning AI tools';
 
     /**
-     * Affiliate links configuration
+     * Active affiliate links from config/affiliate.php, excluding any tool whose
+     * referral URL hasn't been set yet — so we never insert a non-earning link.
      */
-    private array $affiliateLinks = [
-        'chatgpt' => [
-            'patterns' => ['chatgpt', 'chatgpt pro', 'openai chatgpt'],
-            'link' => 'https://openai.com/chatgpt?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'ChatGPT Plus',
-        ],
-        'midjourney' => [
-            'patterns' => ['midjourney'],
-            'link' => 'https://www.midjourney.com?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'Midjourney',
-        ],
-        'claude' => [
-            'patterns' => ['claude', 'claude pro', 'anthropic claude'],
-            'link' => 'https://claude.ai?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'Claude Pro',
-        ],
-        'perplexity' => [
-            'patterns' => ['perplexity'],
-            'link' => 'https://www.perplexity.ai?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'Perplexity AI',
-        ],
-        'zapier' => [
-            'patterns' => ['zapier', 'zapier automation'],
-            'link' => 'https://zapier.com?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'Zapier',
-        ],
-        'make' => [
-            'patterns' => ['make.com', 'make automation', 'integromat'],
-            'link' => 'https://make.com?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'Make.com',
-        ],
-        'airtable' => [
-            'patterns' => ['airtable'],
-            'link' => 'https://airtable.com?utm_source=nextgenbeing&utm_medium=blog&utm_campaign=affiliate',
-            'anchor' => 'Airtable',
-        ],
-    ];
+    private function activeLinks(): array
+    {
+        return array_filter(
+            config('affiliate.links', []),
+            fn ($c) => !empty($c['url'])
+        );
+    }
 
     public function handle(): int
     {
+        if (empty($this->activeLinks())) {
+            $this->warn('No affiliate programs configured yet. Set the AFFILIATE_*_URL values in .env first.');
+            return self::SUCCESS;
+        }
+
         $limit = (int) $this->option('limit');
 
-        // Find recently published posts without affiliate links
+        // Recent published posts — the per-link dedup below keeps this idempotent,
+        // so a post is only ever touched for tools it mentions but isn't linked to.
         $posts = Post::where('status', 'published')
             ->where('created_at', '>', now()->subDays(7))
-            ->whereRaw("content NOT LIKE '%utm_source=nextgenbeing%'")
             ->limit($limit)
             ->get();
 
@@ -90,7 +66,7 @@ class InsertAffiliateLinksCommand extends Command
         $updatedContent = $originalContent;
         $linksAdded = 0;
 
-        foreach ($this->affiliateLinks as $tool => $config) {
+        foreach ($this->activeLinks() as $tool => $config) {
             foreach ($config['patterns'] as $pattern) {
                 // Create case-insensitive regex pattern
                 $regex = '/\b' . preg_quote($pattern, '/') . '\b/i';
@@ -98,9 +74,9 @@ class InsertAffiliateLinksCommand extends Command
                 // Check if pattern exists and not already linked
                 if (preg_match($regex, $updatedContent)) {
                     // Only add link to first mention of each tool
-                    if (!preg_match('/' . preg_quote($config['link'], '/') . '/', $updatedContent)) {
+                    if (!str_contains($updatedContent, $config['url'])) {
                         // Replace first occurrence only
-                        $replacement = "[{$config['anchor']}]({$config['link']})";
+                        $replacement = "[{$config['anchor']}]({$config['url']})";
                         $updatedContent = preg_replace($regex, $replacement, $updatedContent, 1);
                         $linksAdded++;
                         break; // Move to next tool

@@ -21,10 +21,10 @@
         <h1 class="mt-4 text-3xl sm:text-4xl font-bold tracking-tight">Lost in the codebase</h1>
         <p class="mt-4 text-lg text-slate-300">That URL doesn't exist or has moved. Here are some good places to land instead.</p>
         <div class="mt-8 flex flex-wrap gap-3 justify-center text-sm">
-            <a href="{{ url('/') }}" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold">Home</a>
-            <a href="{{ route('posts.index') }}" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold">All articles</a>
-            <a href="{{ route('tutorials.index') }}" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold">Tutorials</a>
-            <a href="{{ route('authors.index') }}" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold">Authors</a>
+            <a href="{{ url('/') }}" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">Home</a>
+            <a href="{{ route('posts.index') }}" class="px-4 py-2 rounded-lg bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 font-semibold">All articles</a>
+            <a href="{{ route('tutorials.index') }}" class="px-4 py-2 rounded-lg bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 font-semibold">Tutorials</a>
+            <a href="{{ route('authors.index') }}" class="px-4 py-2 rounded-lg bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 font-semibold">Authors</a>
         </div>
     </div>
 </section>

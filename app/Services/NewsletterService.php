@@ -59,10 +59,111 @@ class NewsletterService
 
         if ($subscription && !$subscription->verified_at) {
             $subscription->verify();
+            $this->startWelcomeSequence($subscription);
             return $subscription;
         }
 
         return null;
+    }
+
+    /**
+     * Fire the first onboarding email immediately after a subscriber confirms,
+     * and record that step 1 has been sent. Later steps are handled by
+     * processOnboardingQueue() on a schedule.
+     */
+    public function startWelcomeSequence(NewsletterSubscription $subscription): void
+    {
+        if (!config('newsletter.onboarding.enabled', true)) {
+            return;
+        }
+
+        if ($this->sendOnboardingStep($subscription, 1)) {
+            $subscription->update(['welcome_step' => 1, 'welcome_sent_at' => now()]);
+        }
+    }
+
+    /**
+     * Send any onboarding emails that are now due. Called by the scheduled
+     * `newsletter:send-onboarding` command. Returns the number sent.
+     */
+    public function processOnboardingQueue(): int
+    {
+        if (!config('newsletter.onboarding.enabled', true)) {
+            return 0;
+        }
+
+        $steps = config('newsletter.onboarding.steps', []);
+        if (empty($steps)) {
+            return 0;
+        }
+        $maxStep = max(array_keys($steps));
+        $sent = 0;
+
+        NewsletterSubscription::query()
+            ->active()
+            ->verified()
+            ->where('welcome_step', '>=', 1)
+            ->where('welcome_step', '<', $maxStep)
+            ->whereNotNull('welcome_sent_at')
+            ->chunkById(200, function ($subscribers) use ($steps, &$sent) {
+                foreach ($subscribers as $subscriber) {
+                    $nextStep = (int) $subscriber->welcome_step + 1;
+                    $config = $steps[$nextStep] ?? null;
+                    if (!$config) {
+                        continue;
+                    }
+
+                    $dueAt = $subscriber->welcome_sent_at->copy()->addDays((int) ($config['delay_days'] ?? 0));
+                    if ($dueAt->isFuture()) {
+                        continue;
+                    }
+
+                    if ($this->sendOnboardingStep($subscriber, $nextStep)) {
+                        $subscriber->update(['welcome_step' => $nextStep, 'welcome_sent_at' => now()]);
+                        $sent++;
+                    }
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * Render and send a single onboarding step. Returns true on success.
+     */
+    public function sendOnboardingStep(NewsletterSubscription $subscription, int $step): bool
+    {
+        $steps = config('newsletter.onboarding.steps', []);
+        $config = $steps[$step] ?? null;
+        if (!$config) {
+            return false;
+        }
+
+        try {
+            $unsubscribeUrl = route('newsletter.unsubscribe', ['token' => $subscription->token]);
+
+            Mail::send($config['view'], [
+                'subscription' => $subscription,
+                'unsubscribeUrl' => $unsubscribeUrl,
+                'links' => config('newsletter.links', []),
+                'appUrl' => rtrim(config('app.url'), '/'),
+            ], function ($message) use ($subscription, $config) {
+                $message->to($subscription->email)->subject($config['subject']);
+                if ($replyTo = config('newsletter.reply_to')) {
+                    $message->replyTo($replyTo);
+                }
+            });
+
+            Log::info('Onboarding email sent', ['email' => $subscription->email, 'step' => $step]);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Onboarding email failed', [
+                'email' => $subscription->email,
+                'step' => $step,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
     }
 
     public function unsubscribe(string $token): ?NewsletterSubscription

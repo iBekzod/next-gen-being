@@ -17,6 +17,7 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\WriteEarnController;
+use App\Http\Controllers\AiToolController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
@@ -63,16 +64,24 @@ Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('subscrip
 // Digital Products / Resources routes
 use App\Http\Controllers\DigitalProductController;
 
+// AI Writing Studio — public landing/pricing + authenticated tier upgrade
+Route::get('/ai-writer', [AiToolController::class, 'landing'])->name('ai-writer');
+Route::post('/ai-writer/upgrade/{tier}', [AiToolController::class, 'upgrade'])
+    ->middleware('auth')->name('ai-writer.upgrade');
+
 Route::prefix('resources')->name('digital-products.')->group(function () {
     Route::get('/', [DigitalProductController::class, 'index'])->name('index');
-    Route::get('/{product:slug}', [DigitalProductController::class, 'show'])->name('show');
 
+    // Static routes MUST be declared before the /{product:slug} wildcard below,
+    // otherwise "/resources/downloads" is matched as a product slug and 404s.
     Route::middleware('auth')->group(function () {
-        Route::post('/{product}/purchase', [DigitalProductController::class, 'purchase'])->name('purchase');
         Route::get('/downloads', [DigitalProductController::class, 'downloadIndex'])->name('download-index');
         Route::get('/my-purchases', [DigitalProductController::class, 'myPurchases'])->name('my-purchases');
         Route::get('/purchases/{purchase}/download', [DigitalProductController::class, 'download'])->name('download');
+        Route::post('/{product}/purchase', [DigitalProductController::class, 'purchase'])->name('purchase');
     });
+
+    Route::get('/{product:slug}', [DigitalProductController::class, 'show'])->name('show');
 });
 
 // Authentication routes

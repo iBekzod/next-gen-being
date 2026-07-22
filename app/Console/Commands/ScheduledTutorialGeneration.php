@@ -165,7 +165,7 @@ class ScheduledTutorialGeneration extends Command
      */
     private function notifyAdmins(array $topic, array $posts): void
     {
-        $adminEmails = \App\Models\User::where('role', 'admin')
+        $adminEmails = \App\Models\User::whereHas('roles', fn ($q) => $q->where('slug', 'admin'))
             ->pluck('email')
             ->toArray();
 

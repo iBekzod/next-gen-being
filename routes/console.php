@@ -14,36 +14,50 @@ Artisan::command('inspire', function () {
 // Generates posts from the monthly content plan (80% free, 20% premium)
 // Posts automatically follow the conversion funnel strategy
 
-// Daily content cron - bot-first, API fallback only when local bot is offline >25h.
-// The local blog-bot (D:/projects/MyProjects/blog-bot) generates via Claude Code CLI
-// using the Max plan subscription. The bot sends a heartbeat every 15 min while alive.
+// Content cron - runs the check daily but only generates ONE post every 5 days.
+// Cadence is enforced against the DB (last published standalone post), so it
+// survives cache flushes and counts posts from any source toward the schedule.
+// Preference order: if the local blog-bot (D:/projects/MyProjects/blog-bot,
+// Claude Code CLI on the Max plan) is alive (heartbeat < 25h) it handles
+// generation and the server skips; otherwise the server generates via API.
 Schedule::call(function () {
-    // Hard-gated by env: while we de-AI-ify the existing corpus to recover from
-    // the AdSense rejection, both the bot-driven path AND the API fallback are
-    // disabled by default. Flip BLOG_AUTO_PUBLISH=true in .env when ready to
-    // resume automated publishing.
+    // Master switch. Set BLOG_AUTO_PUBLISH=true in .env to enable automated
+    // publishing (was disabled during the AdSense de-AI-ify of the corpus).
     if (! filter_var(env('BLOG_AUTO_PUBLISH', false), FILTER_VALIDATE_BOOLEAN)) {
-        \Illuminate\Support\Facades\Log::info('Daily AI cron: skipped (BLOG_AUTO_PUBLISH disabled)');
+        \Illuminate\Support\Facades\Log::info('Content cron: skipped (BLOG_AUTO_PUBLISH disabled)');
         return;
     }
 
+    // If the local bot is alive, let it handle generation (it runs its own cadence).
     $lastSeen = \Illuminate\Support\Facades\Cache::get('bot:last_seen');
     if ($lastSeen) {
         try {
             $age = \Carbon\Carbon::parse($lastSeen)->diffInHours(now());
             if ($age < 25) {
-                \Illuminate\Support\Facades\Log::info('Daily AI cron: skipping API gen (bot heartbeat fresh)', ['last_seen' => $lastSeen, 'hours_ago' => $age]);
-                return; // bot is alive and will handle generation
+                \Illuminate\Support\Facades\Log::info('Content cron: skipping (bot heartbeat fresh)', ['last_seen' => $lastSeen, 'hours_ago' => $age]);
+                return;
             }
         } catch (\Throwable $e) {
             // fall through to API
         }
     }
 
-    \Illuminate\Support\Facades\Log::warning('Daily AI cron: bot offline, falling back to API generation');
-    \Illuminate\Support\Facades\Artisan::call('ai:generate-post');
+    // Throttle to one standalone post every 5 days (tutorials are excluded so the
+    // weekly tutorial schedule does not delay regular posts).
+    $lastPostAt = \App\Models\Post::whereNull('series_title')
+        ->whereNotNull('published_at')
+        ->where('status', 'published')
+        ->latest('published_at')
+        ->value('published_at');
+
+    if ($lastPostAt && abs(\Carbon\Carbon::parse($lastPostAt)->diffInDays(now())) < 5) {
+        return; // not yet time for the next post
+    }
+
+    \Illuminate\Support\Facades\Log::info('Content cron: generating one post via API (5-day cadence)');
+    \Illuminate\Support\Facades\Artisan::call('ai:generate-post', ['--count' => 1]);
 })
-    ->name('daily-content-bot-or-api')
+    ->name('content-post-every-5-days')
     ->dailyAt('09:00')
     ->timezone(config('app.timezone'))
     ->withoutOverlapping(60);
@@ -68,6 +82,14 @@ Schedule::command('content:plan')
 Schedule::command('newsletter:send-weekly')
     ->weeklyOn(1, '9:00')
     ->timezone(config('app.timezone'));
+
+// Welcome/onboarding drip — deliver the next due onboarding email to newly
+// confirmed subscribers (step 1 fires immediately on verification; this sweeps
+// the day-2/4/6 follow-ups).
+Schedule::command('newsletter:send-onboarding')
+    ->dailyAt('08:30')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
 
 Schedule::command('newsletter:cleanup')
     ->monthly();
@@ -219,10 +241,14 @@ Schedule::call(function () {
 // ========================================
 // TUTORIAL GENERATION (Weekly)
 // ========================================
-// Generate multi-part tutorial series every Monday at 9 AM
+// Generate multi-part tutorial series every Monday at 9 AM.
+// Gated by BLOG_AUTO_PUBLISH: when the local blog-bot is the active engine this
+// stays off (the bot generates tutorials for free via Claude CLI). Flip
+// BLOG_AUTO_PUBLISH=true only when the server-side Anthropic API has credits.
 Schedule::command('tutorials:scheduled')
     ->weeklyOn(1, '9:00')
     ->timezone(config('app.timezone'))
+    ->when(fn () => filter_var(env('BLOG_AUTO_PUBLISH', false), FILTER_VALIDATE_BOOLEAN))
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground()
@@ -233,11 +259,18 @@ Schedule::command('tutorials:scheduled')
         \Illuminate\Support\Facades\Log::error('Weekly tutorial generation failed');
     });
 
-// Auto-publish draft tutorials older than 24 hours - WITH quality gates
+// Auto-publish bot-generated draft posts AND tutorials older than 24 hours -
+// WITH quality gates. Scoped to drafts from the last 10 days so month-old
+// review drafts are never resurrected. Covers both tutorials (series_title set)
+// and regular blog-bot posts (identified by moderation_notes).
 Schedule::call(function () {
     \App\Models\Post::where('status', 'draft')
-        ->whereNotNull('series_title')
+        ->where(function ($q) {
+            $q->whereNotNull('series_title')
+                ->orWhere('moderation_notes', 'like', '%blog-bot%');
+        })
         ->where('created_at', '<', now()->subHours(24))
+        ->where('created_at', '>', now()->subDays(10))
         ->chunk(50, function ($posts) {
             foreach ($posts as $post) {
                 // Gate 1: word count >= 1500

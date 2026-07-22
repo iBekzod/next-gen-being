@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The AI-Assisted Developer's Field Guide — NextGenBeing</title>
+<meta name="description" content="A practical, no-fluff field guide to building faster with AI: the workflow, the prompts, and the tools that actually earn their keep.">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --ink:#e8ebf0; --muted:#9aa4b2;
+    --line:#262b35; --accent:#7c8cff; --accent2:#a875ff; --code:#11141a;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fb; --card:#ffffff; --ink:#1a202c; --muted:#5a6472;
+      --line:#e6eaf0; --accent:#5b6cff; --accent2:#8b5cf6; --code:#f3f5f9; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 22px 80px;}
+  .kicker{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0 0 14px;}
+  h1{font-size:clamp(28px,5vw,42px);line-height:1.15;margin:0 0 16px;letter-spacing:-.02em;}
+  h2{font-size:24px;margin:44px 0 10px;letter-spacing:-.01em;}
+  h3{font-size:18px;margin:26px 0 6px;}
+  p{color:var(--ink);margin:0 0 14px;}
+  .lede{font-size:19px;color:var(--muted);margin-bottom:8px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:22px 0;}
+  ul,ol{margin:0 0 14px;padding-left:22px;} li{margin:6px 0;}
+  code{background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:14px;
+    font-family:'SF Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow:auto;margin:14px 0;}
+  pre code{background:none;border:0;padding:0;line-height:1.55;color:var(--ink);}
+  .rule{height:1px;background:var(--line);margin:40px 0;border:0;}
+  .tag{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:4px 12px;}
+  .foot{color:var(--muted);font-size:14px;margin-top:48px;text-align:center;}
+  a{color:var(--accent);}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:14px;margin-right:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">NextGenBeing · Field Guide</p>
+  <h1>The AI-Assisted Developer's Field Guide</h1>
+  <p class="lede">The workflow, the prompts, and the tools I use to ship real software faster with AI — condensed into something you can apply this afternoon. No hype.</p>
+  <p><span class="tag">Free resource</span></p>
+
+  <hr class="rule">
+
+  <h2>The one idea that changes everything</h2>
+  <p>Most people use AI like a vending machine: type a request, grab whatever falls out. The developers who get 10× results treat it like a <strong>junior pair-programmer with infinite patience</strong> — they give it context, constrain it, review its work, and iterate.</p>
+  <p>Everything below is downstream of that shift: <em>context and constraints beat clever prompts.</em></p>
+
+  <h2>The 4-step loop I run for every task</h2>
+
+  <div class="card">
+    <h3><span class="num">1</span>Frame</h3>
+    <p>Before writing a prompt, write the <em>spec</em>. What's the input, the output, the constraints, the definition of done? A model can't read your mind — but it will faithfully build the wrong thing if you let it guess.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">2</span>Ground</h3>
+    <p>Paste the <em>real</em> context: the actual file, the error, the surrounding code, the versions. Generic answers come from generic prompts. The single biggest quality jump is giving the model your real code instead of describing it.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">3</span>Constrain</h3>
+    <p>Tell it what NOT to do. "Match the existing style." "No new dependencies." "Return only the diff." Constraints are what turn a plausible answer into a usable one.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">4</span>Verify</h3>
+    <p>Never ship what you can't verify. Run it. Read it. Ask the model to critique its own output ("what edge cases does this miss?"). AI removes the typing, not the responsibility.</p>
+  </div>
+
+  <h2>5 prompts worth stealing</h2>
+
+  <h3>1 · The reviewer</h3>
+  <pre><code>Review this code as a skeptical senior engineer.
+List concrete bugs, edge cases, and security issues —
+most severe first. Don't praise it. Show the failing input.</code></pre>
+
+  <h3>2 · The explainer</h3>
+  <pre><code>Explain what this code actually does, line by line,
+then tell me the ONE thing most likely to break in production.</code></pre>
+
+  <h3>3 · The refactor (surgical)</h3>
+  <pre><code>Refactor for readability WITHOUT changing behaviour.
+Keep the same public API. Return only a diff.
+If a change is risky, flag it instead of making it.</code></pre>
+
+  <h3>4 · The test writer</h3>
+  <pre><code>Write tests for this function. Cover the happy path,
+boundaries, and the failure modes. Name each test
+after the behaviour it proves, not the method it calls.</code></pre>
+
+  <h3>5 · The rubber duck</h3>
+  <pre><code>I'm stuck. Here's the goal, what I tried, and the error.
+Ask me 3 clarifying questions before proposing a fix.</code></pre>
+
+  <h2>Choosing tools without drowning</h2>
+  <p>There are a thousand AI tools. You need a handful. The test is simple:</p>
+  <div class="card">
+    <p style="margin:0;font-size:18px;"><strong>A tool earns its subscription only if it saves more time (or makes more money) than it costs — every month.</strong> Everything else gets cancelled.</p>
+  </div>
+  <p>Don't collect tools. Collect <em>workflows</em>. One tool you've mastered beats ten you've dabbled in. Pick one for code, one for writing, one for automation — go deep before you go wide.</p>
+
+  <h2>The mistakes that cost me the most time</h2>
+  <ul>
+    <li><strong>Trusting confident output.</strong> Fluent ≠ correct. Verify.</li>
+    <li><strong>Vague prompts.</strong> Ten minutes framing saves an hour of re-prompting.</li>
+    <li><strong>No context.</strong> Describing code instead of pasting it.</li>
+    <li><strong>Letting it invent APIs.</strong> Always check the docs it cites are real.</li>
+    <li><strong>Big-bang generation.</strong> Small, verifiable steps beat one giant blob.</li>
+  </ul>
+
+  <hr class="rule">
+
+  <div class="card">
+    <h3 style="margin-top:0;">Where to go next</h3>
+    <p>This guide is the short version. The full, tested tutorials — with runnable code — go out to the newsletter you just joined. Watch your inbox: over the next few days I'll send the exact workflows and the tools I pay for.</p>
+    <p style="margin-bottom:0;">In the meantime, <a href="/posts">browse the latest deep-dives →</a></p>
+  </div>
+
+  <p class="foot">© NextGenBeing · Reply to any email and tell me what you're building — I read every one.</p>
+</div>
+</body>
+</html>

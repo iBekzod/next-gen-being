@@ -127,6 +127,12 @@ class LemonSqueezyService
      */
     public function createCheckout(array $data): ?string
     {
+        // `variant_id` is structural (it defines the relationship below), not a
+        // valid checkout attribute — strip it so Lemon Squeezy doesn't reject
+        // the payload. Custom data should be passed via `checkout_data.custom`.
+        $attributes = $data;
+        unset($attributes['variant_id']);
+
         $response = Http::withToken($this->apiKey)
             ->withHeaders([
                 'Accept' => 'application/vnd.api+json',
@@ -135,7 +141,7 @@ class LemonSqueezyService
             ->post("{$this->baseUrl}/checkouts", [
                 'data' => [
                     'type' => 'checkouts',
-                    'attributes' => $data,
+                    'attributes' => $attributes,
                     'relationships' => [
                         'store' => [
                             'data' => [
