@@ -259,48 +259,18 @@ Schedule::command('tutorials:scheduled')
         \Illuminate\Support\Facades\Log::error('Weekly tutorial generation failed');
     });
 
-// Auto-publish bot-generated draft posts AND tutorials older than 24 hours -
-// WITH quality gates. Scoped to drafts from the last 10 days so month-old
-// review drafts are never resurrected. Covers both tutorials (series_title set)
-// and regular blog-bot posts (identified by moderation_notes).
-Schedule::call(function () {
-    \App\Models\Post::where('status', 'draft')
-        ->where(function ($q) {
-            $q->whereNotNull('series_title')
-                ->orWhere('moderation_notes', 'like', '%blog-bot%');
-        })
-        ->where('created_at', '<', now()->subHours(24))
-        ->where('created_at', '>', now()->subDays(10))
-        ->chunk(50, function ($posts) {
-            foreach ($posts as $post) {
-                // Gate 1: word count >= 1500
-                $wordCount = str_word_count(strip_tags($post->content));
-                if ($wordCount < 1500) {
-                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} too short ({$wordCount} words)");
-                    continue;
-                }
-                // Gate 2: ends with proper sentence terminator (not truncated)
-                if (!preg_match('/[.!?]\s*$/', trim($post->content))) {
-                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} appears truncated");
-                    continue;
-                }
-                // Gate 3: balanced code fences
-                if (substr_count($post->content, '```') % 2 !== 0) {
-                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} has unclosed code blocks");
-                    continue;
-                }
-                // Gate 4: respect moderation_status if it was set to 'pending' explicitly
-                if ($post->moderation_status === 'pending') {
-                    \Illuminate\Support\Facades\Log::info("Auto-publish skipped: post {$post->id} is moderation_status=pending");
-                    continue;
-                }
-                $post->update(['status' => 'published', 'published_at' => now()]);
-            }
-        });
-})
+// Controlled publishing cadence — 1 regular post / 5 days + 1 tutorial / 7 days,
+// quality-gated (see App\Console\Commands\ContentDripPublish). Replaces the old
+// daily "publish everything recent" job: keeps a steady publishing rhythm feeding
+// SEO, drains the draft backlog slowly (never a slop-dump), and the gates keep
+// short/truncated AI drafts out of the public corpus (Google HCU / AdSense).
+Schedule::command('content:drip')
     ->dailyAt('18:00')
     ->timezone(config('app.timezone'))
-    ->name('auto-publish-pending-tutorials');
+    ->withoutOverlapping()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('content:drip completed');
+    });
 
 // Cache pre-warm: hit top URLs every 6 hours to keep DB/view caches hot
 Schedule::command('cache:prewarm', ['--limit=10'])
