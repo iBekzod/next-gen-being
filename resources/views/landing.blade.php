@@ -228,15 +228,31 @@
 
     <script>
     (function(){
-        var els = document.querySelectorAll('#ngb-landing .ngb-io');
-        if(!els.length) return;
-        if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
-            for(var i=0;i<els.length;i++){ els[i].classList.add('ngb-in'); } return;
+        function reveal(){
+            var els = document.querySelectorAll('#ngb-landing .ngb-io');
+            if(!els.length) return;
+            if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
+                for(var i=0;i<els.length;i++){ els[i].classList.add('ngb-in'); } return;
+            }
+            var io = new IntersectionObserver(function(entries){
+                entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('ngb-in'); io.unobserve(e.target); } });
+            }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+            for(var j=0;j<els.length;j++){ io.observe(els[j]); }
         }
-        var io = new IntersectionObserver(function(entries){
-            entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('ngb-in'); io.unobserve(e.target); } });
-        }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
-        for(var j=0;j<els.length;j++){ io.observe(els[j]); }
+        // The .ngb-io sections live BELOW this inline script, so wait for the full
+        // DOM before querying (otherwise they never register and stay invisible).
+        if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', reveal); }
+        else { reveal(); }
+        // Safety net: never let the reveal leave content hidden.
+        window.addEventListener('load', function(){
+            setTimeout(function(){
+                var hidden = document.querySelectorAll('#ngb-landing .ngb-io:not(.ngb-in)');
+                for(var k=0;k<hidden.length;k++){
+                    var r = hidden[k].getBoundingClientRect();
+                    if(r.top < window.innerHeight){ hidden[k].classList.add('ngb-in'); }
+                }
+            }, 400);
+        });
     })();
     </script>
 
