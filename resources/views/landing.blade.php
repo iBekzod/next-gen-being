@@ -93,17 +93,17 @@
         openModal() { this.showSubscribeModal = true; },
         closeModal() { this.showSubscribeModal = false; }
     }" x-on:keydown.escape.window="closeModal()">
-    {{-- ============ HERO (redesigned): warm-charcoal + signal-orange, kinetic canvas ============ --}}
+    {{-- ============ HERO (redesigned): deep indigo + electric-blue signal, kinetic canvas ============ --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
     <style>
         .ngb-hero{
-            --ink: oklch(0.17 0.014 55);
-            --ink-2: oklch(0.21 0.016 55);
-            --fg: oklch(0.96 0.01 85);
-            --muted: oklch(0.74 0.02 80);
-            --signal: oklch(0.74 0.185 55);
+            --ink: oklch(0.16 0.038 264);
+            --ink-2: oklch(0.24 0.055 264);
+            --fg: oklch(0.97 0.012 250);
+            --muted: oklch(0.75 0.038 255);
+            --signal: oklch(0.66 0.18 250);
             --line: oklch(1 0 0 / 0.08);
             background: radial-gradient(120% 90% at 82% 8%, var(--ink-2), var(--ink) 60%);
             color: var(--fg);
@@ -115,8 +115,8 @@
             background-size: 34px 34px; mask-image: radial-gradient(120% 80% at 50% 0%, #000 40%, transparent 78%);
         }
         .ngb-kicker{ font-family:"Bricolage Grotesque", sans-serif; }
-        .ngb-cta{ background: var(--signal); color: oklch(0.2 0.03 55); box-shadow: 0 8px 30px oklch(0.74 0.185 55 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
-        .ngb-cta:hover{ transform: translateY(-2px); box-shadow: 0 14px 44px oklch(0.74 0.185 55 / 0.5); filter: brightness(1.05); }
+        .ngb-cta{ background: var(--signal); color: oklch(0.99 0.012 250); box-shadow: 0 8px 30px oklch(0.66 0.18 250 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
+        .ngb-cta:hover{ transform: translateY(-2px); box-shadow: 0 14px 44px oklch(0.66 0.18 250 / 0.5); filter: brightness(1.05); }
         .ngb-ghost{ transition: background .25s, transform .25s cubic-bezier(.2,.9,.2,1); }
         .ngb-ghost:hover{ background: oklch(1 0 0 / 0.07); transform: translateY(-2px); }
         .ngb-word{ color: var(--signal); position: relative; white-space: nowrap; }
@@ -130,7 +130,7 @@
     <section id="product-overview" class="ngb-hero relative overflow-hidden">
         <div class="absolute inset-0 ngb-grid-lines pointer-events-none"></div>
         <canvas id="ngb-hero-canvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
-        <div class="absolute inset-x-0 bottom-0 h-40 pointer-events-none" style="background:linear-gradient(to bottom, transparent, oklch(0.17 0.014 55))"></div>
+        <div class="absolute inset-x-0 bottom-0 h-40 pointer-events-none" style="background:linear-gradient(to bottom, transparent, oklch(0.16 0.038 264))"></div>
 
         <div class="relative px-6 mx-auto max-w-7xl pt-24 pb-28 lg:pt-28 lg:pb-36">
             <div class="max-w-4xl">
@@ -197,7 +197,7 @@
                 var d=dots[i], dx=d.x-mx, dy=d.y-my, dist=Math.sqrt(dx*dx+dy*dy);
                 var push=Math.max(0,140-dist)/140;
                 var ox=d.x+(dx/(dist||1))*push*16, oy=d.y+(dy/(dist||1))*push*16;
-                ctx.fillStyle='rgba(240,140,60,'+(0.06+push*0.55)+')';
+                ctx.fillStyle='rgba(96,162,255,'+(0.06+push*0.55)+')';
                 ctx.beginPath(); ctx.arc(ox,oy,0.8+push*1.9,0,6.2832); ctx.fill();
             }
             ctx.beginPath();
@@ -205,7 +205,7 @@
                 var yy=h*0.62 + Math.sin(x*0.011+t)*20*Math.sin(t*0.35) + Math.sin(x*0.028-t*1.4)*9;
                 x===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);
             }
-            ctx.strokeStyle='rgba(242,150,70,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+            ctx.strokeStyle='rgba(120,175,255,0.55)'; ctx.lineWidth=1.5; ctx.stroke();
             raf=requestAnimationFrame(frame);
         }
         var raf;
@@ -213,7 +213,7 @@
         window.addEventListener('pointermove',function(e){ var r=c.getBoundingClientRect(); mx=e.clientX-r.left; my=e.clientY-r.top; });
         resize();
         if(reduce){
-            for(var i=0;i<dots.length;i++){ ctx.fillStyle='rgba(240,140,60,0.10)'; ctx.beginPath(); ctx.arc(dots[i].x,dots[i].y,1,0,6.2832); ctx.fill(); }
+            for(var i=0;i<dots.length;i++){ ctx.fillStyle='rgba(96,162,255,0.10)'; ctx.beginPath(); ctx.arc(dots[i].x,dots[i].y,1,0,6.2832); ctx.fill(); }
         } else { frame(); }
     })();
     </script>
