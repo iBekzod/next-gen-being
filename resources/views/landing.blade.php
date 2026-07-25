@@ -93,84 +93,130 @@
         openModal() { this.showSubscribeModal = true; },
         closeModal() { this.showSubscribeModal = false; }
     }" x-on:keydown.escape.window="closeModal()">
-    <section id="product-overview" class="relative overflow-hidden bg-slate-950 text-white">
-        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#3b82f6_0,_transparent_45%)]"></div>
-        <div class="relative px-6 pt-20 pb-24 mx-auto max-w-7xl lg:flex lg:items-center lg:gap-16">
-            <div class="max-w-2xl">
-                <div class="inline-flex items-center px-3 py-1 mb-6 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500/20 text-blue-200 ring-1 ring-inset ring-blue-400/60">
-                    Level up faster with faceless, high-signal reviews
+    {{-- ============ HERO (redesigned): warm-charcoal + signal-orange, kinetic canvas ============ --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+    <style>
+        .ngb-hero{
+            --ink: oklch(0.17 0.014 55);
+            --ink-2: oklch(0.21 0.016 55);
+            --fg: oklch(0.96 0.01 85);
+            --muted: oklch(0.74 0.02 80);
+            --signal: oklch(0.74 0.185 55);
+            --line: oklch(1 0 0 / 0.08);
+            background: radial-gradient(120% 90% at 82% 8%, var(--ink-2), var(--ink) 60%);
+            color: var(--fg);
+        }
+        .ngb-display{ font-family:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; font-weight:800; letter-spacing:-0.03em; line-height:0.98; }
+        .ngb-hero h1{ font-size: clamp(2.7rem, 7.2vw, 5.75rem); }
+        .ngb-grid-lines{
+            background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 34px 34px; mask-image: radial-gradient(120% 80% at 50% 0%, #000 40%, transparent 78%);
+        }
+        .ngb-kicker{ font-family:"Bricolage Grotesque", sans-serif; }
+        .ngb-cta{ background: var(--signal); color: oklch(0.2 0.03 55); box-shadow: 0 8px 30px oklch(0.74 0.185 55 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
+        .ngb-cta:hover{ transform: translateY(-2px); box-shadow: 0 14px 44px oklch(0.74 0.185 55 / 0.5); filter: brightness(1.05); }
+        .ngb-ghost{ transition: background .25s, transform .25s cubic-bezier(.2,.9,.2,1); }
+        .ngb-ghost:hover{ background: oklch(1 0 0 / 0.07); transform: translateY(-2px); }
+        .ngb-word{ color: var(--signal); position: relative; white-space: nowrap; }
+        .ngb-reveal{ opacity:0; transform: translateY(18px); animation: ngbRise .9s cubic-bezier(.16,1,.3,1) forwards; }
+        .ngb-d1{animation-delay:.05s} .ngb-d2{animation-delay:.16s} .ngb-d3{animation-delay:.28s} .ngb-d4{animation-delay:.40s} .ngb-d5{animation-delay:.52s}
+        @keyframes ngbRise{ to{ opacity:1; transform: none; } }
+        @media (prefers-reduced-motion: reduce){ .ngb-reveal{ animation:none; opacity:1; transform:none; } }
+        .ngb-metric b{ font-family:"Bricolage Grotesque", sans-serif; font-weight:800; letter-spacing:-0.02em; }
+    </style>
+
+    <section id="product-overview" class="ngb-hero relative overflow-hidden">
+        <div class="absolute inset-0 ngb-grid-lines pointer-events-none"></div>
+        <canvas id="ngb-hero-canvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+        <div class="absolute inset-x-0 bottom-0 h-40 pointer-events-none" style="background:linear-gradient(to bottom, transparent, oklch(0.17 0.014 55))"></div>
+
+        <div class="relative px-6 mx-auto max-w-7xl pt-24 pb-28 lg:pt-28 lg:pb-36">
+            <div class="max-w-4xl">
+                <div class="ngb-reveal ngb-d1 inline-flex items-center gap-2.5 mb-8 text-[11px] font-semibold tracking-[0.18em] uppercase" style="color:var(--muted)">
+                    <span class="relative flex w-2 h-2">
+                        <span class="absolute inline-flex w-full h-full rounded-full animate-ping" style="background:var(--signal);opacity:.65"></span>
+                        <span class="relative inline-flex w-2 h-2 rounded-full" style="background:var(--signal)"></span>
+                    </span>
+                    <span class="ngb-kicker">New drop every Tuesday</span>
+                    <span class="w-8 h-px" style="background:var(--line)"></span>
+                    <span>for people who ship</span>
                 </div>
-                <h1 class="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-                    Explore the tech that evolves the way you think, work, and live.
+
+                <h1 class="ngb-display ngb-reveal ngb-d2">
+                    Everything you need<br>to ship. <span class="ngb-word">Nothing</span> you don't.
                 </h1>
-                <p class="mt-6 text-lg leading-8 text-slate-300">
-                    NextGenBeing surfaces the workflows, AI tools, and systems that top performers quietly rely on.
-                    Each drop distills hours of research into actionable playbooks you can apply today.
+
+                <p class="ngb-reveal ngb-d3 max-w-xl mt-8 text-lg leading-8" style="color:var(--muted)">
+                    The AI tools, workflows, and operating systems the best builders quietly rely on, cut down to what actually works and written to be run today.
                 </p>
 
                 @if(session('success'))
-                    <div class="flex items-start gap-3 p-4 mt-8 text-sm font-medium text-emerald-100 border border-emerald-500/40 rounded-xl bg-emerald-500/10">
-                        <span class="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 text-emerald-200 bg-emerald-500/30 rounded-full">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        </span>
+                    <div class="ngb-reveal ngb-d3 flex items-start gap-3 p-4 mt-8 max-w-xl text-sm font-medium rounded-xl" style="color:oklch(0.92 0.06 150);background:oklch(0.5 0.12 150 / 0.14);border:1px solid oklch(0.6 0.12 150 / 0.35)">
+                        <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         <span class="leading-6">{{ session('success') }}</span>
                     </div>
                 @endif
 
-                <div class="flex flex-wrap items-center gap-4 mt-10">
-                    <button type="button" @click="openModal()" class="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold transition rounded-xl bg-blue-500 hover:bg-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
-                        Get the Drops
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <div class="ngb-reveal ngb-d4 flex flex-wrap items-center gap-4 mt-11">
+                    <button type="button" @click="openModal()" class="ngb-cta ngb-display inline-flex items-center justify-center gap-2 px-7 py-3.5 text-base rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500" style="--tw-ring-offset-color:var(--ink)">
+                        Get the drops
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </button>
-                    @if(setting('enable_subscriptions'))
-                    <a href="{{ route('subscription.plans') }}" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold transition border rounded-xl border-white/20 text-slate-200 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/40">
-                        Unlock premium intelligence
+                    <a href="{{ route('posts.index') }}" class="ngb-ghost inline-flex items-center gap-2 px-6 py-3.5 text-base font-semibold rounded-full" style="color:var(--fg);border:1px solid var(--line)">
+                        Browse the work
                     </a>
-                    @endif
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3 mt-6 text-xs text-slate-400">
-                    <span class="flex items-center gap-2"><svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> No spam. Cancel any time.</span>
-                    <span class="hidden w-px h-4 bg-white/10 sm:block"></span>
-                    <span>Delivered every Tuesday.</span>
-                </div>
-            </div>
-            <div class="relative mt-16 lg:mt-0">
-                <div class="absolute inset-y-0 -left-24 hidden w-px bg-gradient-to-b from-transparent via-blue-500/60 to-transparent lg:block"></div>
-                <div class="relative p-6 bg-white/5 border border-white/10 rounded-3xl shadow-xl backdrop-blur">
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="text-sm font-semibold text-blue-200">This week's drop</span>
-                        <span class="text-xs text-slate-400">Issue {{ now()->format('W') }}</span>
-                    </div>
-                    <div class="space-y-5">
-                        <div class="p-5 rounded-2xl bg-slate-900/50 border border-white/10">
-                            <p class="text-xs font-semibold tracking-wide text-blue-300 uppercase">Capability Stack</p>
-                            <h3 class="mt-2 text-lg font-semibold">Build a personal AI research analyst</h3>
-                            <p class="mt-2 text-sm text-slate-300">Prompt frameworks, toolchain wiring, and review tactics to turn raw knowledge into decisions in minutes.</p>
-                        </div>
-                        <div class="p-5 rounded-2xl bg-slate-900/50 border border-white/10">
-                            <p class="text-xs font-semibold tracking-wide text-orange-300 uppercase">Operator Playbook</p>
-                            <h3 class="mt-2 text-lg font-semibold">A zero-lag weekly reset</h3>
-                            <p class="mt-2 text-sm text-slate-300">The Monday ritual combining Notion, Cron, and Readwise to compress inputs and plan the week in 30 minutes.</p>
-                        </div>
-                        <div class="flex items-center justify-between p-4 text-sm rounded-xl bg-slate-900/40 border border-white/5">
-                            <div class="flex items-center gap-3">
-                                <span class="inline-flex items-center justify-center w-10 h-10 text-blue-200 bg-blue-500/20 rounded-full">98%</span>
-                                <div>
-                                    <p class="font-medium">Readers recommend the drop</p>
-                                    <p class="text-xs text-slate-400">Rolling 90 day satisfaction score</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-semibold">3,127</p>
-                                <p class="text-xs text-slate-400">Operators subscribed</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="ngb-reveal ngb-d5 flex flex-wrap items-center gap-x-8 gap-y-3 mt-12 ngb-metric" style="color:var(--muted)">
+                    <span class="flex items-baseline gap-2 text-sm"><b class="text-xl" style="color:var(--fg)">{{ number_format(max(\App\Models\Post::published()->count(), 1)) }}</b> deep-dives published</span>
+                    <span class="hidden w-px h-5 sm:block" style="background:var(--line)"></span>
+                    <span class="text-sm">No spam. No fluff. Cancel any time.</span>
                 </div>
             </div>
         </div>
     </section>
+
+    <script>
+    (function(){
+        var c = document.getElementById('ngb-hero-canvas');
+        if(!c || !c.getContext) return;
+        var ctx = c.getContext('2d'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var w=0,h=0,dpr=1,dots=[],mx=-1e4,my=-1e4,t=0,GAP=34;
+        function resize(){
+            dpr=Math.min(window.devicePixelRatio||1,2);
+            var r=c.getBoundingClientRect(); w=r.width; h=r.height;
+            c.width=w*dpr; c.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+            dots=[];
+            for(var y=GAP/2;y<h;y+=GAP){ for(var x=GAP/2;x<w;x+=GAP){ dots.push({x:x,y:y}); } }
+        }
+        function frame(){
+            t+=0.016; ctx.clearRect(0,0,w,h);
+            for(var i=0;i<dots.length;i++){
+                var d=dots[i], dx=d.x-mx, dy=d.y-my, dist=Math.sqrt(dx*dx+dy*dy);
+                var push=Math.max(0,140-dist)/140;
+                var ox=d.x+(dx/(dist||1))*push*16, oy=d.y+(dy/(dist||1))*push*16;
+                ctx.fillStyle='rgba(240,140,60,'+(0.06+push*0.55)+')';
+                ctx.beginPath(); ctx.arc(ox,oy,0.8+push*1.9,0,6.2832); ctx.fill();
+            }
+            ctx.beginPath();
+            for(var x=0;x<=w;x+=6){
+                var yy=h*0.62 + Math.sin(x*0.011+t)*20*Math.sin(t*0.35) + Math.sin(x*0.028-t*1.4)*9;
+                x===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);
+            }
+            ctx.strokeStyle='rgba(242,150,70,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+            raf=requestAnimationFrame(frame);
+        }
+        var raf;
+        window.addEventListener('resize',resize);
+        window.addEventListener('pointermove',function(e){ var r=c.getBoundingClientRect(); mx=e.clientX-r.left; my=e.clientY-r.top; });
+        resize();
+        if(reduce){
+            for(var i=0;i<dots.length;i++){ ctx.fillStyle='rgba(240,140,60,0.10)'; ctx.beginPath(); ctx.arc(dots[i].x,dots[i].y,1,0,6.2832); ctx.fill(); }
+        } else { frame(); }
+    })();
+    </script>
 
     <!-- Featured Articles for SEO -->
     @php
