@@ -88,7 +88,7 @@
 @endpush
 
 @section('content')
-<div x-data="{
+<div id="ngb-landing" x-data="{
         showSubscribeModal: {{ $errors->any() ? 'true' : 'false' }},
         openModal() { this.showSubscribeModal = true; },
         closeModal() { this.showSubscribeModal = false; }
@@ -125,6 +125,14 @@
         @keyframes ngbRise{ to{ opacity:1; transform: none; } }
         @media (prefers-reduced-motion: reduce){ .ngb-reveal{ animation:none; opacity:1; transform:none; } }
         .ngb-metric b{ font-family:"Bricolage Grotesque", sans-serif; font-weight:800; letter-spacing:-0.02em; }
+        /* ---- site-wide landing cohesion ---- */
+        #ngb-landing h2{ font-family:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; letter-spacing:-0.025em; font-weight:800; }
+        .ngb-eyebrow{ font-family:"Bricolage Grotesque", sans-serif; font-weight:700; letter-spacing:.16em; color:oklch(0.6 0.2 252); }
+        .dark .ngb-eyebrow{ color:oklch(0.72 0.16 252); }
+        .ngb-io{ opacity:0; transform:translateY(26px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+        .ngb-io.ngb-in{ opacity:1; transform:none; }
+        .ngb-io-2{ transition-delay:.09s } .ngb-io-3{ transition-delay:.18s }
+        @media (prefers-reduced-motion: reduce){ .ngb-io{ opacity:1; transform:none; transition:none; } }
     </style>
 
     <section id="product-overview" class="ngb-hero relative overflow-hidden">
@@ -218,6 +226,20 @@
     })();
     </script>
 
+    <script>
+    (function(){
+        var els = document.querySelectorAll('#ngb-landing .ngb-io');
+        if(!els.length) return;
+        if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
+            for(var i=0;i<els.length;i++){ els[i].classList.add('ngb-in'); } return;
+        }
+        var io = new IntersectionObserver(function(entries){
+            entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('ngb-in'); io.unobserve(e.target); } });
+        }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+        for(var j=0;j<els.length;j++){ io.observe(els[j]); }
+    })();
+    </script>
+
     <!-- Featured Articles for SEO -->
     @php
         // Get most viewed posts from last 2 months to keep homepage fresh
@@ -249,12 +271,12 @@
     <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
         <div class="max-w-7xl mx-auto">
             <!-- Featured Hero Article -->
-            <div class="mb-12">
-                <p class="text-sm font-semibold tracking-wide text-blue-600 dark:text-blue-400 uppercase">Featured</p>
-                <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Latest Research & Insights</h2>
+            <div class="mb-12 ngb-io">
+                <p class="ngb-eyebrow text-xs uppercase">Featured</p>
+                <h2 class="mt-3 text-4xl text-slate-900 dark:text-white">Latest research &amp; insights</h2>
             </div>
 
-            <div class="grid lg:grid-cols-3 gap-8">
+            <div class="grid lg:grid-cols-3 gap-8 ngb-io ngb-io-2">
                 <!-- Hero Featured Post -->
                 <div class="lg:col-span-2">
                     <a href="{{ route('posts.show', $featuredPost->slug) }}" class="group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all h-96">
@@ -323,9 +345,10 @@
 
             <!-- Featured Categories -->
             @if($featuredCategories->count() > 0)
-            <div class="mt-16 pt-12 border-t border-gray-200 dark:border-slate-700">
-                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-3">Explore by Topic</h2>
-                <p class="text-gray-700 dark:text-gray-400 mb-10 max-w-2xl">Discover curated collections of articles organized by topic. Find exactly what you're looking for.</p>
+            <div class="mt-20 pt-14 border-t border-gray-200 dark:border-slate-800 ngb-io">
+                <p class="ngb-eyebrow text-xs uppercase">Topics</p>
+                <h2 class="mt-3 text-4xl text-slate-900 dark:text-white mb-3">Explore by topic</h2>
+                <p class="text-gray-700 dark:text-gray-400 mb-10 max-w-2xl text-lg">Curated collections, organized by what you're actually building. Find the thread and pull.</p>
                 <div class="grid md:grid-cols-3 gap-8">
                     @foreach($featuredCategories as $category)
                         @php $categoryPosts = $category->publishedPosts()->limit(3)->get(); @endphp
@@ -401,69 +424,44 @@
     </section>
     @endif
 
-    <section class="py-16 bg-white dark:bg-slate-950">
-        <div class="px-6 mx-auto max-w-7xl">
-            <div class="max-w-3xl">
-                <p class="text-sm font-semibold tracking-wide text-blue-600 uppercase">Why readers stay</p>
-                <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Signal-rich briefings, shipped weekly.</h2>
-                <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
-                    Each edition packages deep research, vetted frameworks, and tested playbooks into a frictionless read.
-                    Drop in for the intelligence you need, skip the noise.
+    <section class="py-24 bg-white dark:bg-slate-950">
+        <div class="px-6 mx-auto max-w-6xl">
+            <div class="max-w-3xl ngb-io">
+                <p class="ngb-eyebrow text-xs uppercase">Why readers stay</p>
+                <h2 class="mt-4 text-4xl sm:text-5xl text-slate-900 dark:text-white">Signal-rich briefings,<br>shipped weekly.</h2>
+                <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-400">
+                    Each edition packages deep research, vetted frameworks, and tested playbooks into a frictionless read. Drop in for the intelligence you need, skip the noise.
                 </p>
             </div>
-            <div class="grid gap-8 mt-12 md:grid-cols-2 lg:grid-cols-3">
-                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
-                    <div class="inline-flex items-center justify-center w-10 h-10 text-blue-600 bg-blue-100 rounded-xl">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="grid mt-16 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-12 ngb-io ngb-io-2">
+                @foreach([
+                    ['Curated in the open','Transparent breakdowns of the stack we use to build, test, and launch products faster.'],
+                    ['Actionable, not theoretical','Immediate prompts, automations, and agendas you can drop into your operating system within minutes.'],
+                    ['Designed for momentum','Save hours of scattered research and unlock a cadence that keeps your team compounding.'],
+                    ['Time to value in minutes','Read in under ten minutes and ship upgrades the same day.'],
+                    ['Community sourced insight','Powered by founders, analysts, and systems thinkers behind breakout products.'],
+                    ['No noise, ever','We respect your attention. One drop, once a week, crafted to create leverage.'],
+                ] as $i => $item)
+                <div class="group relative pb-1">
+                    <div class="flex items-baseline gap-4">
+                        <span class="text-2xl font-extrabold tabular-nums" style="font-family:'Bricolage Grotesque',sans-serif;color:oklch(0.62 0.2 252)">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $item[0] }}</h3>
                     </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Curated in the open</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Transparent breakdowns of the stack we use to build, test, and launch products faster.</p>
+                    <p class="mt-3 pl-10 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $item[1] }}</p>
+                    <div class="mt-6 h-px w-full bg-slate-200 dark:bg-slate-800"></div>
+                    <div class="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-500 ease-out group-hover:scale-x-100" style="background:oklch(0.62 0.2 252)"></div>
                 </div>
-                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
-                    <div class="inline-flex items-center justify-center w-10 h-10 text-purple-600 bg-purple-100 rounded-xl">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14s-3 .672-3 1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v1m0 12v1m7-7h1M4 12H3m15.364 5.364l.707.707M5.929 6.343l-.707-.707m12.142 0l.707-.707M5.929 17.657l-.707.707"/></svg>
-                    </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Actionable, not theoretical</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Immediate prompts, automations, and agendas you can drop into your operating system within minutes.</p>
-                </div>
-                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
-                    <div class="inline-flex items-center justify-center w-10 h-10 text-emerald-600 bg-emerald-100 rounded-xl">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                    </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Designed for momentum</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Save hours of scattered research and unlock a cadence that keeps your team compounding.</p>
-                </div>
-                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
-                    <div class="inline-flex items-center justify-center w-10 h-10 text-amber-600 bg-amber-100 rounded-xl">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-width="2"/></svg>
-                    </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Time to value in minutes</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Read in under ten minutes and ship upgrades the same day.</p>
-                </div>
-                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
-                    <div class="inline-flex items-center justify-center w-10 h-10 text-rose-600 bg-rose-100 rounded-xl">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-3-3H8a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v6a2 2 0 01-2 2h-3l-3 3z"/></svg>
-                    </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Community sourced insight</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Powered by founders, analysts, and systems thinkers behind breakout products.</p>
-                </div>
-                <div class="p-6 transition-all duration-300 bg-white rounded-2xl border-2 border-gray-300 shadow-md hover:-translate-y-2 hover:shadow-xl hover:border-blue-500 dark:bg-slate-900/60 dark:border-slate-700 dark:hover:border-blue-500">
-                    <div class="inline-flex items-center justify-center w-10 h-10 text-slate-600 bg-slate-100 rounded-xl">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"/></svg>
-                    </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">No noise, ever</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">We respect your attention. One drop, once a week, crafted to create leverage.</p>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
 
     <section id="membership-details" class="py-20 bg-white dark:bg-slate-950 border-y border-slate-200/60 dark:border-slate-800">
         <div class="px-6 mx-auto space-y-16 max-w-6xl">
-            <div class="grid gap-12 lg:grid-cols-2">
+            <div class="grid gap-12 lg:grid-cols-2 ngb-io">
                 <div>
-                    <p class="text-sm font-semibold tracking-wide text-blue-500 uppercase">Product overview</p>
-                    <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">A membership for builders who need verified operating intelligence.</h2>
+                    <p class="ngb-eyebrow text-xs uppercase">Product overview</p>
+                    <h2 class="mt-3 text-4xl text-slate-900 dark:text-white">A membership for builders who need verified operating intelligence.</h2>
                     <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">NextGenBeing is a digital subscription that delivers weekly research-backed playbooks, curated tooling analysis, and implementation templates designed to help founders, operators, and product teams ship faster with confidence.</p>
                     <ul class="mt-6 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                         <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-500"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span><span><strong>Weekly NextGen Playbook.</strong> 1,200+ word deep dive covering a core system, including step-by-step workflows, operating heuristics, and annotated screenshots.</span></li>
@@ -503,10 +501,10 @@
     </section>
     <section class="py-16 bg-slate-900">
         <div class="px-6 mx-auto max-w-7xl">
-            <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between ngb-io">
                 <div class="max-w-2xl">
-                    <p class="text-sm font-semibold tracking-wide text-blue-300 uppercase">Premium intelligence platform</p>
-                    <h2 class="mt-3 text-3xl font-bold text-white">What sets NextGenBeing apart</h2>
+                    <p class="ngb-eyebrow text-xs uppercase" style="color:oklch(0.74 0.15 252)">Premium intelligence platform</p>
+                    <h2 class="mt-3 text-4xl text-white">What sets NextGenBeing apart</h2>
                     <p class="mt-4 text-base leading-7 text-slate-300">
                         Unlike general tech news, we specialize in <strong>actionable intelligence</strong>.
                         Every drop includes frameworks you can implement, tools you can test, and strategies you can replicate.
@@ -522,7 +520,7 @@
                     </a>
                 </div>
             </div>
-            <div id="features" class="grid gap-6 mt-12 lg:grid-cols-3">
+            <div id="features" class="grid gap-6 mt-12 lg:grid-cols-3 ngb-io">
                 <!-- Feature 1: Systems & Workflows -->
                 <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
                     <div class="flex items-center justify-between mb-4">
@@ -657,12 +655,12 @@
 
     <section id="policies" class="py-16 bg-slate-100 dark:bg-slate-900/40">
         <div class="px-6 mx-auto max-w-6xl">
-            <div class="max-w-3xl">
-                <p class="text-sm font-semibold tracking-wide text-blue-500 uppercase">Trust &amp; compliance</p>
-                <h2 class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Clear policies and secure billing.</h2>
+            <div class="max-w-3xl ngb-io">
+                <p class="ngb-eyebrow text-xs uppercase">Trust &amp; compliance</p>
+                <h2 class="mt-3 text-4xl text-slate-900 dark:text-white">Clear policies and secure billing.</h2>
                 <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">All purchases are processed securely over HTTPS with LemonSqueezy. Review our policies any time or reach the team directly at {{ 'support@' . str_replace(['http://', 'https://', 'www.'], '', config('app.url', 'https://nextgenbeing.com')) }}.</p>
             </div>
-            <div class="grid gap-6 mt-10 md:grid-cols-3">
+            <div class="grid gap-6 mt-10 md:grid-cols-3 ngb-io ngb-io-2">
                 <a href="{{ route('terms') }}" class="group block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Terms &amp; Conditions</h3>
