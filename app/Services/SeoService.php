@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Models\MarketplaceListing;
+use Illuminate\Support\Facades\Route;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 use Illuminate\Support\Facades\Cache;
@@ -71,6 +73,29 @@ class SeoService
                         ->setPriority(0.6)
                 );
             });
+
+        // Add marketplace (index + every published listing)
+        if (Route::has('marketplace.index') && class_exists(MarketplaceListing::class)) {
+            $sitemap->add(
+                Url::create(route('marketplace.index'))
+                    ->setLastModificationDate(now())
+                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
+                    ->setPriority(0.9)
+            );
+
+            MarketplaceListing::query()
+                ->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->select(['slug', 'updated_at', 'published_at'])
+                ->each(function ($listing) use ($sitemap) {
+                    $sitemap->add(
+                        Url::create(route('marketplace.show', $listing->slug))
+                            ->setLastModificationDate($listing->updated_at ?? $listing->published_at)
+                            ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                            ->setPriority(0.8)
+                    );
+                });
+        }
 
         // Write sitemap
         $sitemap->writeToFile(public_path('sitemap.xml'));
