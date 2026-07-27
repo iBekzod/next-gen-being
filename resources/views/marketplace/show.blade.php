@@ -11,8 +11,23 @@
   #ngb-market .lights{ display:flex; gap:8px; } #ngb-market .lights span{ width:13px; height:13px; border-radius:50%; display:block; }
   #ngb-market .lights .r{ background:#ff5f57; } #ngb-market .lights .y{ background:#febc2e; } #ngb-market .lights .g{ background:#28c840; }
   #ngb-market .addr{ flex:1; text-align:center; font-family:ui-monospace,monospace; font-size:.78rem; color:var(--ink-soft); }
-  #ngb-market .win-body{ height:460px; background:#0f1420; }
+  #ngb-market .win-body{ height:460px; background:#0f1420; transition:height .35s cubic-bezier(.16,1,.3,1); }
   #ngb-market .win-body iframe{ width:100%; height:100%; border:0; display:block; }
+  #ngb-market .lights span{ cursor:pointer; }
+  #ngb-market .win-tools{ display:flex; gap:6px; }
+  #ngb-market .win-tools button{ width:30px; height:28px; border-radius:8px; border:1px solid var(--line);
+    background:var(--paper); color:var(--ink-soft); cursor:pointer; font-size:.9rem; line-height:1; display:grid; place-items:center; }
+  #ngb-market .win-tools button:hover{ color:var(--signal-ink); border-color:var(--signal); }
+  #ngb-market .win-tools button:focus-visible{ outline:2px solid var(--signal); outline-offset:2px; }
+  #ngb-market .win.is-min .win-body{ height:0; }
+  #ngb-market .win.is-full{ position:fixed; inset:3vh 3vw; z-index:60; margin:0; box-shadow:0 40px 120px oklch(0.1 0.03 264 / .6); }
+  #ngb-market .win.is-full .win-body{ height:calc(100% - 51px); }
+  #ngb-market .ngb-backdrop{ position:fixed; inset:0; background:oklch(0.14 0.03 264 / .55); backdrop-filter:blur(3px);
+    z-index:59; opacity:0; pointer-events:none; transition:opacity .3s; }
+  #ngb-market .ngb-backdrop.show{ opacity:1; pointer-events:auto; }
+  @media (prefers-reduced-motion: reduce){
+    #ngb-market .win-body{ transition:none; } #ngb-market .ngb-backdrop{ transition:none; }
+  }
   #ngb-market .tier{ border:1.5px solid var(--line); border-radius:12px; padding:13px 15px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
   #ngb-market .tier .t-price{ font-family:var(--font-display); font-weight:800; font-size:1.1rem; }
   #ngb-market .buy-btn{ width:100%; background:var(--signal); color:#fff; border:none; border-radius:10px; padding:11px; font-weight:700; cursor:pointer; }
@@ -27,11 +42,24 @@
     <p style="color:var(--ink-soft); margin:0 0 20px;">{{ $listing->tagline }} · by <b style="color:var(--ink);">{{ $listing->seller->name }}</b></p>
 
     {{-- LIVE DEMO WINDOW --}}
-    <div class="win mb-3">
+    <div class="ngb-backdrop" data-ngb-backdrop></div>
+    <div class="win mb-3" data-ngb-win>
       <div class="win-bar">
-        <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+        <div class="lights">
+          <span class="r" data-ngb-min title="Minimize" role="button" aria-label="Minimize demo"></span>
+          <span class="y" data-ngb-min title="Minimize" role="button" aria-label="Minimize demo"></span>
+          <span class="g" data-ngb-full title="Fullscreen" role="button" aria-label="Fullscreen demo"></span>
+        </div>
         <div class="addr">🔒 {{ Str::slug($listing->title) }}-demo.nextgenbeing.com</div>
         <span class="m-live" style="color:var(--good);"><span class="blink" style="background:var(--good);"></span>LIVE</span>
+        @if($demoUrl)
+          <div class="win-tools">
+            <button type="button" data-ngb-min aria-label="Minimize demo" title="Minimize">&#x2015;</button>
+            <button type="button" data-ngb-full aria-label="Toggle fullscreen" title="Fullscreen">&#x26F6;</button>
+            <a href="{{ $demoUrl }}" target="_blank" rel="noopener" role="button" aria-label="Open demo in new tab" title="Open in new tab"
+               style="text-decoration:none; width:30px; height:28px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); display:grid; place-items:center; font-size:.9rem;">&#x2197;</a>
+          </div>
+        @endif
       </div>
       <div class="win-body">
         @if($demoUrl)
@@ -41,7 +69,7 @@
         @endif
       </div>
     </div>
-    <p style="text-align:center; font-size:.78rem; color:var(--ink-faint); margin-bottom:28px;">This is the live product, not a screenshot. Click around before you buy.</p>
+    <p style="text-align:center; font-size:.78rem; color:var(--ink-faint); margin-bottom:28px;">This is the live product, not a screenshot. Click around, or hit fullscreen &#x26F6;, before you buy.</p>
 
     <div class="grid gap-8" style="grid-template-columns:1.5fr 1fr;">
       <div>
@@ -80,4 +108,35 @@
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  var win = document.querySelector('[data-ngb-win]');
+  if (!win) return;
+  var backdrop = document.querySelector('[data-ngb-backdrop]');
+
+  function minimize() { win.classList.remove('is-full'); if (backdrop) backdrop.classList.remove('show'); win.classList.toggle('is-min'); }
+  function fullscreen() {
+    win.classList.remove('is-min');
+    var on = win.classList.toggle('is-full');
+    if (backdrop) backdrop.classList.toggle('show', on);
+    document.body.style.overflow = on ? 'hidden' : '';
+  }
+  function exitFull() {
+    if (!win.classList.contains('is-full')) return;
+    win.classList.remove('is-full');
+    if (backdrop) backdrop.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-ngb-min]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); minimize(); });
+  });
+  document.querySelectorAll('[data-ngb-full]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); fullscreen(); });
+  });
+  if (backdrop) backdrop.addEventListener('click', exitFull);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') exitFull(); });
+})();
+</script>
 @endsection
