@@ -312,6 +312,12 @@
                                 Articles
                             </a>
 
+                            <!-- Marketplace -->
+                            <a href="{{ route('marketplace.index') }}"
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                Marketplace
+                            </a>
+
                             <!-- Topics -->
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open"
@@ -566,6 +572,10 @@
                     <a href="{{ route('posts.index') }}"
                         class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Articles</a>
 
+                    <!-- Marketplace -->
+                    <a href="{{ route('marketplace.index') }}"
+                        class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Marketplace</a>
+
                     <!-- Topics Section -->
                     <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
                         <p class="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Topics</p>
@@ -710,6 +720,8 @@
                             <li><a href="{{ route('posts.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">All
                                     Articles</a></li>
+                            <li><a href="{{ route('marketplace.index') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Marketplace</a></li>
                             <li><a href="{{ route('tutorials.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Tutorial
                                     Series</a></li>
