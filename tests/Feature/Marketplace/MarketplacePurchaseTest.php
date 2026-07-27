@@ -56,4 +56,33 @@ class MarketplacePurchaseTest extends TestCase
         // Paid purchases are recorded later by the webhook, not now.
         $this->assertDatabaseMissing('product_purchases', ['digital_product_id' => $tier->id]);
     }
+
+    public function test_marketplace_tier_without_variant_uses_catch_all_and_custom_price(): void
+    {
+        config(['services.lemonsqueezy.marketplace_variant_id' => '555000']);
+
+        $buyer = User::factory()->create();
+        $seller = User::factory()->create();
+        $listing = MarketplaceListing::factory()->for($seller, 'seller')->create();
+        // A marketplace tier with NO variant id of its own, price $7.
+        $tier = DigitalProduct::factory()->tier('design', 7)->create([
+            'creator_id' => $seller->id, 'listing_id' => $listing->id,
+            'lemonsqueezy_variant_id' => null,
+        ]);
+
+        $this->mock(LemonSqueezyService::class, function ($mock) {
+            $mock->shouldReceive('createCheckout')
+                ->once()
+                ->with(\Mockery::on(function ($data) {
+                    return ($data['variant_id'] ?? null) === '555000'   // catch-all variant
+                        && ($data['custom_price'] ?? null) === 700       // $7 in cents, set by us
+                        && isset($data['product_options']['name']);      // tier name shown on checkout
+                }))
+                ->andReturn('https://checkout.example/dyn');
+        });
+
+        $this->actingAs($buyer)
+            ->post(route('digital-products.purchase', $tier))
+            ->assertRedirect('https://checkout.example/dyn');
+    }
 }

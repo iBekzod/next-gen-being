@@ -115,14 +115,27 @@ class DigitalProductController extends Controller
         }
 
         // Paid product → hosted Lemon Squeezy checkout.
-        if (empty($product->lemonsqueezy_variant_id)) {
+        // Resolve which variant to charge against:
+        //  - a product with its own variant uses it (existing digital products);
+        //  - a marketplace tier without one falls back to a single "catch-all"
+        //    variant, with the real price supplied per-checkout via `custom_price`.
+        //    That means new marketplace tiers need zero Lemon Squeezy setup.
+        $variantId = $product->lemonsqueezy_variant_id;
+        $customPrice = null;
+
+        if (empty($variantId) && $product->listing_id) {
+            $variantId = config('services.lemonsqueezy.marketplace_variant_id');
+            $customPrice = (int) round($product->price * 100); // cents
+        }
+
+        if (empty($variantId)) {
             return back()->with('error', 'This product isn\'t available for purchase yet. Please check back soon.');
         }
 
         $user = auth()->user();
 
-        $checkoutUrl = app(\App\Services\LemonSqueezyService::class)->createCheckout([
-            'variant_id' => $product->lemonsqueezy_variant_id,
+        $checkoutData = [
+            'variant_id' => $variantId,
             'checkout_data' => [
                 'email' => $user->email,
                 'name' => $user->name,
@@ -134,12 +147,20 @@ class DigitalProductController extends Controller
                 ],
             ],
             'product_options' => [
+                // Show the tier's own name on the catch-all checkout/receipt.
+                'name' => $product->title,
                 'redirect_url' => route('digital-products.download-index'),
                 'receipt_button_text' => 'Access your download',
                 'receipt_thank_you_note' => 'Thank you! Your purchase is ready in your downloads.',
             ],
             'preview' => false,
-        ]);
+        ];
+
+        if ($customPrice !== null) {
+            $checkoutData['custom_price'] = $customPrice;
+        }
+
+        $checkoutUrl = app(\App\Services\LemonSqueezyService::class)->createCheckout($checkoutData);
 
         if ($checkoutUrl) {
             return redirect()->away($checkoutUrl);

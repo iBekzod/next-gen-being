@@ -54,6 +54,11 @@ return [
         // Tip/donation variant ID (for one-time tips to creators)
         'tip_variant_id' => env('LEMONSQUEEZY_TIP_VARIANT_ID'),
 
+        // Marketplace catch-all variant: one variant reused for every marketplace
+        // tier, with the real price set per-checkout via `custom_price`. Lets us sell
+        // any tier without creating a Lemon Squeezy product/variant per tier.
+        'marketplace_variant_id' => env('LEMONSQUEEZY_MARKETPLACE_VARIANT_ID'),
+
         'test_mode' => env('LEMONSQUEEZY_TEST_MODE', false), // Production default is false
     ],
 
