@@ -50,6 +50,7 @@ class FitTrackSeederTest extends TestCase
             \Database\Seeders\LinkFolioListingSeeder::class => 'linkfolio-dev-portfolio',
             \Database\Seeders\NebulaListingSeeder::class    => 'nebula-analytics-saas',
             \Database\Seeders\HaloListingSeeder::class      => 'halo-ai-writer',
+            \Database\Seeders\AscendListingSeeder::class    => 'ascend-saas-landing',
         ];
 
         foreach ($map as $seeder => $slug) {
