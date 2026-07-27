@@ -23,10 +23,19 @@
     @else
       <div class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
         @foreach($listings as $listing)
+          @php
+            $cardDemo = $listing->demo_type === 'static'
+              ? asset('storage/'.$listing->demo_path)
+              : ($listing->demo_type === 'external' ? $listing->demo_url : null);
+          @endphp
           <a href="{{ route('marketplace.show', $listing) }}" class="m-card" style="display:block; text-decoration:none;">
-            <div style="height:140px; position:relative; display:grid; place-items:center; background:linear-gradient(135deg, oklch(0.35 0.13 264), var(--signal));">
+            <div class="m-thumb">
               <span class="m-live" style="position:absolute; top:10px; left:10px;"><span class="blink"></span>LIVE</span>
-              <span class="m-display" style="color:#fff; font-size:1.35rem;">{{ Str::limit($listing->title, 18) }}</span>
+              <span class="m-display m-title">{{ Str::limit($listing->title, 18) }}</span>
+              @if($cardDemo)
+                <iframe class="m-demo" data-src="{{ $cardDemo }}" title="Live preview of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+                <span class="m-hint">Hover = live · click to open</span>
+              @endif
             </div>
             <div style="padding:13px 15px;">
               <div style="font-weight:700; color:var(--ink);">{{ $listing->title }}</div>
@@ -43,4 +52,18 @@
     @endif
   </div>
 </div>
+
+<script>
+(function () {
+  // Lazy-load each card's live demo the first time it is hovered/focused.
+  function load(card) {
+    var f = card.querySelector('.m-demo');
+    if (f && !f.getAttribute('src') && f.dataset.src) { f.setAttribute('src', f.dataset.src); }
+  }
+  document.querySelectorAll('#ngb-market .m-card').forEach(function (card) {
+    card.addEventListener('mouseenter', function () { load(card); }, { once: true });
+    card.addEventListener('focusin', function () { load(card); }, { once: true });
+  });
+})();
+</script>
 @endsection

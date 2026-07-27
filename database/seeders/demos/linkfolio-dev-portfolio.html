@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LinkFolio — Developer Portfolio</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --line:#243154; --fg:#eaf0ff; --muted:#9fb0d6;
+    --accent:#5b8cff; --accent2:#8b5bff; --good:#28c840;
+    --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:
+    radial-gradient(900px 500px at 85% -5%, rgba(91,140,255,.18), transparent 60%),
+    radial-gradient(700px 400px at -5% 10%, rgba(139,91,255,.14), transparent 55%), var(--bg);
+    color:var(--fg);min-height:100vh}
+  .wrap{max-width:860px;margin:0 auto;padding:38px 22px 60px}
+  nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:52px}
+  .logo{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+  .logo .d{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .nav-links{display:flex;gap:22px;font-size:.9rem;color:var(--muted)}
+  .nav-links a{color:var(--muted);text-decoration:none;cursor:pointer}
+  .nav-links a:hover{color:var(--fg)}
+  .hero{margin-bottom:48px}
+  .avatar{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));margin-bottom:20px;
+    display:grid;place-items:center;font-weight:800;font-size:1.7rem;color:#fff}
+  h1{font-size:clamp(2rem,6vw,3rem);line-height:1.03;letter-spacing:-.03em;margin:0 0 12px;font-weight:800}
+  h1 .g{background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);font-size:1.1rem;max-width:52ch;line-height:1.6;margin:0 0 24px}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{border:none;border-radius:11px;padding:12px 20px;font-weight:700;cursor:pointer;font-size:.95rem;font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(91,140,255,.4)}
+  .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--accent)}
+  .section-h{display:flex;align-items:baseline;justify-content:space-between;margin:44px 0 18px}
+  .section-h h2{font-size:1.4rem;font-weight:700;margin:0}
+  .filters{display:flex;gap:8px}
+  .chip{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 14px;font-size:.82rem;cursor:pointer;font-family:inherit}
+  .chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .proj{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;transition:transform .18s,border-color .18s;cursor:pointer}
+  .proj:hover{transform:translateY(-4px);border-color:var(--accent)}
+  .proj .tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:8px}
+  .proj h3{margin:0 0 6px;font-size:1.05rem}
+  .proj p{margin:0;color:var(--muted);font-size:.86rem;line-height:1.5}
+  .proj .stars{margin-top:12px;font-size:.8rem;color:var(--muted)}
+  .hidden{display:none}
+  footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+  .contact{color:var(--muted);font-size:.9rem}
+  .reveal-mail{color:var(--accent);cursor:pointer;font-weight:600}
+  .socials{display:flex;gap:10px}
+  .socials span{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+  .socials span:hover{color:var(--fg);border-color:var(--accent)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(140%);background:var(--fg);color:var(--bg);
+    padding:11px 18px;border-radius:11px;font-weight:600;font-size:.86rem;transition:transform .35s cubic-bezier(.16,1,.3,1)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="logo"><span class="d"></span> LinkFolio</div>
+    <div class="nav-links"><a data-scroll>Work</a><a data-scroll>About</a><a data-scroll>Contact</a></div>
+  </nav>
+
+  <header class="hero">
+    <div class="avatar">A</div>
+    <h1>I build <span class="g">fast, delightful</span><br>web products.</h1>
+    <p class="lead">Full-stack developer focused on shipping polished interfaces and clean backends. Available for freelance and collaborations.</p>
+    <div class="cta-row">
+      <button class="btn btn-primary" id="hireBtn">Hire me</button>
+      <button class="btn btn-ghost" id="cvBtn">Download CV</button>
+    </div>
+  </header>
+
+  <div class="section-h">
+    <h2>Selected work</h2>
+    <div class="filters" id="filters">
+      <button class="chip active" data-f="all">All</button>
+      <button class="chip" data-f="web">Web</button>
+      <button class="chip" data-f="app">App</button>
+      <button class="chip" data-f="ai">AI</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="proj" data-cat="web"><div class="tag">Web</div><h3>Nimbus Dashboard</h3><p>Analytics SaaS with real-time charts and a fast Laravel API.</p><div class="stars">★ 4.9 · 1.2k users</div></div>
+    <div class="proj" data-cat="app"><div class="tag">App</div><h3>Trailhead</h3><p>Cross-platform hiking tracker with offline maps.</p><div class="stars">★ 4.8 · 40k downloads</div></div>
+    <div class="proj" data-cat="ai"><div class="tag">AI</div><h3>DraftGenie</h3><p>AI writing assistant for developer blogs.</p><div class="stars">★ 5.0 · featured</div></div>
+    <div class="proj" data-cat="web"><div class="tag">Web</div><h3>PayLane</h3><p>Subscription billing portal with Lemon Squeezy.</p><div class="stars">★ 4.7 · SaaS</div></div>
+    <div class="proj" data-cat="ai"><div class="tag">AI</div><h3>Recall</h3><p>Semantic search over your notes, on-device.</p><div class="stars">★ 4.9 · privacy-first</div></div>
+    <div class="proj" data-cat="app"><div class="tag">App</div><h3>Cadence</h3><p>Habit tracker with streaks and gentle nudges.</p><div class="stars">★ 4.8 · 12k users</div></div>
+  </div>
+
+  <footer>
+    <div class="contact">Email: <span class="reveal-mail" id="mail">click to reveal</span></div>
+    <div class="socials"><span title="GitHub">GH</span><span title="X">X</span><span title="LinkedIn">in</span></div>
+  </footer>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+(function(){
+  var toast=document.getElementById('toast'),tt;
+  function show(m){toast.textContent=m;toast.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('show')},1800);}
+  document.getElementById('filters').addEventListener('click',function(e){
+    var b=e.target.closest('.chip'); if(!b)return;
+    document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active')}); b.classList.add('active');
+    var f=b.dataset.f;
+    document.querySelectorAll('.proj').forEach(function(p){ p.classList.toggle('hidden', f!=='all' && p.dataset.cat!==f); });
+  });
+  document.getElementById('hireBtn').addEventListener('click',function(){show('Message form would open here')});
+  document.getElementById('cvBtn').addEventListener('click',function(){show('CV download would start')});
+  document.getElementById('mail').addEventListener('click',function(){this.textContent='hello@linkfolio.dev';show('Email revealed')});
+  document.querySelectorAll('.proj').forEach(function(p){p.addEventListener('click',function(){show('Opening '+p.querySelector('h3').textContent)})});
+  document.querySelectorAll('.socials span').forEach(function(s){s.addEventListener('click',function(){show(s.title+' profile')})});
+})();
+</script>
+</body>
+</html>

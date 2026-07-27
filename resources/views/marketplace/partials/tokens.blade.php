@@ -24,4 +24,19 @@
     color:#fff; letter-spacing:.04em; }
   #ngb-market .m-live .blink{ width:7px; height:7px; border-radius:50%; background:#fff; animation:mblink 1.6s ease-in-out infinite; }
   @keyframes mblink{ 0%,100%{opacity:1} 50%{opacity:.25} }
+  /* card live-demo preview on hover */
+  #ngb-market .m-thumb{ height:140px; position:relative; overflow:hidden; display:grid; place-items:center;
+    background:linear-gradient(135deg, oklch(0.35 0.13 264), var(--signal)); }
+  #ngb-market .m-thumb .m-demo{ position:absolute; inset:0; width:250%; height:250%; border:0;
+    transform:scale(.4); transform-origin:top left; opacity:0; transition:opacity .35s; pointer-events:none; background:#0b1020; }
+  #ngb-market .m-card:hover .m-thumb .m-demo{ opacity:1; }
+  #ngb-market .m-thumb .m-title{ position:relative; z-index:1; color:#fff; font-size:1.35rem; transition:opacity .3s; }
+  #ngb-market .m-card:hover .m-thumb .m-title{ opacity:0; }
+  #ngb-market .m-thumb .m-live{ z-index:2; }
+  #ngb-market .m-thumb .m-hint{ position:absolute; bottom:8px; right:10px; z-index:2; font-size:.64rem; font-weight:700;
+    color:#fff; background:oklch(0.15 0.03 264 / .55); padding:3px 8px; border-radius:999px; opacity:0; transition:opacity .3s; }
+  #ngb-market .m-card:hover .m-thumb .m-hint{ opacity:1; }
+  @media (prefers-reduced-motion: reduce){
+    #ngb-market .m-thumb .m-demo, #ngb-market .m-thumb .m-title, #ngb-market .m-thumb .m-hint{ transition:none; }
+  }
 </style>
