@@ -13,6 +13,7 @@ class DigitalProduct extends Model implements HasMedia
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected $fillable = [
+        'listing_id', 'tier',
         'creator_id', 'title', 'slug', 'description', 'short_description',
         'type', 'price', 'original_price', 'tier_required', 'is_free',
         'file_path', 'preview_file_path', 'files', 'thumbnail', 'gallery',
@@ -21,6 +22,15 @@ class DigitalProduct extends Model implements HasMedia
         'lemonsqueezy_product_id', 'lemonsqueezy_variant_id',
         'downloads_count', 'purchases_count', 'rating', 'reviews_count'
     ];
+
+    // Marketplace tier identifiers (subset of products linked to a MarketplaceListing).
+    public const TIER_PROMPT = 'prompt';
+    public const TIER_DESIGN = 'design';
+    public const TIER_CODE   = 'code';
+    public const TIER_BUNDLE = 'bundle';
+
+    /** Platform keeps 10% on marketplace tiers. */
+    public const MARKETPLACE_REVENUE_SHARE = 90.00;
 
     protected $casts = [
         'files' => 'array',
@@ -49,6 +59,11 @@ class DigitalProduct extends Model implements HasMedia
     public function purchases()
     {
         return $this->hasMany(ProductPurchase::class);
+    }
+
+    public function listing()
+    {
+        return $this->belongsTo(MarketplaceListing::class, 'listing_id');
     }
 
     // Scopes
