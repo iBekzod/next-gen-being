@@ -1,7 +1,35 @@
 @extends('layouts.app')
 @section('title', $listing->title.' — live demo & source')
+@section('description', Str::limit(strip_tags($listing->tagline ?: $listing->description), 155))
+@section('og_type', 'product')
 
 @section('content')
+@php
+    $__tierPrices = $listing->tiers->pluck('price')->map(fn ($p) => (float) $p);
+    $__productLd = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $listing->title,
+        'description' => Str::limit(strip_tags($listing->description ?: $listing->tagline), 300),
+        'category' => $listing->category,
+        'brand' => ['@type' => 'Brand', 'name' => 'NextGenBeing'],
+        'offers' => $__tierPrices->isNotEmpty() ? [
+            '@type' => 'AggregateOffer',
+            'priceCurrency' => 'USD',
+            'lowPrice' => number_format($__tierPrices->min(), 2, '.', ''),
+            'highPrice' => number_format($__tierPrices->max(), 2, '.', ''),
+            'offerCount' => $__tierPrices->count(),
+            'availability' => 'https://schema.org/InStock',
+            'url' => route('marketplace.show', $listing),
+        ] : null,
+        'aggregateRating' => $listing->reviews_count > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => (string) $listing->rating,
+            'reviewCount' => (string) $listing->reviews_count,
+        ] : null,
+    ]);
+@endphp
+<script type="application/ld+json">{!! json_encode($__productLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @include('marketplace.partials.tokens')
 <style>
   #ngb-market .win{ background:var(--surface); border:1px solid var(--line-strong); border-radius:16px; overflow:hidden;

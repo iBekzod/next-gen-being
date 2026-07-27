@@ -53,4 +53,28 @@ class MarketplacePageTest extends TestCase
         $listing = MarketplaceListing::factory()->create(['status' => 'draft', 'published_at' => null]);
         $this->get(route('marketplace.show', $listing))->assertStatus(404);
     }
+
+    public function test_show_page_emits_product_schema(): void
+    {
+        $listing = $this->publishedListing(); // prompt $5 + design $7 tiers
+
+        $response = $this->get(route('marketplace.show', $listing));
+
+        $response->assertSee('application/ld+json', false);
+        $response->assertSee('"@type":"Product"', false);
+        $response->assertSee('"lowPrice":"5.00"', false);
+        $response->assertSee('"highPrice":"7.00"', false);
+    }
+
+    public function test_sitemap_includes_marketplace(): void
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+        $listing = $this->publishedListing();
+
+        $response = $this->get('/sitemap.xml');
+
+        $response->assertStatus(200);
+        $response->assertSee(route('marketplace.index'), false);
+        $response->assertSee(route('marketplace.show', $listing), false);
+    }
 }

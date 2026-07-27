@@ -68,6 +68,9 @@ class SeoController extends Controller
             $entries[] = $this->formatEntry(route('subscription.plans'), $now, 'weekly', '0.9');
         }
         $entries[] = $this->formatEntry(route('posts.index'), $now, 'daily', '0.9');
+        if (Route::has('marketplace.index')) {
+            $entries[] = $this->formatEntry(route('marketplace.index'), $now, 'daily', '0.9');
+        }
         $entries[] = $this->formatEntry(route('privacy'), $now, 'yearly', '0.3');
         $entries[] = $this->formatEntry(route('terms'), $now, 'yearly', '0.3');
         if (Route::has('refund')) {
@@ -117,6 +120,22 @@ class SeoController extends Controller
                     );
                 }
             });
+
+        if (Route::has('marketplace.show') && class_exists(\App\Models\MarketplaceListing::class)) {
+            \App\Models\MarketplaceListing::query()
+                ->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->latest('updated_at')
+                ->get()
+                ->each(function ($listing) use (&$entries) {
+                    $entries[] = $this->formatEntry(
+                        route('marketplace.show', $listing->slug),
+                        $listing->updated_at ?? $listing->published_at,
+                        'weekly',
+                        '0.8'
+                    );
+                });
+        }
 
         return $entries;
     }

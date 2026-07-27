@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Marketplace — live products you can try before you buy')
+@section('description', 'Buy working web products with real, interactive live demos: SaaS dashboards, landing pages, and full projects. Try each one live, then get the prompt plan, design, or full code.')
 
 @section('content')
 @include('marketplace.partials.tokens')
