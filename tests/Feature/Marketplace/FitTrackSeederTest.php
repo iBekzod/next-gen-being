@@ -40,4 +40,25 @@ class FitTrackSeederTest extends TestCase
         $this->assertGreaterThanOrEqual(3, $listing->tiers()->count());
         Storage::disk('public')->assertExists('demos/linkfolio-dev-portfolio/index.html');
     }
+
+    public function test_all_first_party_seeders_produce_published_listings_with_demos(): void
+    {
+        Storage::fake('public');
+
+        $map = [
+            \Database\Seeders\FitTrackListingSeeder::class => 'fittrack-workout-saas',
+            \Database\Seeders\LinkFolioListingSeeder::class => 'linkfolio-dev-portfolio',
+            \Database\Seeders\NebulaListingSeeder::class    => 'nebula-analytics-saas',
+            \Database\Seeders\HaloListingSeeder::class      => 'halo-ai-writer',
+        ];
+
+        foreach ($map as $seeder => $slug) {
+            (new $seeder())->run();
+            $listing = MarketplaceListing::where('slug', $slug)->first();
+            $this->assertNotNull($listing, "seeder {$seeder} produced no listing");
+            $this->assertSame('published', $listing->status);
+            $this->assertGreaterThanOrEqual(3, $listing->tiers()->count());
+            Storage::disk('public')->assertExists("demos/{$slug}/index.html");
+        }
+    }
 }
