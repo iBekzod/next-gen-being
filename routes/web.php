@@ -84,6 +84,12 @@ Route::prefix('resources')->name('digital-products.')->group(function () {
     Route::get('/{product:slug}', [DigitalProductController::class, 'show'])->name('show');
 });
 
+// Marketplace (live-product store) — public browse
+Route::prefix('market')->name('marketplace.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\MarketplaceController::class, 'index'])->name('index');
+    Route::get('/{listing:slug}', [\App\Http\Controllers\MarketplaceController::class, 'show'])->name('show');
+});
+
 // Authentication routes
 
 // Protected routes
