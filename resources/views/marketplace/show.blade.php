@@ -120,12 +120,17 @@
                   <div class="t-price">{{ $tier->is_free ? 'Free' : '$'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}</div>
                 </div>
               </div>
-              <form method="POST" action="{{ route('digital-products.purchase', $tier) }}">
-                @csrf
-                <button type="submit" class="buy-btn">
-                  {{ $tier->is_free ? 'Get '.($tier->tier ?? 'free') : 'Buy '.($tier->tier ?? 'now').' · $'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}
-                </button>
-              </form>
+              @if($tier->is_free || $tier->file_path)
+                <form method="POST" action="{{ route('digital-products.purchase', $tier) }}">
+                  @csrf
+                  <button type="submit" class="buy-btn">
+                    {{ $tier->is_free ? 'Get '.($tier->tier ?? 'free') : 'Buy '.($tier->tier ?? 'now').' · $'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}
+                  </button>
+                </form>
+              @else
+                <button type="button" class="buy-btn" disabled
+                  style="opacity:.5; cursor:not-allowed; background:var(--line-strong);">Coming soon</button>
+              @endif
             @empty
               <p style="color:var(--ink-faint);">Tiers coming soon.</p>
             @endforelse

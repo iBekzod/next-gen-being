@@ -6,6 +6,7 @@ use App\Models\DigitalProduct;
 use App\Models\MarketplaceListing;
 use App\Models\User;
 use App\Services\DemoStorageService;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 trait SeedsMarketplaceListing
@@ -46,7 +47,12 @@ trait SeedsMarketplaceListing
         }
 
         foreach ($tiers as $t) {
-            DigitalProduct::firstOrCreate(
+            // Install the real deliverable (design = the demo HTML, prompt = the
+            // build-plan doc). Tiers without a deliverable stay null and are shown
+            // as "coming soon" / are not purchasable.
+            $filePath = $this->installDeliverable($slug, $t['tier']);
+
+            DigitalProduct::updateOrCreate(
                 ['listing_id' => $model->id, 'tier' => $t['tier']],
                 [
                     'creator_id'               => $seller->id,
@@ -60,6 +66,7 @@ trait SeedsMarketplaceListing
                     'status'                   => 'published',
                     'published_at'             => now(),
                     'revenue_share_percentage' => DigitalProduct::MARKETPLACE_REVENUE_SHARE,
+                    'file_path'                => $filePath,
                     // No lemonsqueezy_variant_id: marketplace tiers use the catch-all
                     // variant + custom_price at checkout.
                 ]
@@ -67,5 +74,31 @@ trait SeedsMarketplaceListing
         }
 
         return $model;
+    }
+
+    /**
+     * Copy a tier's source deliverable onto the private disk and return its path,
+     * or null when there is no deliverable for this tier yet.
+     */
+    protected function installDeliverable(string $slug, string $tier): ?string
+    {
+        $sources = [
+            'design' => [database_path("seeders/demos/{$slug}.html"), 'html'],
+            'prompt' => [database_path("seeders/deliverables/{$slug}-prompt.md"), 'md'],
+        ];
+
+        if (! isset($sources[$tier])) {
+            return null; // code / bundle: no deliverable yet
+        }
+
+        [$source, $ext] = $sources[$tier];
+        if (! is_file($source)) {
+            return null;
+        }
+
+        $dest = "deliverables/{$slug}/{$tier}.{$ext}";
+        Storage::disk('private')->put($dest, file_get_contents($source));
+
+        return $dest;
     }
 }

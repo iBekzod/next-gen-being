@@ -95,6 +95,12 @@ class DigitalProductController extends Controller
                 ->with('info', 'You already own this product');
         }
 
+        // A marketplace tier with no deliverable yet isn't for sale (e.g. the
+        // full-code / bundle tiers before their files are uploaded).
+        if ($product->listing_id && empty($product->file_path)) {
+            return back()->with('info', 'This option isn\'t available yet — check back soon.');
+        }
+
         if ($product->is_free) {
             // Free product - instant access
             $purchase = ProductPurchase::create([
@@ -192,14 +198,21 @@ class DigitalProductController extends Controller
             return back()->with('error', 'Cannot download this product');
         }
 
+        // Return file download
+        $filePath = $purchase->product->file_path;
+
+        if (empty($filePath) || ! Storage::disk('private')->exists($filePath)) {
+            return back()->with('error', 'This download isn\'t ready yet. Please contact support.');
+        }
+
         // Increment download count
         $purchase->incrementDownload();
         $purchase->product->incrementDownloads();
 
-        // Return file download
-        $filePath = $purchase->product->file_path;
+        // Preserve the real file extension (e.g. .html, .md) in the download name.
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION) ?: 'txt';
 
-        return Storage::disk('private')->download($filePath, $purchase->product->slug . '.txt');
+        return Storage::disk('private')->download($filePath, $purchase->product->slug . '.' . $ext);
     }
 
     /**

@@ -41,9 +41,30 @@ class FitTrackSeederTest extends TestCase
         Storage::disk('public')->assertExists('demos/linkfolio-dev-portfolio/index.html');
     }
 
+    public function test_design_and_prompt_tiers_get_real_deliverables(): void
+    {
+        Storage::fake('public');
+        Storage::fake('private');
+
+        (new \Database\Seeders\FitTrackListingSeeder())->run();
+
+        $listing = MarketplaceListing::where('slug', 'fittrack-workout-saas')->first();
+        $design = $listing->tiers()->where('tier', 'design')->first();
+        $prompt = $listing->tiers()->where('tier', 'prompt')->first();
+        $code   = $listing->tiers()->where('tier', 'code')->first();
+
+        $this->assertNotEmpty($design->file_path, 'design tier should have a deliverable');
+        $this->assertNotEmpty($prompt->file_path, 'prompt tier should have a deliverable');
+        $this->assertNull($code->file_path, 'code tier has no deliverable yet');
+
+        Storage::disk('private')->assertExists($design->file_path);
+        Storage::disk('private')->assertExists($prompt->file_path);
+    }
+
     public function test_all_first_party_seeders_produce_published_listings_with_demos(): void
     {
         Storage::fake('public');
+        Storage::fake('private');
 
         $map = [
             \Database\Seeders\FitTrackListingSeeder::class => 'fittrack-workout-saas',

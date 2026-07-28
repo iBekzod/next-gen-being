@@ -40,6 +40,7 @@ class MarketplacePurchaseTest extends TestCase
         $tier = DigitalProduct::factory()->tier('code', 49)->create([
             'creator_id' => $seller->id, 'listing_id' => $listing->id,
             'lemonsqueezy_variant_id' => '1889316',
+            'file_path' => 'deliverables/x/code.zip',
         ]);
 
         // The tier carries the marketplace 90/10 split.
@@ -68,6 +69,7 @@ class MarketplacePurchaseTest extends TestCase
         $tier = DigitalProduct::factory()->tier('design', 7)->create([
             'creator_id' => $seller->id, 'listing_id' => $listing->id,
             'lemonsqueezy_variant_id' => null,
+            'file_path' => 'deliverables/x/design.html',
         ]);
 
         $this->mock(LemonSqueezyService::class, function ($mock) {
@@ -84,5 +86,27 @@ class MarketplacePurchaseTest extends TestCase
         $this->actingAs($buyer)
             ->post(route('digital-products.purchase', $tier))
             ->assertRedirect('https://checkout.example/dyn');
+    }
+
+    public function test_marketplace_tier_without_a_deliverable_is_not_purchasable(): void
+    {
+        $buyer = User::factory()->create();
+        $seller = User::factory()->create();
+        $listing = MarketplaceListing::factory()->for($seller, 'seller')->create();
+        // A code tier with a variant but NO deliverable file yet.
+        $tier = DigitalProduct::factory()->tier('code', 49)->create([
+            'creator_id' => $seller->id, 'listing_id' => $listing->id,
+            'lemonsqueezy_variant_id' => '1889316', 'file_path' => null,
+        ]);
+
+        $this->mock(LemonSqueezyService::class, function ($mock) {
+            $mock->shouldReceive('createCheckout')->never();
+        });
+
+        $this->actingAs($buyer)
+            ->post(route('digital-products.purchase', $tier))
+            ->assertRedirect(); // bounced back with an info message
+
+        $this->assertDatabaseMissing('product_purchases', ['digital_product_id' => $tier->id]);
     }
 }
