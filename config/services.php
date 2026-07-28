@@ -62,11 +62,6 @@ return [
         'test_mode' => env('LEMONSQUEEZY_TEST_MODE', false), // Production default is false
     ],
 
-    // Google Analytics 4 (public Measurement ID, rendered in the page head).
-    'google' => [
-        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
-    ],
-
     'webhook' => [
         'secret' => env('WEBHOOK_SECRET', env('APP_KEY')), // Fallback to APP_KEY if not set
         'timeout' => env('WEBHOOK_TIMEOUT', 30),
@@ -83,6 +78,9 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
+
+        // Google Analytics 4 Measurement ID (public), rendered in the page head.
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
 
         // Google AdSense configuration for monetization
         'adsense' => [
