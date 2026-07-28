@@ -5,6 +5,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    @if ($__gaId = config('services.google.analytics_id'))
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $__gaId }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ $__gaId }}');
+    </script>
+    @endif
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Set CSRF token for AJAX requests -->

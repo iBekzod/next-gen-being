@@ -62,6 +62,11 @@ return [
         'test_mode' => env('LEMONSQUEEZY_TEST_MODE', false), // Production default is false
     ],
 
+    // Google Analytics 4 (public Measurement ID, rendered in the page head).
+    'google' => [
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
     'webhook' => [
         'secret' => env('WEBHOOK_SECRET', env('APP_KEY')), // Fallback to APP_KEY if not set
         'timeout' => env('WEBHOOK_TIMEOUT', 30),
