@@ -4,195 +4,216 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Halo — AI Writing Assistant</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root{
-    --paper: oklch(0.985 0.006 95); --panel:#fff; --ink: oklch(0.225 0.014 260);
-    --ink-2: oklch(0.29 0.016 260); --text: oklch(0.26 0.02 260); --muted: oklch(0.53 0.02 260);
-    --line: oklch(0.905 0.008 95); --accent: oklch(0.605 0.17 27); --accent-soft: oklch(0.95 0.04 40);
-    --font:"Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --serif: ui-sans-serif, system-ui;
+    --bg: oklch(0.14 0.02 260); --panel: oklch(0.2 0.028 260 / .55); --line: oklch(0.44 0.05 260 / .32); --line-2: oklch(0.56 0.06 260 / .55);
+    --fg: oklch(0.98 0.008 260); --muted: oklch(0.75 0.025 260); --faint: oklch(0.6 0.025 260);
+    --accent: oklch(0.78 0.15 205); --accent-2: oklch(0.72 0.16 300); --good: oklch(0.82 0.15 165);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   *{ box-sizing:border-box; }
-  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--text);
-    -webkit-font-smoothing:antialiased; height:100vh; display:flex; overflow:hidden; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; font-family:var(--font); background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  a{ color:inherit; text-decoration:none; } .wrap{ max-width:1000px; margin:0 auto; padding:0 24px; }
+  ::selection{ background:oklch(0.78 0.15 205 / .35); }
 
-  /* rail */
-  .rail{ width:250px; flex-shrink:0; background:var(--ink); color:oklch(0.92 0.01 260); padding:18px 14px; display:flex; flex-direction:column; }
-  .logo{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.12rem; letter-spacing:-.02em; margin:4px 6px 18px; }
-  .logo .h{ width:22px; height:22px; border-radius:50%; border:2.5px solid var(--accent); box-shadow:0 0 14px oklch(0.605 0.17 27 / .55); }
-  .newchat{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:var(--accent); color:#fff;
-    border:none; border-radius:11px; padding:11px; font-weight:700; font-size:.9rem; cursor:pointer; font-family:inherit; margin-bottom:18px; }
-  .newchat:hover{ filter:brightness(1.06); }
-  .rail .lbl{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:oklch(0.62 0.02 260); margin:6px 8px 8px; }
-  .hist{ display:flex; flex-direction:column; gap:2px; overflow:auto; }
-  .hi{ padding:9px 11px; border-radius:9px; font-size:.85rem; color:oklch(0.82 0.012 260); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .hi:hover{ background:var(--ink-2); }
-  .hi.on{ background:var(--ink-2); color:#fff; }
-  .rail .sp{ flex:1; }
-  .me{ display:flex; align-items:center; gap:10px; padding:9px; border-radius:10px; }
-  .me .pic{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent),oklch(0.7 0.14 55)); }
-  .me small{ display:block; color:oklch(0.6 0.02 260); font-size:.72rem; }
+  #webgl{ position:fixed; inset:0; width:100%; height:100%; z-index:0; }
+  #fallback{ position:fixed; inset:0; z-index:0; display:none; }
+  .veil{ position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(120% 85% at 50% 10%, transparent 42%, oklch(0.14 0.02 260 / .55) 80%, var(--bg) 100%); }
+  .page{ position:relative; z-index:2; }
 
-  /* chat */
-  .chat{ flex:1; display:flex; flex-direction:column; }
-  .chead{ padding:14px 26px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; background:var(--panel); }
-  .chead .t{ font-weight:700; letter-spacing:-.01em; }
-  .chead .model{ font-size:.74rem; color:var(--muted); border:1px solid var(--line); border-radius:99px; padding:5px 11px; }
-  .thread{ flex:1; overflow:auto; padding:26px; }
-  .inner{ max-width:720px; margin:0 auto; }
+  nav{ position:fixed; top:0; left:0; right:0; z-index:30; backdrop-filter:blur(14px) saturate(1.5); background:oklch(0.14 0.02 260 / .5); border-bottom:1px solid var(--line); }
+  nav .row{ display:flex; align-items:center; justify-content:space-between; height:64px; }
+  .logo{ display:flex; align-items:center; gap:11px; font-weight:700; letter-spacing:-.02em; font-size:1.06rem; }
+  .logo .h{ width:22px; height:22px; border-radius:50%; border:2.5px solid var(--accent); box-shadow:0 0 16px var(--accent); }
+  .nlinks{ display:flex; gap:26px; font-size:.9rem; color:var(--muted); } .nlinks a:hover{ color:var(--fg); }
+  @media(max-width:640px){ .nlinks{ display:none; } }
+  .nbtn{ font-size:.86rem; font-weight:600; padding:9px 16px; border-radius:10px; border:1px solid var(--line-2); background:oklch(1 0 0 / .05); } .nbtn:hover{ border-color:var(--accent); }
 
-  .empty{ text-align:center; padding:36px 0 26px; }
-  .empty .halo{ width:56px; height:56px; border-radius:50%; border:3px solid var(--accent); margin:0 auto 18px; box-shadow:0 0 26px oklch(0.605 0.17 27 / .35); }
-  .empty h1{ font-family:var(--serif); font-size:1.9rem; font-weight:800; letter-spacing:-.03em; margin:0 0 8px; }
-  .empty p{ color:var(--muted); margin:0 auto 22px; max-width:44ch; line-height:1.6; }
+  .rv{ opacity:0; transform:translateY(24px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); } .rv.in{ opacity:1; transform:none; }
+
+  .hero{ min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; position:relative; padding-top:64px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:9px; font-size:.8rem; font-weight:600; color:var(--muted); border:1px solid var(--line); background:oklch(1 0 0 / .04); padding:7px 15px; border-radius:99px; margin-bottom:28px; backdrop-filter:blur(8px); }
+  .eyebrow .d{ width:7px; height:7px; border-radius:50%; background:var(--good); box-shadow:0 0 10px var(--good); }
+  h1{ font-size:clamp(2.6rem,7.5vw,5rem); line-height:1.0; letter-spacing:-.05em; font-weight:800; margin:0 0 22px; max-width:15ch; text-wrap:balance; }
+  h1 .line{ display:block; overflow:hidden; } h1 .line span{ display:inline-block; transform:translateY(110%); transition:transform 1s cubic-bezier(.16,1,.3,1); }
+  h1.go .line span{ transform:none; } h1 .line:nth-child(2) span{ transition-delay:.1s; } .grad{ color:var(--accent); }
+  .lead{ font-size:1.16rem; color:var(--muted); max-width:50ch; margin:0 auto 30px; line-height:1.6; }
+  .cta-row{ display:flex; gap:13px; flex-wrap:wrap; justify-content:center; }
+  .btn{ border:none; border-radius:12px; padding:14px 27px; font-weight:650; font-size:.96rem; cursor:pointer; font-family:inherit; transition:transform .15s, box-shadow .2s, filter .15s; }
+  .btn-p{ color:oklch(0.15 0.02 205); background:linear-gradient(180deg, oklch(0.85 0.12 205), var(--accent)); box-shadow:0 10px 34px oklch(0.78 0.15 205 / .45), inset 0 1px 0 oklch(1 0 0 / .5); } .btn-p:hover{ filter:brightness(1.06); }
+  .btn-g{ background:oklch(1 0 0 / .05); color:var(--fg); border:1px solid var(--line-2); backdrop-filter:blur(8px); } .btn-g:hover{ border-color:var(--accent); }
+  .scrollhint{ position:absolute; bottom:26px; left:50%; transform:translateX(-50%); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .scrollhint .bar{ width:1px; height:32px; background:linear-gradient(var(--accent), transparent); animation:drop 1.8s ease-in-out infinite; }
+  @keyframes drop{ 0%{ transform:scaleY(0); transform-origin:top; } 50%{ transform:scaleY(1); transform-origin:top; } 51%{ transform-origin:bottom; } 100%{ transform:scaleY(0); transform-origin:bottom; } }
+
+  section{ padding:80px 0; position:relative; }
+  .sec-head{ max-width:600px; margin:0 auto 40px; text-align:center; }
+  .kicker{ font-size:.76rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+  .sec-head h2{ font-size:clamp(1.9rem,4.4vw,2.7rem); letter-spacing:-.035em; font-weight:800; margin:0 0 12px; line-height:1.04; }
+  .sec-head p{ color:var(--muted); margin:0; line-height:1.6; }
+
+  /* chat demo */
+  .studio{ border:1px solid var(--line); border-radius:22px; overflow:hidden; background:oklch(0.17 0.024 260 / .6); backdrop-filter:blur(16px); box-shadow:0 40px 100px oklch(0 0 0 / .5); }
+  .studio-bar{ display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .studio-bar .t{ font-weight:650; font-size:.92rem; } .studio-bar .model{ margin-left:auto; font-size:.74rem; color:var(--muted); border:1px solid var(--line-2); border-radius:99px; padding:5px 11px; }
+  .thread{ height:340px; overflow:auto; padding:22px; }
+  .empty{ text-align:center; padding:20px 0; }
+  .empty p{ color:var(--muted); max-width:40ch; margin:0 auto 20px; }
   .chips{ display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:520px; margin:0 auto; }
   @media(max-width:560px){ .chips{ grid-template-columns:1fr; } }
-  .chip{ text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:13px 15px; cursor:pointer; transition:.15s; font-family:inherit; }
-  .chip:hover{ border-color:var(--accent); transform:translateY(-2px); box-shadow:0 12px 30px oklch(0.6 0.05 40 / .12); }
-  .chip b{ display:block; font-size:.9rem; color:var(--text); }
-  .chip span{ font-size:.78rem; color:var(--muted); }
+  .chip{ display:flex; align-items:center; gap:11px; text-align:left; background:oklch(1 0 0 / .03); border:1px solid var(--line); border-radius:13px; padding:12px 14px; cursor:pointer; transition:.15s; font-family:inherit; color:var(--fg); }
+  .chip:hover{ border-color:var(--accent); transform:translateY(-2px); }
+  .chip .ci{ width:30px; height:30px; border-radius:9px; display:grid; place-items:center; color:var(--accent); border:1px solid var(--line-2); flex-shrink:0; } .chip .ci svg{ width:16px; height:16px; }
+  .chip b{ display:block; font-size:.9rem; } .chip span{ font-size:.76rem; color:var(--muted); }
+  .msg{ display:flex; gap:13px; margin-bottom:20px; }
+  .msg .ava{ width:32px; height:32px; border-radius:9px; flex-shrink:0; display:grid; place-items:center; font-weight:800; font-size:.82rem; }
+  .msg.ai .ava{ background:conic-gradient(from 200deg,var(--accent),var(--accent-2)); color:#0a1020; } .msg.user .ava{ background:oklch(0.3 0.03 260); color:var(--fg); }
+  .msg .who{ font-size:.76rem; font-weight:700; color:var(--muted); margin-bottom:5px; } .msg .body{ padding-top:3px; }
+  .msg .body p{ margin:0 0 10px; line-height:1.65; } .msg .body h4{ margin:12px 0 6px; font-size:.95rem; } .msg .body ul{ margin:0 0 10px; padding-left:18px; } .msg .body li{ margin:5px 0; line-height:1.5; color:var(--muted); }
+  .caret{ display:inline-block; width:8px; height:15px; background:var(--accent); border-radius:2px; vertical-align:-2px; animation:blink 1s steps(2) infinite; } @keyframes blink{ 50%{opacity:0} }
+  .typing{ display:inline-flex; gap:4px; } .typing i{ width:6px; height:6px; border-radius:50%; background:var(--muted); animation:bob 1s infinite; } .typing i:nth-child(2){ animation-delay:.15s } .typing i:nth-child(3){ animation-delay:.3s } @keyframes bob{ 0%,100%{ transform:translateY(0); opacity:.4 } 50%{ transform:translateY(-4px); opacity:1 } }
+  .composer{ padding:14px 18px; border-top:1px solid var(--line); }
+  .cbox{ display:flex; align-items:flex-end; gap:10px; border:1.5px solid var(--line-2); border-radius:14px; padding:9px 9px 9px 15px; background:oklch(1 0 0 / .03); transition:border-color .15s; } .cbox:focus-within{ border-color:var(--accent); }
+  .cbox textarea{ flex:1; border:none; background:transparent; resize:none; font-family:inherit; font-size:.94rem; color:var(--fg); outline:none; max-height:110px; line-height:1.5; }
+  .send{ width:38px; height:38px; border-radius:11px; border:none; background:var(--accent); color:#0a1020; cursor:pointer; flex-shrink:0; display:grid; place-items:center; } .send:disabled{ opacity:.4; cursor:default; } .send svg{ width:18px; height:18px; }
 
-  .msg{ display:flex; gap:14px; margin-bottom:22px; }
-  .msg .ava{ width:32px; height:32px; border-radius:9px; flex-shrink:0; display:grid; place-items:center; font-weight:800; font-size:.85rem; color:#fff; }
-  .msg.ai .ava{ background:conic-gradient(from 200deg, var(--accent), oklch(0.7 0.14 55)); }
-  .msg.user .ava{ background:var(--ink); }
-  .msg .body{ padding-top:4px; }
-  .msg .who{ font-size:.78rem; font-weight:700; color:var(--muted); margin-bottom:5px; }
-  .msg .body p{ margin:0 0 10px; line-height:1.66; }
-  .msg .body h3{ font-size:.98rem; margin:14px 0 6px; letter-spacing:-.01em; }
-  .msg .body ul{ margin:0 0 10px; padding-left:18px; }
-  .msg .body li{ margin:5px 0; line-height:1.55; }
-  .cursor{ display:inline-block; width:8px; height:16px; background:var(--accent); border-radius:2px; vertical-align:-2px; animation:blink 1s steps(2) infinite; }
-  @keyframes blink{ 50%{ opacity:0; } }
-  .typing{ display:inline-flex; gap:4px; align-items:center; }
-  .typing i{ width:6px; height:6px; border-radius:50%; background:var(--muted); animation:bob 1s infinite; }
-  .typing i:nth-child(2){ animation-delay:.15s; } .typing i:nth-child(3){ animation-delay:.3s; }
-  @keyframes bob{ 0%,100%{ transform:translateY(0); opacity:.4; } 50%{ transform:translateY(-4px); opacity:1; } }
-
-  /* composer */
-  .composer{ padding:16px 26px 22px; border-top:1px solid var(--line); background:var(--panel); }
-  .cbox{ max-width:720px; margin:0 auto; display:flex; align-items:flex-end; gap:10px; border:1.5px solid var(--line); border-radius:16px;
-    padding:10px 10px 10px 16px; background:var(--paper); transition:border-color .15s; }
-  .cbox:focus-within{ border-color:var(--accent); }
-  .cbox textarea{ flex:1; border:none; background:transparent; resize:none; font-family:inherit; font-size:.95rem; color:var(--text); outline:none; max-height:120px; line-height:1.5; }
-  .send{ width:38px; height:38px; border-radius:11px; border:none; background:var(--accent); color:#fff; cursor:pointer; flex-shrink:0; display:grid; place-items:center; }
-  .send:disabled{ opacity:.4; cursor:default; }
-  .send:hover:not(:disabled){ filter:brightness(1.07); }
-  .hint{ max-width:720px; margin:8px auto 0; font-size:.72rem; color:var(--muted); text-align:center; }
+  .feats{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; } @media(max-width:760px){ .feats{ grid-template-columns:1fr; } }
+  .feat{ border:1px solid var(--line); border-radius:16px; padding:22px; background:oklch(0.18 0.024 260 / .5); backdrop-filter:blur(8px); }
+  .feat .ico{ width:40px; height:40px; border-radius:11px; display:grid; place-items:center; margin-bottom:14px; color:var(--accent); border:1px solid var(--line-2); } .feat .ico svg{ width:19px; height:19px; }
+  .feat h3{ margin:0 0 7px; font-size:1.05rem; } .feat p{ margin:0; color:var(--muted); font-size:.88rem; line-height:1.55; }
+  footer{ border-top:1px solid var(--line); padding:30px 0; color:var(--faint); font-size:.84rem; text-align:center; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(150%); z-index:50; background:oklch(0.24 0.03 260); border:1px solid var(--line-2); color:var(--fg); padding:12px 20px; border-radius:12px; font-weight:600; font-size:.86rem; transition:transform .4s cubic-bezier(.16,1,.3,1); } .toast.show{ transform:translateX(-50%) translateY(0); }
+  @media(prefers-reduced-motion: reduce){ .rv{ transition:none; opacity:1; transform:none; } h1 .line span{ transition:none; transform:none; } .scrollhint .bar{ animation:none; } html{ scroll-behavior:auto; } }
 </style>
 </head>
 <body>
-  <aside class="rail">
-    <div class="logo"><span class="h"></span> Halo</div>
-    <button class="newchat" id="newBtn">＋ New chat</button>
-    <div class="lbl">Recent</div>
-    <div class="hist">
-      <div class="hi on">Launch email for v2.0</div>
-      <div class="hi">Blog: shipping with AI</div>
-      <div class="hi">Tighten this paragraph</div>
-      <div class="hi">Cold outreach, 3 variants</div>
-      <div class="hi">Rewrite in a warmer tone</div>
-    </div>
-    <div class="sp"></div>
-    <div class="me"><span class="pic"></span><div><b style="font-size:.85rem">Bekzod</b><small>Pro · unlimited</small></div></div>
-  </aside>
+<canvas id="webgl"></canvas><canvas id="fallback"></canvas>
+<div class="veil"></div>
+<div class="page">
+  <nav><div class="wrap row"><div class="logo"><span class="h"></span> Halo</div><div class="nlinks"><a href="#try">Try it</a><a href="#features">Features</a></div><a href="#try" class="nbtn">Open studio</a></div></nav>
 
-  <section class="chat">
-    <div class="chead"><span class="t">Launch email for v2.0</span><span class="model">Halo 2 · fast</span></div>
-    <div class="thread" id="thread">
-      <div class="inner" id="inner">
+  <header class="hero"><div class="wrap">
+    <div class="eyebrow"><span class="d"></span> Halo 2 — now with live streaming</div>
+    <h1 id="head"><span class="line"><span>Writes in</span></span><span class="line"><span>your <em class="grad">voice.</em></span></span></h1>
+    <p class="lead">An AI writing assistant that drafts, edits, and polishes, then streams the result word by word, so it feels like thinking out loud.</p>
+    <div class="cta-row"><button class="btn btn-p" id="tryBtn">Try the studio</button><button class="btn btn-g" id="tourBtn">Watch a tour</button></div>
+    <div class="scrollhint"><span>Scroll to try it</span><span class="bar"></span></div>
+  </div></header>
+
+  <section id="try"><div class="wrap">
+    <div class="sec-head rv"><div class="kicker">Live studio</div><h2>Ask it something</h2><p>Pick a starter or type your own. Watch the answer stream in.</p></div>
+    <div class="studio rv">
+      <div class="studio-bar"><span class="h" style="width:16px;height:16px;border-radius:50%;border:2px solid var(--accent);display:inline-block"></span><span class="t">New draft</span><span class="model">Halo 2 · fast</span></div>
+      <div class="thread" id="thread"><div class="inner" id="inner">
         <div class="empty" id="empty">
-          <div class="halo"></div>
-          <h1>What should we write today?</h1>
-          <p>Halo drafts, edits, and polishes in your voice. Pick a starting point or just type below.</p>
+          <p>What should we write today?</p>
           <div class="chips" id="chips">
-            <button class="chip" data-q="Write a launch email for our v2.0 release"><b>✍️ Launch email</b><span>Announce v2.0 to our list</span></button>
-            <button class="chip" data-q="Turn my rough notes into a blog intro"><b>📝 Blog intro</b><span>From notes to a hook</span></button>
-            <button class="chip" data-q="Make this paragraph tighter and punchier"><b>✂️ Tighten copy</b><span>Cut the fluff, keep the point</span></button>
-            <button class="chip" data-q="Draft 3 cold outreach messages"><b>📣 Outreach</b><span>Three variants to A/B</span></button>
+            <button class="chip" data-q="Write a launch email for our v2.0 release"><span class="ci">{{ICON_mail}}</span><span><b>Launch email</b><span>Announce v2.0 to our list</span></span></button>
+            <button class="chip" data-q="Turn my rough notes into a blog intro"><span class="ci">{{ICON_pen}}</span><span><b>Blog intro</b><span>From notes to a hook</span></span></button>
+            <button class="chip" data-q="Make this paragraph tighter and punchier"><span class="ci">{{ICON_scissor}}</span><span><b>Tighten copy</b><span>Cut the fluff</span></span></button>
+            <button class="chip" data-q="Draft 3 cold outreach messages"><span class="ci">{{ICON_send}}</span><span><b>Outreach</b><span>Three variants to test</span></span></button>
           </div>
         </div>
-      </div>
+      </div></div>
+      <div class="composer"><div class="cbox"><textarea id="ta" rows="1" placeholder="Message Halo…"></textarea><button class="send" id="send" disabled aria-label="Send">{{ICON_send}}</button></div></div>
     </div>
-    <div class="composer">
-      <div class="cbox">
-        <textarea id="ta" rows="1" placeholder="Message Halo…"></textarea>
-        <button class="send" id="send" disabled aria-label="Send">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-        </button>
-      </div>
-      <div class="hint">Halo can make mistakes. Review important copy before sending.</div>
+  </div></section>
+
+  <section id="features"><div class="wrap">
+    <div class="sec-head rv"><div class="kicker">Why Halo</div><h2>Built for people who ship words</h2></div>
+    <div class="feats">
+      <div class="feat rv"><div class="ico">{{ICON_bolt}}</div><h3>Real streaming</h3><p>Responses arrive token by token, so you can steer mid-thought.</p></div>
+      <div class="feat rv"><div class="ico">{{ICON_voice}}</div><h3>Your voice</h3><p>Give it a sample; it matches tone, rhythm, and vocabulary.</p></div>
+      <div class="feat rv"><div class="ico">{{ICON_shield}}</div><h3>Private by default</h3><p>Your drafts stay yours. Nothing trains a public model.</p></div>
     </div>
-  </section>
+  </div></section>
+
+  <footer>© 2026 Halo — a self-contained AI interface template.</footer>
+</div>
+<div class="toast" id="toast">Done</div>
 
 <script>
 (function(){
-  var inner=document.getElementById('inner'), thread=document.getElementById('thread'),
-      ta=document.getElementById('ta'), send=document.getElementById('send'), empty=document.getElementById('empty'), busy=false;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var I={ mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+    pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    scissor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>',
+    send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>',
+    bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>',
+    voice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>' };
+  document.body.innerHTML = document.body.innerHTML.replace(/\{\{ICON_(\w+)\}\}/g, function(_,k){ return I[k]||''; });
 
-  var CANNED = {
-    "Write a launch email for our v2.0 release":
-      "<h3>Subject: v2.0 is here — faster, cleaner, yours</h3><p>Hi {first_name},</p><p>We rebuilt the parts you use most. v2.0 ships a redesigned editor, 3× faster exports, and live collaboration that just works.</p><ul><li><b>Editor:</b> distraction-free, keyboard-first.</li><li><b>Exports:</b> from minutes to seconds.</li><li><b>Collab:</b> comments and cursors in real time.</li></ul><p>It's live in your account today — no migration needed.</p><p>Happy shipping,<br>The team</p>",
-    "Turn my rough notes into a blog intro":
-      "<p>Everyone tells you to \"ship fast.\" Nobody tells you what to cut. After a year of building in public, I learned the real lever isn't speed, it's ruthless subtraction.</p><p>Here's the framework that took my launches from bloated to boringly reliable.</p>",
-    "Make this paragraph tighter and punchier":
-      "<h3>Before → after</h3><p><b>Tighter version:</b> We help teams ship in days, not months. No boilerplate, no yak-shaving, just working software you can deploy today.</p><p>Cut 40% of the words, kept 100% of the meaning.</p>",
-    "Draft 3 cold outreach messages":
-      "<h3>Three variants</h3><ul><li><b>Direct:</b> \"Saw you're hiring for growth. We cut CAC ~30% for similar teams. Worth 15 minutes?\"</li><li><b>Curiosity:</b> \"One question about your onboarding flow, mind if I share what I noticed?\"</li><li><b>Value-first:</b> \"Made you a 2-min teardown of your pricing page, no ask, just useful.\"</li></ul>"
-  };
-  var DEFAULT = "<p>Here's a first draft. I kept it concise and specific, then added a clear call to action at the end. Want it warmer, shorter, or in a different voice?</p><ul><li>Lead with the outcome, not the feature.</li><li>One idea per sentence.</li><li>End with a single, obvious next step.</li></ul>";
+  var mx=0,my=0,tmx=0,tmy=0,scrollP=0;
+  addEventListener('mousemove', function(e){ tmx=(e.clientX/innerWidth-.5); tmy=(e.clientY/innerHeight-.5); });
+  addEventListener('scroll', function(){ var m=document.body.scrollHeight-innerHeight; scrollP=m>0?scrollY/m:0; }, {passive:true});
 
-  function scroll(){ thread.scrollTop = thread.scrollHeight; }
-  function addUser(text){
-    if(empty){ empty.remove(); empty=null; }
-    var el=document.createElement('div'); el.className='msg user';
-    el.innerHTML='<div class="ava">B</div><div class="body"><div class="who">You</div><p></p></div>';
-    el.querySelector('p').textContent=text; inner.appendChild(el); scroll();
+  function init3D(){
+    var THREE=window.THREE, canvas=document.getElementById('webgl');
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(2,devicePixelRatio)); renderer.setSize(innerWidth,innerHeight);
+    var scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,100); camera.position.z=5;
+    // turbulent AI "core": high-frequency displacement, pulsing, cyan-violet
+    var geo=new THREE.IcosahedronGeometry(1.45,7);
+    var mat=new THREE.ShaderMaterial({ transparent:true,
+      uniforms:{ uTime:{value:0}, uAmp:{value:0.22}, uCa:{value:new THREE.Color(0.2,0.75,0.95)}, uCb:{value:new THREE.Color(0.55,0.3,0.95)}, uHi:{value:new THREE.Color(0.85,0.95,1.0)} },
+      vertexShader:['uniform float uTime; uniform float uAmp; varying float vD; varying vec3 vN; varying vec3 vE;',
+        'float h(vec3 p){ return sin(p.x*3.1+uTime*1.3)*sin(p.y*3.4+uTime)*sin(p.z*2.9+uTime*1.1); }',
+        'void main(){ float d=h(position*1.3+uTime*0.2)*0.7 + h(position*2.6-uTime*0.15)*0.3; vec3 pos=position+normal*d*uAmp; vD=d;',
+        ' vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(pos,1.0); vE=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }'].join('\n'),
+      fragmentShader:['uniform vec3 uCa; uniform vec3 uCb; uniform vec3 uHi; varying float vD; varying vec3 vN; varying vec3 vE;',
+        'void main(){ float t=clamp(vD*0.5+0.5,0.0,1.0); vec3 base=mix(uCa,uCb,t); float fres=pow(1.0-max(dot(vN,vE),0.0),2.2); vec3 col=mix(base,uHi,fres); gl_FragColor=vec4(col, 0.55+0.45*fres); }'].join('\n') });
+    var mesh=new THREE.Mesh(geo,mat); scene.add(mesh);
+    mesh.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color:0x7fe0ff,wireframe:true,transparent:true,opacity:0.1})));
+    // streaming particles
+    var N=1800, pos=new Float32Array(N*3);
+    for(var i=0;i<N;i++){ var r=2.2+Math.random()*2.8,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1); pos[i*3]=r*Math.sin(b)*Math.cos(a); pos[i*3+1]=r*Math.sin(b)*Math.sin(a); pos[i*3+2]=r*Math.cos(b); }
+    var pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    var pts=new THREE.Points(pg,new THREE.PointsMaterial({color:0x8fd6ff,size:0.018,transparent:true,opacity:0.75,depthWrite:false,blending:THREE.AdditiveBlending})); scene.add(pts);
+    addEventListener('resize', function(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+    var clock=new THREE.Clock();
+    function frame(){ var t=clock.getElapsedTime(); mx+=(tmx-mx)*0.05; my+=(tmy-my)*0.05;
+      mat.uniforms.uTime.value=t; mat.uniforms.uAmp.value=0.2+0.06*Math.sin(t*1.6)+scrollP*0.35;
+      mesh.rotation.y=t*0.14+mx*0.6+scrollP*2.0; mesh.rotation.x=my*0.5+scrollP*0.8; var s=1.0-scrollP*0.25; mesh.scale.setScalar(s); mesh.position.y=0.4-scrollP*0.6;
+      pts.rotation.y=-t*0.04-scrollP*1.2; pts.rotation.x=my*0.3;
+      camera.position.x=mx*0.5; camera.position.y=-my*0.4; camera.lookAt(0,0,0);
+      renderer.render(scene,camera); raf=requestAnimationFrame(frame); }
+    var raf; if(reduce){ renderer.render(scene,camera); } else raf=requestAnimationFrame(frame);
   }
-  function addAI(html){
-    var el=document.createElement('div'); el.className='msg ai';
-    el.innerHTML='<div class="ava">H</div><div class="body"><div class="who">Halo</div><div class="stream"><span class="typing"><i></i><i></i><i></i></span></div></div>';
-    inner.appendChild(el); scroll();
-    var target=el.querySelector('.stream');
-    setTimeout(function(){ streamInto(target, html); }, 650);
-  }
-  function streamInto(node, html){
-    // reveal token by token for a live "typing" feel
-    var tokens = html.match(/<[^>]+>|[^<]+/g) || [html];
-    var buf='', i=0;
-    node.innerHTML='<span class="acc"></span><span class="cursor"></span>';
-    var acc=node.querySelector('.acc');
-    var timer=setInterval(function(){
-      if(i>=tokens.length){ clearInterval(timer); node.querySelector('.cursor').remove(); busy=false; updateSend(); return; }
-      var t=tokens[i++];
-      if(t.charAt(0)==='<'){ buf+=t; }             // tags land whole
-      else { // words drip in
-        var words=t.split(/(\s+)/); buf+=words.shift();
-        while(words.length && Math.random()<0.6){ buf+=words.shift(); }
-        if(words.length){ tokens[i-1]=words.join(''); i--; }
-      }
-      acc.innerHTML=buf; scroll();
-    }, 45);
-  }
+  function initFallback(){ var c=document.getElementById('fallback'); c.style.display='block'; document.getElementById('webgl').style.display='none'; var x=c.getContext('2d'),W,H,hues=[205,300,175,240];
+    function size(){ W=c.width=innerWidth*Math.min(2,devicePixelRatio); H=c.height=innerHeight*Math.min(2,devicePixelRatio); }
+    function draw(t){ x.clearRect(0,0,W,H); x.globalCompositeOperation='lighter'; for(var i=0;i<4;i++){ var ph=t*0.0002*(i%2?-1:1)+i*1.7,cx=(0.5+0.3*Math.sin(ph*1.3+i))*W,cy=(0.4+0.22*Math.cos(ph*1.1+i))*H,r=0.42*Math.max(W,H); var g=x.createRadialGradient(cx,cy,0,cx,cy,r); g.addColorStop(0,'oklch(0.65 0.18 '+hues[i]+' / .4)'); g.addColorStop(1,'oklch(0.65 0.18 '+hues[i]+' / 0)'); x.fillStyle=g; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); } x.globalCompositeOperation='source-over'; if(!reduce) requestAnimationFrame(draw); }
+    size(); addEventListener('resize',size); requestAnimationFrame(draw); }
+  var ok=false; try{ if(window.THREE && (function(){ var t=document.createElement('canvas'); return !!(t.getContext('webgl')||t.getContext('experimental-webgl')); })()){ init3D(); ok=true; } }catch(e){} if(!ok) initFallback();
 
-  function submit(text){
-    if(busy || !text.trim()) return;
-    busy=true; addUser(text.trim());
-    ta.value=''; autosize(); updateSend();
-    addAI(CANNED[text.trim()] || DEFAULT);
-  }
+  requestAnimationFrame(function(){ setTimeout(function(){ var h=document.getElementById('head'); if(h) h.classList.add('go'); },140); });
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{threshold:.12}); document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
 
-  document.getElementById('chips') && document.querySelectorAll('.chip').forEach(function(c){
-    c.addEventListener('click', function(){ submit(c.dataset.q); });
-  });
-  document.getElementById('newBtn').addEventListener('click', function(){
-    location.reload();
-  });
-  function autosize(){ ta.style.height='auto'; ta.style.height=Math.min(120, ta.scrollHeight)+'px'; }
-  function updateSend(){ send.disabled = busy || !ta.value.trim(); }
-  ta.addEventListener('input', function(){ autosize(); updateSend(); });
-  ta.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); submit(ta.value); } });
+  // ---- chat ----
+  var inner=document.getElementById('inner'), thread=document.getElementById('thread'), ta=document.getElementById('ta'), send=document.getElementById('send'), empty=document.getElementById('empty'), busy=false;
+  var CANNED={
+    "Write a launch email for our v2.0 release":"<h4>Subject: v2.0 is here, faster and cleaner</h4><p>Hi {first_name},</p><p>We rebuilt the parts you use most. v2.0 ships a redesigned editor, 3x faster exports, and live collaboration that just works.</p><ul><li>Editor: distraction-free, keyboard-first.</li><li>Exports: minutes to seconds.</li><li>Collab: comments and cursors in real time.</li></ul><p>It's live in your account today. Happy shipping.</p>",
+    "Turn my rough notes into a blog intro":"<p>Everyone says \"ship fast.\" Nobody tells you what to cut. After a year of building in public, I learned the real lever isn't speed, it's ruthless subtraction.</p><p>Here's the framework that took my launches from bloated to boringly reliable.</p>",
+    "Make this paragraph tighter and punchier":"<h4>Tighter version</h4><p>We help teams ship in days, not months. No boilerplate, no yak-shaving, just working software you can deploy today.</p><p>Cut 40% of the words, kept 100% of the meaning.</p>",
+    "Draft 3 cold outreach messages":"<h4>Three variants</h4><ul><li>Direct: \"Saw you're hiring for growth. We cut CAC ~30% for similar teams. Worth 15 minutes?\"</li><li>Curiosity: \"One question about your onboarding, mind if I share what I noticed?\"</li><li>Value-first: \"Made you a 2-min teardown of your pricing page. No ask, just useful.\"</li></ul>" };
+  var DEFAULT="<p>Here's a first draft. I kept it concise and specific, then added a clear next step at the end. Want it warmer, shorter, or in a different voice?</p>";
+  function scroll(){ thread.scrollTop=thread.scrollHeight; }
+  function addUser(t){ if(empty){ empty.remove(); empty=null; } var el=document.createElement('div'); el.className='msg user'; el.innerHTML='<div class="ava">You</div><div class="body"><div class="who">You</div><p></p></div>'; el.querySelector('p').textContent=t; inner.appendChild(el); scroll(); }
+  function addAI(html){ var el=document.createElement('div'); el.className='msg ai'; el.innerHTML='<div class="ava">H</div><div class="body"><div class="who">Halo</div><div class="stream"><span class="typing"><i></i><i></i><i></i></span></div></div>'; inner.appendChild(el); scroll(); var target=el.querySelector('.stream'); setTimeout(function(){ streamInto(target,html); },600); }
+  function streamInto(node,html){ var tokens=html.match(/<[^>]+>|[^<]+/g)||[html], buf='', i=0; node.innerHTML='<span class="acc"></span><span class="caret"></span>'; var acc=node.querySelector('.acc');
+    var timer=setInterval(function(){ if(i>=tokens.length){ clearInterval(timer); var cc=node.querySelector('.caret'); if(cc) cc.remove(); busy=false; upd(); return; } var t=tokens[i++]; if(t.charAt(0)==='<'){ buf+=t; } else { var w=t.split(/(\s+)/); buf+=w.shift(); while(w.length && Math.random()<0.6){ buf+=w.shift(); } if(w.length){ tokens[i-1]=w.join(''); i--; } } acc.innerHTML=buf; scroll(); },42); }
+  function submit(t){ if(busy||!t.trim()) return; busy=true; addUser(t.trim()); ta.value=''; autosize(); upd(); addAI(CANNED[t.trim()]||DEFAULT); }
+  document.querySelectorAll('.chip').forEach(function(c){ c.addEventListener('click', function(){ submit(c.dataset.q); }); });
+  function autosize(){ ta.style.height='auto'; ta.style.height=Math.min(110,ta.scrollHeight)+'px'; }
+  function upd(){ send.disabled=busy||!ta.value.trim(); }
+  ta.addEventListener('input', function(){ autosize(); upd(); });
+  ta.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); submit(ta.value); } });
   send.addEventListener('click', function(){ submit(ta.value); });
+
+  var toast=document.getElementById('toast'), tt; function show(m){ toast.textContent=m; toast.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){toast.classList.remove('show')},1600); }
+  document.getElementById('tryBtn').addEventListener('click', function(){ document.getElementById('try').scrollIntoView({behavior:'smooth'}); setTimeout(function(){ ta.focus(); },500); });
+  document.getElementById('tourBtn').addEventListener('click', function(){ show('Product tour would play'); });
 })();
 </script>
 </body>
