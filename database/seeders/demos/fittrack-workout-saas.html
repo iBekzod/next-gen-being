@@ -3,520 +3,174 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-</head>
-<body>
-<title>NextGenBeing — Live Product Demo UX</title>
+<title>FitTrack — Workout & Habit SaaS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root{
-    color-scheme: light dark;
-    --paper: oklch(0.975 0.006 264);
-    --surface: oklch(1 0 0);
-    --surface-2: oklch(0.965 0.008 264);
-    --ink: oklch(0.18 0.035 264);
-    --ink-soft: oklch(0.42 0.028 264);
-    --ink-faint: oklch(0.58 0.02 264);
-    --line: oklch(0.90 0.012 264);
-    --line-strong: oklch(0.83 0.016 264);
-    --signal: oklch(0.58 0.17 255);
-    --signal-ink: oklch(0.46 0.16 255);
-    --signal-wash: oklch(0.95 0.03 255);
-    --good: oklch(0.62 0.15 155);
-    --amber: oklch(0.75 0.14 75);
-    --radius: 14px;
-    --shadow: 0 1px 2px oklch(0.2 0.03 264 / .06), 0 8px 30px oklch(0.2 0.03 264 / .08);
-    --shadow-lift: 0 4px 12px oklch(0.2 0.03 264 / .10), 0 24px 60px oklch(0.2 0.03 264 / .16);
-    --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-    --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+    --bg: oklch(0.15 0.02 200); --panel: oklch(0.2 0.026 200 / .55); --line: oklch(0.44 0.045 200 / .32); --line-2: oklch(0.56 0.055 200 / .55);
+    --fg: oklch(0.98 0.008 200); --muted: oklch(0.75 0.025 200); --faint: oklch(0.6 0.025 200);
+    --accent: oklch(0.78 0.16 165); --accent-2: oklch(0.82 0.13 200); --hot: oklch(0.75 0.16 55); --good: oklch(0.82 0.16 155);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --num:"SF Mono",ui-monospace,monospace;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper: oklch(0.155 0.028 264);
-      --surface: oklch(0.195 0.03 264);
-      --surface-2: oklch(0.225 0.032 264);
-      --ink: oklch(0.96 0.006 264);
-      --ink-soft: oklch(0.78 0.02 264);
-      --ink-faint: oklch(0.6 0.022 264);
-      --line: oklch(0.30 0.03 264);
-      --line-strong: oklch(0.38 0.035 264);
-      --signal: oklch(0.72 0.16 255);
-      --signal-ink: oklch(0.80 0.14 255);
-      --signal-wash: oklch(0.28 0.06 255);
-      --shadow: 0 1px 2px oklch(0 0 0 / .3), 0 8px 30px oklch(0 0 0 / .35);
-      --shadow-lift: 0 4px 12px oklch(0 0 0 / .4), 0 24px 60px oklch(0 0 0 / .55);
-    }
-  }
-  :root[data-theme="dark"]{
-    --paper: oklch(0.155 0.028 264); --surface: oklch(0.195 0.03 264); --surface-2: oklch(0.225 0.032 264);
-    --ink: oklch(0.96 0.006 264); --ink-soft: oklch(0.78 0.02 264); --ink-faint: oklch(0.6 0.022 264);
-    --line: oklch(0.30 0.03 264); --line-strong: oklch(0.38 0.035 264);
-    --signal: oklch(0.72 0.16 255); --signal-ink: oklch(0.80 0.14 255); --signal-wash: oklch(0.28 0.06 255);
-    --shadow: 0 1px 2px oklch(0 0 0 / .3), 0 8px 30px oklch(0 0 0 / .35);
-    --shadow-lift: 0 4px 12px oklch(0 0 0 / .4), 0 24px 60px oklch(0 0 0 / .55);
-  }
-  :root[data-theme="light"]{
-    --paper: oklch(0.975 0.006 264); --surface: oklch(1 0 0); --surface-2: oklch(0.965 0.008 264);
-    --ink: oklch(0.18 0.035 264); --ink-soft: oklch(0.42 0.028 264); --ink-faint: oklch(0.58 0.02 264);
-    --line: oklch(0.90 0.012 264); --line-strong: oklch(0.83 0.016 264);
-    --signal: oklch(0.58 0.17 255); --signal-ink: oklch(0.46 0.16 255); --signal-wash: oklch(0.95 0.03 255);
-    --shadow: 0 1px 2px oklch(0.2 0.03 264 / .06), 0 8px 30px oklch(0.2 0.03 264 / .08);
-    --shadow-lift: 0 4px 12px oklch(0.2 0.03 264 / .10), 0 24px 60px oklch(0.2 0.03 264 / .16);
-  }
+  *{ box-sizing:border-box; } html{ scroll-behavior:smooth; }
+  body{ margin:0; font-family:var(--font); background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  a{ color:inherit; text-decoration:none; } .wrap{ max-width:1000px; margin:0 auto; padding:0 24px; } .tnum{ font-variant-numeric:tabular-nums; }
+  ::selection{ background:oklch(0.78 0.16 165 / .35); }
 
-  *{ box-sizing: border-box; }
-  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.5;
-    -webkit-font-smoothing:antialiased; }
-  .wrap{ max-width: 1120px; margin:0 auto; padding: 22px clamp(16px,4vw,40px) 80px; }
-  a{ color:inherit; }
+  #webgl{ position:fixed; inset:0; width:100%; height:100%; z-index:0; } #fallback{ position:fixed; inset:0; z-index:0; display:none; }
+  .veil{ position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(120% 85% at 50% 15%, transparent 40%, oklch(0.15 0.02 200 / .55) 80%, var(--bg) 100%); }
+  .page{ position:relative; z-index:2; }
+  nav{ position:fixed; top:0; left:0; right:0; z-index:30; backdrop-filter:blur(14px) saturate(1.5); background:oklch(0.15 0.02 200 / .5); border-bottom:1px solid var(--line); }
+  nav .row{ display:flex; align-items:center; justify-content:space-between; height:64px; }
+  .logo{ display:flex; align-items:center; gap:11px; font-weight:700; letter-spacing:-.02em; font-size:1.06rem; }
+  .logo .g{ width:24px; height:24px; border-radius:8px; background:conic-gradient(from 120deg,var(--accent),var(--accent-2),var(--hot),var(--accent)); }
+  .nlinks{ display:flex; gap:26px; font-size:.9rem; color:var(--muted); } .nlinks a:hover{ color:var(--fg); } @media(max-width:640px){ .nlinks{ display:none; } }
+  .nbtn{ font-size:.86rem; font-weight:600; padding:9px 16px; border-radius:10px; border:1px solid var(--line-2); background:oklch(1 0 0 / .05); } .nbtn:hover{ border-color:var(--accent); }
+  .rv{ opacity:0; transform:translateY(24px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); } .rv.in{ opacity:1; transform:none; }
 
-  /* top bar */
-  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding: 6px 0 22px; }
-  .brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; letter-spacing:-.02em; font-size:1.05rem; }
-  .brand .dot{ width:11px; height:11px; border-radius:3px; background:var(--signal); box-shadow:0 0 0 4px var(--signal-wash); }
-  .topbar-actions{ display:flex; align-items:center; gap:10px; }
-  .cart-btn{ position:relative; display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line-strong);
-    color:var(--ink); padding:9px 14px; border-radius:999px; font-weight:600; font-size:.86rem; cursor:pointer; box-shadow:var(--shadow); }
-  .cart-badge{ position:absolute; top:-7px; right:-7px; min-width:19px; height:19px; padding:0 5px; border-radius:999px; background:var(--signal);
-    color:white; font-size:.68rem; font-weight:700; display:grid; place-items:center; transform:scale(0); transition:transform .25s cubic-bezier(.2,.9,.3,1.3); }
-  .cart-badge.show{ transform:scale(1); }
-  .theme-toggle{ background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:1rem; }
+  .hero{ min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; position:relative; padding-top:64px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:9px; font-size:.8rem; font-weight:600; color:var(--muted); border:1px solid var(--line); background:oklch(1 0 0 / .04); padding:7px 15px; border-radius:99px; margin-bottom:28px; backdrop-filter:blur(8px); }
+  .eyebrow .d{ width:7px; height:7px; border-radius:50%; background:var(--good); box-shadow:0 0 10px var(--good); }
+  h1{ font-size:clamp(2.6rem,7.5vw,5rem); line-height:1.0; letter-spacing:-.05em; font-weight:800; margin:0 0 22px; max-width:14ch; text-wrap:balance; }
+  h1 .line{ display:block; overflow:hidden; } h1 .line span{ display:inline-block; transform:translateY(110%); transition:transform 1s cubic-bezier(.16,1,.3,1); }
+  h1.go .line span{ transform:none; } h1 .line:nth-child(2) span{ transition-delay:.1s; } .grad{ color:var(--accent); }
+  .lead{ font-size:1.16rem; color:var(--muted); max-width:50ch; margin:0 auto 30px; line-height:1.6; }
+  .cta-row{ display:flex; gap:13px; flex-wrap:wrap; justify-content:center; }
+  .btn{ border:none; border-radius:12px; padding:14px 27px; font-weight:650; font-size:.96rem; cursor:pointer; font-family:inherit; transition:transform .15s, box-shadow .2s, filter .15s; }
+  .btn-p{ color:oklch(0.15 0.02 165); background:linear-gradient(180deg, oklch(0.86 0.13 165), var(--accent)); box-shadow:0 10px 34px oklch(0.78 0.16 165 / .4), inset 0 1px 0 oklch(1 0 0 / .5); } .btn-p:hover{ filter:brightness(1.06); }
+  .btn-g{ background:oklch(1 0 0 / .05); color:var(--fg); border:1px solid var(--line-2); backdrop-filter:blur(8px); } .btn-g:hover{ border-color:var(--accent); }
+  .scrollhint{ position:absolute; bottom:26px; left:50%; transform:translateX(-50%); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .scrollhint .bar{ width:1px; height:32px; background:linear-gradient(var(--accent), transparent); animation:drop 1.8s ease-in-out infinite; }
+  @keyframes drop{ 0%{ transform:scaleY(0); transform-origin:top; } 50%{ transform:scaleY(1); transform-origin:top; } 51%{ transform-origin:bottom; } 100%{ transform:scaleY(0); transform-origin:bottom; } }
 
-  /* eyebrow / heading */
-  .crumb{ font-size:.76rem; color:var(--ink-faint); font-weight:600; letter-spacing:.02em; margin-bottom:14px; }
-  .crumb b{ color:var(--signal-ink); }
-  .prod-head{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:18px; }
-  h1{ font-family:var(--font-display); font-weight:800; letter-spacing:-.03em; font-size: clamp(1.7rem, 4vw, 2.5rem); line-height:1.05; margin:0; text-wrap:balance; }
-  .seller{ display:flex; align-items:center; gap:9px; font-size:.86rem; color:var(--ink-soft); margin-top:10px; }
-  .seller .av{ width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,var(--signal),oklch(0.55 0.15 300)); }
-  .badges{ display:flex; gap:8px; flex-wrap:wrap; }
-  .pill{ font-size:.72rem; font-weight:600; padding:5px 10px; border-radius:999px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); display:inline-flex; gap:6px; align-items:center; }
-  .pill.ok{ color:var(--good); border-color:color-mix(in oklch, var(--good) 40%, var(--line)); }
-  .pill.star{ color:var(--amber); border-color:color-mix(in oklch, var(--amber) 40%, var(--line)); }
+  section{ padding:80px 0; position:relative; }
+  .sec-head{ max-width:600px; margin:0 auto 40px; text-align:center; }
+  .kicker{ font-size:.76rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+  .sec-head h2{ font-size:clamp(1.9rem,4.4vw,2.7rem); letter-spacing:-.035em; font-weight:800; margin:0 0 12px; line-height:1.04; } .sec-head p{ color:var(--muted); margin:0; line-height:1.6; }
 
-  /* ===== macOS-style live demo window ===== */
-  .stage{ margin: 4px 0 30px; }
-  .win{ background:var(--surface); border:1px solid var(--line-strong); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-lift);
-    transition: box-shadow .3s ease; }
-  .win.full{ position:fixed; inset: 3vh 3vw; z-index:60; border-radius:16px; }
-  .backdrop{ position:fixed; inset:0; background:oklch(0.15 0.03 264 / .55); backdrop-filter:blur(3px); z-index:59; opacity:0; pointer-events:none; transition:opacity .3s; }
-  .backdrop.show{ opacity:1; pointer-events:auto; }
-  .win-bar{ display:flex; align-items:center; gap:12px; padding:11px 14px; background:linear-gradient(var(--surface-2),var(--surface));
-    border-bottom:1px solid var(--line); user-select:none; }
-  .lights{ display:flex; gap:8px; }
-  .lights span{ width:13px; height:13px; border-radius:50%; display:block; cursor:pointer; }
-  .lights .r{ background:#ff5f57; } .lights .y{ background:#febc2e; } .lights .g{ background:#28c840; }
-  .addr{ flex:1; display:flex; align-items:center; gap:8px; justify-content:center; }
-  .addr .url{ font-family:var(--font-mono); font-size:.78rem; color:var(--ink-soft); background:var(--paper); border:1px solid var(--line);
-    padding:5px 14px; border-radius:999px; max-width:min(420px,60%); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .addr .lock{ color:var(--good); font-size:.8rem; }
-  .win-tools{ display:flex; gap:6px; }
-  .win-tools button{ width:30px; height:28px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); cursor:pointer; font-size:.9rem; display:grid; place-items:center; }
-  .win-tools button:hover{ color:var(--signal-ink); border-color:var(--signal); }
-  .live-tag{ display:inline-flex; align-items:center; gap:6px; font-size:.68rem; font-weight:700; color:var(--good); letter-spacing:.04em; }
-  .live-tag .blink{ width:7px; height:7px; border-radius:50%; background:var(--good); animation:blink 1.6s ease-in-out infinite; }
-  @keyframes blink{ 0%,100%{ opacity:1 } 50%{ opacity:.25 } }
-  .win-body{ height:440px; transition:height .35s cubic-bezier(.16,1,.3,1); overflow:hidden; background:#0f1420; }
-  .win.min .win-body{ height:0; }
-  .win.full .win-body{ height:calc(100% - 51px); }
+  .app{ border:1px solid var(--line); border-radius:20px; overflow:hidden; background:oklch(0.17 0.022 200 / .62); backdrop-filter:blur(16px); box-shadow:0 40px 100px oklch(0 0 0 / .5); }
+  .app-bar{ display:flex; align-items:center; gap:10px; padding:13px 18px; border-bottom:1px solid var(--line); } .app-bar .t{ font-size:.85rem; color:var(--muted); font-family:var(--num); }
+  .app-body{ display:grid; grid-template-columns:auto 1fr; gap:22px; padding:22px; } @media(max-width:640px){ .app-body{ grid-template-columns:1fr; } }
+  .ring-card{ display:flex; flex-direction:column; align-items:center; gap:12px; border:1px solid var(--line); border-radius:16px; padding:20px 26px; background:oklch(1 0 0 / .02); }
+  .ring{ position:relative; width:130px; height:130px; } .ring svg{ transform:rotate(-90deg); } .ring-num{ position:absolute; inset:0; display:grid; place-items:center; font-family:var(--num); font-weight:800; font-size:1.7rem; }
+  .ring-card .cta{ background:var(--accent); color:oklch(0.15 0.02 165); border:none; padding:8px 16px; border-radius:9px; font-weight:700; cursor:pointer; font-size:.85rem; }
+  .wk-list{ display:flex; flex-direction:column; gap:9px; }
+  .wk{ display:flex; align-items:center; gap:13px; border:1px solid var(--line); border-radius:12px; padding:12px 15px; cursor:pointer; transition:border-color .2s, transform .1s; background:oklch(1 0 0 / .02); } .wk:hover{ border-color:var(--line-2); } .wk:active{ transform:scale(.99); }
+  .wk .chk{ width:23px; height:23px; border-radius:50%; border:2px solid var(--line-2); flex-shrink:0; display:grid; place-items:center; color:transparent; transition:.2s; } .wk .chk svg{ width:13px; height:13px; }
+  .wk.done .chk{ background:var(--good); border-color:var(--good); color:oklch(0.15 0.05 155); } .wk .info{ flex:1; } .wk .info b{ display:block; font-weight:600; font-size:.92rem; } .wk.done .info b{ text-decoration:line-through; color:var(--muted); } .wk .info small{ color:var(--faint); } .wk .kcal{ font-family:var(--num); color:var(--accent-2); font-weight:600; font-size:.85rem; }
 
-  /* ===== the embedded live app (FitTrack demo) ===== */
-  .app{ height:100%; display:flex; color:#e8ecf6; font-size:14px; }
-  .app-side{ width:210px; flex-shrink:0; background:#141b2b; border-right:1px solid #232c40; padding:20px 16px; display:flex; flex-direction:column; gap:6px; }
-  .app-logo{ font-family:var(--font-display); font-weight:800; font-size:1.15rem; letter-spacing:-.02em; margin-bottom:18px; color:#fff; display:flex; align-items:center; gap:9px; }
-  .app-logo .g{ width:22px; height:22px; border-radius:7px; background:linear-gradient(135deg,#5b8cff,#8b5bff); }
-  .app-nav{ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; color:#9aa7c4; cursor:pointer; font-weight:500; }
-  .app-nav.active{ background:#1e2a45; color:#fff; }
-  .app-nav:hover{ color:#fff; }
-  .app-main{ flex:1; padding:24px 26px; overflow:auto; background:#0f1420; }
-  .app-h{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px; }
-  .app-h h2{ margin:0; font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:#fff; }
-  .app-h span{ color:#7f8db0; font-size:.85rem; }
-  .ring-card{ display:flex; align-items:center; gap:22px; background:#161f33; border:1px solid #232c40; border-radius:16px; padding:20px 24px; margin-bottom:20px; }
-  .ring{ position:relative; width:104px; height:104px; flex-shrink:0; }
-  .ring svg{ transform:rotate(-90deg); }
-  .ring-num{ position:absolute; inset:0; display:grid; place-items:center; font-family:var(--font-display); font-weight:800; font-size:1.5rem; color:#fff; }
-  .ring-meta .big{ font-family:var(--font-display); font-weight:700; font-size:1.15rem; color:#fff; }
-  .ring-meta .sub{ color:#8593b5; font-size:.86rem; margin-top:3px; }
-  .ring-meta .cta{ margin-top:12px; display:inline-block; background:#5b8cff; color:#fff; border:none; padding:8px 16px; border-radius:9px; font-weight:600; cursor:pointer; font-size:.85rem; }
-  .wk-list{ display:flex; flex-direction:column; gap:10px; }
-  .wk{ display:flex; align-items:center; gap:14px; background:#151d2f; border:1px solid #222c42; border-radius:12px; padding:13px 16px; cursor:pointer; transition:border-color .2s, transform .1s; }
-  .wk:hover{ border-color:#3a4a72; }
-  .wk:active{ transform:scale(.99); }
-  .wk .chk{ width:24px; height:24px; border-radius:50%; border:2px solid #3a4a72; flex-shrink:0; display:grid; place-items:center; color:transparent; font-size:.8rem; transition:.2s; }
-  .wk.done .chk{ background:#28c840; border-color:#28c840; color:#04220b; }
-  .wk .info{ flex:1; }
-  .wk .info b{ display:block; color:#eaeefb; font-weight:600; }
-  .wk.done .info b{ text-decoration:line-through; color:#7f8db0; }
-  .wk .info small{ color:#7f8db0; }
-  .wk .kcal{ font-family:var(--font-mono); color:#5b8cff; font-weight:600; font-size:.85rem; }
-
-  /* purchase area */
-  .grid{ display:grid; grid-template-columns: 1.55fr 1fr; gap:30px; align-items:start; }
-  @media (max-width: 860px){ .grid{ grid-template-columns:1fr; } }
-  .sec-label{ font-size:.74rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px; }
-  .desc p{ color:var(--ink-soft); margin:0 0 14px; }
-  .feat{ display:grid; gap:9px; margin:0; padding:0; list-style:none; }
-  .feat li{ display:flex; gap:11px; align-items:flex-start; color:var(--ink-soft); font-size:.92rem; }
-  .feat li::before{ content:"✓"; color:var(--good); font-weight:800; flex-shrink:0; }
-  .includes{ margin-top:26px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .inc{ display:flex; gap:10px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:12px 14px; font-size:.85rem; color:var(--ink-soft); }
-  .inc .ic{ font-size:1.05rem; }
-
-  /* tier buy card */
-  .buy{ position:sticky; top:16px; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
-  .buy-head{ padding:16px 18px 6px; }
-  .buy-head .lbl{ font-size:.74rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); }
-  .tiers{ padding:8px 12px 12px; display:flex; flex-direction:column; gap:9px; }
-  .tier{ border:1.5px solid var(--line); border-radius:12px; padding:13px 15px; cursor:pointer; transition:.18s; display:flex; gap:13px; align-items:flex-start; background:var(--surface); position:relative; }
-  .tier:hover{ border-color:var(--signal); }
-  .tier.sel{ border-color:var(--signal); background:var(--signal-wash); }
-  .tier .radio{ width:19px; height:19px; border-radius:50%; border:2px solid var(--line-strong); flex-shrink:0; margin-top:2px; display:grid; place-items:center; }
-  .tier.sel .radio{ border-color:var(--signal); }
-  .tier.sel .radio::after{ content:""; width:9px; height:9px; border-radius:50%; background:var(--signal); }
-  .tier .t-main{ flex:1; }
-  .tier .t-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
-  .tier .t-name{ font-weight:700; font-size:.95rem; display:flex; align-items:center; gap:8px; }
-  .tier .t-price{ font-family:var(--font-display); font-weight:800; font-size:1.1rem; letter-spacing:-.02em; }
-  .tier .t-desc{ font-size:.8rem; color:var(--ink-faint); margin-top:4px; }
-  .tag-pop{ font-size:.62rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--signal-ink); background:var(--signal-wash); padding:2px 7px; border-radius:6px; border:1px solid color-mix(in oklch,var(--signal) 30%, transparent); }
-  .buy-foot{ padding:14px 18px 18px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:10px; }
-  .btn{ border:none; border-radius:11px; padding:13px; font-weight:700; font-size:.95rem; cursor:pointer; font-family:var(--font-body); transition:.15s; }
-  .btn-primary{ background:var(--signal); color:#fff; box-shadow:0 6px 18px color-mix(in oklch,var(--signal) 40%, transparent); }
-  .btn-primary:hover{ filter:brightness(1.06); transform:translateY(-1px); }
-  .btn-ghost{ background:transparent; color:var(--signal-ink); border:1.5px solid var(--line-strong); }
-  .btn-ghost:hover{ border-color:var(--signal); }
-  .guarantee{ text-align:center; font-size:.76rem; color:var(--ink-faint); margin-top:2px; }
-
-  /* value strip */
-  .value{ margin:44px 0 34px; background:linear-gradient(135deg,var(--signal-wash),transparent); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; }
-  .value h3{ font-family:var(--font-display); font-weight:700; margin:0 0 6px; font-size:1.15rem; letter-spacing:-.02em; }
-  .value p{ margin:0; color:var(--ink-soft); font-size:.92rem; max-width:62ch; }
-  .value .fee{ display:inline-flex; align-items:baseline; gap:6px; margin-top:14px; font-size:.85rem; color:var(--ink-soft); }
-  .value .fee b{ font-family:var(--font-display); font-size:1.35rem; color:var(--signal-ink); }
-
-  /* more products */
-  .more h3{ font-family:var(--font-display); font-weight:700; letter-spacing:-.02em; margin:0 0 4px; font-size:1.2rem; }
-  .more .sub{ color:var(--ink-faint); font-size:.86rem; margin-bottom:16px; }
-  .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
-  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); cursor:pointer; transition:.2s; }
-  .card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lift); border-color:var(--signal); }
-  .thumb{ height:132px; position:relative; overflow:hidden; display:grid; place-items:center; }
-  .thumb .live{ position:absolute; top:9px; left:9px; z-index:2; }
-  .thumb .mini-badge{ position:absolute; top:9px; right:9px; z-index:2; background:oklch(0.15 0.03 264 / .7); color:#fff; font-size:.66rem; font-weight:700; padding:3px 8px; border-radius:999px; }
-  .card-body{ padding:13px 15px 15px; }
-  .card-body .ttl{ font-weight:700; font-size:.95rem; margin-bottom:3px; }
-  .card-body .mt{ font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; align-items:center; margin-top:9px; }
-  .card-body .from{ font-family:var(--font-display); font-weight:800; color:var(--ink); }
-  .quickbuy{ background:var(--signal); color:#fff; border:none; border-radius:8px; padding:6px 11px; font-weight:700; font-size:.76rem; cursor:pointer; }
-
-  /* toast */
-  .toast{ position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(140%); background:var(--ink); color:var(--paper);
-    padding:12px 20px; border-radius:12px; font-weight:600; font-size:.88rem; box-shadow:var(--shadow-lift); z-index:80; transition:transform .35s cubic-bezier(.16,1,.3,1); display:flex; gap:10px; align-items:center; }
-  .toast.show{ transform:translateX(-50%) translateY(0); }
-  .toast .ok{ color:var(--good); }
-
-  .note{ text-align:center; font-size:.78rem; color:var(--ink-faint); margin-top:40px; padding-top:22px; border-top:1px solid var(--line); }
+  .feats{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; } @media(max-width:760px){ .feats{ grid-template-columns:1fr; } }
+  .feat{ border:1px solid var(--line); border-radius:16px; padding:22px; background:oklch(0.18 0.022 200 / .5); backdrop-filter:blur(8px); }
+  .feat .ico{ width:40px; height:40px; border-radius:11px; display:grid; place-items:center; margin-bottom:14px; color:var(--accent); border:1px solid var(--line-2); } .feat .ico svg{ width:19px; height:19px; }
+  .feat h3{ margin:0 0 7px; font-size:1.05rem; } .feat p{ margin:0; color:var(--muted); font-size:.88rem; line-height:1.55; }
+  footer{ border-top:1px solid var(--line); padding:30px 0; color:var(--faint); font-size:.84rem; text-align:center; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(150%); z-index:50; background:oklch(0.24 0.03 200); border:1px solid var(--line-2); color:var(--fg); padding:12px 20px; border-radius:12px; font-weight:600; font-size:.86rem; transition:transform .4s cubic-bezier(.16,1,.3,1); } .toast.show{ transform:translateX(-50%) translateY(0); }
+  @media(prefers-reduced-motion: reduce){ .rv{ transition:none; opacity:1; transform:none; } h1 .line span{ transition:none; transform:none; } .scrollhint .bar{ animation:none; } html{ scroll-behavior:auto; } }
 </style>
+</head>
+<body>
+<canvas id="webgl"></canvas><canvas id="fallback"></canvas>
+<div class="veil"></div>
+<div class="page">
+  <nav><div class="wrap row"><div class="logo"><span class="g"></span> FitTrack</div><div class="nlinks"><a href="#app">Dashboard</a><a href="#features">Features</a></div><a href="#app" class="nbtn">Open app</a></div></nav>
 
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand"><span class="dot"></span> NextGenBeing <span style="color:var(--ink-faint);font-weight:500;font-size:.8rem;">/ Marketplace</span></div>
-    <div class="topbar-actions">
-      <button class="theme-toggle" id="themeBtn" title="Toggle theme">◐</button>
-      <button class="cart-btn" id="cartBtn">🛒 Cart <span class="cart-badge" id="cartBadge">0</span></button>
-    </div>
-  </div>
+  <header class="hero"><div class="wrap">
+    <div class="eyebrow"><span class="d"></span> Build habits that actually stick</div>
+    <h1 id="head"><span class="line"><span>Close your</span></span><span class="line"><span><em class="grad">rings.</em> Every day.</span></span></h1>
+    <p class="lead">FitTrack turns workouts and habits into three simple rings, and a streak you won't want to break.</p>
+    <div class="cta-row"><button class="btn btn-p" id="startBtn">Start free</button><button class="btn btn-g" id="demoBtn">See the app</button></div>
+    <div class="scrollhint"><span>Scroll to the app</span><span class="bar"></span></div>
+  </div></header>
 
-  <div class="crumb">Marketplace / SaaS Templates / <b>FitTrack — Fitness App</b></div>
-
-  <div class="prod-head">
-    <div>
-      <h1>FitTrack — Workout &amp; Habit SaaS</h1>
-      <div class="seller"><span class="av"></span> by <b style="color:var(--ink)">Bekzod</b> · NextGenBeing Studio</div>
-    </div>
-    <div class="badges">
-      <span class="pill star">★ 4.9 · 23 sales</span>
-      <span class="pill ok">✓ Plagiarism-checked</span>
-      <span class="pill">⟳ Laravel + Alpine</span>
-    </div>
-  </div>
-
-  <!-- LIVE DEMO WINDOW -->
-  <div class="stage">
-    <div class="backdrop" id="backdrop"></div>
-    <div class="win" id="win">
-      <div class="win-bar">
-        <div class="lights">
-          <span class="r" id="lightClose" title="Minimize"></span>
-          <span class="y" id="lightMin" title="Minimize"></span>
-          <span class="g" id="lightFull" title="Fullscreen"></span>
+  <section id="app"><div class="wrap">
+    <div class="sec-head rv"><div class="kicker">Live app</div><h2>Today, at a glance</h2><p>Tap a workout to log it, the ring fills in real time.</p></div>
+    <div class="app rv">
+      <div class="app-bar"><span class="t">fittrack.app/today · Monday</span></div>
+      <div class="app-body">
+        <div class="ring-card">
+          <div class="ring"><svg width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="oklch(0.3 0.03 200)" stroke-width="12"/><circle id="ringArc" cx="65" cy="65" r="54" fill="none" stroke="oklch(0.8 0.16 165)" stroke-width="12" stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="68" style="transition:stroke-dashoffset .5s cubic-bezier(.16,1,.3,1)"/></svg><div class="ring-num" id="ringNum">80%</div></div>
+          <div style="text-align:center"><div style="font-weight:700">Daily goal</div><div style="font-size:.82rem;color:var(--faint)" id="ringSub">4 of 5 done</div></div>
+          <button class="cta" id="resetBtn">Reset day</button>
         </div>
-        <div class="addr">
-          <span class="lock">🔒</span>
-          <span class="url">fittrack-demo.nextgenbeing.com/dashboard</span>
-          <span class="live-tag"><span class="blink"></span>LIVE</span>
-        </div>
-        <div class="win-tools">
-          <button id="btnMin" title="Minimize/expand">▁</button>
-          <button id="btnFull" title="Fullscreen">⛶</button>
-        </div>
-      </div>
-      <div class="win-body">
-        <div class="app">
-          <aside class="app-side">
-            <div class="app-logo"><span class="g"></span> FitTrack</div>
-            <div class="app-nav active" data-tab="today">🏠 Today</div>
-            <div class="app-nav" data-tab="workouts">💪 Workouts</div>
-            <div class="app-nav" data-tab="stats">📊 Stats</div>
-            <div class="app-nav" data-tab="plans">🗓 Plans</div>
-            <div style="flex:1"></div>
-            <div class="app-nav" data-tab="settings">⚙ Settings</div>
-          </aside>
-          <main class="app-main">
-            <div class="app-h">
-              <h2 id="appTitle">Today</h2>
-              <span id="appDate">Monday · 4 of 5 done</span>
-            </div>
-            <div class="ring-card">
-              <div class="ring">
-                <svg width="104" height="104" viewBox="0 0 104 104">
-                  <circle cx="52" cy="52" r="44" fill="none" stroke="#232c40" stroke-width="10"/>
-                  <circle id="ringArc" cx="52" cy="52" r="44" fill="none" stroke="#5b8cff" stroke-width="10" stroke-linecap="round"
-                    stroke-dasharray="276.5" stroke-dashoffset="55" style="transition:stroke-dashoffset .5s cubic-bezier(.16,1,.3,1)"/>
-                </svg>
-                <div class="ring-num" id="ringNum">80%</div>
-              </div>
-              <div class="ring-meta">
-                <div class="big">Daily goal</div>
-                <div class="sub" id="ringSub">Tap a workout below to log it live</div>
-                <button class="cta" id="resetBtn">Reset day</button>
-              </div>
-            </div>
-            <div class="wk-list" id="wkList">
-              <div class="wk done" data-kcal="320"><div class="chk">✓</div><div class="info"><b>Morning Run · 5km</b><small>Cardio · 28 min</small></div><div class="kcal">320 kcal</div></div>
-              <div class="wk done" data-kcal="180"><div class="chk">✓</div><div class="info"><b>Core &amp; Abs</b><small>Strength · 15 min</small></div><div class="kcal">180 kcal</div></div>
-              <div class="wk done" data-kcal="240"><div class="chk">✓</div><div class="info"><b>Upper Body</b><small>Strength · 22 min</small></div><div class="kcal">240 kcal</div></div>
-              <div class="wk done" data-kcal="150"><div class="chk">✓</div><div class="info"><b>Stretch &amp; Mobility</b><small>Recovery · 12 min</small></div><div class="kcal">150 kcal</div></div>
-              <div class="wk" data-kcal="290"><div class="chk">✓</div><div class="info"><b>Evening Cycle · 8km</b><small>Cardio · 30 min</small></div><div class="kcal">290 kcal</div></div>
-            </div>
-          </main>
+        <div class="wk-list" id="wkList">
+          <div class="wk done"><div class="chk">{{ICON_check}}</div><div class="info"><b>Morning Run · 5km</b><small>Cardio · 28 min</small></div><div class="kcal">320 kcal</div></div>
+          <div class="wk done"><div class="chk">{{ICON_check}}</div><div class="info"><b>Core &amp; Abs</b><small>Strength · 15 min</small></div><div class="kcal">180 kcal</div></div>
+          <div class="wk done"><div class="chk">{{ICON_check}}</div><div class="info"><b>Upper Body</b><small>Strength · 22 min</small></div><div class="kcal">240 kcal</div></div>
+          <div class="wk done"><div class="chk">{{ICON_check}}</div><div class="info"><b>Stretch &amp; Mobility</b><small>Recovery · 12 min</small></div><div class="kcal">150 kcal</div></div>
+          <div class="wk"><div class="chk">{{ICON_check}}</div><div class="info"><b>Evening Cycle · 8km</b><small>Cardio · 30 min</small></div><div class="kcal">290 kcal</div></div>
         </div>
       </div>
     </div>
-    <div style="text-align:center; font-size:.78rem; color:var(--ink-faint); margin-top:11px;">
-      ↑ This is the <b style="color:var(--signal-ink)">live product</b>, not a screenshot. Click workouts, switch tabs, go fullscreen — exactly what a buyer touches before paying.
+  </div></section>
+
+  <section id="features"><div class="wrap">
+    <div class="sec-head rv"><div class="kicker">Why FitTrack</div><h2>Simple enough to keep</h2></div>
+    <div class="feats">
+      <div class="feat rv"><div class="ico">{{ICON_flame}}</div><h3>Streaks</h3><p>A gentle nudge and a streak counter that rewards showing up.</p></div>
+      <div class="feat rv"><div class="ico">{{ICON_activity}}</div><h3>Every workout</h3><p>Cardio, strength, recovery, logged in a tap with live calories.</p></div>
+      <div class="feat rv"><div class="ico">{{ICON_bell}}</div><h3>Smart reminders</h3><p>Nudges timed to your day, never a firehose of notifications.</p></div>
     </div>
-  </div>
+  </div></section>
 
-  <!-- BODY: description + buy -->
-  <div class="grid">
-    <div>
-      <p class="sec-label">What you get</p>
-      <div class="desc">
-        <p>A production-ready fitness &amp; habit-tracking SaaS. Ships in a day, not a month: auth, subscription billing, and a polished dashboard already wired together.</p>
-      </div>
-      <ul class="feat">
-        <li>Saves ~3 days of setup — auth, billing, and dashboard done</li>
-        <li>Lemon Squeezy subscriptions + webhooks pre-integrated</li>
-        <li>Responsive dashboard with live progress rings and streaks</li>
-        <li>Clean Laravel 12 + Alpine code, commented and documented</li>
-        <li>Deploy guide included — live on your domain in under an hour</li>
-      </ul>
-
-      <p class="sec-label" style="margin-top:30px">Inside the package</p>
-      <div class="includes">
-        <div class="inc"><span class="ic">📁</span> 47 files · 6 pages</div>
-        <div class="inc"><span class="ic">🔐</span> Auth + user profiles</div>
-        <div class="inc"><span class="ic">💳</span> Billing + webhooks</div>
-        <div class="inc"><span class="ic">📱</span> Mobile responsive</div>
-        <div class="inc"><span class="ic">🎨</span> Figma-grade UI</div>
-        <div class="inc"><span class="ic">📘</span> Setup + deploy docs</div>
-      </div>
-    </div>
-
-    <!-- BUY CARD: 3 tiers -->
-    <div class="buy">
-      <div class="buy-head"><span class="lbl">Choose your tier</span></div>
-      <div class="tiers" id="tiers">
-        <div class="tier" data-tier="prompt" data-price="5">
-          <div class="radio"></div>
-          <div class="t-main">
-            <div class="t-top"><span class="t-name">🧭 Prompt Plan</span><span class="t-price">$5</span></div>
-            <div class="t-desc">The full Claude Code build strategy &amp; prompts. Build it yourself.</div>
-          </div>
-        </div>
-        <div class="tier sel" data-tier="design" data-price="7">
-          <div class="radio"></div>
-          <div class="t-main">
-            <div class="t-top"><span class="t-name">🎨 Design <span class="tag-pop">Popular</span></span><span class="t-price">$7</span></div>
-            <div class="t-desc">Complete HTML/CSS design — the exact UI in the demo above.</div>
-          </div>
-        </div>
-        <div class="tier" data-tier="code" data-price="49">
-          <div class="radio"></div>
-          <div class="t-main">
-            <div class="t-top"><span class="t-name">⚡ Full Project</span><span class="t-price">$49</span></div>
-            <div class="t-desc">Working code, end to end. Clone, deploy, ship today.</div>
-          </div>
-        </div>
-      </div>
-      <div class="buy-foot">
-        <button class="btn btn-primary" id="buyNow">Buy now · <span id="buyPrice">$7</span></button>
-        <button class="btn btn-ghost" id="addCart">Add to cart</button>
-        <div class="guarantee">🔒 Secure checkout · 14-day refund · instant download</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- VALUE STRIP: the wedge -->
-  <div class="value">
-    <h3>You built it. We make people see it.</h3>
-    <p>Most makers can build but can't market. NextGenBeing turns your product into a live, one-click demo and pushes it through our content engine, so buyers experience it before they pay. You keep the credit and the code.</p>
-    <div class="fee">We only earn when you do: <b>10%</b> per sale. List free products too.</div>
-  </div>
-
-  <!-- MORE PRODUCTS -->
-  <div class="more">
-    <h3>More live products</h3>
-    <div class="sub">Every card is a real, running site — hover to feel it.</div>
-    <div class="cards" id="cards">
-      <div class="card" data-name="LinkFolio — Portfolio">
-        <div class="thumb" style="background:linear-gradient(135deg,#1e3a8a,#5b8cff)">
-          <span class="live live-tag" style="color:#fff"><span class="blink" style="background:#fff"></span>LIVE</span>
-          <span class="mini-badge">Landing page</span>
-          <div style="font-family:var(--font-display);font-weight:800;color:#fff;font-size:1.4rem;letter-spacing:-.02em">LinkFolio</div>
-        </div>
-        <div class="card-body">
-          <div class="ttl">LinkFolio — Dev Portfolio</div>
-          <div style="font-size:.78rem;color:var(--ink-faint)">★ 4.8 · 41 sales</div>
-          <div class="mt"><span class="from">from $1</span><button class="quickbuy">+ Cart</button></div>
-        </div>
-      </div>
-      <div class="card" data-name="InvoiceKit — SaaS">
-        <div class="thumb" style="background:linear-gradient(135deg,#0f766e,#2dd4bf)">
-          <span class="live live-tag" style="color:#fff"><span class="blink" style="background:#fff"></span>LIVE</span>
-          <span class="mini-badge">Full SaaS</span>
-          <div style="font-family:var(--font-display);font-weight:800;color:#fff;font-size:1.4rem;letter-spacing:-.02em">InvoiceKit</div>
-        </div>
-        <div class="card-body">
-          <div class="ttl">InvoiceKit — Billing SaaS</div>
-          <div style="font-size:.78rem;color:var(--ink-faint)">★ 5.0 · 12 sales</div>
-          <div class="mt"><span class="from">from $5</span><button class="quickbuy">+ Cart</button></div>
-        </div>
-      </div>
-      <div class="card" data-name="LaunchPad — Waitlist">
-        <div class="thumb" style="background:linear-gradient(135deg,#7c2d92,#c026d3)">
-          <span class="live live-tag" style="color:#fff"><span class="blink" style="background:#fff"></span>LIVE</span>
-          <span class="mini-badge">Landing page</span>
-          <div style="font-family:var(--font-display);font-weight:800;color:#fff;font-size:1.4rem;letter-spacing:-.02em">LaunchPad</div>
-        </div>
-        <div class="card-body">
-          <div class="ttl">LaunchPad — Waitlist</div>
-          <div style="font-size:.78rem;color:var(--ink-faint)">★ 4.7 · 68 sales · <b style="color:var(--good)">Free</b></div>
-          <div class="mt"><span class="from">Free</span><button class="quickbuy">Get</button></div>
-        </div>
-      </div>
-      <div class="card" data-name="MailMerge — SaaS">
-        <div class="thumb" style="background:linear-gradient(135deg,#9a3412,#fb923c)">
-          <span class="live live-tag" style="color:#fff"><span class="blink" style="background:#fff"></span>LIVE</span>
-          <span class="mini-badge">Full SaaS</span>
-          <div style="font-family:var(--font-display);font-weight:800;color:#fff;font-size:1.4rem;letter-spacing:-.02em">MailMerge</div>
-        </div>
-        <div class="card-body">
-          <div class="ttl">MailMerge — Email SaaS</div>
-          <div style="font-size:.78rem;color:var(--ink-faint)">★ 4.9 · 34 sales</div>
-          <div class="mt"><span class="from">from $9</span><button class="quickbuy">+ Cart</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="note">Interactive concept mockup · NextGenBeing Marketplace · demo UX for the live-product selling approach</div>
+  <footer>© 2026 FitTrack — a self-contained fitness app template.</footer>
 </div>
-
-<div class="toast" id="toast"><span class="ok">✓</span> <span id="toastMsg">Added to cart</span></div>
+<div class="toast" id="toast">Done</div>
 
 <script>
 (function(){
-  var root = document.documentElement;
-  // theme toggle
-  document.getElementById('themeBtn').addEventListener('click', function(){
-    var cur = root.getAttribute('data-theme');
-    if(!cur){ cur = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'; }
-    root.setAttribute('data-theme', cur === 'dark' ? 'light':'dark');
-  });
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var I={ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    flame:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1 .3-2 .8-2.8C8 10 9 11 9 11s-1-4 3-9z"/></svg>',
+    activity:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
+    bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg>' };
+  document.body.innerHTML = document.body.innerHTML.replace(/\{\{ICON_(\w+)\}\}/g, function(_,k){ return I[k]||''; });
 
-  // ---- window controls ----
-  var win = document.getElementById('win'), backdrop = document.getElementById('backdrop');
-  function toggleMin(){ win.classList.toggle('min'); }
-  function toggleFull(){
-    win.classList.toggle('full'); backdrop.classList.toggle('show');
-    win.classList.remove('min');
+  var mx=0,my=0,tmx=0,tmy=0,scrollP=0;
+  addEventListener('mousemove', function(e){ tmx=(e.clientX/innerWidth-.5); tmy=(e.clientY/innerHeight-.5); });
+  addEventListener('scroll', function(){ var m=document.body.scrollHeight-innerHeight; scrollP=m>0?scrollY/m:0; }, {passive:true});
+
+  function init3D(){
+    var THREE=window.THREE, canvas=document.getElementById('webgl');
+    var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(2,devicePixelRatio)); renderer.setSize(innerWidth,innerHeight);
+    var scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,100); camera.position.z=6;
+    function ringMat(c){ return new THREE.ShaderMaterial({ transparent:true,
+      uniforms:{ uC:{value:new THREE.Color(c)} },
+      vertexShader:'varying vec3 vN; varying vec3 vE; void main(){ vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.0); vE=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+      fragmentShader:'uniform vec3 uC; varying vec3 vN; varying vec3 vE; void main(){ float f=pow(1.0-max(dot(vN,vE),0.0),1.6); gl_FragColor=vec4(uC*(0.5+f), 0.35+0.65*f); }' }); }
+    var group=new THREE.Group(); scene.add(group);
+    var rings=[ {r:1.9,t:0.09,c:'#38e0a6',rx:0.4,ry:0.2}, {r:1.45,t:0.09,c:'#4fd0ff',rx:-0.3,ry:0.5}, {r:1.0,t:0.09,c:'#ffb454',rx:0.6,ry:-0.3} ];
+    var meshes=rings.map(function(o){ var m=new THREE.Mesh(new THREE.TorusGeometry(o.r,o.t,24,140), ringMat(o.c)); m.userData=o; group.add(m); return m; });
+    var N=900,pos=new Float32Array(N*3); for(var i=0;i<N;i++){ var r=2.4+Math.random()*2.4,a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1); pos[i*3]=r*Math.sin(b)*Math.cos(a); pos[i*3+1]=r*Math.sin(b)*Math.sin(a); pos[i*3+2]=r*Math.cos(b); }
+    var pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    var pts=new THREE.Points(pg,new THREE.PointsMaterial({color:0x8ff0cf,size:0.016,transparent:true,opacity:0.7,depthWrite:false,blending:THREE.AdditiveBlending})); scene.add(pts);
+    addEventListener('resize', function(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+    var clock=new THREE.Clock();
+    function frame(){ var t=clock.getElapsedTime(); mx+=(tmx-mx)*0.05; my+=(tmy-my)*0.05;
+      meshes.forEach(function(m){ m.rotation.x=t*m.userData.rx+my*0.6+scrollP*1.5; m.rotation.y=t*m.userData.ry+mx*0.6+scrollP*1.0; });
+      group.rotation.z=t*0.05; group.scale.setScalar(1.0-scrollP*0.3); group.position.x=scrollP*2.0;
+      pts.rotation.y=t*0.03+mx*0.3; pts.rotation.x=my*0.3;
+      camera.position.x=mx*0.5; camera.position.y=-my*0.4; camera.lookAt(0,0,0);
+      renderer.render(scene,camera); raf=requestAnimationFrame(frame); }
+    var raf; if(reduce){ renderer.render(scene,camera); } else raf=requestAnimationFrame(frame);
   }
-  document.getElementById('btnMin').addEventListener('click', toggleMin);
-  document.getElementById('lightMin').addEventListener('click', toggleMin);
-  document.getElementById('lightClose').addEventListener('click', toggleMin);
-  document.getElementById('btnFull').addEventListener('click', toggleFull);
-  document.getElementById('lightFull').addEventListener('click', toggleFull);
-  backdrop.addEventListener('click', function(){ if(win.classList.contains('full')) toggleFull(); });
+  function initFallback(){ var c=document.getElementById('fallback'); c.style.display='block'; document.getElementById('webgl').style.display='none'; var x=c.getContext('2d'),W,H,hues=[165,200,55,155];
+    function size(){ W=c.width=innerWidth*Math.min(2,devicePixelRatio); H=c.height=innerHeight*Math.min(2,devicePixelRatio); }
+    function draw(t){ x.clearRect(0,0,W,H); x.globalCompositeOperation='lighter'; for(var i=0;i<4;i++){ var ph=t*0.0002*(i%2?-1:1)+i*1.7,cx=(0.5+0.3*Math.sin(ph*1.3+i))*W,cy=(0.45+0.22*Math.cos(ph*1.1+i))*H,r=0.42*Math.max(W,H); var g=x.createRadialGradient(cx,cy,0,cx,cy,r); g.addColorStop(0,'oklch(0.72 0.16 '+hues[i]+' / .4)'); g.addColorStop(1,'oklch(0.72 0.16 '+hues[i]+' / 0)'); x.fillStyle=g; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); } x.globalCompositeOperation='source-over'; if(!reduce) requestAnimationFrame(draw); }
+    size(); addEventListener('resize',size); requestAnimationFrame(draw); }
+  var ok=false; try{ if(window.THREE && (function(){ var t=document.createElement('canvas'); return !!(t.getContext('webgl')||t.getContext('experimental-webgl')); })()){ init3D(); ok=true; } }catch(e){} if(!ok) initFallback();
 
-  // ---- live app: tabs ----
-  var titles = {today:'Today', workouts:'Workouts', stats:'Stats', plans:'Plans', settings:'Settings'};
-  document.querySelectorAll('.app-nav').forEach(function(n){
-    n.addEventListener('click', function(){
-      document.querySelectorAll('.app-nav').forEach(function(x){ x.classList.remove('active'); });
-      n.classList.add('active');
-      document.getElementById('appTitle').textContent = titles[n.dataset.tab] || 'Today';
-    });
-  });
+  requestAnimationFrame(function(){ setTimeout(function(){ var h=document.getElementById('head'); if(h) h.classList.add('go'); },140); });
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{threshold:.12}); document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
 
-  // ---- live app: workout ring ----
-  var arc = document.getElementById('ringArc'), ringNum = document.getElementById('ringNum'),
-      appDate = document.getElementById('appDate'), C = 276.5;
-  function refresh(){
-    var items = document.querySelectorAll('.wk'), done = document.querySelectorAll('.wk.done').length,
-        pct = Math.round(done / items.length * 100);
-    arc.style.strokeDashoffset = C - (C * pct/100);
-    ringNum.textContent = pct + '%';
-    appDate.textContent = 'Monday · ' + done + ' of ' + items.length + ' done';
-  }
-  document.querySelectorAll('.wk').forEach(function(w){
-    w.addEventListener('click', function(){ w.classList.toggle('done'); refresh(); });
-  });
-  document.getElementById('resetBtn').addEventListener('click', function(){
-    document.querySelectorAll('.wk').forEach(function(w){ w.classList.remove('done'); }); refresh();
-  });
+  var arc=document.getElementById('ringArc'), ringNum=document.getElementById('ringNum'), ringSub=document.getElementById('ringSub'), C=339;
+  function refresh(){ var items=document.querySelectorAll('.wk'), done=document.querySelectorAll('.wk.done').length, pct=Math.round(done/items.length*100); arc.style.strokeDashoffset=C-(C*pct/100); ringNum.textContent=pct+'%'; ringSub.textContent=done+' of '+items.length+' done'; }
+  document.querySelectorAll('.wk').forEach(function(w){ w.addEventListener('click', function(){ w.classList.toggle('done'); refresh(); }); });
+  document.getElementById('resetBtn').addEventListener('click', function(){ document.querySelectorAll('.wk').forEach(function(w){ w.classList.remove('done'); }); refresh(); });
   refresh();
 
-  // ---- toast ----
-  var toast = document.getElementById('toast'), toastMsg = document.getElementById('toastMsg'), tT;
-  function showToast(msg){ toastMsg.textContent = msg; toast.classList.add('show'); clearTimeout(tT);
-    tT = setTimeout(function(){ toast.classList.remove('show'); }, 1900); }
-
-  // ---- tier selection ----
-  var selPrice = 7, selName = 'Design';
-  document.querySelectorAll('.tier').forEach(function(t){
-    t.addEventListener('click', function(){
-      document.querySelectorAll('.tier').forEach(function(x){ x.classList.remove('sel'); });
-      t.classList.add('sel');
-      selPrice = parseInt(t.dataset.price,10);
-      selName = t.querySelector('.t-name').textContent.trim().replace(/Popular/,'').trim();
-      document.getElementById('buyPrice').textContent = '$'+selPrice;
-    });
-  });
-
-  // ---- cart ----
-  var cart = 0, badge = document.getElementById('cartBadge');
-  function addCart(n){ cart += 1; badge.textContent = cart; badge.classList.add('show'); showToast('Added: ' + n); }
-  document.getElementById('addCart').addEventListener('click', function(){ addCart(selName + ' tier'); });
-  document.getElementById('buyNow').addEventListener('click', function(){ showToast('→ Checkout: '+selName+' · $'+selPrice); });
-  document.getElementById('cartBtn').addEventListener('click', function(){ showToast(cart? cart+' item(s) in cart':'Cart is empty'); });
-  document.querySelectorAll('.quickbuy').forEach(function(b){
-    b.addEventListener('click', function(e){ e.stopPropagation(); addCart(b.closest('.card').dataset.name); });
-  });
-  document.querySelectorAll('.card').forEach(function(c){
-    c.addEventListener('click', function(){ showToast('Opening live demo: '+c.dataset.name); });
-  });
+  var toast=document.getElementById('toast'), tt; function show(m){ toast.textContent=m; toast.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){toast.classList.remove('show')},1600); }
+  document.getElementById('startBtn').addEventListener('click', function(){ show('Sign-up flow would open'); });
+  document.getElementById('demoBtn').addEventListener('click', function(){ document.getElementById('app').scrollIntoView({behavior:'smooth'}); });
 })();
 </script>
 </body>
