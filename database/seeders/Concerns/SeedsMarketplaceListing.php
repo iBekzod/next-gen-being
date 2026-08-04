@@ -82,13 +82,44 @@ trait SeedsMarketplaceListing
      */
     protected function installDeliverable(string $slug, string $tier): ?string
     {
+        $design = database_path("seeders/demos/{$slug}.html");
+        $prompt = database_path("seeders/deliverables/{$slug}-prompt.md");
+
+        // The bundle ships prompt + design together as a single ZIP download.
+        if ($tier === 'bundle') {
+            if (! is_file($design)) {
+                return null;
+            }
+            $tmp = tempnam(sys_get_temp_dir(), 'ngbz');
+            $zip = new \ZipArchive();
+            if ($zip->open($tmp, \ZipArchive::OVERWRITE) !== true) {
+                return null;
+            }
+            $zip->addFile($design, 'design.html');
+            if (is_file($prompt)) {
+                $zip->addFile($prompt, 'prompt-plan.md');
+            }
+            $zip->addFromString('README.txt',
+                "NextGenBeing Marketplace bundle\n\n".
+                "- design.html : the complete, self-contained page (open in any browser).\n".
+                "- prompt-plan.md : the Claude Code prompts to rebuild or extend it.\n\n".
+                "Thanks for your purchase.\n");
+            $zip->close();
+
+            $dest = "deliverables/{$slug}/bundle.zip";
+            Storage::disk('private')->put($dest, file_get_contents($tmp));
+            @unlink($tmp);
+
+            return $dest;
+        }
+
         $sources = [
-            'design' => [database_path("seeders/demos/{$slug}.html"), 'html'],
-            'prompt' => [database_path("seeders/deliverables/{$slug}-prompt.md"), 'md'],
+            'design' => [$design, 'html'],
+            'prompt' => [$prompt, 'md'],
         ];
 
         if (! isset($sources[$tier])) {
-            return null; // code / bundle: no deliverable yet
+            return null; // 'code' (full project) has no file yet
         }
 
         [$source, $ext] = $sources[$tier];

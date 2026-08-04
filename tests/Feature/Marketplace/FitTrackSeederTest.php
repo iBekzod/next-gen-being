@@ -51,14 +51,18 @@ class FitTrackSeederTest extends TestCase
         $listing = MarketplaceListing::where('slug', 'fittrack-workout-saas')->first();
         $design = $listing->tiers()->where('tier', 'design')->first();
         $prompt = $listing->tiers()->where('tier', 'prompt')->first();
+        $bundle = $listing->tiers()->where('tier', 'bundle')->first();
         $code   = $listing->tiers()->where('tier', 'code')->first();
 
         $this->assertNotEmpty($design->file_path, 'design tier should have a deliverable');
         $this->assertNotEmpty($prompt->file_path, 'prompt tier should have a deliverable');
-        $this->assertNull($code->file_path, 'code tier has no deliverable yet');
+        $this->assertNotEmpty($bundle->file_path, 'bundle tier should ship a zip');
+        $this->assertStringEndsWith('.zip', $bundle->file_path);
+        $this->assertNull($code->file_path, 'code (full project) tier has no deliverable yet');
 
         Storage::disk('private')->assertExists($design->file_path);
         Storage::disk('private')->assertExists($prompt->file_path);
+        Storage::disk('private')->assertExists($bundle->file_path);
     }
 
     public function test_all_first_party_seeders_produce_published_listings_with_demos(): void
