@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aureline Residences — Private Villas Curated for the Few</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --accent: oklch(0.76 0.09 78);
+  --accent-hi: oklch(0.86 0.10 82);
+  --accent-deep: oklch(0.62 0.09 72);
+  --bg: oklch(0.19 0.008 66);
+  --bg-2: oklch(0.16 0.008 66);
+  --ink: oklch(0.95 0.012 84);
+  --muted: oklch(0.72 0.014 82);
+  --faint: oklch(0.58 0.012 82);
+  --line: oklch(0.98 0.02 84 / 0.10);
+  --line-2: oklch(0.98 0.02 84 / 0.16);
+  --glass: oklch(0.24 0.01 66 / 0.55);
+  --glass-2: oklch(0.30 0.012 70 / 0.42);
+  --radius: 16px;
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+canvas#webgl,canvas#fallback{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 78% 12%, transparent 0%, oklch(0.16 0.008 66 / .55) 62%, oklch(0.14 0.008 66 / .9) 100%),
+    linear-gradient(180deg, oklch(0.17 0.008 66 / .35) 0%, transparent 22%, transparent 60%, oklch(0.15 0.008 66 / .85) 100%);
+}
+.page{position:relative;z-index:2}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px 28px;
+  background: oklch(0.17 0.008 66 / .55);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;font-size:16px}
+.brand .mark{width:26px;height:26px;color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:30px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;letter-spacing:-.01em;transition:color .3s var(--ease)}
+.nav-links a:hover{color:var(--ink)}
+.btn{
+  font:inherit;font-size:14px;font-weight:600;letter-spacing:-.01em;
+  border-radius:11px;padding:10px 18px;cursor:pointer;
+  border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+  transition:transform .3s var(--ease),background .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease);
+}
+.btn-primary{background:var(--accent);color:oklch(0.20 0.02 70);box-shadow:0 1px 0 oklch(1 0 0 /.25) inset, 0 8px 26px oklch(0.62 0.09 72 /.28)}
+.btn-primary:hover{background:var(--accent-hi);transform:translateY(-2px);box-shadow:0 1px 0 oklch(1 0 0 /.3) inset,0 12px 34px oklch(0.62 0.09 72 /.4)}
+.btn-ghost{background:oklch(0.98 0.02 84 /.04);color:var(--ink);border-color:var(--line-2)}
+.btn-ghost:hover{background:oklch(0.98 0.02 84 /.09);transform:translateY(-2px);border-color:var(--line-2)}
+.nav .btn{padding:9px 16px}
+@media(max-width:760px){.nav-links a{display:none}}
+
+/* HERO */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 28px 90px;position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:.02em;color:var(--muted);
+  padding:7px 15px;border-radius:100px;border:1px solid var(--line-2);
+  background:oklch(0.24 0.01 66 / .4);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);margin-bottom:30px}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+h1{font-weight:800;letter-spacing:-.045em;line-height:.98;
+  font-size:clamp(2.7rem,8.2vw,6.1rem);max-width:15ch;margin-bottom:26px}
+h1 .line{display:block;overflow:hidden}
+h1 .line>span{display:block;transform:translateY(110%);transition:transform .95s var(--ease)}
+h1.go .line>span{transform:translateY(0)}
+h1.go .line:nth-child(2)>span{transition-delay:.09s}
+h1 .grad{background:linear-gradient(92deg,var(--accent-hi),var(--accent) 55%,var(--accent-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:clamp(1.02rem,1.9vw,1.24rem);max-width:52ch;margin:0 auto 36px;letter-spacing:-.01em}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.hero-cta .btn{padding:13px 24px;font-size:15px}
+.scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:9px;color:var(--faint);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}
+.scroll-hint .rail{width:1px;height:42px;background:linear-gradient(var(--faint),transparent);position:relative;overflow:hidden}
+.scroll-hint .rail::after{content:"";position:absolute;top:0;left:0;width:1px;height:14px;background:var(--accent);animation:drop 2.1s var(--ease) infinite}
+@keyframes drop{0%{transform:translateY(-14px)}60%,100%{transform:translateY(42px)}}
+
+/* SECTION SHELL */
+section{padding:100px 0;position:relative}
+.tag{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:16px}
+.h2{font-weight:800;letter-spacing:-.035em;line-height:1.03;font-size:clamp(2rem,4.6vw,3.3rem);max-width:18ch}
+.sub{color:var(--muted);font-size:1.06rem;max-width:54ch;margin-top:18px;letter-spacing:-.01em}
+.sec-head{margin-bottom:52px;max-width:760px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.rv.in{opacity:1;transform:none}
+
+/* FEATURES */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{
+  border:1px solid var(--line);border-radius:var(--radius);padding:30px 28px;
+  background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  transition:transform .5s var(--ease),border-color .5s var(--ease),background .5s var(--ease);
+  position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;inset:0;border-radius:var(--radius);pointer-events:none;
+  background:radial-gradient(120% 80% at 12% 0%, oklch(0.76 0.09 78 / .10),transparent 60%);opacity:0;transition:opacity .5s var(--ease)}
+.card:hover{transform:translateY(-6px);border-color:var(--line-2);background:var(--glass-2)}
+.card:hover::before{opacity:1}
+.card .ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-2);background:oklch(0.76 0.09 78 /.09);color:var(--accent);margin-bottom:22px}
+.card .ico svg{width:22px;height:22px}
+.card h3{font-size:1.22rem;letter-spacing:-.02em;margin-bottom:11px;font-weight:700}
+.card p{color:var(--muted);font-size:.98rem;letter-spacing:-.005em}
+
+/* SHOWCASE / interactive tabs */
+.show{display:grid;grid-template-columns:.9fr 1.1fr;gap:44px;align-items:center}
+@media(max-width:860px){.show{grid-template-columns:1fr;gap:32px}}
+.tabs{display:flex;flex-direction:column;gap:10px}
+.tab{
+  text-align:left;font:inherit;cursor:pointer;
+  border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+  background:oklch(0.24 0.01 66 /.34);color:var(--ink);
+  transition:border-color .4s var(--ease),background .4s var(--ease),transform .4s var(--ease);
+}
+.tab:hover{border-color:var(--line-2)}
+.tab.on{border-color:oklch(0.76 0.09 78 /.55);background:oklch(0.76 0.09 78 /.08)}
+.tab .t{font-weight:700;letter-spacing:-.02em;font-size:1.02rem;display:flex;align-items:center;justify-content:space-between}
+.tab .t .num{color:var(--accent);font-size:.8rem;font-variant-numeric:tabular-nums}
+.tab .d{color:var(--muted);font-size:.9rem;margin-top:7px;max-height:0;opacity:0;overflow:hidden;transition:max-height .5s var(--ease),opacity .5s var(--ease),margin .5s var(--ease)}
+.tab.on .d{max-height:120px;opacity:1;margin-top:9px}
+.panel{
+  border:1px solid var(--line);border-radius:20px;padding:34px;min-height:340px;
+  background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+.panel .plabel{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.panel h4{font-size:1.7rem;letter-spacing:-.03em;font-weight:800;margin-bottom:10px}
+.panel p{color:var(--muted);max-width:40ch}
+.panel .stats{display:flex;gap:30px;margin-top:26px}
+.panel .stats b{display:block;font-size:1.7rem;letter-spacing:-.03em;font-weight:800;color:var(--ink)}
+.panel .stats span{font-size:.82rem;color:var(--faint);letter-spacing:.02em}
+.panel .glow{position:absolute;top:-40%;right:-20%;width:70%;height:120%;border-radius:50%;
+  background:radial-gradient(circle, oklch(0.76 0.09 78 /.16), transparent 65%);pointer-events:none;transition:opacity .6s var(--ease)}
+.pv{display:none}
+.pv.on{display:block;animation:fade .6s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* RESIDENCES / pricing-ish list */
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:860px){.res{grid-template-columns:1fr}}
+.res .card{padding:28px}
+.res .price{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin:6px 0 2px}
+.res .meta{color:var(--faint);font-size:.86rem;letter-spacing:.02em}
+.res ul{list-style:none;margin:20px 0 24px;display:flex;flex-direction:column;gap:11px}
+.res li{display:flex;gap:13px;align-items:flex-start;color:var(--muted);font-size:.94rem}
+.res li::before{content:"";flex:0 0 auto;width:9px;height:5px;margin:5px 3px 0 3px;
+  border-left:1.9px solid var(--accent);border-bottom:1.9px solid var(--accent);transform:rotate(-45deg)}
+.res .feat{border-color:oklch(0.76 0.09 78 /.4);background:linear-gradient(180deg,oklch(0.76 0.09 78 /.07),var(--glass))}
+.pill{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line-2);border-radius:100px;padding:4px 10px;display:inline-block;margin-bottom:14px}
+
+/* CTA band */
+.band{
+  border:1px solid var(--line-2);border-radius:24px;padding:60px 44px;text-align:center;
+  background:linear-gradient(180deg, oklch(0.26 0.014 70 /.6), oklch(0.20 0.01 66 /.5));
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);position:relative;overflow:hidden;
+}
+.band::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 120% at 50% -10%, oklch(0.76 0.09 78 /.14),transparent 60%);pointer-events:none}
+.band h2{font-weight:800;letter-spacing:-.04em;font-size:clamp(1.9rem,4.6vw,3rem);line-height:1.02;position:relative}
+.band p{color:var(--muted);max-width:46ch;margin:18px auto 30px;position:relative}
+.band .hero-cta{position:relative}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:52px 0 44px;margin-top:40px}
+.foot{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.foot .col h5{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:15px}
+.foot .col a{display:block;color:var(--muted);text-decoration:none;font-size:.92rem;margin-bottom:10px;transition:color .3s var(--ease)}
+.foot .col a:hover{color:var(--ink)}
+.foot-brand{max-width:280px}
+.foot-brand p{color:var(--faint);font-size:.9rem;margin-top:14px}
+.foot-bottom{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:44px;padding-top:24px;border-top:1px solid var(--line);color:var(--faint);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  h1 .line>span{transform:none!important}
+  .rv{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+<canvas id="webgl"></canvas>
+<canvas id="fallback" style="display:none"></canvas>
+<div class="veil"></div>
+
+<div class="page">
+<nav>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V9l9-6 9 6v11"/><path d="M9 20v-6h6v6"/></svg>
+    Aureline
+  </div>
+  <div class="nav-links">
+    <a href="#collection">The Collection</a>
+    <a href="#experience">Experience</a>
+    <a href="#residences">Residences</a>
+  </div>
+  <a href="#enquire" class="btn btn-primary">Private Enquiry</a>
+</nav>
+
+<header class="hero">
+  <span class="eyebrow"><span class="dot"></span> By invitation — Winter release, twelve residences</span>
+  <h1 id="h1">
+    <span class="line"><span>Live above the ordinary.</span></span>
+    <span class="line"><span class="grad">Curated for the few.</span></span>
+  </h1>
+  <p class="lead">Aureline Residences are private homes that answer to no one but the light. Walk each villa in real time, watch the sun move across the terraces, and reserve with a single discreet conversation.</p>
+  <div class="hero-cta">
+    <a href="#residences" class="btn btn-primary">
+      View the collection
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </a>
+    <a href="#experience" class="btn btn-ghost">Take the 3D tour</a>
+  </div>
+  <div class="scroll-hint">Scroll to assemble<span class="rail"></span></div>
+</header>
+
+<section id="collection">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="tag">The Aureline standard</div>
+      <h2 class="h2">Everything a serious buyer needs, before they ever step inside.</h2>
+      <p class="sub">Three quiet systems that do the work of an entire sales office — so your best properties reach the right people, faster.</p>
+    </div>
+    <div class="grid">
+      <div class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 7.5 12 3l9 4.5"/><circle cx="12" cy="12" r="3"/><path d="M3 16.5 12 21l9-4.5"/></svg></div>
+        <h3>Immersive Tours</h3>
+        <p>Walk every room in 3D before you ever visit. A natural-light simulation shows the space at dawn, noon and dusk, so buyers feel the home in the hour they'll live it.</p>
+      </div>
+      <div class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8"/><path d="M8 12.5h5"/></svg></div>
+        <h3>Concierge Enquiry</h3>
+        <p>A discreet booking flow that routes serious buyers straight to a dedicated agent. No forms lost in a shared inbox, no lead sitting cold over a weekend.</p>
+      </div>
+      <div class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 4-6 3v13l6-3 6 3 6-3V4l-6 3-6-3z"/><path d="M9 4v13"/><path d="M15 7v13"/></svg></div>
+        <h3>Neighborhood Intel</h3>
+        <p>Interactive maps of schools, dining and value trends, so buyers see the lifestyle and not just the listing — and arrive already sold on the street.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="tag">The living tour</div>
+      <h2 class="h2">One model, seen the way it's actually lived.</h2>
+      <p class="sub">Every Aureline villa is a real-time light study. Choose an hour and watch the same rooms change character.</p>
+    </div>
+    <div class="show">
+      <div class="tabs rv" id="tabs">
+        <button class="tab on" data-i="0">
+          <span class="t">Dawn on the terrace <span class="num">01</span></span>
+          <span class="d">Low champagne light rakes across travertine. The pool holds a mirror-still sky and the west wing sits in soft shadow.</span>
+        </button>
+        <button class="tab" data-i="1">
+          <span class="t">Noon, full glass <span class="num">02</span></span>
+          <span class="d">Overhead sun floods the double-height atrium. Terraces read cool and open; the shadow line pulls tight beneath the cantilever.</span>
+        </button>
+        <button class="tab" data-i="2">
+          <span class="t">Dusk, gold hour <span class="num">03</span></span>
+          <span class="d">The facade warms to amber, long shadows stretch across the deck, and the reflecting pool turns to liquid brass.</span>
+        </button>
+      </div>
+      <div class="panel rv">
+        <div class="glow" id="panelGlow"></div>
+        <div class="pv on" data-i="0">
+          <div class="plabel">06:40 — First light</div>
+          <h4>Villa Solene, Ridge Level</h4>
+          <p>South terrace and lap pool at first light. Shadow study rendered live from the sun's real position.</p>
+          <div class="stats"><div><b>4</b><span>Bedrooms</span></div><div><b>520m²</b><span>Interior</span></div><div><b>W-facing</b><span>Aspect</span></div></div>
+        </div>
+        <div class="pv" data-i="1">
+          <div class="plabel">12:15 — High sun</div>
+          <h4>The Atrium, Villa Solene</h4>
+          <p>Full daylight through the glass spine. Every material shown at its brightest, honest reading.</p>
+          <div class="stats"><div><b>7.2m</b><span>Ceiling</span></div><div><b>340°</b><span>Glazing</span></div><div><b>2</b><span>Terraces</span></div></div>
+        </div>
+        <div class="pv" data-i="2">
+          <div class="plabel">18:50 — Golden hour</div>
+          <h4>West Deck & Reflecting Pool</h4>
+          <p>The hour the home was designed for. Warm facade, long shadow, water like brass.</p>
+          <div class="stats"><div><b>22m</b><span>Pool run</span></div><div><b>Ridge</b><span>Position</span></div><div><b>Private</b><span>Access</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="residences">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="tag">The collection</div>
+      <h2 class="h2">Twelve residences. No two answer to the same light.</h2>
+      <p class="sub">Each home is released privately. Reserve a viewing window and your enquiry is held by name, never pooled.</p>
+    </div>
+    <div class="res">
+      <div class="card rv">
+        <span class="pill">Available</span>
+        <h3>Villa Meridienne</h3>
+        <div class="price">$6.4M</div>
+        <div class="meta">Hillside · 3 bed · 410m²</div>
+        <ul>
+          <li>Cantilevered morning terrace</li>
+          <li>Glass lap pool, east aspect</li>
+          <li>Full 3D light tour ready</li>
+        </ul>
+        <a href="#enquire" class="btn btn-ghost">Reserve a viewing</a>
+      </div>
+      <div class="card feat rv">
+        <span class="pill">Signature</span>
+        <h3>Villa Solene</h3>
+        <div class="price">$9.8M</div>
+        <div class="meta">Ridge · 4 bed · 520m²</div>
+        <ul>
+          <li>22m reflecting pool, west deck</li>
+          <li>7.2m atrium, glass spine</li>
+          <li>Dedicated concierge agent</li>
+        </ul>
+        <a href="#enquire" class="btn btn-primary">Private enquiry</a>
+      </div>
+      <div class="card rv">
+        <span class="pill">Reserved</span>
+        <h3>Villa Caldera</h3>
+        <div class="price">$12.5M</div>
+        <div class="meta">Summit · 5 bed · 680m²</div>
+        <ul>
+          <li>Infinity edge, 270° valley view</li>
+          <li>Sunset-tuned facade materials</li>
+          <li>Waitlist enquiries only</li>
+        </ul>
+        <a href="#enquire" class="btn btn-ghost">Join the waitlist</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="enquire">
+  <div class="wrap">
+    <div class="band rv">
+      <h2>Homes that answer to no one but the light.</h2>
+      <p>Tell us the hour you'd want to arrive. We'll route you to the agent who knows the residence best — quietly, and by name.</p>
+      <div class="hero-cta">
+        <a href="#residences" class="btn btn-primary">Begin a private enquiry
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
+        <a href="#experience" class="btn btn-ghost">Replay the light tour</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <div class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V9l9-6 9 6v11"/><path d="M9 20v-6h6v6"/></svg> Aureline</div>
+        <p>Private residences, curated for the few. Released by invitation across a single ridge line.</p>
+      </div>
+      <div class="col"><h5>Collection</h5><a href="#residences">Villa Meridienne</a><a href="#residences">Villa Solene</a><a href="#residences">Villa Caldera</a></div>
+      <div class="col"><h5>Experience</h5><a href="#experience">3D light tours</a><a href="#collection">Neighborhood intel</a><a href="#enquire">Concierge enquiry</a></div>
+      <div class="col"><h5>Studio</h5><a href="#enquire">Private viewings</a><a href="#enquire">Broker access</a><a href="#enquire">Press</a></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Aureline Residences. A boutique property studio.</span>
+      <span>Privacy · Terms · By invitation only</span>
+    </div>
+  </div>
+</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Kinetic headline
+  window.addEventListener('load', function(){
+    setTimeout(function(){ var h=document.getElementById('h1'); if(h) h.classList.add('go'); }, 140);
+  });
+
+  // Reveal
+  var rv = document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    },{threshold:.14});
+    rv.forEach(function(el){ io.observe(el); });
+  } else { rv.forEach(function(el){ el.classList.add('in'); }); }
+
+  // Tabs
+  var tabs = document.querySelectorAll('#tabs .tab');
+  var views = document.querySelectorAll('.panel .pv');
+  var glow = document.getElementById('panelGlow');
+  var glowPos = ['12% 0%','50% -10%','88% 6%'];
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      var i = +t.getAttribute('data-i');
+      tabs.forEach(function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      views.forEach(function(v){ v.classList.toggle('on', +v.getAttribute('data-i')===i); });
+      if(glow) glow.style.background = 'radial-gradient(circle at '+glowPos[i]+', oklch(0.80 0.10 '+(78+i*4)+' /.20), transparent 62%)';
+    });
+  });
+
+  // Scroll progress + mouse
+  var scrollP = 0, mx = 0, my = 0, tmx = 0, tmy = 0;
+  function onScroll(){
+    var h = document.documentElement;
+    scrollP = h.scrollTop / Math.max(1,(h.scrollHeight - h.clientHeight));
+  }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  window.addEventListener('mousemove', function(e){
+    tmx = (e.clientX/window.innerWidth - .5);
+    tmy = (e.clientY/window.innerHeight - .5);
+  });
+
+  var THREE = window.THREE;
+  function webglOK(){
+    try{ var c=document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && (c.getContext('webgl')||c.getContext('experimental-webgl')));
+    }catch(e){ return false; }
+  }
+
+  function init3D(){
+    var canvas = document.getElementById('webgl');
+    var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio = renderer.setPixelRatio || function(){};
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    var scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x1b1813, 0.05);
+    var camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 100);
+    camera.position.set(0, 4.2, 12);
+
+    var GOLD = new THREE.Color(0xc9a567);
+    var BONE = new THREE.Color(0xe8e2d6);
+
+    // Villa massing group
+    var villa = new THREE.Group();
+    scene.add(villa);
+
+    function slab(w,h,d,y,color){
+      var g = new THREE.BoxGeometry(w,h,d);
+      var m = new THREE.MeshStandardMaterial({color:color, roughness:.55, metalness:.15});
+      var mesh = new THREE.Mesh(g,m);
+      mesh.position.y = y; mesh.castShadow = true; mesh.receiveShadow = true;
+      return mesh;
+    }
+    // floors that assemble
+    var floors = [];
+    var defs = [
+      {w:7.4,h:0.5,d:5.4,y:0.25,c:0xd8d2c6},
+      {w:6.2,h:2.2,d:4.4,y:1.6,c:0xb9b3a5},
+      {w:6.8,h:0.35,d:5.0,y:2.9,c:0xd8d2c6},
+      {w:4.8,h:2.0,d:3.6,y:4.1,c:0xc7c1b3},
+      {w:5.2,h:0.32,d:4.0,y:5.25,c:0xd8d2c6},
+      {w:3.2,h:1.6,d:2.6,y:6.25,c:0xb9b3a5}
+    ];
+    defs.forEach(function(d){
+      var m = slab(d.w,d.h,d.d,d.y,d.c);
+      villa.add(m); floors.push(m);
+    });
+    // glass volume (fresnel-ish)
+    var glassMat = new THREE.MeshStandardMaterial({color:0x9fb6bd, roughness:.05, metalness:.6, transparent:true, opacity:.42, emissive:new THREE.Color(0x24343a), emissiveIntensity:.5});
+    var glass = new THREE.Mesh(new THREE.BoxGeometry(4.6,2.0,3.4), glassMat);
+    glass.position.y = 4.1; glass.castShadow=true; villa.add(glass); floors.push(glass);
+
+    // reflecting pool
+    var pool = new THREE.Mesh(new THREE.CircleGeometry(4.2,48), new THREE.MeshStandardMaterial({color:0x2a3a40, roughness:.02, metalness:1.0, emissive:0x141d20, emissiveIntensity:.4}));
+    pool.rotation.x = -Math.PI/2; pool.position.set(5.6,0.02,1.2); pool.receiveShadow=true; scene.add(pool);
+
+    // ground
+    var ground = new THREE.Mesh(new THREE.PlaneGeometry(80,80), new THREE.MeshStandardMaterial({color:0x1d1a15, roughness:.95, metalness:0}));
+    ground.rotation.x = -Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+
+    // fresnel rim ring
+    var rimMat = new THREE.ShaderMaterial({
+      transparent:true,
+      uniforms:{c:{value:GOLD}},
+      vertexShader:'varying vec3 vN;varying vec3 vP;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vP=mv.xyz;gl_Position=projectionMatrix*mv;}',
+      fragmentShader:'uniform vec3 c;varying vec3 vN;varying vec3 vP;void main(){float f=pow(1.-abs(dot(normalize(vN),normalize(-vP))),2.2);gl_FragColor=vec4(c,f*.9);}'
+    });
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(9,0.06,16,120), rimMat);
+    ring.rotation.x = Math.PI/2; ring.position.y=0.2; scene.add(ring);
+
+    // lights
+    scene.add(new THREE.AmbientLight(0x5a5346, 0.7));
+    scene.add(new THREE.HemisphereLight(0xe8e2d6, 0x1a1712, 0.5));
+    var sun = new THREE.DirectionalLight(0xffdca8, 2.1);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
+    sun.shadow.camera.near=1; sun.shadow.camera.far=60;
+    sun.shadow.camera.left=-16; sun.shadow.camera.right=16; sun.shadow.camera.top=16; sun.shadow.camera.bottom=-16;
+    scene.add(sun);
+    var fill = new THREE.PointLight(0xc9a567, 0.6, 40); fill.position.set(-8,6,6); scene.add(fill);
+
+    var clock = new THREE.Clock();
+
+    function resize(){
+      camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener('resize', resize);
+
+    function frame(t, p){
+      // sun arc driven by scroll
+      var ang = -0.35 + p*Math.PI*1.15;
+      sun.position.set(Math.cos(ang)*16, Math.max(2.2, Math.sin(ang)*16), 6);
+      var warm = 0.55 + Math.abs(Math.cos(ang))*0.45;
+      sun.color.setRGB(1.0, 0.82 + (1-warm)*0.05, 0.55 + warm*0.15);
+      sun.intensity = 1.4 + Math.max(0, Math.sin(ang))*1.2;
+
+      // assemble floors: each rises into place as scroll grows
+      for(var i=0;i<floors.length;i++){
+        var trigger = i/(floors.length);
+        var local = Math.min(1, Math.max(0,(p*1.35 - trigger*0.9)/0.34));
+        var e = local<1 ? (1-Math.pow(1-local,3)) : 1;
+        if(floors[i].userData.baseY===undefined) floors[i].userData.baseY = floors[i].position.y;
+        floors[i].position.y = floors[i].userData.baseY - (1-e)*3.0;
+        floors[i].material.opacity = floors[i].material.transparent ? (0.42*e + 0.02) : 1;
+        if(!floors[i].material.transparent){ floors[i].scale.set(0.9+0.1*e,e<0.02?0.02:e, 0.9+0.1*e);}
+      }
+
+      // scroll-driven camera orbit + mouse parallax
+      mx += (tmx - mx)*0.05; my += (tmy - my)*0.05;
+      var orbit = -0.5 + p*1.4;
+      var radius = 13 - p*2.5;
+      camera.position.x = Math.sin(orbit)*radius + mx*3.2;
+      camera.position.z = Math.cos(orbit)*radius;
+      camera.position.y = 4.4 + p*2.2 - my*2.0;
+      camera.lookAt(0, 2.4 + p*1.2, 0);
+
+      villa.rotation.y = 0.15 + p*0.3;
+      ring.rotation.z = t*0.05;
+      rimMat.uniforms.c.value.copy(GOLD).lerp(BONE, Math.max(0,Math.sin(ang))*0.4);
+      renderer.render(scene, camera);
+    }
+
+    if(reduce){ frame(0, 0.15); return; }
+    (function loop(){
+      requestAnimationFrame(loop);
+      frame(clock.getElapsedTime(), scrollP);
+    })();
+  }
+
+  function initFallback(){
+    var wc = document.getElementById('webgl'); if(wc) wc.style.display='none';
+    var c = document.getElementById('fallback'); c.style.display='block';
+    var ctx = c.getContext('2d');
+    function size(){ c.width=window.innerWidth; c.height=window.innerHeight; }
+    size(); window.addEventListener('resize', size);
+    var blobs = [
+      {x:.3,y:.35,r:.5,h:'#c9a567',s:.6},
+      {x:.7,y:.55,r:.55,h:'#8a7a52',s:.4},
+      {x:.5,y:.7,r:.45,h:'#e8e2d6',s:.25}
+    ];
+    function draw(t){
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.fillStyle='#17140f'; ctx.fillRect(0,0,c.width,c.height);
+      ctx.globalCompositeOperation='lighter';
+      blobs.forEach(function(b,i){
+        var x=(b.x + Math.sin(t*0.0003+i)*0.08 + mx*0.05)*c.width;
+        var y=(b.y + Math.cos(t*0.00025+i)*0.08 + my*0.05 + scrollP*0.1)*c.height;
+        var r=b.r*Math.min(c.width,c.height)*(0.8+Math.sin(t*0.0004+i)*0.12);
+        var g=ctx.createRadialGradient(x,y,0,x,y,r);
+        g.addColorStop(0,b.h+ Math.round(b.s*90).toString(16).padStart(2,'0'));
+        g.addColorStop(1,'#00000000');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+      });
+      ctx.globalCompositeOperation='source-over';
+    }
+    if(reduce){ draw(0); return; }
+    (function loop(t){ requestAnimationFrame(loop); draw(t||0); })();
+  }
+
+  try{
+    if(THREE && webglOK()){ init3D(); } else { initFallback(); }
+  }catch(err){ try{ initFallback(); }catch(e){} }
+})();
+</script>
+</body>
+</html>

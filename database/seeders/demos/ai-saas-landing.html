@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cortex AI — Your team's second brain, always awake.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --accent: oklch(0.66 0.19 274);
+  --accent-soft: oklch(0.74 0.13 290);
+  --accent-deep: oklch(0.52 0.20 272);
+  --bg: oklch(0.16 0.028 274);
+  --bg-2: oklch(0.19 0.03 276);
+  --ink: oklch(0.97 0.01 274);
+  --ink-dim: oklch(0.74 0.02 276);
+  --ink-faint: oklch(0.60 0.02 278);
+  --line: oklch(0.99 0 0 / 0.10);
+  --line-2: oklch(0.99 0 0 / 0.16);
+  --glass: oklch(0.99 0 0 / 0.045);
+  --glass-2: oklch(0.99 0 0 / 0.07);
+  --radius: 16px;
+  --ease: cubic-bezier(0.16,1,0.3,1);
+  font-synthesis: none;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  line-height:1.55;
+}
+canvas#webgl,canvas#fallback{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
+.veil{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, oklch(0.66 0.19 274 / 0.22), transparent 60%),
+    radial-gradient(90% 60% at 100% 100%, oklch(0.74 0.13 290 / 0.14), transparent 55%),
+    linear-gradient(180deg, transparent 40%, oklch(0.14 0.026 274 / 0.55) 78%, var(--bg) 100%);
+}
+.page{position:relative;z-index:2}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px clamp(20px,4vw,40px);
+  background: oklch(0.16 0.028 274 / 0.55);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-0.02em;font-size:16px}
+.brand .mark{width:26px;height:26px;color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{color:var(--ink-dim);text-decoration:none;font-size:14px;font-weight:500;transition:color .25s}
+.nav-links a:hover{color:var(--ink)}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:600;letter-spacing:-0.01em;
+  padding:10px 18px;border-radius:11px;border:1px solid transparent;
+  cursor:pointer;text-decoration:none;transition:transform .3s var(--ease),background .3s,box-shadow .3s,border-color .3s;
+  white-space:nowrap;
+}
+.btn-primary{
+  background:linear-gradient(180deg, var(--accent-soft), var(--accent));
+  color: oklch(0.16 0.03 274);
+  box-shadow: 0 6px 24px -8px oklch(0.66 0.19 274 / 0.7), inset 0 1px 0 oklch(1 0 0 / 0.35);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 34px -8px oklch(0.66 0.19 274 / 0.9),inset 0 1px 0 oklch(1 0 0 / 0.45)}
+.btn-ghost{background:var(--glass);color:var(--ink);border:1px solid var(--line-2)}
+.btn-ghost:hover{background:var(--glass-2);transform:translateY(-2px);border-color:var(--accent-soft)}
+.nav-cta{padding:9px 16px}
+
+/* HERO */
+.hero{
+  min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 28px 90px;position:relative;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:7px 15px;border-radius:100px;
+  background:var(--glass);border:1px solid var(--line-2);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  font-size:12.5px;font-weight:500;letter-spacing:0.02em;color:var(--ink-dim);
+  margin-bottom:32px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+h1{
+  font-size:clamp(2.6rem,7.4vw,5.6rem);
+  font-weight:800;letter-spacing:-0.045em;line-height:0.98;
+  max-width:16ch;margin:0 auto;
+}
+h1 .line{display:block;overflow:hidden}
+h1 .line>span{
+  display:block;transform:translateY(110%);
+  transition:transform 1s var(--ease);
+}
+h1.go .line>span{transform:translateY(0)}
+h1.go .line:nth-child(2)>span{transition-delay:.09s}
+.grad{
+  background:linear-gradient(100deg, var(--ink) 10%, var(--accent-soft) 55%, var(--accent) 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.lead{
+  margin:28px auto 0;max-width:52ch;font-size:clamp(1rem,1.6vw,1.2rem);
+  color:var(--ink-dim);font-weight:400;
+}
+.hero-cta{display:flex;gap:14px;justify-content:center;margin-top:38px;flex-wrap:wrap}
+.hero-cta .btn{padding:14px 24px;font-size:15px}
+.scroll-hint{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint);
+}
+.scroll-hint .track{width:1px;height:38px;background:linear-gradient(var(--accent-soft),transparent);position:relative;overflow:hidden}
+.scroll-hint .track::after{content:"";position:absolute;top:0;left:0;width:100%;height:40%;background:var(--accent);animation:drop 2.1s var(--ease) infinite}
+@keyframes drop{0%{transform:translateY(-100%)}60%,100%{transform:translateY(260%)}}
+
+/* SECTIONS */
+section{position:relative;padding:clamp(70px,10vw,130px) 0}
+.kicker{
+  font-size:12.5px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent-soft);margin-bottom:16px;
+}
+.sec-title{font-size:clamp(1.9rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;line-height:1.04;max-width:20ch}
+.sec-sub{margin-top:16px;color:var(--ink-dim);max-width:56ch;font-size:1.05rem}
+.sec-head{margin-bottom:52px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+
+/* FEATURES */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{
+  padding:30px 26px 32px;border-radius:var(--radius);
+  background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:transform .4s var(--ease),border-color .4s,background .4s;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:var(--radius);
+  background:radial-gradient(140% 80% at 0% 0%, oklch(0.66 0.19 274 / 0.10), transparent 55%);
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+.card:hover{transform:translateY(-6px);border-color:var(--line-2);background:var(--glass-2)}
+.card:hover::before{opacity:1}
+.ic{
+  width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+  background:oklch(0.66 0.19 274 / 0.14);border:1px solid oklch(0.66 0.19 274 / 0.3);
+  color:var(--accent-soft);margin-bottom:20px;
+}
+.ic svg{width:24px;height:24px}
+.card h3{font-size:1.2rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:10px}
+.card p{color:var(--ink-dim);font-size:0.96rem}
+
+/* CAPABILITIES / interactive tabs */
+.panel{
+  border-radius:22px;border:1px solid var(--line);
+  background:linear-gradient(180deg, var(--glass-2), var(--glass));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  overflow:hidden;
+}
+.tabs{display:flex;gap:6px;padding:10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{
+  padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink-dim);
+  background:transparent;border:1px solid transparent;cursor:pointer;transition:all .3s var(--ease);
+}
+.tab[aria-selected="true"]{background:var(--glass-2);color:var(--ink);border-color:var(--line-2)}
+.tab:hover{color:var(--ink)}
+.tabpanes{padding:clamp(24px,4vw,44px)}
+.pane{display:none;animation:fade .5s var(--ease)}
+.pane.active{display:grid;grid-template-columns:1.05fr 0.95fr;gap:40px;align-items:center}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pane h3{font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:14px}
+.pane p{color:var(--ink-dim);margin-bottom:22px}
+.pane ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+.pane li{display:flex;gap:12px;font-size:0.96rem;color:var(--ink-dim)}
+.pane li svg{width:19px;height:19px;color:var(--accent-soft);flex:none;margin-top:2px}
+.viz{
+  border-radius:16px;border:1px solid var(--line);background:oklch(0.13 0.024 274 / 0.6);
+  padding:22px;min-height:230px;position:relative;overflow:hidden;
+}
+.viz-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;background:var(--glass);border:1px solid var(--line);margin-bottom:10px;font-size:13.5px}
+.viz-row .badge{margin-left:auto;font-size:11px;padding:3px 9px;border-radius:100px;background:oklch(0.66 0.19 274 / 0.16);color:var(--accent-soft);border:1px solid oklch(0.66 0.19 274 / 0.3)}
+.viz-row .avt{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent-soft),var(--accent-deep));flex:none}
+.type-line{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13px;color:var(--ink-dim)}
+.type-line .cur{display:inline-block;width:8px;height:15px;background:var(--accent);vertical-align:-2px;animation:blink 1s step-end infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+
+/* PRICING */
+.grid-price{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.price-card{
+  padding:30px 28px;border-radius:var(--radius);background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .4s var(--ease),border-color .4s;
+  display:flex;flex-direction:column;
+}
+.price-card:hover{transform:translateY(-5px);border-color:var(--line-2)}
+.price-card.feat{border-color:oklch(0.66 0.19 274 / 0.5);background:linear-gradient(180deg, oklch(0.66 0.19 274 / 0.10), var(--glass))}
+.price-card .tier{font-size:14px;font-weight:600;color:var(--ink-dim);letter-spacing:0.02em}
+.price-card .amt{font-size:2.6rem;font-weight:800;letter-spacing:-0.04em;margin:14px 0 4px}
+.price-card .amt span{font-size:1rem;font-weight:500;color:var(--ink-faint)}
+.price-card .plan-sub{font-size:0.9rem;color:var(--ink-faint);margin-bottom:22px}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:26px}
+.price-card li{display:flex;gap:10px;font-size:0.92rem;color:var(--ink-dim)}
+.price-card li svg{width:17px;height:17px;color:var(--accent-soft);flex:none;margin-top:2px}
+.price-card .btn{margin-top:auto;justify-content:center}
+.tag-pop{font-size:11px;padding:3px 10px;border-radius:100px;background:var(--accent);color:oklch(0.16 0.03 274);font-weight:700;margin-left:8px}
+
+/* CTA BAND */
+.cta-band{text-align:center;padding:clamp(48px,7vw,80px) 40px;border-radius:26px;
+  background:linear-gradient(160deg, oklch(0.66 0.19 274 / 0.16), var(--glass));
+  border:1px solid oklch(0.66 0.19 274 / 0.3);position:relative;overflow:hidden;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.cta-band::after{content:"";position:absolute;inset:-40% -10% auto;height:60%;background:radial-gradient(60% 100% at 50% 0%, oklch(0.66 0.19 274 / 0.35),transparent 70%);pointer-events:none}
+.cta-band h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;line-height:1.05;position:relative}
+.cta-band p{color:var(--ink-dim);margin:16px auto 30px;max-width:44ch;position:relative}
+.cta-band .btn{position:relative}
+
+/* stat row */
+.stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:44px}
+.stat{padding:16px 24px;border-radius:14px;background:var(--glass);border:1px solid var(--line);min-width:150px}
+.stat b{display:block;font-size:1.7rem;font-weight:800;letter-spacing:-0.03em}
+.stat span{font-size:12.5px;color:var(--ink-faint)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:56px 0 40px;margin-top:40px;background:oklch(0.14 0.024 274 / 0.5)}
+.foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px;margin-bottom:40px}
+.foot-grid h4{font-size:12px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-faint);margin-bottom:16px}
+.foot-grid a{display:block;color:var(--ink-dim);text-decoration:none;font-size:14px;margin-bottom:10px;transition:color .25s}
+.foot-grid a:hover{color:var(--ink)}
+.foot-brand p{color:var(--ink-faint);font-size:14px;max-width:32ch;margin-top:14px}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:13px;flex-wrap:wrap;gap:12px}
+
+@media(max-width:860px){
+  .grid3,.grid-price{grid-template-columns:1fr}
+  .pane.active{grid-template-columns:1fr;gap:26px}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  h1 .line>span{transform:none!important}
+  .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<canvas id="webgl"></canvas>
+<canvas id="fallback" style="display:none"></canvas>
+<div class="veil"></div>
+
+<div class="page">
+<nav>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.4"/><circle cx="5" cy="6" r="1.6"/><circle cx="19" cy="6" r="1.6"/><circle cx="5" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/><path d="M6.5 6.8 10 10.6M17.5 6.8 14 10.6M6.5 17.2 10 13.4M17.5 17.2 14 13.4"/></svg>
+    Cortex AI
+  </div>
+  <div class="nav-links">
+    <a href="#features">Product</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <a href="#cta" class="btn btn-primary nav-cta">Start free</a>
+</nav>
+
+<header class="hero">
+  <span class="eyebrow"><span class="dot"></span>Now with agentic workflows &amp; private deployment</span>
+  <h1 id="head">
+    <span class="line"><span>Work smarter, not louder.</span></span>
+    <span class="line"><span class="grad">AI that drafts, decides, and delivers.</span></span>
+  </h1>
+  <p class="lead">Cortex AI is your team's second brain — always awake, grounded in your own data, and ready to turn a sentence into finished work.</p>
+  <div class="hero-cta">
+    <a href="#cta" class="btn btn-primary">Start free — no card</a>
+    <a href="#capabilities" class="btn btn-ghost">See it think
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+  <div class="scroll-hint"><span>Scroll to explore</span><div class="track"></div></div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">Why Cortex</div>
+      <h2 class="sec-title">One intelligence layer across everything your team already does.</h2>
+      <p class="sec-sub">Not another chatbot bolted on the side. Cortex reads your context, runs the busywork, and stays inside your security perimeter.</p>
+    </div>
+    <div class="grid3">
+      <div class="card rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8M8 13h5"/><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6a8 8 0 0 1 8-11h2a8 8 0 0 1 8 6"/></svg></div>
+        <h3>Natural Language</h3>
+        <p>Ask in plain English and get finished work back — documents, summaries, and answers grounded in your own data.</p>
+      </div>
+      <div class="card rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/></svg></div>
+        <h3>Workflow Automation</h3>
+        <p>Chain steps into repeatable pipelines that run on triggers, so busywork happens while your team sleeps.</p>
+      </div>
+      <div class="card rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.4 3.2 7.6 8 9 4.8-1.4 8-4.6 8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>Enterprise-Ready</h3>
+        <p>SSO, granular permissions, and private deployment keep sensitive data in your control, never in a training set.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="capabilities">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">Watch it work</div>
+      <h2 class="sec-title">Thought made visible — pick a job and see Cortex run it.</h2>
+    </div>
+    <div class="panel rv">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-t="0">Draft</button>
+        <button class="tab" role="tab" aria-selected="false" data-t="1">Automate</button>
+        <button class="tab" role="tab" aria-selected="false" data-t="2">Retrieve</button>
+      </div>
+      <div class="tabpanes">
+        <div class="pane active" data-p="0">
+          <div>
+            <h3>From prompt to polished draft</h3>
+            <p>Describe the outcome. Cortex assembles the document from your knowledge base, cites its sources, and hands you an editable draft in seconds.</p>
+            <ul>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Grounded in your docs, decks and tickets</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Inline citations you can click and verify</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Brand voice learned from your best writing</li>
+            </ul>
+          </div>
+          <div class="viz">
+            <div class="type-line" id="typer">&gt; Draft a Q3 launch brief for the mobile app<span class="cur"></span></div>
+            <div style="margin-top:18px" class="viz-row"><div class="avt"></div>Launch narrative &amp; positioning<span class="badge">done</span></div>
+            <div class="viz-row"><div class="avt"></div>Risk &amp; dependency summary<span class="badge">done</span></div>
+            <div class="viz-row"><div class="avt"></div>Draft press paragraph<span class="badge">writing</span></div>
+          </div>
+        </div>
+        <div class="pane" data-p="1">
+          <div>
+            <h3>Pipelines that run themselves</h3>
+            <p>Compose triggers, actions and approvals into a visual flow. Cortex watches for the event and executes end-to-end, escalating only when a human is needed.</p>
+            <ul>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>200+ connectors and a typed webhook API</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Human-in-the-loop approval gates</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Full run history and replay</li>
+            </ul>
+          </div>
+          <div class="viz">
+            <div class="viz-row"><div class="avt"></div>Trigger — new support ticket<span class="badge">live</span></div>
+            <div class="viz-row"><div class="avt"></div>Classify &amp; route by intent<span class="badge">auto</span></div>
+            <div class="viz-row"><div class="avt"></div>Draft reply from playbook<span class="badge">auto</span></div>
+            <div class="viz-row"><div class="avt"></div>Send after human approval<span class="badge">gated</span></div>
+          </div>
+        </div>
+        <div class="pane" data-p="2">
+          <div>
+            <h3>Answers with a paper trail</h3>
+            <p>Ask across every system Cortex is connected to. It retrieves the exact passage, ranks by relevance, and never invents a source it can't point to.</p>
+            <ul>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Semantic search over private data</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Permission-aware — sees only what the user can</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Zero hallucinated citations, guaranteed</li>
+            </ul>
+          </div>
+          <div class="viz">
+            <div class="type-line">&gt; What did we promise Acme on SLA?</div>
+            <div style="margin-top:18px" class="viz-row"><div class="avt"></div>MSA_Acme_2026.pdf — p.4<span class="badge">98%</span></div>
+            <div class="viz-row"><div class="avt"></div>Renewal thread — 12 Jun<span class="badge">91%</span></div>
+            <div class="viz-row"><div class="avt"></div>Support tier config<span class="badge">84%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stats rv">
+      <div class="stat"><b>11.4h</b><span>saved per person / week</span></div>
+      <div class="stat"><b>3,200+</b><span>teams building on Cortex</span></div>
+      <div class="stat"><b>SOC 2</b><span>Type II certified</span></div>
+      <div class="stat"><b>99.98%</b><span>uptime last 12 months</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">Pricing</div>
+      <h2 class="sec-title">Start free. Scale when your team feels the lift.</h2>
+      <p class="sec-sub">Every plan includes private data isolation and unlimited teammates in read access.</p>
+    </div>
+    <div class="grid-price">
+      <div class="price-card rv">
+        <div class="tier">Starter</div>
+        <div class="amt">$0<span>/mo</span></div>
+        <div class="plan-sub">For individuals testing the water</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>500 AI actions / month</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>3 connected sources</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Community support</li>
+        </ul>
+        <a href="#cta" class="btn btn-ghost">Get started</a>
+      </div>
+      <div class="price-card feat rv">
+        <div class="tier">Team<span class="tag-pop">Popular</span></div>
+        <div class="amt">$29<span>/user·mo</span></div>
+        <div class="plan-sub">For teams shipping real work daily</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Unlimited AI actions</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Workflow automation &amp; connectors</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>SSO &amp; role-based permissions</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">Start 14-day trial</a>
+      </div>
+      <div class="price-card rv">
+        <div class="tier">Enterprise</div>
+        <div class="amt">Custom</div>
+        <div class="plan-sub">For regulated &amp; large orgs</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Private / VPC deployment</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Dedicated model isolation</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>SLA, audit logs &amp; DPA</li>
+        </ul>
+        <a href="#cta" class="btn btn-ghost">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cta">
+  <div class="wrap">
+    <div class="cta-band rv">
+      <h2>Give your team a second brain.</h2>
+      <p>Join 3,200+ teams who stopped doing busywork by hand. Set up in minutes, keep your data yours.</p>
+      <a href="#" class="btn btn-primary" style="padding:15px 30px;font-size:16px">Start free — no card required</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.4"/><circle cx="5" cy="6" r="1.6"/><circle cx="19" cy="6" r="1.6"/><circle cx="5" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/><path d="M6.5 6.8 10 10.6M17.5 6.8 14 10.6M6.5 17.2 10 13.4M17.5 17.2 14 13.4"/></svg>Cortex AI</div>
+        <p>Your team's second brain, always awake. Built for teams that would rather think than tread water.</p>
+      </div>
+      <div><h4>Product</h4><a href="#features">Features</a><a href="#capabilities">Capabilities</a><a href="#pricing">Pricing</a><a href="#">Changelog</a></div>
+      <div><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a><a href="#">Contact</a></div>
+      <div><h4>Trust</h4><a href="#">Security</a><a href="#">Privacy</a><a href="#">SOC 2</a><a href="#">Status</a></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 Cortex AI, Inc. All rights reserved.</span>
+      <span>Made for teams that think.</span>
+    </div>
+  </div>
+</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // headline reveal
+  window.addEventListener("load", function(){
+    var h = document.getElementById("head");
+    if(h){ setTimeout(function(){ h.classList.add("go"); }, 140); }
+  });
+
+  // reveal observer
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} });
+    },{threshold:0.14});
+    document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".rv").forEach(function(el){ el.classList.add("in"); });
+  }
+
+  // tabs
+  var tabs = document.querySelectorAll(".tab");
+  var panes = document.querySelectorAll(".pane");
+  tabs.forEach(function(t){
+    t.addEventListener("click", function(){
+      tabs.forEach(function(x){ x.setAttribute("aria-selected","false"); });
+      t.setAttribute("aria-selected","true");
+      var i = t.getAttribute("data-t");
+      panes.forEach(function(p){ p.classList.toggle("active", p.getAttribute("data-p")===i); });
+    });
+  });
+
+  // scroll progress + mouse
+  var scrollP = 0, mx = 0, my = 0, tmx = 0, tmy = 0;
+  function onScroll(){
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    scrollP = max>0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+  window.addEventListener("mousemove", function(e){
+    tmx = (e.clientX / window.innerWidth) * 2 - 1;
+    tmy = (e.clientY / window.innerHeight) * 2 - 1;
+  });
+
+  var webglOK = false;
+  try {
+    var tc = document.createElement("canvas");
+    webglOK = !!(window.THREE && (tc.getContext("webgl") || tc.getContext("experimental-webgl")));
+  } catch(e){ webglOK = false; }
+
+  function initFallback(){
+    var c = document.getElementById("fallback");
+    document.getElementById("webgl").style.display="none";
+    c.style.display="block";
+    var ctx = c.getContext("2d");
+    function size(){ c.width = window.innerWidth; c.height = window.innerHeight; }
+    size(); window.addEventListener("resize", size);
+    var blobs = [
+      {x:.3,y:.35,r:.5,h:"91,108,255"},
+      {x:.7,y:.6,r:.55,h:"150,120,240"},
+      {x:.5,y:.5,r:.4,h:"110,90,230"}
+    ];
+    function paint(t){
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.fillStyle="#0c0d1a"; ctx.fillRect(0,0,c.width,c.height);
+      blobs.forEach(function(b,i){
+        var x=(b.x+Math.sin(t/2400+i)*0.08)*c.width;
+        var y=(b.y+Math.cos(t/2000+i*1.7)*0.08)*c.height;
+        var r=b.r*Math.min(c.width,c.height);
+        var g=ctx.createRadialGradient(x,y,0,x,y,r);
+        g.addColorStop(0,"rgba("+b.h+",0.5)");
+        g.addColorStop(1,"rgba("+b.h+",0)");
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.29); ctx.fill();
+      });
+    }
+    if(reduce){ paint(0); return; }
+    (function loop(t){ paint(t); requestAnimationFrame(loop); })(0);
+  }
+
+  function init3D(){
+    var THREE = window.THREE;
+    var canvas = document.getElementById("webgl");
+    var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 100);
+    camera.position.z = 16;
+
+    var group = new THREE.Group();
+    scene.add(group);
+
+    // neural node positions (fibonacci sphere)
+    var N = 70;
+    var nodes = [];
+    var base = [];
+    for(var i=0;i<N;i++){
+      var y = 1 - (i/(N-1))*2;
+      var rad = Math.sqrt(1-y*y);
+      var theta = Math.PI*(3-Math.sqrt(5))*i;
+      var v = new THREE.Vector3(Math.cos(theta)*rad, y, Math.sin(theta)*rad).multiplyScalar(6.2);
+      base.push(v.clone());
+      nodes.push(v);
+    }
+
+    // orbs (additive sprites via points)
+    var pGeo = new THREE.BufferGeometry();
+    var pPos = new Float32Array(N*3);
+    for(var j=0;j<N;j++){ pPos[j*3]=nodes[j].x; pPos[j*3+1]=nodes[j].y; pPos[j*3+2]=nodes[j].z; }
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pPos,3));
+    // circular sprite texture
+    var cnv = document.createElement("canvas"); cnv.width=cnv.height=64;
+    var cx = cnv.getContext("2d");
+    var gg = cx.createRadialGradient(32,32,0,32,32,32);
+    gg.addColorStop(0,"rgba(200,205,255,1)");
+    gg.addColorStop(0.3,"rgba(120,135,255,0.9)");
+    gg.addColorStop(1,"rgba(90,108,255,0)");
+    cx.fillStyle=gg; cx.beginPath(); cx.arc(32,32,32,0,6.29); cx.fill();
+    var sprite = new THREE.Texture(cnv); sprite.needsUpdate=true;
+    var pMat = new THREE.PointsMaterial({size:1.5, map:sprite, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, color:0xffffff});
+    var points = new THREE.Points(pGeo, pMat);
+    group.add(points);
+
+    // synapse threads: connect near neighbors
+    var linePos = [];
+    var pairs = [];
+    for(var a=0;a<N;a++){
+      for(var b=a+1;b<N;b++){
+        if(nodes[a].distanceTo(nodes[b]) < 3.0){
+          pairs.push([a,b]);
+          linePos.push(nodes[a].x,nodes[a].y,nodes[a].z, nodes[b].x,nodes[b].y,nodes[b].z);
+        }
+      }
+    }
+    var lGeo = new THREE.BufferGeometry();
+    var lArr = new Float32Array(linePos);
+    lGeo.setAttribute("position", new THREE.BufferAttribute(lArr,3));
+    var lMat = new THREE.LineBasicMaterial({color:0x6b78ff, transparent:true, opacity:0.22, blending:THREE.AdditiveBlending, depthWrite:false});
+    var lines = new THREE.LineSegments(lGeo, lMat);
+    group.add(lines);
+
+    // firing pulse orb travelling
+    var pulseGeo = new THREE.BufferGeometry();
+    pulseGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(3),3));
+    var pulseMat = new THREE.PointsMaterial({size:2.6, map:sprite, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, color:0xbfc8ff});
+    var pulse = new THREE.Points(pulseGeo, pulseMat);
+    group.add(pulse);
+
+    function resize(){
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener("resize", resize);
+
+    var clock = new THREE.Clock();
+
+    function frame(){
+      var t = clock.getElapsedTime();
+      // morph nodes toward mouse influence
+      var attractX = tmx*4, attractY = -tmy*4;
+      var arr = pGeo.attributes.position.array;
+      for(var k=0;k<N;k++){
+        var bv = base[k];
+        var wob = Math.sin(t*0.9 + k*0.6)*0.18;
+        var dx = attractX - bv.x, dy = attractY - bv.y;
+        var pull = 0.35 / (1 + (dx*dx+dy*dy)*0.03);
+        arr[k*3]   = bv.x + dx*pull + wob;
+        arr[k*3+1] = bv.y + dy*pull + wob;
+        arr[k*3+2] = bv.z + Math.cos(t*0.8+k)*0.18;
+      }
+      pGeo.attributes.position.needsUpdate = true;
+
+      // update lines to follow moved nodes
+      var la = lGeo.attributes.position.array;
+      for(var p=0;p<pairs.length;p++){
+        var ia=pairs[p][0], ib=pairs[p][1];
+        la[p*6]=arr[ia*3]; la[p*6+1]=arr[ia*3+1]; la[p*6+2]=arr[ia*3+2];
+        la[p*6+3]=arr[ib*3]; la[p*6+4]=arr[ib*3+1]; la[p*6+5]=arr[ib*3+2];
+      }
+      lGeo.attributes.position.needsUpdate = true;
+
+      // firing pulse travels along a pair, sequenced
+      if(pairs.length){
+        var seg = Math.floor(t*1.4) % pairs.length;
+        var f = (t*1.4) % 1;
+        var ia2=pairs[seg][0], ib2=pairs[seg][1];
+        var pa = pulseGeo.attributes.position.array;
+        pa[0]=arr[ia2*3]+(arr[ib2*3]-arr[ia2*3])*f;
+        pa[1]=arr[ia2*3+1]+(arr[ib2*3+1]-arr[ia2*3+1])*f;
+        pa[2]=arr[ia2*3+2]+(arr[ib2*3+2]-arr[ia2*3+2])*f;
+        pulseGeo.attributes.position.needsUpdate=true;
+      }
+
+      // mouse parallax camera + scroll drive
+      mx += (tmx - mx)*0.05; my += (tmy - my)*0.05;
+      camera.position.x = mx*3.2;
+      camera.position.y = -my*2.4;
+      camera.lookAt(0,0,0);
+
+      group.rotation.y = t*0.12 + mx*0.4 + scrollP*Math.PI*1.4;
+      group.rotation.x = my*0.25 + scrollP*0.6;
+      var sc = 1 - scrollP*0.28;
+      group.scale.setScalar(sc);
+      // color drift on scroll
+      var hue = 0.66 - scrollP*0.10;
+      lMat.color.setHSL(hue,0.9,0.62);
+      lMat.opacity = 0.22 - scrollP*0.10;
+
+      renderer.render(scene,camera);
+    }
+
+    if(reduce){ frame(); return; }
+    (function loop(){ frame(); requestAnimationFrame(loop); })();
+  }
+
+  if(webglOK){
+    try { init3D(); } catch(err){ initFallback(); }
+  } else {
+    initFallback();
+  }
+})();
+</script>
+</body>
+</html>

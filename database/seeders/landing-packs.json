@@ -1,0 +1,98 @@
+[
+  {
+    "slug": "dental-clinic-landing",
+    "title": "Lumen Dental Studio \u2014 Medical / Dental Landing",
+    "tagline": "Calm, precise, remarkably human dentistry.",
+    "description": "A premium, award-tier landing page for a modern dental practice, built as a single self-contained HTML file. It features a scroll-driven WebGL scene of a rotating tooth that dissolves into a translucent, layered cross-section amid drifting particles, plus glassmorphism panels, a kinetic headline reveal, and an interactive treatments explorer with live pricing.",
+    "category": "landing",
+    "tags": [
+      "dental",
+      "webgl",
+      "healthcare",
+      "glassmorphism"
+    ],
+    "price_prompt": 5,
+    "price_design": 11,
+    "price_bundle": 14
+  },
+  {
+    "slug": "fine-dining-landing",
+    "title": "Ember &amp; Oak \u2014 Restaurant / Hospitality Landing",
+    "tagline": "Fire, patience, and one unforgettable table.",
+    "description": "A premium, award-tier landing page for a live-fire fine dining restaurant, built as a single self-contained HTML file. The hero features a scroll-driven, mouse-parallax WebGL scene of a slowly rotating signature plate with a subsurface-glow food dome and rising additive steam, backed by glassmorphism panels, an interactive seasonal menu with course tabs, and kinetic headline motion \u2014 all in an ember-orange-on-espresso palette using OKLCH color.",
+    "category": "landing",
+    "tags": [
+      "restaurant",
+      "webgl",
+      "hospitality",
+      "landing-page"
+    ],
+    "price_prompt": 5,
+    "price_design": 11,
+    "price_bundle": 14
+  },
+  {
+    "slug": "web3-protocol-landing",
+    "title": "Nexus Protocol \u2014 Crypto / Web3 Landing",
+    "tagline": "The settlement layer for a borderless economy.",
+    "description": "A premium, dark, award-tier landing page for Nexus Protocol, a fictional Web3 settlement layer. It pairs a scroll-reactive WebGL blockchain graph \u2014 a fresnel-lit wireframe icosahedron with orbiting satellite nodes and data packets traveling its edges \u2014 with glassmorphism panels, a kinetic headline, and an interactive network-stack tab explorer. Fully self-contained in one HTML file with a canvas aurora fallback and reduced-motion support.",
+    "category": "landing",
+    "tags": [
+      "web3",
+      "crypto",
+      "webgl",
+      "landing-page"
+    ],
+    "price_prompt": 5,
+    "price_design": 11,
+    "price_bundle": 14
+  },
+  {
+    "slug": "fintech-vault-landing",
+    "title": "Meridian Pay \u2014 Fintech / Digital Banking Landing",
+    "tagline": "Money that moves at the speed of intent.",
+    "description": "A premium, award-tier dark landing page for Meridian Pay, a fictional neobank. The hero features a scroll- and cursor-driven WebGL scene of a slowly rotating brushed-metal credit card with fresnel-rim shading and additive ribbons of transaction light streaming from its chip, backed by a live fee calculator with tabs and glassmorphism throughout. Built as one self-contained HTML file with a Canvas aurora fallback and full prefers-reduced-motion support.",
+    "category": "landing",
+    "tags": [
+      "fintech",
+      "webgl",
+      "dark",
+      "glassmorphism"
+    ],
+    "price_prompt": 5,
+    "price_design": 11,
+    "price_bundle": 14
+  },
+  {
+    "slug": "ai-saas-landing",
+    "title": "Cortex AI \u2014 SaaS / AI Tool Landing",
+    "tagline": "Your team's second brain, always awake.",
+    "description": "A premium, dark, award-tier landing page for Cortex AI, a fictional B2B AI productivity tool. It features a live WebGL neural-network brain of glowing orbs and firing synapse threads that morph toward the cursor and respond to scroll, glassmorphism panels in a vivid-indigo palette, a kinetic headline reveal, and a genuinely interactive capabilities tab widget. Built as one self-contained HTML file for startup founders and B2B agencies who need a conversion-focused launch page.",
+    "category": "landing",
+    "tags": [
+      "saas",
+      "ai",
+      "webgl",
+      "dark-mode"
+    ],
+    "price_prompt": 5,
+    "price_design": 11,
+    "price_bundle": 14
+  },
+  {
+    "slug": "luxury-estate-landing",
+    "title": "Aureline Residences \u2014 Luxury Real Estate Landing",
+    "tagline": "Homes that answer to no one but the light.",
+    "description": "A premium, award-tier WebGL landing page for a boutique luxury property studio. A cinematic 3D villa assembles floor-by-floor as you scroll while a real-time sun casts moving shadows across the terraces and a glass pool reflects the sky. Editorial champagne-gold-on-charcoal design with glassmorphism panels, a kinetic headline, an interactive dawn/noon/dusk light-tour, and a full Canvas aurora fallback.",
+    "category": "landing",
+    "tags": [
+      "luxury-real-estate",
+      "webgl",
+      "three-js",
+      "premium-landing"
+    ],
+    "price_prompt": 5,
+    "price_design": 11,
+    "price_bundle": 14
+  }
+]

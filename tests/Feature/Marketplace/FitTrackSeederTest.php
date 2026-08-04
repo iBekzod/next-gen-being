@@ -65,6 +65,27 @@ class FitTrackSeederTest extends TestCase
         Storage::disk('private')->assertExists($bundle->file_path);
     }
 
+    public function test_landing_packs_seeder_creates_products_with_demos_and_bundles(): void
+    {
+        Storage::fake('public');
+        Storage::fake('private');
+
+        (new \Database\Seeders\LandingPacksSeeder())->run();
+
+        $manifest = database_path('seeders/landing-packs.json');
+        $expected = json_decode(file_get_contents($manifest), true) ?: [];
+        $this->assertGreaterThanOrEqual(6, count($expected));
+
+        foreach ($expected as $p) {
+            $listing = MarketplaceListing::where('slug', $p['slug'])->first();
+            $this->assertNotNull($listing, "missing listing for {$p['slug']}");
+            $this->assertSame('published', $listing->status);
+            Storage::disk('public')->assertExists("demos/{$p['slug']}/index.html");
+            $bundle = $listing->tiers()->where('tier', 'bundle')->first();
+            $this->assertNotEmpty($bundle->file_path, "bundle missing for {$p['slug']}");
+        }
+    }
+
     public function test_all_first_party_seeders_produce_published_listings_with_demos(): void
     {
         Storage::fake('public');

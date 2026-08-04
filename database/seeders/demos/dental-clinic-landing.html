@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Dental Studio — Calm, precise, remarkably human dentistry</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --accent: oklch(0.72 0.14 235);
+  --accent-soft: oklch(0.82 0.10 175);
+  --bg: oklch(0.17 0.024 240);
+  --bg-2: oklch(0.21 0.03 238);
+  --ink: oklch(0.97 0.01 235);
+  --muted: oklch(0.72 0.02 235);
+  --line: oklch(0.98 0.01 235 / 0.10);
+  --glass: oklch(0.30 0.03 238 / 0.42);
+  --glass-2: oklch(0.28 0.03 238 / 0.55);
+  --shadow: 0 30px 80px -30px oklch(0.10 0.05 240 / 0.75);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background: var(--bg); color: var(--ink);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; line-height:1.55;
+}
+canvas#webgl,canvas#fallback{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
+.veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 70% 20%, transparent 40%, oklch(0.14 0.02 240 / 0.55) 100%),
+    radial-gradient(80% 60% at 20% 90%, oklch(0.72 0.14 235 / 0.10), transparent 60%);
+}
+.page{position:relative;z-index:2}
+.wrap{width:min(1160px,92vw);margin:0 auto}
+a{color:inherit;text-decoration:none}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:20;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:oklch(0.18 0.02 240 / 0.55);border-bottom:1px solid var(--line);}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-0.03em;font-size:18px}
+.logo .mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--accent),var(--accent-soft));color:oklch(0.16 0.02 240)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{color:var(--muted);font-size:14.5px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;
+  padding:10px 18px;border-radius:11px;cursor:pointer;border:1px solid transparent;
+  transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .25s,background .2s}
+.btn-primary{background:linear-gradient(150deg,var(--accent),var(--accent-soft));color:oklch(0.16 0.03 240);
+  box-shadow:0 10px 30px -10px var(--accent)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -12px var(--accent)}
+.btn-ghost{background:var(--glass);color:var(--ink);border:1px solid var(--line);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.btn-ghost:hover{transform:translateY(-2px);background:var(--glass-2)}
+@media(max-width:720px){.nav-links a:not(.btn){display:none}}
+
+/* HERO */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:120px 0 90px;position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:100px;
+  background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px);
+  font-size:13px;font-weight:600;color:var(--accent-soft);letter-spacing:.01em;margin-bottom:28px}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-soft);
+  box-shadow:0 0 12px var(--accent-soft)}
+h1{font-weight:800;letter-spacing:-0.045em;line-height:0.98;
+  font-size:clamp(2.6rem,7.2vw,5.4rem);max-width:14ch}
+.line{display:block;overflow:hidden}
+.line>span{display:block;transform:translateY(112%);
+  transition:transform .95s cubic-bezier(.16,1,.3,1)}
+.go .line>span{transform:translateY(0)}
+.go .line:nth-child(2)>span{transition-delay:.10s}
+h1 .grad{background:linear-gradient(120deg,var(--accent) 10%,var(--accent-soft));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:clamp(1.02rem,1.7vw,1.24rem);max-width:52ch;margin:30px auto 0;font-weight:400}
+.cta-row{display:flex;gap:14px;justify-content:center;margin-top:38px;flex-wrap:wrap}
+.cta-row .btn{padding:13px 24px;font-size:15.5px}
+.scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:12px;
+  letter-spacing:.14em;text-transform:uppercase}
+.scroll-hint .mouse{width:22px;height:34px;border:1.6px solid var(--line);border-radius:12px;position:relative}
+.scroll-hint .mouse::after{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
+  width:3px;height:6px;border-radius:2px;background:var(--accent-soft);animation:sweep 1.8s infinite}
+@keyframes sweep{0%{opacity:0;transform:translate(-50%,0)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,10px)}}
+
+/* SECTIONS */
+section{padding:100px 0;position:relative}
+.tag{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-soft)}
+h2{font-weight:800;letter-spacing:-0.038em;line-height:1.03;font-size:clamp(2rem,4.4vw,3.1rem);margin:14px 0 0;max-width:18ch}
+.sec-lead{color:var(--muted);margin-top:16px;max-width:56ch;font-size:1.05rem}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px}
+@media(max-width:860px){.grid3{grid-template-columns:1fr}}
+.card{padding:30px;border-radius:20px;background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--shadow);
+  transition:transform .3s cubic-bezier(.2,.7,.3,1),border-color .3s,background .3s}
+.card:hover{transform:translateY(-6px);border-color:oklch(0.72 0.14 235 / 0.4);background:var(--glass-2)}
+.icon{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;margin-bottom:20px;
+  background:oklch(0.72 0.14 235 / 0.14);border:1px solid oklch(0.72 0.14 235 / 0.28);color:var(--accent-soft)}
+.card h3{font-size:1.28rem;font-weight:700;letter-spacing:-0.02em}
+.card p{color:var(--muted);margin-top:10px;font-size:.98rem}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1)}
+.rv.in{opacity:1;transform:none}
+
+/* TREATMENTS interactive */
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:44px}
+.tab{padding:11px 20px;border-radius:12px;border:1px solid var(--line);background:var(--glass);
+  color:var(--muted);font-weight:600;font-size:14.5px;cursor:pointer;transition:all .22s}
+.tab:hover{color:var(--ink)}
+.tab.active{color:oklch(0.16 0.03 240);background:linear-gradient(150deg,var(--accent),var(--accent-soft));border-color:transparent}
+.panel{margin-top:28px;padding:34px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:var(--shadow);
+  display:grid;grid-template-columns:1.3fr 1fr;gap:34px;align-items:center}
+@media(max-width:780px){.panel{grid-template-columns:1fr}}
+.panel h3{font-size:1.6rem;font-weight:800;letter-spacing:-0.03em}
+.panel p{color:var(--muted);margin-top:12px}
+.panel ul{list-style:none;margin-top:20px;display:grid;gap:12px}
+.panel li{display:flex;gap:11px;align-items:flex-start;font-size:.98rem;color:var(--ink)}
+.panel li svg{color:var(--accent-soft);flex-shrink:0;margin-top:2px}
+.price-box{padding:26px;border-radius:18px;background:oklch(0.72 0.14 235 / 0.10);border:1px solid oklch(0.72 0.14 235 / 0.26);text-align:center}
+.price-box .from{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.price-box .amt{font-size:2.8rem;font-weight:800;letter-spacing:-0.04em;margin:6px 0}
+.price-box .amt span{font-size:1.1rem;color:var(--muted);font-weight:600}
+.price-box small{color:var(--muted);display:block;margin-bottom:18px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:52px}
+@media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:26px;border-radius:18px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px)}
+.stat .n{font-size:2.4rem;font-weight:800;letter-spacing:-0.04em;
+  background:linear-gradient(120deg,var(--accent),var(--accent-soft));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .l{color:var(--muted);font-size:.92rem;margin-top:4px}
+
+/* CTA band */
+.cta-band{margin:40px 0 0;padding:64px 44px;border-radius:28px;text-align:center;
+  background:linear-gradient(150deg,oklch(0.30 0.06 235 / 0.6),oklch(0.28 0.05 175 / 0.4));
+  border:1px solid oklch(0.72 0.14 235 / 0.3);backdrop-filter:blur(18px);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.cta-band::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 120% at 50% 0%,oklch(0.72 0.14 235 / 0.22),transparent 70%)}
+.cta-band>*{position:relative}
+.cta-band h2{margin:0 auto;max-width:20ch}
+.cta-band p{color:var(--muted);margin:16px auto 30px;max-width:48ch}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:56px 0 40px;margin-top:40px;
+  background:oklch(0.16 0.02 240 / 0.5);backdrop-filter:blur(12px)}
+.foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.foot-col h4{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:14px}
+.foot-col a{display:block;color:var(--muted);font-size:14.5px;margin-bottom:9px;transition:color .2s}
+.foot-col a:hover{color:var(--ink)}
+.foot-brand{max-width:280px}
+.foot-brand p{color:var(--muted);font-size:14px;margin-top:14px}
+.foot-bottom{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13.5px}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .line>span{transform:none!important}
+}
+</style>
+</head>
+<body>
+<canvas id="webgl"></canvas>
+<canvas id="fallback" style="display:none"></canvas>
+<div class="veil"></div>
+
+<div class="page">
+<nav>
+  <div class="wrap nav-in">
+    <a class="logo" href="#top">
+      <span class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 0-4 1.6-4 4 0 2.4-.8 3.2-.8 6.4 0 3 .9 7 2.3 7 1 0 1-2.4 1.5-4 .3-1 .6-1.4 1-1.4s.7.4 1 1.4c.5 1.6.5 4 1.5 4 1.4 0 2.3-4 2.3-7 0-3.2-.8-4-.8-6.4 0-2.4-1-4-4-4Z"/></svg>
+      </span>
+      Lumen Dental
+    </a>
+    <div class="nav-links">
+      <a href="#care">Care</a>
+      <a href="#treatments">Treatments</a>
+      <a href="#trust">Why Lumen</a>
+      <a class="btn btn-primary" href="#book">Book a visit</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span>Now accepting new patients in 2026</span>
+    <h1 id="head">
+      <span class="line"><span>The visit you'll</span></span>
+      <span class="line"><span class="grad">actually look forward to.</span></span>
+    </h1>
+    <p class="lead">Gentle care, world-class results. Lumen Dental Studio pairs calm, unhurried appointments with digital, near-painless technology, so a healthier smile finally feels effortless.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#book">Book your first visit
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="#treatments">Explore treatments</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><span class="mouse"></span>Scroll to explore</div>
+</header>
+
+<section id="care">
+  <div class="wrap">
+    <div class="rv">
+      <span class="tag">A better standard of care</span>
+      <h2>Everything about a dental visit, quietly reinvented.</h2>
+      <p class="sec-lead">From the moment you book to the moment you leave, every detail is designed to lower your heart rate, not raise it.</p>
+    </div>
+    <div class="grid3">
+      <div class="card rv">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><path d="M16 2v4M8 2v4M3 10h18M9 15l2 2 3.5-3.5"/></svg>
+        </div>
+        <h3>Online Booking</h3>
+        <p>Pick a slot in seconds with live availability, automatic reminders, and no phone tag with the front desk.</p>
+      </div>
+      <div class="card rv">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 12.5a1 1 0 0 0 .8 1.6H11l-1 7.9 8.5-11.5a1 1 0 0 0-.8-1.6H12l1-6.9Z"/></svg>
+        </div>
+        <h3>Painless Technology</h3>
+        <p>Digital scanning and laser treatments mean fewer needles, quicker visits, and results you can preview first.</p>
+      </div>
+      <div class="card rv">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h3>Transparent Pricing</h3>
+        <p>Every treatment plan comes with clear costs and financing options up front, so there are no billing surprises.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="treatments">
+  <div class="wrap">
+    <div class="rv">
+      <span class="tag">Treatments</span>
+      <h2>Choose your care. See the plan and the price.</h2>
+      <p class="sec-lead">Tap a treatment to see what it includes and exactly what it costs. No hidden fees, ever.</p>
+    </div>
+    <div class="tabs rv" id="tabs">
+      <button class="tab active" data-i="0">Routine &amp; Hygiene</button>
+      <button class="tab" data-i="1">Invisible Aligners</button>
+      <button class="tab" data-i="2">Implants</button>
+      <button class="tab" data-i="3">Whitening</button>
+    </div>
+    <div class="panel rv" id="panel"></div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap">
+    <div class="rv">
+      <span class="tag">Why Lumen</span>
+      <h2>Trusted by thousands of calmer smiles.</h2>
+    </div>
+    <div class="stats">
+      <div class="stat rv"><div class="n">12k+</div><div class="l">Patients cared for since 2016</div></div>
+      <div class="stat rv"><div class="n">4.9</div><div class="l">Average rating across 2,300 reviews</div></div>
+      <div class="stat rv"><div class="n">0</div><div class="l">Hidden fees on any treatment plan</div></div>
+      <div class="stat rv"><div class="n">98%</div><div class="l">Say a visit felt calmer than expected</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="book" style="padding-top:20px">
+  <div class="wrap">
+    <div class="cta-band rv">
+      <h2>The visit you'll actually look forward to.</h2>
+      <p>Book online in under a minute and get a confirmed appointment with a real reminder, not a runaround. Your first exam and digital scan are complimentary.</p>
+      <div class="cta-row" style="margin-top:6px">
+        <a class="btn btn-primary" href="#top">Book a free first visit
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#treatments">Call the studio</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="logo" href="#top"><span class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 0-4 1.6-4 4 0 2.4-.8 3.2-.8 6.4 0 3 .9 7 2.3 7 1 0 1-2.4 1.5-4 .3-1 .6-1.4 1-1.4s.7.4 1 1.4c.5 1.6.5 4 1.5 4 1.4 0 2.3-4 2.3-7 0-3.2-.8-4-.8-6.4 0-2.4-1-4-4-4Z"/></svg></span>Lumen Dental</a>
+        <p>Calm, precise, remarkably human dentistry. 210 Marlowe Street, Suite 4, Portland.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Care</h4>
+        <a href="#care">Routine &amp; Hygiene</a>
+        <a href="#treatments">Invisible Aligners</a>
+        <a href="#treatments">Implants</a>
+        <a href="#treatments">Whitening</a>
+      </div>
+      <div class="foot-col">
+        <h4>Studio</h4>
+        <a href="#trust">Why Lumen</a>
+        <a href="#book">Book a visit</a>
+        <a href="#top">New patients</a>
+        <a href="#top">Financing</a>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <a href="#top">hello@lumendental.co</a>
+        <a href="#top">(503) 555-0142</a>
+        <a href="#top">Mon–Fri, 8–6</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Lumen Dental Studio. All rights reserved.</span>
+      <span>Privacy · Terms · Accessibility</span>
+    </div>
+  </div>
+</footer>
+</div>
+
+<script>
+/* ---------- Interactive treatments ---------- */
+var TREATMENTS=[
+  {t:"Routine & Hygiene",d:"A gentle, thorough exam with a digital scan and a professional clean, all in one calm visit.",
+   li:["Full digital X-ray and intraoral scan","Ultrasonic clean and polish","Personalised prevention plan"],from:"89",unit:"/ visit"},
+  {t:"Invisible Aligners",d:"Clear, custom aligners you can preview in 3D before you ever start, straightening quietly on your schedule.",
+   li:["3D smile preview before you commit","Remote check-ins between visits","Retainers included for the first year"],from:"1,900",unit:"full plan"},
+  {t:"Dental Implants",d:"A permanent, natural-feeling replacement placed with guided precision and minimal discomfort.",
+   li:["Guided, near-painless placement","Titanium post and custom crown","10-year workmanship guarantee"],from:"2,400",unit:"per tooth"},
+  {t:"Whitening",d:"Brighten several shades in a single session with enamel-safe light whitening, results you can see the same day.",
+   li:["Enamel-safe, sensitivity-tested gel","Same-day, several-shade lift","Top-up kit to take home"],from:"249",unit:"/ session"}
+];
+function checkIcon(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';}
+function renderPanel(i){
+  var x=TREATMENTS[i];
+  document.getElementById('panel').innerHTML=
+    '<div><h3>'+x.t+'</h3><p>'+x.d+'</p><ul>'+
+    x.li.map(function(l){return '<li>'+checkIcon()+'<span>'+l+'</span></li>';}).join('')+
+    '</ul></div>'+
+    '<div class="price-box"><div class="from">From</div><div class="amt">$'+x.from+' <span>'+x.unit+'</span></div>'+
+    '<small>Interest-free financing available</small>'+
+    '<a class="btn btn-primary" href="#book" style="width:100%;justify-content:center">Book this treatment</a></div>';
+}
+(function(){
+  var tabs=document.querySelectorAll('#tabs .tab');
+  tabs.forEach(function(b){b.addEventListener('click',function(){
+    tabs.forEach(function(o){o.classList.remove('active');});
+    b.classList.add('active');renderPanel(+b.dataset.i);
+  });});
+  renderPanel(0);
+})();
+
+/* ---------- Reveal ---------- */
+var REDUCE=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){
+  var els=document.querySelectorAll('.rv');
+  if(REDUCE||!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}
+  var io=new IntersectionObserver(function(en){en.forEach(function(e){
+    if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.14});
+  els.forEach(function(e){io.observe(e);});
+})();
+
+/* ---------- Headline kinetic reveal ---------- */
+window.addEventListener('load',function(){
+  if(REDUCE){document.getElementById('head').classList.add('go');return;}
+  setTimeout(function(){document.getElementById('head').classList.add('go');},140);
+});
+
+/* ---------- Scroll progress + mouse ---------- */
+var scrollP=0,mx=0,my=0,tmx=0,tmy=0;
+function onScroll(){var h=document.documentElement.scrollHeight-window.innerHeight;
+  scrollP=h>0?Math.min(1,Math.max(0,window.scrollY/h)):0;}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+window.addEventListener('mousemove',function(e){
+  tmx=(e.clientX/window.innerWidth-0.5)*2;tmy=(e.clientY/window.innerHeight-0.5)*2;});
+
+/* ---------- 3D scene: rotating tooth + drifting particles ---------- */
+function init3D(){
+  var canvas=document.getElementById('webgl');
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
+  camera.position.set(0,0,6);
+
+  // Tooth-like form: a rounded, tapered body built from a lathe profile.
+  var pts=[];
+  for(var i=0;i<=14;i++){
+    var t=i/14, ang=t*Math.PI;
+    var r=0.05+Math.sin(ang)*1.05*(0.7+0.3*Math.cos(t*Math.PI*0.6));
+    var y=1.5-t*3.0;
+    pts.push(new THREE.Vector2(Math.max(0.04,r*(1-0.35*t)),y));
+  }
+  var toothGeo=new THREE.LatheGeometry(pts,48);
+  toothGeo.computeVertexNormals();
+
+  var uniforms={uTime:{value:0},uProg:{value:0},
+    uColA:{value:new THREE.Color(0.29,0.66,0.88)},
+    uColB:{value:new THREE.Color(0.72,0.92,0.86)}};
+  var toothMat=new THREE.ShaderMaterial({
+    uniforms:uniforms,transparent:true,
+    vertexShader:[
+      'varying vec3 vN;varying vec3 vView;varying float vY;',
+      'void main(){vN=normalize(normalMatrix*normal);',
+      'vec4 mv=modelViewMatrix*vec4(position,1.0);vView=normalize(-mv.xyz);',
+      'vY=position.y;gl_Position=projectionMatrix*mv;}'
+    ].join('\n'),
+    fragmentShader:[
+      'uniform float uTime;uniform float uProg;uniform vec3 uColA;uniform vec3 uColB;',
+      'varying vec3 vN;varying vec3 vView;varying float vY;',
+      'void main(){float fres=pow(1.0-max(dot(vN,vView),0.0),2.2);',
+      'float layer=0.5+0.5*sin(vY*3.5+uTime*0.6);',
+      'vec3 base=mix(uColA,uColB,layer*0.6+uProg*0.3);',
+      'vec3 col=base+fres*vec3(0.55,0.75,0.9)*1.4;',
+      'float alpha=0.30+fres*0.7;',
+      'alpha=mix(alpha,0.20+fres*0.6,uProg);',
+      'gl_FragColor=vec4(col,alpha);}'
+    ].join('\n')
+  });
+  var tooth=new THREE.Mesh(toothGeo,toothMat);
+  scene.add(tooth);
+
+  // wireframe cross-section shell
+  var shell=new THREE.Mesh(toothGeo.clone(),new THREE.MeshBasicMaterial({
+    color:0x8fe3d6,wireframe:true,transparent:true,opacity:0.10}));
+  shell.scale.setScalar(1.015);scene.add(shell);
+
+  // drifting particles (air / cleanliness)
+  var N=900,pos=new Float32Array(N*3),spd=new Float32Array(N);
+  for(var p=0;p<N;p++){
+    pos[p*3]=(Math.random()-0.5)*14;
+    pos[p*3+1]=(Math.random()-0.5)*12;
+    pos[p*3+2]=(Math.random()-0.5)*8;
+    spd[p]=0.2+Math.random()*0.6;
+  }
+  var pGeo=new THREE.BufferGeometry();
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  var pMat=new THREE.PointsMaterial({color:0xbfe6ff,size:0.045,transparent:true,
+    opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false});
+  var particles=new THREE.Points(pGeo,pMat);scene.add(particles);
+
+  var light=new THREE.PointLight(0x9fdcff,1.4);light.position.set(4,6,6);scene.add(light);
+  scene.add(new THREE.AmbientLight(0x3a5a7a,0.6));
+
+  var clock=new THREE.Clock();
+  function resize(){renderer.setSize(window.innerWidth,window.innerHeight);
+    camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();}
+  window.addEventListener('resize',resize);
+
+  function frame(once){
+    var el=clock.getElapsedTime();
+    uniforms.uTime.value=el;uniforms.uProg.value=scrollP;
+    mx+=(tmx-mx)*0.05;my+=(tmy-my)*0.05;
+    tooth.rotation.y=el*0.35+scrollP*Math.PI*1.5;
+    tooth.rotation.x=Math.sin(el*0.4)*0.12+my*0.3;
+    tooth.rotation.z=mx*0.12;
+    shell.rotation.copy(tooth.rotation);
+    var s=1+scrollP*0.35;tooth.scale.setScalar(s);shell.scale.setScalar(s*1.015);
+    shell.material.opacity=0.10+scrollP*0.35;
+    particles.rotation.y=el*0.04;
+    var pa=pGeo.attributes.position.array;
+    for(var p=0;p<N;p++){pa[p*3+1]+=spd[p]*0.006;if(pa[p*3+1]>6)pa[p*3+1]=-6;}
+    pGeo.attributes.position.needsUpdate=true;
+    camera.position.x+=(mx*0.8-camera.position.x)*0.05;
+    camera.position.y+=(-my*0.6-camera.position.y)*0.05;
+    camera.position.z=6-scrollP*1.2;
+    camera.lookAt(0,0,0);
+    renderer.render(scene,camera);
+    if(!once)requestAnimationFrame(function(){frame(false);});
+  }
+  if(REDUCE)frame(true);else frame(false);
+}
+
+/* ---------- Fallback aurora ---------- */
+function initFallback(){
+  var c=document.getElementById('webgl');if(c)c.style.display='none';
+  var fb=document.getElementById('fallback');fb.style.display='block';
+  var ctx=fb.getContext('2d');
+  function size(){fb.width=window.innerWidth;fb.height=window.innerHeight;}
+  size();window.addEventListener('resize',size);
+  var blobs=[
+    {x:.3,y:.35,r:.4,c:'74,168,224'},
+    {x:.7,y:.5,r:.5,c:'143,227,214'},
+    {x:.5,y:.75,r:.45,c:'110,180,235'}
+  ];
+  function draw(t){
+    ctx.clearRect(0,0,fb.width,fb.height);
+    ctx.fillStyle='#14202f';ctx.fillRect(0,0,fb.width,fb.height);
+    blobs.forEach(function(b,i){
+      var x=(b.x+Math.sin(t*0.0003+i)*0.08)*fb.width;
+      var y=(b.y+Math.cos(t*0.00025+i*1.5)*0.08)*fb.height;
+      var rad=b.r*Math.min(fb.width,fb.height);
+      var g=ctx.createRadialGradient(x,y,0,x,y,rad);
+      g.addColorStop(0,'rgba('+b.c+',0.5)');g.addColorStop(1,'rgba('+b.c+',0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,fb.width,fb.height);
+    });
+    if(!REDUCE)requestAnimationFrame(draw);
+  }
+  draw(0);
+}
+
+/* ---------- feature detect ---------- */
+(function(){
+  var ok=false;
+  try{var t=document.createElement('canvas');
+    ok=!!window.THREE&&!!(t.getContext('webgl')||t.getContext('experimental-webgl'));
+  }catch(e){ok=false;}
+  if(ok){try{init3D();}catch(e){initFallback();}}else{initFallback();}
+})();
+</script>
+</body>
+</html>

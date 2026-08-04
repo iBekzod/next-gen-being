@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexus Protocol — The settlement layer for a borderless economy</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --hue:262;
+  --accent: oklch(0.68 0.22 var(--hue));
+  --accent2: oklch(0.80 0.16 205);
+  --bg: oklch(0.14 0.03 var(--hue));
+  --bg2: oklch(0.10 0.025 var(--hue));
+  --ink: oklch(0.97 0.01 var(--hue));
+  --muted: oklch(0.72 0.02 var(--hue));
+  --faint: oklch(0.60 0.02 var(--hue));
+  --glass: oklch(0.22 0.03 var(--hue) / .38);
+  --glass2: oklch(0.26 0.03 var(--hue) / .30);
+  --hair: oklch(0.90 0.02 var(--hue) / .12);
+  --hair2: oklch(0.90 0.02 var(--hue) / .06);
+  --maxw: 1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg2);
+  color: var(--ink);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+canvas#webgl,canvas#fallback{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
+.veil{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, oklch(0.68 0.22 var(--hue) / .18), transparent 55%),
+    radial-gradient(90% 70% at 85% 20%, oklch(0.80 0.16 205 / .12), transparent 50%),
+    linear-gradient(180deg, transparent 40%, var(--bg2) 96%);
+}
+.page{position:relative;z-index:2}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:inherit;text-decoration:none}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  background: oklch(0.12 0.03 var(--hue) / .55);
+  border-bottom:1px solid var(--hair2);
+}
+.nav-in{max-width:var(--maxw);margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:32px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-0.02em;font-size:17px}
+.brand .mark{width:26px;height:26px;color:var(--accent)}
+.nav-links{display:flex;gap:26px;margin-left:auto;font-size:14px;color:var(--muted)}
+.nav-links a{transition:color .2s}
+.nav-links a:hover{color:var(--ink)}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;
+  padding:10px 18px;border-radius:11px;border:1px solid var(--hair);
+  transition:transform .2s cubic-bezier(.2,.7,.3,1), box-shadow .3s, background .3s;
+  cursor:pointer;background:transparent;color:var(--ink);
+}
+.btn-primary{
+  background:linear-gradient(120deg, var(--accent), var(--accent2));
+  color: oklch(0.14 0.03 var(--hue));border:none;font-weight:700;
+  box-shadow:0 6px 26px oklch(0.68 0.22 var(--hue) / .35);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px oklch(0.68 0.22 var(--hue) / .5)}
+.btn-ghost:hover{transform:translateY(-2px);background:var(--glass);border-color:var(--hair)}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* HERO */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 24px 80px;position:relative}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:.02em;
+  color:var(--muted);padding:7px 15px;border-radius:100px;border:1px solid var(--hair);
+  background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin-bottom:28px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 12px var(--accent2)}
+h1{
+  font-weight:800;letter-spacing:-0.04em;line-height:0.98;
+  font-size:clamp(2.6rem,8vw,6rem);max-width:14ch;
+  background:linear-gradient(180deg, var(--ink), oklch(0.78 0.05 var(--hue)));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+h1 .line{display:block;overflow:hidden}
+h1 .line>span{display:block;transform:translateY(110%);transition:transform .9s cubic-bezier(.16,1,.3,1)}
+h1 .line:nth-child(2)>span{transition-delay:.09s}
+h1.go .line>span{transform:translateY(0)}
+.lead{margin:26px auto 0;max-width:52ch;font-size:clamp(1rem,2.2vw,1.22rem);color:var(--muted)}
+.cta-row{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap;justify-content:center}
+.cta-row .btn{padding:14px 26px;font-size:15px;border-radius:13px}
+.scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.scroll-hint .line-anim{width:1px;height:38px;background:linear-gradient(var(--accent),transparent);animation:drop 2s ease-in-out infinite}
+@keyframes drop{0%{opacity:.2;transform:scaleY(.4)}50%{opacity:1;transform:scaleY(1)}100%{opacity:.2;transform:scaleY(.4)}}
+
+/* SECTIONS */
+section{padding:100px 0;position:relative}
+.kicker{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);margin-bottom:14px}
+.h2{font-weight:800;letter-spacing:-0.035em;line-height:1.03;font-size:clamp(1.9rem,4.6vw,3.1rem);max-width:18ch}
+.sub{color:var(--muted);margin-top:16px;max-width:56ch;font-size:1.05rem}
+
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.rv.in{opacity:1;transform:none}
+
+/* FEATURES */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{
+  padding:30px;border-radius:20px;border:1px solid var(--hair);
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:transform .35s cubic-bezier(.2,.7,.3,1),border-color .35s,box-shadow .35s;
+  position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 20% -10%, oklch(0.68 0.22 var(--hue) / .12), transparent 60%);opacity:0;transition:opacity .35s}
+.card:hover{transform:translateY(-6px);border-color:var(--hair);box-shadow:0 20px 60px oklch(0.05 0.02 var(--hue) / .5)}
+.card:hover::before{opacity:1}
+.ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--accent);border:1px solid var(--hair);background:var(--glass2);margin-bottom:20px}
+.ic svg{width:22px;height:22px}
+.card h3{font-size:1.22rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:10px}
+.card p{color:var(--muted);font-size:.97rem}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:26px;border-radius:18px;border:1px solid var(--hair2);background:var(--glass2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.stat .num{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-0.03em;background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .lbl{color:var(--faint);font-size:.86rem;margin-top:6px}
+
+/* INTERACTIVE — network explorer tabs */
+.explorer{margin-top:52px;border:1px solid var(--hair);border-radius:24px;overflow:hidden;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.tabs{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--hair2);flex-wrap:wrap}
+.tab{flex:1;min-width:120px;padding:13px 16px;border-radius:13px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border:1px solid transparent;transition:all .25s;text-align:center;background:transparent}
+.tab[aria-selected="true"]{color:var(--ink);background:var(--glass2);border-color:var(--hair)}
+.tab:hover{color:var(--ink)}
+.panel{padding:36px;display:none;animation:fade .4s ease}
+.panel.active{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center}
+@media(max-width:760px){.panel.active{grid-template-columns:1fr}}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel h3{font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px}
+.panel p{color:var(--muted);margin-bottom:20px}
+.panel ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+.panel li{display:flex;align-items:flex-start;gap:11px;font-size:.96rem;color:var(--muted)}
+.panel li svg{width:18px;height:18px;color:var(--accent2);flex-shrink:0;margin-top:2px}
+.viz{aspect-ratio:1;border-radius:18px;border:1px solid var(--hair2);background:radial-gradient(circle at 50% 45%, oklch(0.22 0.06 var(--hue) / .5), oklch(0.10 0.02 var(--hue) / .3));display:grid;place-items:center;position:relative;overflow:hidden}
+.viz .metric{text-align:center}
+.viz .metric .big{font-size:3.2rem;font-weight:800;letter-spacing:-0.04em;background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.viz .metric .small{color:var(--faint);font-size:.85rem;margin-top:4px}
+.ring{position:absolute;inset:0;border-radius:50%;border:1px solid oklch(0.68 0.22 var(--hue) / .18);animation:spin 14s linear infinite}
+.ring:nth-child(2){inset:14%;border-color:oklch(0.80 0.16 205 / .16);animation-duration:10s;animation-direction:reverse}
+.ring:nth-child(3){inset:28%;border-color:oklch(0.68 0.22 var(--hue) / .14);animation-duration:18s}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PRICING band / CTA */
+.cta-band{margin:40px 0 0;text-align:center;padding:72px 40px;border-radius:28px;border:1px solid var(--hair);background:linear-gradient(160deg, oklch(0.20 0.05 var(--hue) / .5), oklch(0.12 0.03 var(--hue) / .3));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);position:relative;overflow:hidden}
+.cta-band::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 120% at 50% -20%, oklch(0.68 0.22 var(--hue) / .22), transparent 60%);pointer-events:none}
+.cta-band h2{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:-0.04em;line-height:1.02;position:relative}
+.cta-band p{color:var(--muted);margin:16px auto 30px;max-width:46ch;position:relative}
+.cta-band .cta-row{position:relative}
+
+/* FOOTER */
+footer{border-top:1px solid var(--hair2);padding:56px 0 40px;margin-top:100px}
+.foot{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.foot .brand{margin-bottom:14px}
+.foot-col h4{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px;font-weight:700}
+.foot-col a{display:block;color:var(--muted);font-size:14px;margin-bottom:10px;transition:color .2s}
+.foot-col a:hover{color:var(--ink)}
+.foot-cols{display:flex;gap:64px;flex-wrap:wrap}
+.copy{margin-top:44px;padding-top:24px;border-top:1px solid var(--hair2);color:var(--faint);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.foot-lead{max-width:30ch;color:var(--muted);font-size:14px}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  html{scroll-behavior:auto}
+  h1 .line>span{transform:none!important}
+  .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<canvas id="webgl"></canvas>
+<canvas id="fallback" style="display:none"></canvas>
+<div class="veil"></div>
+
+<div class="page">
+<nav>
+  <div class="nav-in">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z"/><path d="M12 2v20M3.5 7l8.5 5 8.5-5M3.5 17l8.5-5 8.5 5"/></svg>
+      Nexus
+    </div>
+    <div class="nav-links">
+      <a href="#features">Protocol</a>
+      <a href="#explorer">Network</a>
+      <a href="#build">Developers</a>
+    </div>
+    <a href="#build" class="btn btn-primary">Launch App</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <span class="eyebrow"><span class="dot"></span>Mainnet live · 1.2s average finality</span>
+  <h1 id="head">
+    <span class="line"><span>Own your assets.</span></span>
+    <span class="line"><span>Own your future.</span></span>
+  </h1>
+  <p class="lead">Nexus Protocol is the settlement layer for a borderless economy — fast, final, and fully on-chain. Move value at the speed of the internet, without asking anyone's permission.</p>
+  <div class="cta-row">
+    <a href="#build" class="btn btn-primary">Start Building
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+    <a href="#explorer" class="btn btn-ghost">Explore the Network</a>
+  </div>
+  <div class="scroll-hint"><span>Scroll to explore</span><span class="line-anim"></span></div>
+</header>
+
+<section id="features" class="wrap">
+  <div class="rv">
+    <div class="kicker">Why Nexus</div>
+    <h2 class="h2">Infrastructure for money that never sleeps.</h2>
+    <p class="sub">A high-throughput settlement engine built for the next billion on-chain users — with the finality, custody, and interoperability that serious capital demands.</p>
+  </div>
+  <div class="grid">
+    <div class="card rv">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L4.5 13H11l-1 9 8.5-11H12l1-9z"/></svg></div>
+      <h3>Sub-Second Finality</h3>
+      <p>A high-throughput consensus engine confirms transactions instantly, with gas costs a fraction of legacy chains. No mempool limbo, no reorgs — settled means settled.</p>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9.5 12l2 2 3.5-4"/></svg></div>
+      <h3>Non-Custodial Wallet</h3>
+      <p>Your keys, your coins — self-custody with hardware-grade security and one-click recovery you actually control. No intermediaries, no frozen accounts, ever.</p>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M4 12c0-3 2-5 5-5M20 12c0 3-2 5-5 5"/><path d="M7 9l-3 3 3 3M17 9l3 3-3 3"/></svg></div>
+      <h3>Cross-Chain Bridges</h3>
+      <p>Move liquidity across ecosystems seamlessly with audited bridges and real-time slippage protection. One network, every chain, zero wrapped-asset guesswork.</p>
+    </div>
+  </div>
+  <div class="stats rv">
+    <div class="stat"><div class="num">1.2s</div><div class="lbl">Average finality</div></div>
+    <div class="stat"><div class="num">$0.0004</div><div class="lbl">Median gas fee</div></div>
+    <div class="stat"><div class="num">28,000</div><div class="lbl">TPS sustained</div></div>
+    <div class="stat"><div class="num">$4.6B</div><div class="lbl">Value settled</div></div>
+  </div>
+</section>
+
+<section id="explorer" class="wrap">
+  <div class="rv">
+    <div class="kicker">Live network</div>
+    <h2 class="h2">One protocol, three layers of trust.</h2>
+    <p class="sub">Tap through the stack that powers Nexus — from the consensus core to the developer surface. Every layer is open, audited, and permissionless.</p>
+  </div>
+  <div class="explorer rv">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="0">Consensus</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="1">Settlement</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="2">Developers</button>
+    </div>
+    <div class="panel active" data-panel="0">
+      <div>
+        <h3>Consensus Core</h3>
+        <p>A BFT engine that finalizes blocks in a single round of communication — deterministic, fork-free, and validated by a globally distributed set.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Deterministic finality with no probabilistic waiting</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Byzantine fault tolerance up to one-third of validators</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Stake-weighted rewards with slashing on equivocation</li>
+        </ul>
+      </div>
+      <div class="viz"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="metric"><div class="big">1.2s</div><div class="small">to irreversible finality</div></div></div>
+    </div>
+    <div class="panel" data-panel="1">
+      <div>
+        <h3>Settlement Layer</h3>
+        <p>Where value comes to rest. Atomic multi-asset settlement, native stablecoin rails, and bridges that account for slippage before you sign.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Atomic swaps across 40+ connected ecosystems</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Real-time slippage guards on every bridge route</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Third-party audited by Trail of Bits and Zellic</li>
+        </ul>
+      </div>
+      <div class="viz"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="metric"><div class="big">40+</div><div class="small">bridged ecosystems</div></div></div>
+    </div>
+    <div class="panel" data-panel="2">
+      <div>
+        <h3>Developer Surface</h3>
+        <p>Ship in the language you already know. EVM-equivalent execution, typed SDKs, and a testnet faucet that funds you in seconds — not support tickets.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>EVM-equivalent — deploy existing Solidity unchanged</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>TypeScript, Rust, and Go SDKs with typed contracts</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-11"/></svg>Indexed RPC and streaming events out of the box</li>
+        </ul>
+      </div>
+      <div class="viz"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="metric"><div class="big">9,400+</div><div class="small">contracts deployed</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="build" class="wrap">
+  <div class="cta-band rv">
+    <h2>Fast, final, and<br>fully on-chain.</h2>
+    <p>Join the Web3 startups, DeFi protocols, and token projects settling on Nexus. Spin up a testnet node and deploy your first contract in under ten minutes.</p>
+    <div class="cta-row">
+      <a href="#" class="btn btn-primary">Launch Testnet
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#" class="btn btn-ghost">Read the Docs</a>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div class="foot">
+    <div>
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z"/><path d="M12 2v20M3.5 7l8.5 5 8.5-5M3.5 17l8.5-5 8.5 5"/></svg>
+        Nexus
+      </div>
+      <p class="foot-lead">The settlement layer for a borderless economy. Built by cryptographers, secured by math.</p>
+    </div>
+    <div class="foot-cols">
+      <div class="foot-col">
+        <h4>Protocol</h4>
+        <a href="#">Consensus</a><a href="#">Validators</a><a href="#">Tokenomics</a><a href="#">Governance</a>
+      </div>
+      <div class="foot-col">
+        <h4>Build</h4>
+        <a href="#">Documentation</a><a href="#">SDKs</a><a href="#">Faucet</a><a href="#">Bridges</a>
+      </div>
+      <div class="foot-col">
+        <h4>Company</h4>
+        <a href="#">Foundation</a><a href="#">Security</a><a href="#">Careers</a><a href="#">Brand</a>
+      </div>
+    </div>
+  </div>
+  <div class="copy">
+    <span>© 2026 Nexus Foundation. Decentralized, non-custodial, unstoppable.</span>
+    <span>Not financial advice. Audit before you allocate.</span>
+  </div>
+</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Kinetic headline
+  var head = document.getElementById('head');
+  if(head){ setTimeout(function(){ head.classList.add('go'); }, 140); }
+
+  // Reveal observer
+  var rvs = document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:.14});
+    rvs.forEach(function(el){ io.observe(el); });
+  } else { rvs.forEach(function(el){ el.classList.add('in'); }); }
+
+  // Tabs
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('.panel');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.setAttribute('aria-selected','false'); });
+      t.setAttribute('aria-selected','true');
+      var i = t.getAttribute('data-tab');
+      panels.forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-panel')===i); });
+    });
+  });
+
+  // Scroll progress + mouse
+  var scrollP = 0, mx = 0, my = 0, tmx = 0, tmy = 0;
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    scrollP = h>0 ? Math.min(1, window.scrollY / h) : 0;
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  window.addEventListener('mousemove', function(e){
+    tmx = (e.clientX / window.innerWidth - .5);
+    tmy = (e.clientY / window.innerHeight - .5);
+  });
+
+  // ---- WebGL scene ----
+  function init3D(){
+    var THREE = window.THREE;
+    var canvas = document.getElementById('webgl');
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+    } catch(err){ return false; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 100);
+    camera.position.z = 6;
+
+    var group = new THREE.Group();
+    scene.add(group);
+
+    // Central icosahedron — fresnel rim shader
+    var geo = new THREE.IcosahedronGeometry(1.8, 1);
+    var mat = new THREE.ShaderMaterial({
+      transparent:true,
+      uniforms:{
+        uTime:{value:0},
+        uA:{value:new THREE.Color(0x7B5CFF)},
+        uB:{value:new THREE.Color(0x35E5FF)}
+      },
+      vertexShader:'varying vec3 vN;varying vec3 vView;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vView=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
+      fragmentShader:'uniform float uTime;uniform vec3 uA;uniform vec3 uB;varying vec3 vN;varying vec3 vView;void main(){float f=pow(1.0-max(dot(vN,vView),0.0),2.2);vec3 col=mix(uA,uB,f);gl_FragColor=vec4(col,0.10+f*0.85);}'
+    });
+    var ico = new THREE.Mesh(geo, mat);
+    group.add(ico);
+
+    // Wireframe overlay
+    var wire = new THREE.LineSegments(
+      new THREE.WireframeGeometry(geo),
+      new THREE.LineBasicMaterial({color:0x7B5CFF, transparent:true, opacity:0.35})
+    );
+    group.add(wire);
+
+    // Orbiting satellite nodes + edges (blockchain graph)
+    var nodes = new THREE.Group();
+    group.add(nodes);
+    var nodePos = [];
+    var N = 14;
+    var nodeGeo = new THREE.SphereGeometry(0.07, 12, 12);
+    var nodeMat = new THREE.MeshBasicMaterial({color:0x9FE8FF});
+    for(var i=0;i<N;i++){
+      var a = (i/N)*Math.PI*2;
+      var r = 3.1 + (i%3)*0.35;
+      var y = Math.sin(i*1.7)*1.3;
+      var v = new THREE.Vector3(Math.cos(a)*r, y, Math.sin(a)*r);
+      nodePos.push(v);
+      var m = new THREE.Mesh(nodeGeo, nodeMat);
+      m.position.copy(v);
+      nodes.add(m);
+    }
+    // edges from center to nodes + between neighbors
+    var edgePts = [];
+    for(var j=0;j<N;j++){
+      edgePts.push(0,0,0, nodePos[j].x, nodePos[j].y, nodePos[j].z);
+      var k = (j+1)%N;
+      edgePts.push(nodePos[j].x,nodePos[j].y,nodePos[j].z, nodePos[k].x,nodePos[k].y,nodePos[k].z);
+    }
+    var eGeo = new THREE.BufferGeometry();
+    eGeo.setAttribute('position', new THREE.Float32BufferAttribute(edgePts, 3));
+    var edges = new THREE.LineSegments(eGeo, new THREE.LineBasicMaterial({color:0x4A6BFF, transparent:true, opacity:0.22}));
+    nodes.add(edges);
+
+    // Data packets traveling along edges (additive points)
+    var P = N;
+    var pGeo = new THREE.BufferGeometry();
+    var pArr = new Float32Array(P*3);
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+    var packets = new THREE.Points(pGeo, new THREE.PointsMaterial({
+      color:0x35E5FF, size:0.16, transparent:true, opacity:0.95,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    }));
+    nodes.add(packets);
+
+    // background star particles
+    var sGeo = new THREE.BufferGeometry();
+    var SC = 420, sArr = new Float32Array(SC*3);
+    for(var s=0;s<SC;s++){
+      sArr[s*3]   = (Math.random()-.5)*40;
+      sArr[s*3+1] = (Math.random()-.5)*24;
+      sArr[s*3+2] = (Math.random()-.5)*24 - 6;
+    }
+    sGeo.setAttribute('position', new THREE.BufferAttribute(sArr,3));
+    var stars = new THREE.Points(sGeo, new THREE.PointsMaterial({color:0x7B5CFF, size:0.05, transparent:true, opacity:0.5}));
+    scene.add(stars);
+
+    var clock = new THREE.Clock();
+    var velo = 0, lastScroll = window.scrollY;
+
+    function frame(t){
+      // packet positions along center->node edges
+      for(var q=0;q<P;q++){
+        var prog = ((t*0.00035) + q/P) % 1;
+        var np = nodePos[q];
+        pArr[q*3]   = np.x*prog;
+        pArr[q*3+1] = np.y*prog;
+        pArr[q*3+2] = np.z*prog;
+      }
+      pGeo.attributes.position.needsUpdate = true;
+
+      // scroll velocity
+      var sv = Math.abs(window.scrollY - lastScroll);
+      lastScroll = window.scrollY;
+      velo += (Math.min(sv,60)/60 - velo)*0.08;
+
+      mx += (tmx - mx)*0.05; my += (tmy - my)*0.05;
+
+      group.rotation.y = t*0.00012 + scrollP*Math.PI*1.6 + mx*0.6;
+      group.rotation.x = my*0.5 + scrollP*0.4;
+      nodes.rotation.y = -t*0.00018;
+      var sc = 1 + scrollP*0.5 + velo*0.25;
+      group.scale.setScalar(sc);
+      mat.uniforms.uTime.value = t*0.001;
+
+      // color shift with scroll
+      mat.uniforms.uB.value.setHSL(0.5 + scrollP*0.12, 1.0, 0.6);
+
+      camera.position.x += (mx*1.6 - camera.position.x)*0.05;
+      camera.position.y += (-my*1.2 - camera.position.y)*0.05;
+      camera.lookAt(0,0,0);
+
+      stars.rotation.y = t*0.00004;
+      renderer.render(scene, camera);
+    }
+
+    function loop(){ frame(clock.getElapsedTime()*1000); requestAnimationFrame(loop); }
+    if(reduce){ frame(0); } else { loop(); }
+
+    window.addEventListener('resize', function(){
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    return true;
+  }
+
+  // ---- Fallback aurora ----
+  function initFallback(){
+    var c = document.getElementById('fallback');
+    document.getElementById('webgl').style.display='none';
+    c.style.display='block';
+    var ctx = c.getContext('2d');
+    function size(){ c.width=window.innerWidth; c.height=window.innerHeight; }
+    size(); window.addEventListener('resize', size);
+    var blobs = [
+      {x:.3,y:.3,r:.5,h:262,p:0},
+      {x:.7,y:.4,r:.45,h:205,p:2},
+      {x:.5,y:.7,r:.55,h:280,p:4}
+    ];
+    function draw(t){
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.fillStyle='#08060f'; ctx.fillRect(0,0,c.width,c.height);
+      ctx.globalCompositeOperation='lighter';
+      blobs.forEach(function(b,i){
+        var x=(b.x + Math.sin(t*0.0002+b.p)*0.12)*c.width;
+        var y=(b.y + Math.cos(t*0.00017+b.p)*0.12)*c.height;
+        var r=b.r*Math.min(c.width,c.height)*(0.7+scrollP*0.4);
+        var g=ctx.createRadialGradient(x,y,0,x,y,r);
+        g.addColorStop(0,'hsla('+b.h+',90%,60%,0.5)');
+        g.addColorStop(1,'hsla('+b.h+',90%,60%,0)');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+      });
+      ctx.globalCompositeOperation='source-over';
+    }
+    if(reduce){ draw(0); } else { (function loop(t){ draw(t); requestAnimationFrame(loop); })(0); }
+  }
+
+  // feature-detect
+  function hasWebGL(){
+    try{ var cv=document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && (cv.getContext('webgl')||cv.getContext('experimental-webgl')));
+    }catch(e){ return false; }
+  }
+  if(window.THREE && hasWebGL()){
+    if(!init3D()) initFallback();
+  } else {
+    initFallback();
+  }
+})();
+</script>
+</body>
+</html>
