@@ -54,6 +54,10 @@ class PublishGate
             $failures[] = 'duplicated_content';
         }
 
+        if ($this->fabricatedExperience($content) !== []) {
+            $failures[] = 'fabricated_experience';
+        }
+
         return $failures;
     }
 
@@ -93,6 +97,37 @@ class PublishGate
         }
 
         return $redundant;
+    }
+
+    /**
+     * Birinchi shaxsdagi kasbiy tajriba da'volari.
+     *
+     * Generatsiya qilingan post o'zida bo'lmagan karerani da'vo qilmasligi kerak:
+     * bu Google HCU nishoni va imzo ostidagi halollik masalasi (spec §1.2a).
+     *
+     * @return string[] topilgan iboralar
+     */
+    public function fabricatedExperience(string $content): array
+    {
+        $text = (string) preg_replace('/\s+/', ' ', strip_tags($content));
+
+        $patterns = [
+            '/\bas an? (?:senior|seasoned|experienced|lead|principal|staff)\b/i',
+            '/\bwith (?:over |more than )?\d+\+? years? of experience\b/i',
+            '/\bin my (?:experience|career)\b/i',
+            '/\bwhen i first started\b/i',
+            '/\b(?:our|my) team (?:discovered|learned|built|shipped|migrated|ran)\b/i',
+            '/\blast (?:quarter|month|year),? (?:we|our|i)\b/i',
+        ];
+
+        $hits = [];
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $text, $matches) === 1) {
+                $hits[] = $matches[0];
+            }
+        }
+
+        return $hits;
     }
 
     /**

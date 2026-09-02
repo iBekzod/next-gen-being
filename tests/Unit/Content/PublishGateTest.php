@@ -127,4 +127,33 @@ class PublishGateTest extends TestCase
         $this->assertSame(0, $gate->redundantSentenceCount($this->cleanContent()));
         $this->assertSame([], $gate->failures($this->makePost($this->cleanContent())));
     }
+
+    public function test_soxta_tajriba_davolari_rad_etiladi(): void
+    {
+        $gate = new PublishGate();
+
+        $namunalar = [
+            'As a senior engineer with over 10 years of experience, I learned a lot.',
+            'Last quarter, our team discovered a serious bottleneck in the system.',
+            'In my experience, connection pooling solves most of these problems.',
+            'Our team migrated the whole platform to a new database engine.',
+        ];
+
+        foreach ($namunalar as $namuna) {
+            $content = $this->cleanContent() . ' ' . $namuna;
+
+            $this->assertNotEmpty(
+                $gate->fabricatedExperience($content),
+                "Ushlanmadi: {$namuna}"
+            );
+            $this->assertContains('fabricated_experience', $gate->failures($this->makePost($content)));
+        }
+    }
+
+    public function test_toza_texnik_matn_atribut_darvozasidan_otadi(): void
+    {
+        $gate = new PublishGate();
+
+        $this->assertSame([], $gate->fabricatedExperience($this->cleanContent()));
+    }
 }
