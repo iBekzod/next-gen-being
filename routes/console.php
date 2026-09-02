@@ -277,3 +277,9 @@ Schedule::command('cache:prewarm', ['--limit=10'])
     ->everySixHours()
     ->withoutOverlapping()
     ->runInBackground();
+
+// Kontent quvuri salomatligi — 2026-08 dagi to'rt haftalik jimlik takrorlanmasligi uchun.
+Schedule::command('content:health-check')
+    ->dailyAt('19:00')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
