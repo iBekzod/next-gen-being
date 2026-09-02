@@ -156,4 +156,63 @@ class PublishGateTest extends TestCase
 
         $this->assertSame([], $gate->fabricatedExperience($this->cleanContent()));
     }
+
+    /**
+     * Fix round 1: patterns widened to catch realistic variants within the same
+     * phrase families (article "the", have/has/had-introduced tenure claims,
+     * auxiliary verbs and possessive "team's", and a first-person spent/been
+     * tenure claim) without inventing new categories.
+     */
+    public function test_kengaytirilgan_soxta_tajriba_shakllari_rad_etiladi(): void
+    {
+        $gate = new PublishGate();
+
+        $namunalar = [
+            'As the lead engineer on this project, I made the final call.',
+            'I have 10 years of experience building backend systems.',
+            'She has 10 years in the industry and mentors new hires.',
+            'Our team has discovered a clever workaround for this issue.',
+            'Our team was building a new pipeline when the outage hit.',
+            "My team's migration to Kubernetes took several weeks.",
+            "I've spent five years building distributed systems.",
+        ];
+
+        foreach ($namunalar as $namuna) {
+            $content = $this->cleanContent() . ' ' . $namuna;
+
+            $this->assertNotEmpty(
+                $gate->fabricatedExperience($content),
+                "Ushlanmadi: {$namuna}"
+            );
+            $this->assertContains('fabricated_experience', $gate->failures($this->makePost($content)));
+        }
+    }
+
+    /**
+     * Eng muhim test: ikkinchi shaxs ("your team") va abstrakt texnik jumlalar
+     * hech qachon fabricated_experience sifatida belgilanmasligi kerak — bu
+     * darvoza nashrni bloklaydi, shuning uchun noto'g'ri rad juda qimmatga
+     * tushadi.
+     */
+    public function test_ikkinchi_shaxs_va_abstrakt_matn_atribut_darvozasidan_otadi(): void
+    {
+        $gate = new PublishGate();
+
+        $namunalar = [
+            'When your team migrates to a new database, plan the cutover carefully.',
+            'Your team should run load tests before every release.',
+            'Teams that have shipped this pattern report fewer incidents.',
+        ];
+
+        foreach ($namunalar as $namuna) {
+            $content = $this->cleanContent() . ' ' . $namuna;
+
+            $this->assertSame(
+                [],
+                $gate->fabricatedExperience($content),
+                "Noto'g'ri ushlandi: {$namuna}"
+            );
+            $this->assertNotContains('fabricated_experience', $gate->failures($this->makePost($content)));
+        }
+    }
 }

@@ -112,12 +112,13 @@ class PublishGate
         $text = (string) preg_replace('/\s+/', ' ', strip_tags($content));
 
         $patterns = [
-            '/\bas an? (?:senior|seasoned|experienced|lead|principal|staff)\b/i',
-            '/\bwith (?:over |more than )?\d+\+? years? of experience\b/i',
+            '/\bas (?:an?|the) (?:senior|seasoned|experienced|lead|principal|staff)\b/i',
+            '/\b(?:with|have|has|had) (?:over |more than )?\d+\+? years? of experience\b|\b\d+\+? years? in the industry\b/i',
             '/\bin my (?:experience|career)\b/i',
             '/\bwhen i first started\b/i',
-            '/\b(?:our|my) team (?:discovered|learned|built|shipped|migrated|ran)\b/i',
+            '/\b(?:our|my) team(?:\'s)? (?:(?:has|have|had|was|were|\'ve) )?(?:discovered|discovering|learned|learning|built|building|shipped|shipping|migrated|migrating|migration|ran|running)\b/i',
             '/\blast (?:quarter|month|year),? (?:we|our|i)\b/i',
+            '/\b(?:i|we)(?:\'ve| have| had)? (?:spent|been) (?:\d+|a|one|two|three|four|five|six|seven|eight|nine|ten)\+? (?:years?|months?)\b/i',
         ];
 
         $hits = [];
