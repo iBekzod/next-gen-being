@@ -223,9 +223,9 @@ class GenerateAiPost extends Command
         $hardGateFailed = false;
         $hardGateReason = '';
 
-        if ($wordCount < 1500) {
+        if ($wordCount < PublishGate::MIN_WORDS) {
             $hardGateFailed = true;
-            $hardGateReason = "Word count {$wordCount} below 1500 minimum";
+            $hardGateReason = "Word count {$wordCount} below " . PublishGate::MIN_WORDS . ' minimum';
         } elseif (!preg_match('/[.!?]\s*$/', trim($postData['content']))) {
             $hardGateFailed = true;
             $hardGateReason = 'Content does not end with a sentence terminator (likely truncated)';
@@ -1188,7 +1188,7 @@ Return ONLY this JSON (ensure proper escaping):
         // bo'ysunadi, shuning uchun 1500-1999 "o'lik zonasi" endi mavjud emas.
         $wordCount = str_word_count(strip_tags($postData['content']));
 
-        if ($wordCount < PublishGate::MIN_WORDS) {
+        if ($this->needsExpansion($wordCount)) {
             $this->info("   📝 Pass 1: {$wordCount} so'z. Pass 2: kengaytirish...");
 
             try {
@@ -1203,7 +1203,7 @@ Return ONLY this JSON (ensure proper escaping):
             $this->info("   ✅ Pass 1 yetarli: {$wordCount} so'z");
         }
 
-        if ($wordCount < PublishGate::MIN_WORDS) {
+        if (!$this->meetsPublishThreshold($wordCount)) {
             Log::warning('Generated content below publish threshold', [
                 'required_min' => PublishGate::MIN_WORDS,
                 'actual_words' => $wordCount,
@@ -1220,6 +1220,26 @@ Return ONLY this JSON (ensure proper escaping):
         $this->info("   📖 Final: {$wordCount} words (~{$readMinutes} min read)");
 
         return $postData;
+    }
+
+    /**
+     * Pass 1 natijasi kengaytirishga muhtojmi.
+     *
+     * Nashr chegarasi bilan bitta ta'rifga bo'ysunadi (PublishGate::MIN_WORDS),
+     * shuning uchun bu predikat va meetsPublishThreshold() hech qachon
+     * kelishmovchilikka olib kelmaydi.
+     */
+    private function needsExpansion(int $wordCount): bool
+    {
+        return $wordCount < PublishGate::MIN_WORDS;
+    }
+
+    /**
+     * Yakuniy so'z soni nashr chegarasini qondiradimi.
+     */
+    private function meetsPublishThreshold(int $wordCount): bool
+    {
+        return $wordCount >= PublishGate::MIN_WORDS;
     }
 
     /**
