@@ -4,10 +4,13 @@ namespace Tests\Unit\Content;
 
 use App\Models\Post;
 use App\Services\Content\PublishGate;
+use Tests\Support\MakesGateContent;
 use Tests\TestCase;
 
 class PublishGateTest extends TestCase
 {
+    use MakesGateContent;
+
     private function makePost(string $content, string $moderation = 'approved'): Post
     {
         $post = new Post();
@@ -15,20 +18,6 @@ class PublishGateTest extends TestCase
         $post->moderation_status = $moderation;
 
         return $post;
-    }
-
-    /** Har biri ~18 so'zdan iborat, 60 belgidan uzun, TAKRORLANMAYDIGAN jumlalar. */
-    private function cleanContent(int $minWords = 1600): string
-    {
-        $sentences = [];
-        $i = 0;
-        do {
-            $i++;
-            $sentences[] = "Bu {$i}-raqamli noyob izohli jumla bo'lib, ishlab chiqarish tizimlarida "
-                . "ma'lumotlar bazasi indekslash va so'rov rejalashtirish haqida gapiradi.";
-        } while (str_word_count(implode(' ', $sentences)) < $minWords);
-
-        return implode(' ', $sentences);
     }
 
     public function test_toza_uzun_matn_barcha_darvozalardan_otadi(): void
