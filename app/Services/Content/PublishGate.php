@@ -65,10 +65,16 @@ class PublishGate
     /** Matnni normallashtirilgan jumlalarga bo'ladi. @return string[] */
     public function sentences(string $content): array
     {
-        $text = preg_replace('/\s+/', ' ', strip_tags($content));
-        $parts = preg_split('/(?<=[.!?])\s+/', (string) $text, -1, PREG_SPLIT_NO_EMPTY);
+        $text = strip_tags($content);
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        // Faqat probel/tab yig'iladi — qatorlarni ajratish uchun \n saqlanadi,
+        // shunda tinish belgisiz takrorlangan qatorlar (masalan, kod bloklari)
+        // ham alohida birlik sifatida hisoblanadi.
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+        $parts = preg_split('/(?<=[.!?])\s+|\n+/', (string) $text, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = array_map('trim', $parts ?: []);
 
-        return array_map('trim', $parts ?: []);
+        return array_values(array_filter($parts, fn (string $s): bool => $s !== ''));
     }
 
     /** Ortiqcha nusxalar soni: takrorlangan har bir uzun jumla uchun (n - 1). */

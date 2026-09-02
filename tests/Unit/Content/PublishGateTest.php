@@ -101,4 +101,30 @@ class PublishGateTest extends TestCase
 
         $this->assertSame(0, $gate->redundantSentenceCount($this->cleanContent()));
     }
+
+    /**
+     * Tinish belgisisiz (masalan, kod bloki) takrorlanish ham aniqlanishi kerak.
+     * `sentences()` endi qator chegaralaridan ham bo'ladi, shuning uchun ".", "!",
+     * "?" bo'lmagan takrorlangan kod qatori ham dublikat sifatida hisoblanadi.
+     */
+    public function test_tinish_belgisiz_kod_bloki_takrorlanishi_aniqlanadi(): void
+    {
+        $gate = new PublishGate();
+
+        $codeLine = '    $value = \'' . str_repeat('a', 60) . '\';';
+        $codeBlock = "```php\n" . $codeLine . "\necho \$value;\n```";
+        $content = $this->cleanContent() . "\n\n" . str_repeat($codeBlock . "\n\n", 6);
+
+        $this->assertGreaterThan(2, $gate->redundantSentenceCount($content));
+        $this->assertContains('duplicated_content', $gate->failures($this->makePost($content)));
+    }
+
+    /** Qator chegarasidan bo'lish oddiy (yangi qatorsiz) matnga ta'sir qilmasligi kerak. */
+    public function test_qator_bolish_oddiy_matnga_tasir_qilmaydi(): void
+    {
+        $gate = new PublishGate();
+
+        $this->assertSame(0, $gate->redundantSentenceCount($this->cleanContent()));
+        $this->assertSame([], $gate->failures($this->makePost($this->cleanContent())));
+    }
 }
