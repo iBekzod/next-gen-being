@@ -1187,14 +1187,19 @@ Return ONLY this JSON (ensure proper escaping):
         // Pass 1 natijasini nashr chegarasiga nisbatan tekshiramiz.
         // Chegara PublishGate dan olinadi: generatsiya va nashr bitta ta'rifga
         // bo'ysunadi, shuning uchun 1500-1999 "o'lik zonasi" endi mavjud emas.
-        $wordCount = str_word_count(strip_tags($postData['content']));
+        //
+        // MUHIM: xom emas, NOYOB so'z soni o'lchanadi — darvoza ham aynan shuni
+        // o'lchaydi. Xom sanoq bilan takrorlangan qatorlar hisobga qo'shilib,
+        // darvozadan o'tmaydigan draft "yetarli" ko'rinardi.
+        $gate = app(PublishGate::class);
+        $wordCount = $gate->uniqueWordCount((string) $postData['content']);
 
         if ($this->needsExpansion($wordCount)) {
             $this->info("   📝 Pass 1: {$wordCount} so'z. Pass 2: kengaytirish...");
 
             try {
                 $postData = $this->expandPostContent($postData);
-                $wordCount = str_word_count(strip_tags($postData['content']));
+                $wordCount = $gate->uniqueWordCount((string) $postData['content']);
                 $this->info("   ✅ Pass 2 tugadi: {$wordCount} so'z");
             } catch (\Exception $e) {
                 Log::warning('Post expansion failed, using Pass 1 content', ['error' => $e->getMessage()]);
@@ -1226,13 +1231,16 @@ Return ONLY this JSON (ensure proper escaping):
     /**
      * Pass 1 natijasi kengaytirishga muhtojmi.
      *
-     * Nashr chegarasi bilan bitta ta'rifga bo'ysunadi (PublishGate::MIN_WORDS),
-     * shuning uchun bu predikat va meetsPublishThreshold() hech qachon
-     * kelishmovchilikka olib kelmaydi.
+     * Mo'ljal — MIN_WORDS emas, EXPANSION_TARGET_WORDS (1725). Nashr chegarasi
+     * NOYOB so'zlarga qo'llangani uchun aynan chegarada turgan draftni bitta
+     * takrorlangan qator ham pastga tushiradi; 15% zaxira shuni qoplaydi.
+     * Ikkala predikat ham bir xil (noyob) o'lchovni oladi, shuning uchun
+     * "kengaytirilmaydi, lekin rad etiladi" o'lik zonasi yopiq qoladi:
+     * EXPANSION_TARGET_WORDS > MIN_WORDS.
      */
     private function needsExpansion(int $wordCount): bool
     {
-        return $wordCount < PublishGate::MIN_WORDS;
+        return $wordCount < PublishGate::EXPANSION_TARGET_WORDS;
     }
 
     /**

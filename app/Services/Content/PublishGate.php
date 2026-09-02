@@ -18,6 +18,24 @@ class PublishGate
     public const TUTORIAL_INTERVAL_DAYS = 7;
     public const MIN_WORDS = 1500;
 
+    /**
+     * Generatsiya mo'ljali — nashr chegarasidan 15% yuqori (1725).
+     *
+     * Nashr chegarasi NOYOB so'zlarga nisbatan qo'llanadi, shuning uchun
+     * chegarada turgan draftni bitta takrorlangan qator ham chegaradan pastga
+     * tushirib yuboradi. Eski kodda 500 so'zlik zaxira bor edi (2000 yozib,
+     * 1500 da nashr qilinardi); ikkalasini 1500 ga birlashtirish uni yo'q qildi.
+     * Endi zaxira ataylab qaytarildi: kengaytirish shu mo'ljalgacha ishlaydi,
+     * rad etish esa hamon MIN_WORDS bo'yicha.
+     *
+     * Qiymat = ceil(MIN_WORDS * 1.15). PHP konstanta ifodalarida ceil() ham,
+     * (int) kastlash ham mumkin emas, shuning uchun yuqoriga yaxlitlash butun
+     * sonli arifmetika bilan yozilgan (natija 100 ga bo'linadi, ya'ni int).
+     * PublishGateTest buni ceil() ga nisbatan tekshiradi.
+     */
+    public const EXPANSION_TARGET_WORDS =
+        (self::MIN_WORDS * 115 + 99 - (self::MIN_WORDS * 115 + 99) % 100) / 100;
+
     /** Bundan ko'p ortiqcha nusxa = generatsiya buzilgan (spec §1.2a). */
     public const MAX_REDUNDANT_SENTENCES = 2;
 

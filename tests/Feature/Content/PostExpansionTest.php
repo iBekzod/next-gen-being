@@ -12,37 +12,29 @@ use Tests\TestCase;
 
 class PostExpansionTest extends TestCase
 {
-    public function test_generatsiya_chegarasi_nashr_chegarasi_bilan_bir_xil(): void
+    /**
+     * Generatsiya mo'ljali nashr chegarasidan qat'iy yuqori bo'lishi shart —
+     * aks holda zaxira yo'qoladi va bitta takrorlangan qator ham chegarada
+     * turgan draftni darvozadan tashqarida qoldiradi.
+     */
+    public function test_kengaytirish_moljali_nashr_chegarasidan_yuqori(): void
     {
-        $source = file_get_contents(app_path('Console/Commands/GenerateAiPost.php'));
-
-        // O'lik zona: kengaytirish va rad etish chegaralari farq qilmasligi kerak.
-        // Bu ikkinchi darajali himoya: asosiy isbot quyidagi xulq-atvorga
-        // asoslangan testlarda (needsExpansion / meetsPublishThreshold).
-        $this->assertStringNotContainsString(
-            'Minimum required: 2000 words',
-            $source,
-            'Generatsiya hamon 2000 so\'z talab qilyapti, PublishGate::MIN_WORDS esa 1500.'
+        $this->assertGreaterThan(PublishGate::MIN_WORDS, PublishGate::EXPANSION_TARGET_WORDS);
+        $this->assertSame(
+            (int) ceil(PublishGate::MIN_WORDS * 1.15),
+            PublishGate::EXPANSION_TARGET_WORDS,
+            'EXPANSION_TARGET_WORDS = ceil(MIN_WORDS * 1.15) bo\'lishi kerak.'
         );
-
-        $this->assertStringContainsString(
-            'PublishGate::MIN_WORDS',
-            $source,
-            'GenerateAiPost PublishGate::MIN_WORDS dan foydalanishi kerak.'
-        );
-    }
-
-    public function test_publish_gate_chegarasi_kutilgan_qiymatda(): void
-    {
-        $this->assertSame(1500, PublishGate::MIN_WORDS);
     }
 
     /**
-     * O'lik zonaning yopilganini xulq-atvor darajasida isbotlaydi: har bir
-     * so'z soni uchun needsExpansion() va meetsPublishThreshold() natijalari
-     * bir-biriga zid bo'lmasligi kerak (ya'ni 1500-1999 oralig'i endi
-     * "kengaytirilmaydi va ham rad etiladi" holatiga tushmaydi).
+     * O'lik zonaning yopilganini xulq-atvor darajasida isbotlaydi.
      *
+     * Ikkala predikat ham bir xil (noyob) so'z sanog'ini oladi, lekin turli
+     * chegaralarga taqqoslaydi: needsExpansion() — EXPANSION_TARGET_WORDS,
+     * meetsPublishThreshold() — MIN_WORDS. Mo'ljal chegaradan yuqori bo'lgani
+     * uchun "kengaytirilmaydi, lekin rad etiladi" holati mumkin emas: har
+     * qanday rad etiladigan so'z soni ( < MIN_WORDS ) avval kengaytiriladi.
      */
     #[DataProvider('wordCountProvider')]
     public function test_kengaytirish_va_nashr_predikatlari_bir_xil_chegaraga_bogliq(
@@ -75,12 +67,49 @@ class PostExpansionTest extends TestCase
     public static function wordCountProvider(): array
     {
         return [
+            // Rad etiladigan har bir qiymat AVVAL kengaytiriladi.
             'juda qisqa (1200)' => [1200, true, false],
-            'chegaradan bitta kam (1499)' => [1499, true, false],
-            'aynan chegarada (1500)' => [1500, false, true],
-            'olik zona ichida (1700) - eng muhim tekshiruv' => [1700, false, true],
-            'chegaradan ancha yuqori (2500)' => [2500, false, true],
+            'nashr chegarasidan bitta kam (1499)' => [1499, true, false],
+
+            // Zaxira oralig'i: nashr qilsa bo'ladi, lekin marja yo'q — shuning
+            // uchun kengaytiriladi. Kengaytirish MUVAFFAQIYATSIZ bo'lsa ham
+            // draft saqlanadi (meetsPublishThreshold hamon true).
+            'aynan nashr chegarasida (1500) - zaxira yoq, kengaytiriladi' => [1500, true, true],
+            'eski olik zona ichida (1700) - kengaytiriladi va saqlanadi' => [1700, true, true],
+            'moljaldan bitta kam (1724)' => [1724, true, true],
+
+            // Mo'ljalga yetgan matn kengaytirilmaydi.
+            'aynan moljalda (1725)' => [1725, false, true],
+            'moljaldan ancha yuqori (2500)' => [2500, false, true],
         ];
+    }
+
+    /**
+     * Zaxira oralig'idagi draft kengaytirish muvaffaqiyatsiz bo'lganda ham
+     * TASHLANMAYDI: generatePostContent() ichida expandPostContent() istisnosi
+     * ushlanadi, Pass 1 kontenti saqlanadi va keyingi
+     * meetsPublishThreshold($wordCount) tekshiruvi hamon true qaytaradi.
+     */
+    public function test_zaxira_oraligidagi_draft_kengaytirish_yiqilsa_ham_saqlanadi(): void
+    {
+        $command = new GenerateAiPost();
+        $reflection = new ReflectionClass($command);
+
+        $needsExpansion = $reflection->getMethod('needsExpansion');
+        $needsExpansion->setAccessible(true);
+        $meetsThreshold = $reflection->getMethod('meetsPublishThreshold');
+        $meetsThreshold->setAccessible(true);
+
+        foreach ([PublishGate::MIN_WORDS, PublishGate::EXPANSION_TARGET_WORDS - 1] as $wordCount) {
+            $this->assertTrue(
+                $needsExpansion->invokeArgs($command, [$wordCount]),
+                "{$wordCount} so'z kengaytirilishi kerak."
+            );
+            $this->assertTrue(
+                $meetsThreshold->invokeArgs($command, [$wordCount]),
+                "{$wordCount} so'z kengaytirish yiqilsa ham saqlanishi kerak."
+            );
+        }
     }
 
     private function invoke(string $method, array $args = []): mixed
