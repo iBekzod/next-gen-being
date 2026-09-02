@@ -71,4 +71,34 @@ class PublishGateTest extends TestCase
             $gate->failures($this->makePost($this->cleanContent(), 'pending'))
         );
     }
+
+    public function test_takrorlangan_jumlalar_rad_etiladi(): void
+    {
+        $gate = new PublishGate();
+        $repeat = 'Bu jumla ataylab bir necha marta takrorlanadi va altmish belgidan uzunroq.';
+        $content = $this->cleanContent() . ' ' . str_repeat($repeat . ' ', 5);
+
+        $this->assertSame(4, $gate->redundantSentenceCount($content));
+        $this->assertContains('duplicated_content', $gate->failures($this->makePost($content)));
+    }
+
+    public function test_takrorlanish_bilan_shishirilgan_uzunlik_otmaydi(): void
+    {
+        $gate = new PublishGate();
+        // 300 so'zlik noyob matn, 6 marta takrorlangan: xom hisob 1500 dan oshadi,
+        // lekin noyob hajm hamon juda kichik.
+        $short = $this->cleanContent(300);
+        $content = trim(str_repeat($short . ' ', 6));
+
+        $this->assertGreaterThan(PublishGate::MIN_WORDS, str_word_count(strip_tags($content)));
+        $this->assertLessThan(PublishGate::MIN_WORDS, $gate->uniqueWordCount($content));
+        $this->assertContains('too_short', $gate->failures($this->makePost($content)));
+    }
+
+    public function test_toza_matnda_takrorlanish_yoq(): void
+    {
+        $gate = new PublishGate();
+
+        $this->assertSame(0, $gate->redundantSentenceCount($this->cleanContent()));
+    }
 }
