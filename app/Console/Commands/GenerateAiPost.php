@@ -1243,77 +1243,104 @@ Return ONLY this JSON (ensure proper escaping):
     }
 
     /**
-     * PASS 2: Expand content from initial generation to reach 4000-5000 words
-     * Takes the initial post and asks AI to expand each section significantly
-     * Includes retry logic with exponential backoff for rate limiting
+     * Markdown maqolani `##` sarlavhalari bo'yicha bo'ladi.
+     *
+     * @return array<int, array{heading: string, body: string}>
+     */
+    private function splitSections(string $markdown): array
+    {
+        $lines = preg_split('/\R/', $markdown) ?: [];
+        $sections = [['heading' => '', 'body' => '']];
+
+        foreach ($lines as $line) {
+            if (preg_match('/^##\s+\S/', $line) === 1) {
+                $sections[] = ['heading' => trim($line), 'body' => ''];
+                continue;
+            }
+
+            $sections[array_key_last($sections)]['body'] .= $line . "\n";
+        }
+
+        foreach ($sections as $i => $section) {
+            $sections[$i]['body'] = trim($section['body']);
+        }
+
+        // Bo'sh muqaddimani tashlab yuboramiz (maqola darhol sarlavha bilan boshlansa).
+        if ($sections[0]['heading'] === '' && $sections[0]['body'] === '' && count($sections) > 1) {
+            array_shift($sections);
+        }
+
+        return array_values($sections);
+    }
+
+    /**
+     * PASS 2: maqolani BO'LIM-BO'LIM kengaytiradi.
+     *
+     * Eski versiya butun maqolani qaytadan yozishni so'rar edi va shu bilan
+     * birga max_tokens=4000 chegarasini qo'yardi — 4000 SO'Z ~5300+ token
+     * bo'lgani uchun talab bajarilmas edi va model takrorlanishga o'tardi
+     * (spec §1.2b). Endi model faqat YANGI matn qaytaradi; mavjud matn
+     * hech qachon qayta chiqarilmaydi, shuning uchun uni takrorlay olmaydi.
      */
     private function expandPostContent(array $postData, int $retryCount = 0, int $maxRetries = 2): array
     {
-        $currentWordCount = str_word_count(strip_tags($postData['content']));
-        $wordsNeeded = 4000 - $currentWordCount;
+        $sections = $this->splitSections((string) $postData['content']);
+        $expanded = [];
 
-        $expandPrompt = "You are a senior technical writer. Below is a blog post that is currently {$currentWordCount} words. It needs to be expanded to 4000+ words ({$wordsNeeded} more words needed).
+        foreach ($sections as $section) {
+            $piece = trim($section['heading'] . "\n" . $section['body']);
+            $expanded[] = $piece;
 
-Your task: Expand the article significantly while maintaining quality. DO NOT just repeat content - add NEW depth, examples, and value:
-
-ORIGINAL ARTICLE:
----
-{$postData['content']}
----
-
-EXPANSION REQUIREMENTS:
-1. Add 2-3x more content to each major section
-2. Include additional code examples (if technical)
-3. Add more real-world scenarios and case studies
-4. Include performance benchmarks or metrics
-5. Add edge cases and gotchas not in original
-6. Expand on implementation details
-7. Add more detailed explanations of complex concepts
-8. Include additional warnings or best practices
-
-TARGET: Expand to approximately 4000+ words total (about {$wordsNeeded} additional words).
-
-Return the EXPANDED article content as pure markdown (no JSON, no metadata). Write naturally and comprehensively - this should read like a complete, authoritative deep-dive article, not a padded version.
-
-Start your response directly with the expanded content (no intro or preamble).";
-
-        try {
-            $expandedContent = $this->callOpenAI([
-                [
-                    'role' => 'system',
-                    'content' => 'You are a senior technical writer specializing in expanding articles while maintaining quality and authenticity. Expand content significantly by adding real examples, depth, and practical value. Your expansions add genuine new information, not padding.'
-                ],
-                [
-                    'role' => 'user',
-                    'content' => $expandPrompt
-                ]
-            ], 4000, 0.7, false); // Pass 2 expansion: 4000 tokens for additional content
-
-            // Clean up the response (remove any markdown code blocks if present)
-            $expandedContent = preg_replace('/^```[a-z]*\n?/i', '', $expandedContent);
-            $expandedContent = preg_replace('/\n?```$/i', '', $expandedContent);
-
-            // Update the post data with expanded content
-            $postData['content'] = trim($expandedContent);
-
-            return $postData;
-
-        } catch (\Exception $e) {
-            // Check if it's a rate limit error
-            if (str_contains($e->getMessage(), 'rate_limit') && $retryCount < $maxRetries) {
-                $waitTime = 20 + ($retryCount * 10); // 20s, 30s backoff
-                $this->warn("   ⏸️  Rate limit hit. Waiting {$waitTime}s before retry...");
-                sleep($waitTime);
-                return $this->expandPostContent($postData, $retryCount + 1, $maxRetries);
+            // Muqaddimani kengaytirmaymiz — u qisqa bo'lishi kerak.
+            if ($section['heading'] === '' || $section['body'] === '') {
+                continue;
             }
 
-            Log::error('Content expansion failed', [
-                'error' => $e->getMessage(),
-                'title' => $postData['title'],
-                'retry_count' => $retryCount,
-            ]);
-            throw new \Exception("Failed to expand content: " . $e->getMessage());
+            try {
+                $addition = $this->callOpenAI([
+                    [
+                        'role' => 'system',
+                        'content' => 'You add new material to an existing article section. '
+                            . 'You never restate, summarise, or repeat what you are given.',
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => "Below is one section of a technical article.\n\n"
+                            . "SECTION:\n---\n{$piece}\n---\n\n"
+                            . "Write 200-350 words of ADDITIONAL material that continues this section: "
+                            . "a concrete code example, an edge case, or a gotcha not already mentioned.\n\n"
+                            . "Rules:\n"
+                            . "- Do NOT repeat or rephrase any sentence above.\n"
+                            . "- Do NOT write a heading.\n"
+                            . "- Do NOT claim personal or team experience.\n"
+                            . "- Start directly with the new material.",
+                    ],
+                ], 700, 0.7, false);
+
+                $addition = trim(preg_replace('/^```[a-z]*\n?/i', '', $addition) ?? '');
+
+                if ($addition !== '') {
+                    $expanded[] = $addition;
+                }
+            } catch (\Exception $e) {
+                if (str_contains($e->getMessage(), 'rate_limit') && $retryCount < $maxRetries) {
+                    $wait = 20 + ($retryCount * 10);
+                    $this->warn("   ⏸️  Rate limit. {$wait}s kutilmoqda...");
+                    sleep($wait);
+
+                    return $this->expandPostContent($postData, $retryCount + 1, $maxRetries);
+                }
+
+                Log::warning('Section expansion skipped', [
+                    'error' => $e->getMessage(),
+                    'heading' => $section['heading'],
+                ]);
+            }
         }
+
+        $postData['content'] = implode("\n\n", array_filter($expanded));
+
+        return $postData;
     }
 
     private function parseAIResponse(string $response): array

@@ -80,4 +80,34 @@ class PostExpansionTest extends TestCase
             'chegaradan ancha yuqori (2500)' => [2500, false, true],
         ];
     }
+
+    private function invoke(string $method, array $args = []): mixed
+    {
+        $command = app(\App\Console\Commands\GenerateAiPost::class);
+        $ref = new ReflectionClass($command);
+        $m = $ref->getMethod($method);
+        $m->setAccessible(true);
+
+        return $m->invokeArgs($command, $args);
+    }
+
+    public function test_maqola_h2_sarlavhalari_boyicha_bolinadi(): void
+    {
+        $markdown = "Kirish matni.\n\n## Birinchi bo'lim\nBirinchi tana.\n\n## Ikkinchi bo'lim\nIkkinchi tana.";
+
+        $sections = $this->invoke('splitSections', [$markdown]);
+
+        $this->assertCount(3, $sections);
+        $this->assertSame('', $sections[0]['heading']);
+        $this->assertSame('## Birinchi bo\'lim', $sections[1]['heading']);
+        $this->assertSame('## Ikkinchi bo\'lim', $sections[2]['heading']);
+    }
+
+    public function test_sarlavhasiz_matn_bitta_bolim_boladi(): void
+    {
+        $sections = $this->invoke('splitSections', ["Sarlavhasiz oddiy matn."]);
+
+        $this->assertCount(1, $sections);
+        $this->assertSame('', $sections[0]['heading']);
+    }
 }
