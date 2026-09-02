@@ -117,6 +117,102 @@ class PublishGateTest extends TestCase
         $this->assertSame([], $gate->failures($this->makePost($this->cleanContent())));
     }
 
+    /**
+     * ENG MUHIM YASHIL YO'L: kod bilan to'la haqiqiy tutorial o'tishi SHART.
+     *
+     * `sentences()` qator chegaralaridan bo'lgani uchun har bir uzun kod qatori
+     * alohida birlik. Yig'indi metrikasi bilan uchta misolda takrorlangan
+     * import qatorlari maqolani `duplicated_content` bilan rad etardi — ya'ni
+     * yangi darvozalar saytning asosiy kontentini abadiy bloklardi.
+     */
+    public function test_kod_bilan_tola_haqiqiy_maqola_barcha_darvozalardan_otadi(): void
+    {
+        $gate = new PublishGate();
+        $content = $this->codeHeavyContent();
+
+        $this->assertSame(
+            [],
+            $gate->failures($this->makePost($content)),
+            'Kod bilan to\'la qonuniy tutorial darvozalardan o\'tishi kerak.'
+        );
+    }
+
+    /**
+     * Metrika endi YIG'INDI emas, ENG YOMON bitta takror.
+     *
+     * Uchta HAR XIL import qatori ikki martadan uchraydi: yig'indi 3 ball
+     * (rad etilardi), maksimum esa 2 - 1 = 1 ball (o'tadi).
+     */
+    public function test_har_xil_qatorlarning_ikki_martalik_takrori_yigilmaydi(): void
+    {
+        $gate = new PublishGate();
+
+        $importlar = [
+            'use Illuminate\Support\Facades\Cache; // birinchi umumiy import qatori bu yerda',
+            'use Illuminate\Support\Facades\Queue; // ikkinchi umumiy import qatori bu yerda',
+            'use Illuminate\Support\Facades\Redis; // uchinchi umumiy import qatori bu yerda',
+        ];
+
+        $content = $this->cleanContent();
+        foreach ($importlar as $import) {
+            $content .= "\n\n```php\n" . $import . "\n```\n\n```php\n" . $import . "\n```";
+        }
+        $content .= "\n\nYakuniy nasr jumlasi bilan maqola tugaydi.";
+
+        $this->assertSame(1, $gate->redundantSentenceCount($content));
+        $this->assertNotContains('duplicated_content', $gate->failures($this->makePost($content)));
+    }
+
+    /**
+     * #456-draft: BITTA kod bloki olti marta qaytarilgan. Maksimum metrikasi
+     * ham buni ushlashi shart — 6 - 1 = 5 > MAX_REDUNDANT_SENTENCES.
+     */
+    public function test_bitta_blokning_olti_martalik_takrori_hamon_rad_etiladi(): void
+    {
+        $gate = new PublishGate();
+        $qator = 'use Illuminate\Support\Facades\Cache; // ayni bitta qator olti marta qaytarildi';
+
+        $content = $this->cleanContent();
+        for ($i = 0; $i < 6; $i++) {
+            $content .= "\n\n```php\n" . $qator . "\n```";
+        }
+        $content .= "\n\nYakuniy nasr jumlasi bilan maqola tugaydi.";
+
+        $this->assertSame(5, $gate->redundantSentenceCount($content));
+        $this->assertContains('duplicated_content', $gate->failures($this->makePost($content)));
+    }
+
+    /**
+     * contentFailures() faqat matnga bog'liq darvozalarni qaytaradi:
+     * failures() = contentFailures() + moderation_pending, boshqa hech narsa.
+     */
+    public function test_contentFailures_moderatsiya_holatini_tekshirmaydi(): void
+    {
+        $gate = new PublishGate();
+        $content = $this->cleanContent();
+
+        $this->assertSame([], $gate->contentFailures($content));
+        $this->assertNotContains('moderation_pending', $gate->contentFailures($content));
+
+        $this->assertSame(
+            ['moderation_pending'],
+            $gate->failures($this->makePost($content, 'pending'))
+        );
+    }
+
+    /**
+     * Generator ilgari o'z nusxasidagi `/[.!?]\s*$/` bilan tekshirar edi, ya'ni
+     * `…correctly."` bilan tugagan maqolani "kesilgan" deb belgilardi. Endi
+     * ikkalasi ham shu metodni chaqiradi.
+     */
+    public function test_qoshtirnoq_bilan_tugagan_matn_kesilgan_deb_belgilanmaydi(): void
+    {
+        $gate = new PublishGate();
+        $content = $this->cleanContent() . ' The configuration must be written "correctly."';
+
+        $this->assertNotContains('truncated', $gate->contentFailures($content));
+    }
+
     public function test_soxta_tajriba_davolari_rad_etiladi(): void
     {
         $gate = new PublishGate();

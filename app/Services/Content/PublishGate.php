@@ -31,7 +31,31 @@ class PublishGate
      */
     public function failures(Post $post): array
     {
-        $content = (string) $post->content;
+        $failures = $this->contentFailures((string) $post->content);
+
+        if ($post->moderation_status === 'pending') {
+            $failures[] = 'moderation_pending';
+        }
+
+        return $failures;
+    }
+
+    /**
+     * Faqat MATNGA bog'liq darvozalar — post holatidan mustaqil.
+     *
+     * Generator (GenerateAiPost) ham shu metodni chaqiradi: ilgari u
+     * darvozalarni o'z ichida qayta yozgan edi va ikkala nusxa bir-biridan
+     * uzoqlashib ketgandi (masalan, `…correctly."` bilan tugagan maqola
+     * nashrchidan o'tardi, lekin generator uni "kesilgan" deb belgilardi).
+     *
+     * Bu yerda `moderation_pending` ATAYLAB yo'q: generator moderatsiya
+     * holatini o'zi belgilaydi, shuning uchun uni bu yerda tekshirish
+     * aylanma bog'liqlik bo'lardi.
+     *
+     * @return string[]
+     */
+    public function contentFailures(string $content): array
+    {
         $failures = [];
 
         if ($this->uniqueWordCount($content) < self::MIN_WORDS) {
@@ -44,10 +68,6 @@ class PublishGate
 
         if (substr_count($content, '```') % 2 !== 0) {
             $failures[] = 'unbalanced_fences';
-        }
-
-        if ($post->moderation_status === 'pending') {
-            $failures[] = 'moderation_pending';
         }
 
         if ($this->redundantSentenceCount($content) > self::MAX_REDUNDANT_SENTENCES) {
@@ -81,7 +101,23 @@ class PublishGate
         return array_values(array_filter($parts, fn (string $s): bool => $s !== ''));
     }
 
-    /** Ortiqcha nusxalar soni: takrorlangan har bir uzun jumla uchun (n - 1). */
+    /**
+     * ENG YOMON bitta takrorlanish: max(uchrashlar) - 1, hech biri
+     * takrorlanmasa 0.
+     *
+     * Ilgari bu barcha takrorlangan jumlalar bo'yicha YIG'INDI edi. `sentences()`
+     * qator chegaralaridan ham bo'lgani uchun har bir uzun KOD QATORI alohida
+     * birlik bo'ladi — uchta misolda bir xil `use Illuminate\...` importini
+     * ko'rsatgan haqiqiy tutorial yig'indida 2+ ball to'plab, `duplicated_content`
+     * bilan rad etilardi. Kod bilan to'la tutoriallar bu saytning asosiy
+     * kontenti, ya'ni yig'indi metrikasi butun quvurni to'xtatib qo'yishi mumkin
+     * edi.
+     *
+     * Maksimum esa aynan mo'ljaldagi buzilishni ushlaydi: #456-draft bitta kod
+     * blokini 6 marta qaytargan (6 - 1 = 5 > MAX_REDUNDANT_SENTENCES), uch xil
+     * import qatori ikki martadan uchragan holat esa 2 - 1 = 1 ball oladi va
+     * o'tadi.
+     */
     public function redundantSentenceCount(string $content): int
     {
         $long = array_filter(
@@ -89,14 +125,9 @@ class PublishGate
             fn (string $s): bool => mb_strlen($s) > self::LONG_SENTENCE_CHARS
         );
 
-        $redundant = 0;
-        foreach (array_count_values($long) as $occurrences) {
-            if ($occurrences > 1) {
-                $redundant += $occurrences - 1;
-            }
-        }
+        $counts = array_count_values($long);
 
-        return $redundant;
+        return $counts === [] ? 0 : max(max($counts) - 1, 0);
     }
 
     /**
