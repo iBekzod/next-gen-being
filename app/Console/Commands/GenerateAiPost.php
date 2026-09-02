@@ -742,7 +742,7 @@ CONTENT STRATEGY:
 🚫 CRITICAL RULES - MUST FOLLOW (QUALITY CONTROL) - THIS DETERMINES SUCCESS OR FAILURE:
 
 **FORBIDDEN PATTERNS (INSTANT FAIL - REWRITE IF YOU DETECT ANY OF THESE):**
-❌ \"As developers, we often...\" → GENERIC OPENING. Replace with: \"Last quarter, our team discovered...\"
+❌ \"As developers, we often...\" → GENERIC OPENING. Replace with: \"This silently fails above 10k concurrent connections, and the docs never say so...\"
 ❌ \"In this article, we'll explore...\" → TEMPLATED. Replace with: \"Here's what I learned when...\"
 ❌ \"Let's understand the basics...\" → DOC REGURGITATION. Replace with: \"Most docs skip the hard part...\"
 ❌ \"This technology allows us to...\" → MARKETING SPEAK. Replace with: \"I realized X only works if you also do Y...\"
@@ -876,7 +876,7 @@ SUCCESS looks like:
 
 **THE FIRST 2-3 SENTENCES ARE MAKE OR BREAK:**
 - ❌ BAD: \"Quantum error correction is a rapidly evolving field...\" (documentation voice)
-- ✅ GOOD: \"Last month, we discovered our quantum circuits were losing coherence at scale. We tried surface codes first - complete failure. Here's what we learned...\" (real experience)
+- ✅ GOOD: \"Quantum circuits lose coherence long before qubit count becomes the bottleneck. Surface codes are the usual first answer, and they break down here for a specific, measurable reason...\" (concrete failure mode)
 
 Pick a random style below and commit to it FULLY. Don't blend them. Write the entire post in ONE voice.
 
@@ -963,11 +963,11 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
    - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
-- Story style: \"Last month, our team ran into...\"
+- Story style: \"The failure looks like a timeout, but the real cause is...\"
 - Technical: \"Here's how X actually works under the hood...\"
 - Tutorial: \"Today we're building... Here's what you need...\"
 - Comparative: \"I benchmarked 3 solutions...\"
-- Opinion: \"After working with X for 2 years, here's what I learned...\"
+- Opinion: \"X is the wrong default for most projects, and the benchmark below shows why...\"
 
 MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
@@ -1083,7 +1083,7 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 - Natural placement within sentences
 
 ✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
-- Show credentials: \"As a senior engineer at [Company]...\" or \"With 10 years in...\"
+- Show expertise through verifiable specifics, never claimed credentials: \"Measured on Postgres 16.2, 16 vCPU / 64GB...\" or \"Reproducible with the config below...\"
 - Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
 - Cite credible sources: Link to official docs, GitHub repos, research papers
 - Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
@@ -2294,11 +2294,11 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
    - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
-- Story style: \"Last month, our team ran into...\"
+- Story style: \"The failure looks like a timeout, but the real cause is...\"
 - Technical: \"Here's how X actually works under the hood...\"
 - Tutorial: \"Today we're building... Here's what you need...\"
 - Comparative: \"I benchmarked 3 solutions...\"
-- Opinion: \"After working with X for 2 years, here's what I learned...\"
+- Opinion: \"X is the wrong default for most projects, and the benchmark below shows why...\"
 
 MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
@@ -2414,7 +2414,7 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 - Natural placement within sentences
 
 ✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
-- Show credentials: \"As a senior engineer at [Company]...\" or \"With 10 years in...\"
+- Show expertise through verifiable specifics, never claimed credentials: \"Measured on Postgres 16.2, 16 vCPU / 64GB...\" or \"Reproducible with the config below...\"
 - Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
 - Cite credible sources: Link to official docs, GitHub repos, research papers
 - Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
