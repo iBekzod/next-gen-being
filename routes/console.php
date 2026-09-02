@@ -23,7 +23,12 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     // Master switch. Set BLOG_AUTO_PUBLISH=true in .env to enable automated
     // publishing (was disabled during the AdSense de-AI-ify of the corpus).
-    if (! filter_var(env('BLOG_AUTO_PUBLISH', false), FILTER_VALIDATE_BOOLEAN)) {
+    // Read through config('content.auto_publish'), NOT env(): production runs
+    // `php artisan config:cache` on every deploy, after which .env is not read
+    // and env() would always return the false default - the entire content
+    // engine would stay off no matter what .env says. Same class of bug as the
+    // one already fixed for CONTENT_ALERT_EMAIL.
+    if (! filter_var(config('content.auto_publish'), FILTER_VALIDATE_BOOLEAN)) {
         \Illuminate\Support\Facades\Log::info('Content cron: skipped (BLOG_AUTO_PUBLISH disabled)');
         return;
     }
@@ -248,7 +253,9 @@ Schedule::call(function () {
 Schedule::command('tutorials:scheduled')
     ->weeklyOn(1, '9:00')
     ->timezone(config('app.timezone'))
-    ->when(fn () => filter_var(env('BLOG_AUTO_PUBLISH', false), FILTER_VALIDATE_BOOLEAN))
+    // config(), not env(): see the note on the content cron above - env() is
+    // dead once `php artisan config:cache` has run, which every deploy does.
+    ->when(fn () => filter_var(config('content.auto_publish'), FILTER_VALIDATE_BOOLEAN))
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground()

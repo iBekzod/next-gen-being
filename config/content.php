@@ -2,6 +2,16 @@
 
 return [
     /**
+     * Master Switch for Automated Content Generation
+     * Both content crons in routes/console.php are gated on this: the daily
+     * post generation check and the weekly tutorial generation.
+     * MUST be read via config(), never env(): every deploy path here runs
+     * `php artisan config:cache`, after which .env is no longer read and
+     * env() returns the default - silently disabling the whole engine.
+     */
+    'auto_publish' => env('BLOG_AUTO_PUBLISH', false),
+
+    /**
      * Daily Publication Configuration
      * Controls the strategic 3-article daily publication mix
      */
