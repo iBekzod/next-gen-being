@@ -218,21 +218,22 @@ class GenerateAiPost extends Command
             $postData['excerpt']
         );
 
-        // Hard quality gates BEFORE AI moderation - block obviously bad content
-        $wordCount = str_word_count(strip_tags($postData['content']));
-        $hardGateFailed = false;
-        $hardGateReason = '';
-
-        if ($wordCount < PublishGate::MIN_WORDS) {
-            $hardGateFailed = true;
-            $hardGateReason = "Word count {$wordCount} below " . PublishGate::MIN_WORDS . ' minimum';
-        } elseif (!preg_match('/[.!?]\s*$/', trim($postData['content']))) {
-            $hardGateFailed = true;
-            $hardGateReason = 'Content does not end with a sentence terminator (likely truncated)';
-        } elseif (substr_count($postData['content'], '```') % 2 !== 0) {
-            $hardGateFailed = true;
-            $hardGateReason = 'Unclosed code block detected';
-        }
+        // Hard quality gates BEFORE AI moderation - block obviously bad content.
+        //
+        // These are the PublishGate's own content checks, not a second copy of
+        // them. The copy that used to live here had drifted: its truncation
+        // regex was /[.!?]\s*$/, so an article ending `...correctly."` was
+        // flagged here into moderation_status = 'pending' and then rejected by
+        // the publisher for being pending. It also counted raw words where the
+        // gate counts unique ones. One definition, no drift.
+        //
+        // moderation_pending is deliberately NOT consulted here: this code is
+        // what decides that flag, so checking it would be circular.
+        $gateFailures = app(PublishGate::class)->contentFailures((string) $postData['content']);
+        $hardGateFailed = $gateFailures !== [];
+        $hardGateReason = $hardGateFailed
+            ? 'Failed publish gates: ' . implode(', ', $gateFailures)
+            : '';
 
         // Approve only if AI passed AND hard gates passed
         $moderation_status = ($moderationResult['passed'] && $moderationResult['score'] >= 85 && !$hardGateFailed)
