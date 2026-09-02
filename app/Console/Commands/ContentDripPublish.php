@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Post;
+use App\Services\Content\PublishGate;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -23,9 +24,10 @@ class ContentDripPublish extends Command
     protected $signature = 'content:drip {--dry-run : Show what would publish without publishing}';
     protected $description = 'Publish quality-gated drafts on cadence (1 post / 5 days, 1 tutorial / 7 days)';
 
-    private const POST_INTERVAL_DAYS = 5;
-    private const TUTORIAL_INTERVAL_DAYS = 7;
-    private const MIN_WORDS = 1500;
+    public function __construct(private readonly PublishGate $gate)
+    {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -33,7 +35,7 @@ class ContentDripPublish extends Command
         $done = [];
 
         // Regular post — 1 every 5 days.
-        if ($this->isDue(false, self::POST_INTERVAL_DAYS)) {
+        if ($this->isDue(false, PublishGate::POST_INTERVAL_DAYS)) {
             if ($post = $this->pickPublishable(false)) {
                 $this->publish($post, $dry);
                 $done[] = "post: {$post->title}";
@@ -43,7 +45,7 @@ class ContentDripPublish extends Command
         }
 
         // Tutorial — 1 every 7 days.
-        if ($this->isDue(true, self::TUTORIAL_INTERVAL_DAYS)) {
+        if ($this->isDue(true, PublishGate::TUTORIAL_INTERVAL_DAYS)) {
             if ($tut = $this->pickPublishable(true)) {
                 $this->publish($tut, $dry);
                 $done[] = "tutorial: {$tut->title}";
@@ -86,31 +88,7 @@ class ContentDripPublish extends Command
             ->when(! $tutorial, fn ($q) => $q->whereNull('series_title'))
             ->orderByDesc('created_at')
             ->get()
-            ->first(fn (Post $p) => $this->passesGates($p));
-    }
-
-    private function passesGates(Post $post): bool
-    {
-        $content = (string) $post->content;
-
-        // 1) Substantial length.
-        if (str_word_count(strip_tags($content)) < self::MIN_WORDS) {
-            return false;
-        }
-        // 2) Not truncated — ends on a sentence terminator.
-        if (! preg_match('/[.!?]["\')\]]?\s*$/', trim($content))) {
-            return false;
-        }
-        // 3) Balanced code fences.
-        if (substr_count($content, '```') % 2 !== 0) {
-            return false;
-        }
-        // 4) Respect an explicit pending-moderation flag.
-        if ($post->moderation_status === 'pending') {
-            return false;
-        }
-
-        return true;
+            ->first(fn (Post $p): bool => $this->gate->passes($p));
     }
 
     private function publish(Post $post, bool $dry): void

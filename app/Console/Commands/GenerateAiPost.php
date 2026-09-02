@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Models\ContentPlan;
+use App\Services\Content\PublishGate;
 use App\Services\ImageGenerationService;
 use App\Services\ContentModerationService;
 use App\Services\WebResearchService;
@@ -217,21 +218,22 @@ class GenerateAiPost extends Command
             $postData['excerpt']
         );
 
-        // Hard quality gates BEFORE AI moderation - block obviously bad content
-        $wordCount = str_word_count(strip_tags($postData['content']));
-        $hardGateFailed = false;
-        $hardGateReason = '';
-
-        if ($wordCount < 1500) {
-            $hardGateFailed = true;
-            $hardGateReason = "Word count {$wordCount} below 1500 minimum";
-        } elseif (!preg_match('/[.!?]\s*$/', trim($postData['content']))) {
-            $hardGateFailed = true;
-            $hardGateReason = 'Content does not end with a sentence terminator (likely truncated)';
-        } elseif (substr_count($postData['content'], '```') % 2 !== 0) {
-            $hardGateFailed = true;
-            $hardGateReason = 'Unclosed code block detected';
-        }
+        // Hard quality gates BEFORE AI moderation - block obviously bad content.
+        //
+        // These are the PublishGate's own content checks, not a second copy of
+        // them. The copy that used to live here had drifted: its truncation
+        // regex was /[.!?]\s*$/, so an article ending `...correctly."` was
+        // flagged here into moderation_status = 'pending' and then rejected by
+        // the publisher for being pending. It also counted raw words where the
+        // gate counts unique ones. One definition, no drift.
+        //
+        // moderation_pending is deliberately NOT consulted here: this code is
+        // what decides that flag, so checking it would be circular.
+        $gateFailures = app(PublishGate::class)->contentFailures((string) $postData['content']);
+        $hardGateFailed = $gateFailures !== [];
+        $hardGateReason = $hardGateFailed
+            ? 'Failed publish gates: ' . implode(', ', $gateFailures)
+            : '';
 
         // Approve only if AI passed AND hard gates passed
         $moderation_status = ($moderationResult['passed'] && $moderationResult['score'] >= 85 && !$hardGateFailed)
@@ -740,7 +742,7 @@ CONTENT STRATEGY:
 🚫 CRITICAL RULES - MUST FOLLOW (QUALITY CONTROL) - THIS DETERMINES SUCCESS OR FAILURE:
 
 **FORBIDDEN PATTERNS (INSTANT FAIL - REWRITE IF YOU DETECT ANY OF THESE):**
-❌ \"As developers, we often...\" → GENERIC OPENING. Replace with: \"Last quarter, our team discovered...\"
+❌ \"As developers, we often...\" → GENERIC OPENING. Replace with: \"This silently fails above 10k concurrent connections, and the docs never say so...\"
 ❌ \"In this article, we'll explore...\" → TEMPLATED. Replace with: \"Here's what I learned when...\"
 ❌ \"Let's understand the basics...\" → DOC REGURGITATION. Replace with: \"Most docs skip the hard part...\"
 ❌ \"This technology allows us to...\" → MARKETING SPEAK. Replace with: \"I realized X only works if you also do Y...\"
@@ -874,7 +876,7 @@ SUCCESS looks like:
 
 **THE FIRST 2-3 SENTENCES ARE MAKE OR BREAK:**
 - ❌ BAD: \"Quantum error correction is a rapidly evolving field...\" (documentation voice)
-- ✅ GOOD: \"Last month, we discovered our quantum circuits were losing coherence at scale. We tried surface codes first - complete failure. Here's what we learned...\" (real experience)
+- ✅ GOOD: \"Quantum circuits lose coherence long before qubit count becomes the bottleneck. Surface codes are the usual first answer, and they break down here for a specific, measurable reason...\" (concrete failure mode)
 
 Pick a random style below and commit to it FULLY. Don't blend them. Write the entire post in ONE voice.
 
@@ -961,11 +963,11 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
    - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
-- Story style: \"Last month, our team ran into...\"
+- Story style: \"The failure looks like a timeout, but the real cause is...\"
 - Technical: \"Here's how X actually works under the hood...\"
 - Tutorial: \"Today we're building... Here's what you need...\"
 - Comparative: \"I benchmarked 3 solutions...\"
-- Opinion: \"After working with X for 2 years, here's what I learned...\"
+- Opinion: \"X is the wrong default for most projects, and the benchmark below shows why...\"
 
 MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
@@ -1081,7 +1083,7 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 - Natural placement within sentences
 
 ✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
-- Show credentials: \"As a senior engineer at [Company]...\" or \"With 10 years in...\"
+- Show expertise through verifiable specifics, never claimed credentials: \"Measured on Postgres 16.2, 16 vCPU / 64GB...\" or \"Reproducible with the config below...\"
 - Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
 - Cite credible sources: Link to official docs, GitHub repos, research papers
 - Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
@@ -1127,8 +1129,13 @@ TONE:
 - Helpful and supportive
 - Enthusiastic but realistic about technology
 - ALWAYS honest about trade-offs and limitations
-- Like a senior developer mentoring with real-world experience
+- Like an experienced mentor explaining how the technology behaves in production
 - NO hype, NO clickbait, NO exaggeration
+
+ATTRIBUTION (HARD RULE):
+- Do NOT claim personal or team experience. Never write \"in my experience\", \"our team\", \"my team\", \"when I first started\", \"last quarter we...\", or \"as a senior/lead/principal engineer\".
+- You have no career, no employer and no war stories. Ground every claim in the technology itself: documentation, benchmarks, source code behaviour, or a clearly hypothetical scenario (\"a team migrating from X to Y will hit...\").
+- Address the reader in the second person (\"your team\", \"you\") instead of narrating your own past.
 
 METADATA FIELDS (DO NOT INCLUDE THESE IN THE ARTICLE CONTENT):
 Generate these separately and return in the JSON response:
@@ -1163,7 +1170,7 @@ Return ONLY this JSON (ensure proper escaping):
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator known for writing comprehensive, in-depth content. CRITICAL: Your articles MUST be 4000-5000 words (15+ minute reads), NOT short tips or quick guides. You are writing DEEP RESEARCH posts, not blog fluff. Each post must include: multiple sections with depth, real code examples, production scenarios, real-world case studies, performance benchmarks, gotchas and edge cases, and honest trade-off discussions. Pack your posts with practical, actionable insights from multiple sources. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. Your response MUST be packed with content - aim for maximum depth and practical value. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
+                'content' => 'You are a technical educator writing comprehensive, in-depth engineering content. CRITICAL: Your articles MUST be 4000-5000 words (15+ minute reads), NOT short tips or quick guides. You are writing DEEP RESEARCH posts, not blog fluff. Each post must include: multiple sections with depth, real code examples, production scenarios, documented case studies described in the third person, performance benchmarks, gotchas and edge cases, and honest trade-off discussions. Pack your posts with practical, actionable insights from multiple sources. ATTRIBUTION: you have no career, employer or war stories - NEVER claim personal or team experience ("in my experience", "our team", "when I first started", "last quarter we...", "as a senior/lead/principal engineer"). Ground every claim in documentation, benchmarks, source behaviour, or an explicitly hypothetical scenario, and address the reader in the second person. You NEVER use clickbait or exaggerated claims. You write clear, realistic, professional content that developers trust. Your response MUST be packed with content - aim for maximum depth and practical value. You MUST return ONLY valid JSON with properly escaped strings. Wrap your response in ```json code blocks.'
             ],
             [
                 'role' => 'user',
@@ -1182,33 +1189,42 @@ Return ONLY this JSON (ensure proper escaping):
             }
         }
 
-        // Validate word count - check initial Pass 1
-        $wordCount = str_word_count(strip_tags($postData['content']));
+        // Pass 1 natijasini nashr chegarasiga nisbatan tekshiramiz.
+        // Chegara PublishGate dan olinadi: generatsiya va nashr bitta ta'rifga
+        // bo'ysunadi, shuning uchun 1500-1999 "o'lik zonasi" endi mavjud emas.
+        //
+        // MUHIM: xom emas, NOYOB so'z soni o'lchanadi — darvoza ham aynan shuni
+        // o'lchaydi. Xom sanoq bilan takrorlangan qatorlar hisobga qo'shilib,
+        // darvozadan o'tmaydigan draft "yetarli" ko'rinardi.
+        $gate = app(PublishGate::class);
+        $wordCount = $gate->uniqueWordCount((string) $postData['content']);
 
-        // If content is below target, attempt Pass 2: Expansion
-        if ($wordCount < 1500) { // Only expand if really short
-            $this->info("   📝 Pass 1 generated {$wordCount} words. Running Pass 2: Expanding content...");
+        if ($this->needsExpansion($wordCount)) {
+            $this->info("   📝 Pass 1: {$wordCount} so'z. Pass 2: kengaytirish...");
 
             try {
                 $postData = $this->expandPostContent($postData);
-                $wordCount = str_word_count(strip_tags($postData['content']));
-                $this->info("   ✅ Pass 2 expansion complete! Final word count: {$wordCount} words");
+                $wordCount = $gate->uniqueWordCount((string) $postData['content']);
+                $this->info("   ✅ Pass 2 tugadi: {$wordCount} so'z");
             } catch (\Exception $e) {
                 Log::warning('Post expansion failed, using Pass 1 content', ['error' => $e->getMessage()]);
-                $this->warn("   ⚠️  Expansion failed, using Pass 1 content ({$wordCount} words)");
+                $this->warn("   ⚠️  Kengaytirish muvaffaqiyatsiz, Pass 1 ishlatiladi ({$wordCount} so'z)");
             }
         } else {
-            $this->info("   ✅ Pass 1 sufficient: {$wordCount} words");
+            $this->info("   ✅ Pass 1 yetarli: {$wordCount} so'z");
         }
 
-        // Final validation - minimum 2000 words for a solid 10+ minute read
-        if ($wordCount < 2000) {
-            Log::warning('Generated content below minimum word count', [
-                'required_min' => 2000,
+        if (!$this->meetsPublishThreshold($wordCount)) {
+            Log::warning('Generated content below publish threshold', [
+                'required_min' => PublishGate::MIN_WORDS,
                 'actual_words' => $wordCount,
                 'title' => $postData['title'],
             ]);
-            throw new \Exception("Content too short: {$wordCount} words. Minimum required: 2000 words for a 10+ minute deep read.");
+
+            throw new \Exception(
+                "Content too short: {$wordCount} words. Minimum required: "
+                . PublishGate::MIN_WORDS . ' words.'
+            );
         }
 
         $readMinutes = ceil($wordCount / 250);
@@ -1218,77 +1234,165 @@ Return ONLY this JSON (ensure proper escaping):
     }
 
     /**
-     * PASS 2: Expand content from initial generation to reach 4000-5000 words
-     * Takes the initial post and asks AI to expand each section significantly
-     * Includes retry logic with exponential backoff for rate limiting
+     * Pass 1 natijasi kengaytirishga muhtojmi.
+     *
+     * Mo'ljal — MIN_WORDS emas, EXPANSION_TARGET_WORDS (1725). Nashr chegarasi
+     * NOYOB so'zlarga qo'llangani uchun aynan chegarada turgan draftni bitta
+     * takrorlangan qator ham pastga tushiradi; 15% zaxira shuni qoplaydi.
+     * Ikkala predikat ham bir xil (noyob) o'lchovni oladi, shuning uchun
+     * "kengaytirilmaydi, lekin rad etiladi" o'lik zonasi yopiq qoladi:
+     * EXPANSION_TARGET_WORDS > MIN_WORDS.
+     */
+    private function needsExpansion(int $wordCount): bool
+    {
+        return $wordCount < PublishGate::EXPANSION_TARGET_WORDS;
+    }
+
+    /**
+     * Yakuniy so'z soni nashr chegarasini qondiradimi.
+     */
+    private function meetsPublishThreshold(int $wordCount): bool
+    {
+        return $wordCount >= PublishGate::MIN_WORDS;
+    }
+
+    /**
+     * Markdown maqolani `##` sarlavhalari bo'yicha bo'ladi.
+     *
+     * @return array<int, array{heading: string, body: string}>
+     */
+    private function splitSections(string $markdown): array
+    {
+        $lines = preg_split('/\R/', $markdown) ?: [];
+        $sections = [['heading' => '', 'body' => '']];
+        $insideFence = false;
+
+        foreach ($lines as $line) {
+            // Fenced code blocks can contain lines that start with "## " (a shell
+            // comment, a markdown example, etc). Track fence state so such lines
+            // are never mistaken for a real heading and split mid-block.
+            if (preg_match('/^\s*```/', $line) === 1) {
+                $insideFence = !$insideFence;
+            }
+
+            if (!$insideFence && preg_match('/^##\s+\S/', $line) === 1) {
+                $sections[] = ['heading' => trim($line), 'body' => ''];
+                continue;
+            }
+
+            $sections[array_key_last($sections)]['body'] .= $line . "\n";
+        }
+
+        foreach ($sections as $i => $section) {
+            $sections[$i]['body'] = trim($section['body']);
+        }
+
+        // Bo'sh muqaddimani tashlab yuboramiz (maqola darhol sarlavha bilan boshlansa).
+        if ($sections[0]['heading'] === '' && $sections[0]['body'] === '' && count($sections) > 1) {
+            array_shift($sections);
+        }
+
+        return array_values($sections);
+    }
+
+    /**
+     * PASS 2: maqolani BO'LIM-BO'LIM kengaytiradi.
+     *
+     * Eski versiya butun maqolani qaytadan yozishni so'rar edi va shu bilan
+     * birga max_tokens=4000 chegarasini qo'yardi — 4000 SO'Z ~5300+ token
+     * bo'lgani uchun talab bajarilmas edi va model takrorlanishga o'tardi
+     * (spec §1.2b). Endi model faqat YANGI matn qaytaradi; mavjud matn
+     * hech qachon qayta chiqarilmaydi, shuning uchun uni takrorlay olmaydi.
      */
     private function expandPostContent(array $postData, int $retryCount = 0, int $maxRetries = 2): array
     {
-        $currentWordCount = str_word_count(strip_tags($postData['content']));
-        $wordsNeeded = 4000 - $currentWordCount;
+        $sections = $this->splitSections((string) $postData['content']);
+        $expanded = [];
 
-        $expandPrompt = "You are a senior technical writer. Below is a blog post that is currently {$currentWordCount} words. It needs to be expanded to 4000+ words ({$wordsNeeded} more words needed).
+        foreach ($sections as $section) {
+            $piece = trim($section['heading'] . "\n" . $section['body']);
+            $expanded[] = $piece;
 
-Your task: Expand the article significantly while maintaining quality. DO NOT just repeat content - add NEW depth, examples, and value:
-
-ORIGINAL ARTICLE:
----
-{$postData['content']}
----
-
-EXPANSION REQUIREMENTS:
-1. Add 2-3x more content to each major section
-2. Include additional code examples (if technical)
-3. Add more real-world scenarios and case studies
-4. Include performance benchmarks or metrics
-5. Add edge cases and gotchas not in original
-6. Expand on implementation details
-7. Add more detailed explanations of complex concepts
-8. Include additional warnings or best practices
-
-TARGET: Expand to approximately 4000+ words total (about {$wordsNeeded} additional words).
-
-Return the EXPANDED article content as pure markdown (no JSON, no metadata). Write naturally and comprehensively - this should read like a complete, authoritative deep-dive article, not a padded version.
-
-Start your response directly with the expanded content (no intro or preamble).";
-
-        try {
-            $expandedContent = $this->callOpenAI([
-                [
-                    'role' => 'system',
-                    'content' => 'You are a senior technical writer specializing in expanding articles while maintaining quality and authenticity. Expand content significantly by adding real examples, depth, and practical value. Your expansions add genuine new information, not padding.'
-                ],
-                [
-                    'role' => 'user',
-                    'content' => $expandPrompt
-                ]
-            ], 4000, 0.7, false); // Pass 2 expansion: 4000 tokens for additional content
-
-            // Clean up the response (remove any markdown code blocks if present)
-            $expandedContent = preg_replace('/^```[a-z]*\n?/i', '', $expandedContent);
-            $expandedContent = preg_replace('/\n?```$/i', '', $expandedContent);
-
-            // Update the post data with expanded content
-            $postData['content'] = trim($expandedContent);
-
-            return $postData;
-
-        } catch (\Exception $e) {
-            // Check if it's a rate limit error
-            if (str_contains($e->getMessage(), 'rate_limit') && $retryCount < $maxRetries) {
-                $waitTime = 20 + ($retryCount * 10); // 20s, 30s backoff
-                $this->warn("   ⏸️  Rate limit hit. Waiting {$waitTime}s before retry...");
-                sleep($waitTime);
-                return $this->expandPostContent($postData, $retryCount + 1, $maxRetries);
+            // Muqaddimani kengaytirmaymiz — u qisqa bo'lishi kerak.
+            if ($section['heading'] === '' || $section['body'] === '') {
+                continue;
             }
 
-            Log::error('Content expansion failed', [
-                'error' => $e->getMessage(),
-                'title' => $postData['title'],
-                'retry_count' => $retryCount,
-            ]);
-            throw new \Exception("Failed to expand content: " . $e->getMessage());
+            try {
+                $addition = $this->callOpenAI([
+                    [
+                        'role' => 'system',
+                        'content' => 'You add new material to an existing article section. '
+                            . 'You never restate, summarise, or repeat what you are given.',
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => "Below is one section of a technical article.\n\n"
+                            . "SECTION:\n---\n{$piece}\n---\n\n"
+                            . "Write 200-350 words of ADDITIONAL material that continues this section: "
+                            . "a concrete code example, an edge case, or a gotcha not already mentioned.\n\n"
+                            . "Rules:\n"
+                            . "- Do NOT repeat or rephrase any sentence above.\n"
+                            . "- Do NOT write a heading.\n"
+                            . "- Do NOT claim personal or team experience.\n"
+                            . "- Start directly with the new material.",
+                    ],
+                ], 700, 0.7, false);
+
+                $addition = trim($addition);
+
+                // The model sometimes wraps its ENTIRE reply in a single fence
+                // (```php ... ```) even though the reply itself is prose, not a
+                // lone code block. Only unwrap when the fence wraps the whole
+                // response - stripping just one side (as the old code did) turns
+                // a genuine embedded code example into an unbalanced fence, which
+                // fails PublishGate's fence-parity check.
+                //
+                // (.*) is greedy under /s, so a reply that merely STARTS and
+                // ENDS with a fence - two genuine code blocks with prose between
+                // them - also matches. Unwrapping that strips the outer markers
+                // of two different blocks and leaves the inner ones delimiting
+                // the prose. If the captured body still contains a fence, this
+                // was never a single whole-response wrap: leave it alone.
+                if (preg_match('/^```[a-zA-Z0-9]*\r?\n(.*)\r?\n```$/s', $addition, $fenceMatch) === 1
+                    && ! str_contains($fenceMatch[1], '```')) {
+                    $addition = trim($fenceMatch[1]);
+                }
+
+                // Truncated code blocks (e.g. the 700-token cap cutting off mid
+                // example) leave an odd number of ``` markers. A half-written code
+                // block is worse than a shorter section, so drop the whole addition.
+                if ($addition !== '' && substr_count($addition, '```') % 2 !== 0) {
+                    Log::warning('Section addition discarded: unbalanced code fence', [
+                        'title' => $postData['title'] ?? null,
+                        'heading' => $section['heading'],
+                    ]);
+                    $addition = '';
+                }
+
+                if ($addition !== '') {
+                    $expanded[] = $addition;
+                }
+            } catch (\Exception $e) {
+                if (str_contains($e->getMessage(), 'rate_limit') && $retryCount < $maxRetries) {
+                    $wait = 20 + ($retryCount * 10);
+                    $this->warn("   ⏸️  Rate limit. {$wait}s kutilmoqda...");
+                    sleep($wait);
+
+                    return $this->expandPostContent($postData, $retryCount + 1, $maxRetries);
+                }
+
+                Log::warning('Section expansion skipped', [
+                    'error' => $e->getMessage(),
+                    'heading' => $section['heading'],
+                    'title' => $postData['title'] ?? null,
+                ]);
+            }
         }
+
+        $postData['content'] = implode("\n\n", array_filter($expanded));
+
+        return $postData;
     }
 
     private function parseAIResponse(string $response): array
@@ -2083,7 +2187,7 @@ CONTENT REQUIREMENTS:
         $response = $this->callOpenAI([
             [
                 'role' => 'system',
-                'content' => 'You are a senior software engineer and technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. You NEVER use clickbait or exaggerated performance claims. You write professional, realistic, educational content. You MUST return ONLY valid JSON wrapped in ```json code blocks with properly escaped strings.'
+                'content' => 'You are a technical educator creating comprehensive tutorial series. Each part must be clear, practical, and build properly on previous parts. ATTRIBUTION: NEVER claim personal or team experience ("in my experience", "our team", "as a senior engineer") - ground every claim in documentation, benchmarks or source behaviour and address the reader in the second person. You NEVER use clickbait or exaggerated performance claims. You write professional, realistic, educational content. You MUST return ONLY valid JSON wrapped in ```json code blocks with properly escaped strings.'
             ],
             [
                 'role' => 'user',
@@ -2190,11 +2294,11 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
    - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
-- Story style: \"Last month, our team ran into...\"
+- Story style: \"The failure looks like a timeout, but the real cause is...\"
 - Technical: \"Here's how X actually works under the hood...\"
 - Tutorial: \"Today we're building... Here's what you need...\"
 - Comparative: \"I benchmarked 3 solutions...\"
-- Opinion: \"After working with X for 2 years, here's what I learned...\"
+- Opinion: \"X is the wrong default for most projects, and the benchmark below shows why...\"
 
 MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
@@ -2310,7 +2414,7 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 - Natural placement within sentences
 
 ✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
-- Show credentials: \"As a senior engineer at [Company]...\" or \"With 10 years in...\"
+- Show expertise through verifiable specifics, never claimed credentials: \"Measured on Postgres 16.2, 16 vCPU / 64GB...\" or \"Reproducible with the config below...\"
 - Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
 - Cite credible sources: Link to official docs, GitHub repos, research papers
 - Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
@@ -2356,8 +2460,13 @@ TONE:
 - Helpful and supportive
 - Enthusiastic but realistic about technology
 - ALWAYS honest about trade-offs and limitations
-- Like a senior developer mentoring with real-world experience
+- Like an experienced mentor explaining how the technology behaves in production
 - NO hype, NO clickbait, NO exaggeration
+
+ATTRIBUTION (HARD RULE):
+- Do NOT claim personal or team experience. Never write \"in my experience\", \"our team\", \"my team\", \"when I first started\", \"last quarter we...\", or \"as a senior/lead/principal engineer\".
+- You have no career, no employer and no war stories. Ground every claim in the technology itself: documentation, benchmarks, source code behaviour, or a clearly hypothetical scenario (\"a team migrating from X to Y will hit...\").
+- Address the reader in the second person (\"your team\", \"you\") instead of narrating your own past.
 
 METADATA FIELDS (DO NOT INCLUDE THESE IN THE ARTICLE CONTENT):
 Generate these separately and return in the JSON response:
