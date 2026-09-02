@@ -58,8 +58,78 @@ class ContentHealthCheckTest extends TestCase
         ]);
 
         $this->artisan('content:health-check')
-            ->expectsOutputToContain('empty_publishable_backlog')
+            ->expectsOutputToContain('empty_publishable_post_backlog')
             ->assertExitCode(1);
+    }
+
+    /**
+     * Uchta yaxshi POST tutorial ochligini yashirmasligi kerak: zaxira
+     * hovuzlari alohida sanaladi, chegara esa ikkalasi uchun bir xil.
+     */
+    public function test_tutorial_zaxirasi_alohida_sanaladi(): void
+    {
+        Post::where('status', 'draft')->delete();
+
+        $this->makeFreshPublished();
+
+        // Faqat postlar tomonida to'liq zaxira; tutoriallar tomoni bo'sh.
+        $this->makePublishableDrafts(3, null);
+
+        $this->artisan('content:health-check')
+            ->expectsOutputToContain('empty_publishable_tutorial_backlog')
+            ->doesntExpectOutputToContain('empty_publishable_post_backlog')
+            ->assertExitCode(1);
+    }
+
+    /**
+     * Sog'lom holat 0 bilan tugashi SHART — aks holda buyruq har doim
+     * "buzilgan" deb qichqiradi va ogohlantirish qiymatini yo'qotadi.
+     * Hech bir mavjud test 0 chiqish kodini isbotlamagan edi.
+     */
+    public function test_soglom_quvur_nol_kod_bilan_tugaydi(): void
+    {
+        // setUp() faqat nashr qilingan POSTlarni tozalaydi; seed qilingan
+        // draftlar sanoqqa aralashmasligi uchun ularni ham olib tashlaymiz.
+        Post::where('status', 'draft')->delete();
+
+        $this->makeFreshPublished();
+        $this->makePublishableDrafts(3, null);
+        $this->makePublishableDrafts(3, 'Laravel navbatlari seriyasi');
+
+        $this->artisan('content:health-check')
+            ->expectsOutputToContain("Kontent quvuri sog'lom")
+            ->assertExitCode(0);
+    }
+
+    /** Yaqinda nashr qilingan bitta post va bitta tutorial. */
+    private function makeFreshPublished(): void
+    {
+        Post::factory()->create([
+            'status' => 'published',
+            'series_title' => null,
+            'published_at' => now(),
+            'content' => $this->cleanContent(),
+        ]);
+
+        Post::factory()->create([
+            'status' => 'published',
+            'series_title' => 'Laravel navbatlari seriyasi',
+            'published_at' => now(),
+            'content' => $this->cleanContent(),
+        ]);
+    }
+
+    /** Darvozadan o'tadigan draftlar (moderatsiya tasdiqlangan). */
+    private function makePublishableDrafts(int $count, ?string $seriesTitle): void
+    {
+        for ($i = 0; $i < $count; $i++) {
+            Post::factory()->create([
+                'status' => 'draft',
+                'series_title' => $seriesTitle,
+                'moderation_status' => 'approved',
+                'content' => $this->codeHeavyContent(),
+            ]);
+        }
     }
 
     public function test_kutilayotgan_moderatsiya_ogohlantiradi(): void

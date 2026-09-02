@@ -46,24 +46,36 @@ class ContentHealthCheck extends Command
             $problems['stale_tutorials'] = 'Oxirgi tutorial: ' . ($lastTutorial ?: 'hech qachon');
         }
 
-        $publishable = 0;
+        // Postlar va tutoriallar ALOHIDA sanaladi. Ilgari ular bitta hovuzga
+        // qo'shilardi, ya'ni uchta yaxshi post tutorial ochligini yashirardi —
+        // holbuki ular alohida kadensiyada, alohida navbatdan nashr qilinadi.
+        $publishablePosts = 0;
+        $publishableTutorials = 0;
         $pendingOnly = 0;
 
-        Post::where('status', 'draft')->select('id', 'content', 'moderation_status')
-            ->chunk(200, function ($drafts) use (&$publishable, &$pendingOnly) {
+        Post::where('status', 'draft')->select('id', 'content', 'moderation_status', 'series_title')
+            ->chunk(200, function ($drafts) use (&$publishablePosts, &$publishableTutorials, &$pendingOnly) {
                 foreach ($drafts as $draft) {
                     $failures = $this->gate->failures($draft);
 
                     if ($failures === []) {
-                        $publishable++;
+                        if ($draft->series_title === null) {
+                            $publishablePosts++;
+                        } else {
+                            $publishableTutorials++;
+                        }
                     } elseif ($failures === ['moderation_pending']) {
                         $pendingOnly++;
                     }
                 }
             });
 
-        if ($publishable < self::MIN_PUBLISHABLE_BACKLOG) {
-            $problems['empty_publishable_backlog'] = "Darvozadan o'tadigan draftlar: {$publishable}";
+        if ($publishablePosts < self::MIN_PUBLISHABLE_BACKLOG) {
+            $problems['empty_publishable_post_backlog'] = "Darvozadan o'tadigan post draftlari: {$publishablePosts}";
+        }
+
+        if ($publishableTutorials < self::MIN_PUBLISHABLE_BACKLOG) {
+            $problems['empty_publishable_tutorial_backlog'] = "Darvozadan o'tadigan tutorial draftlari: {$publishableTutorials}";
         }
 
         if ($pendingOnly > 0) {
@@ -71,7 +83,10 @@ class ContentHealthCheck extends Command
         }
 
         if ($problems === []) {
-            $this->info("✅ Kontent quvuri sog'lom. Nashrga tayyor draftlar: {$publishable}");
+            $this->info(
+                "✅ Kontent quvuri sog'lom. Nashrga tayyor draftlar: "
+                . "{$publishablePosts} post, {$publishableTutorials} tutorial"
+            );
 
             return self::SUCCESS;
         }
