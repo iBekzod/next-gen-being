@@ -1251,9 +1251,17 @@ Return ONLY this JSON (ensure proper escaping):
     {
         $lines = preg_split('/\R/', $markdown) ?: [];
         $sections = [['heading' => '', 'body' => '']];
+        $insideFence = false;
 
         foreach ($lines as $line) {
-            if (preg_match('/^##\s+\S/', $line) === 1) {
+            // Fenced code blocks can contain lines that start with "## " (a shell
+            // comment, a markdown example, etc). Track fence state so such lines
+            // are never mistaken for a real heading and split mid-block.
+            if (preg_match('/^\s*```/', $line) === 1) {
+                $insideFence = !$insideFence;
+            }
+
+            if (!$insideFence && preg_match('/^##\s+\S/', $line) === 1) {
                 $sections[] = ['heading' => trim($line), 'body' => ''];
                 continue;
             }
@@ -1317,7 +1325,28 @@ Return ONLY this JSON (ensure proper escaping):
                     ],
                 ], 700, 0.7, false);
 
-                $addition = trim(preg_replace('/^```[a-z]*\n?/i', '', $addition) ?? '');
+                $addition = trim($addition);
+
+                // The model sometimes wraps its ENTIRE reply in a single fence
+                // (```php ... ```) even though the reply itself is prose, not a
+                // lone code block. Only unwrap when the fence wraps the whole
+                // response - stripping just one side (as the old code did) turns
+                // a genuine embedded code example into an unbalanced fence, which
+                // fails PublishGate's fence-parity check.
+                if (preg_match('/^```[a-zA-Z0-9]*\r?\n(.*)\r?\n```$/s', $addition, $fenceMatch) === 1) {
+                    $addition = trim($fenceMatch[1]);
+                }
+
+                // Truncated code blocks (e.g. the 700-token cap cutting off mid
+                // example) leave an odd number of ``` markers. A half-written code
+                // block is worse than a shorter section, so drop the whole addition.
+                if ($addition !== '' && substr_count($addition, '```') % 2 !== 0) {
+                    Log::warning('Section addition discarded: unbalanced code fence', [
+                        'title' => $postData['title'] ?? null,
+                        'heading' => $section['heading'],
+                    ]);
+                    $addition = '';
+                }
 
                 if ($addition !== '') {
                     $expanded[] = $addition;
@@ -1334,6 +1363,7 @@ Return ONLY this JSON (ensure proper escaping):
                 Log::warning('Section expansion skipped', [
                     'error' => $e->getMessage(),
                     'heading' => $section['heading'],
+                    'title' => $postData['title'] ?? null,
                 ]);
             }
         }
