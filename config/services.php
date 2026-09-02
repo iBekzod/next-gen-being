@@ -179,4 +179,9 @@ return [
     'blog_bot' => [
         'secret' => env('BOT_API_SECRET'),
     ],
+
+    // Recipient for content:health-check alerts (see App\Console\Commands\ContentHealthCheck).
+    'content_alert' => [
+        'email' => env('CONTENT_ALERT_EMAIL'),
+    ],
 ];

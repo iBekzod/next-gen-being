@@ -95,7 +95,13 @@ class ContentHealthCheck extends Command
         // config/backup.php:214 da u qattiq yozilgan 'your@example.com'
         // placeholder qiymati, env'dan olinmaydi. Ogohlantirish shu manzilga
         // jimgina ketib qolishi mumkin edi. Shuning uchun alohida kalit.
-        $to = env('CONTENT_ALERT_EMAIL') ?: config('mail.from.address');
+        //
+        // env() emas, config('services.content_alert.email') o'qiladi:
+        // production'da har bir deploy yo'li `config:cache` ishga tushiradi,
+        // shundan keyin .env o'qilmaydi va env() bu yerda har doim null
+        // qaytaradi — ogohlantirish jim-jimgina o'chib qoladi. config/
+        // qiymatlari config:cache ichida saqlanadi, shuning uchun xavfsiz.
+        $to = config('services.content_alert.email') ?: config('mail.from.address');
 
         if (! $to || str_contains((string) $to, 'example.com')) {
             Log::warning('Health check alert not sent: CONTENT_ALERT_EMAIL is not configured');
