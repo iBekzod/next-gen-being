@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Models\ContentPlan;
+use App\Services\Content\PublishGate;
 use App\Services\ImageGenerationService;
 use App\Services\ContentModerationService;
 use App\Services\WebResearchService;
@@ -1182,33 +1183,37 @@ Return ONLY this JSON (ensure proper escaping):
             }
         }
 
-        // Validate word count - check initial Pass 1
+        // Pass 1 natijasini nashr chegarasiga nisbatan tekshiramiz.
+        // Chegara PublishGate dan olinadi: generatsiya va nashr bitta ta'rifga
+        // bo'ysunadi, shuning uchun 1500-1999 "o'lik zonasi" endi mavjud emas.
         $wordCount = str_word_count(strip_tags($postData['content']));
 
-        // If content is below target, attempt Pass 2: Expansion
-        if ($wordCount < 1500) { // Only expand if really short
-            $this->info("   📝 Pass 1 generated {$wordCount} words. Running Pass 2: Expanding content...");
+        if ($wordCount < PublishGate::MIN_WORDS) {
+            $this->info("   📝 Pass 1: {$wordCount} so'z. Pass 2: kengaytirish...");
 
             try {
                 $postData = $this->expandPostContent($postData);
                 $wordCount = str_word_count(strip_tags($postData['content']));
-                $this->info("   ✅ Pass 2 expansion complete! Final word count: {$wordCount} words");
+                $this->info("   ✅ Pass 2 tugadi: {$wordCount} so'z");
             } catch (\Exception $e) {
                 Log::warning('Post expansion failed, using Pass 1 content', ['error' => $e->getMessage()]);
-                $this->warn("   ⚠️  Expansion failed, using Pass 1 content ({$wordCount} words)");
+                $this->warn("   ⚠️  Kengaytirish muvaffaqiyatsiz, Pass 1 ishlatiladi ({$wordCount} so'z)");
             }
         } else {
-            $this->info("   ✅ Pass 1 sufficient: {$wordCount} words");
+            $this->info("   ✅ Pass 1 yetarli: {$wordCount} so'z");
         }
 
-        // Final validation - minimum 2000 words for a solid 10+ minute read
-        if ($wordCount < 2000) {
-            Log::warning('Generated content below minimum word count', [
-                'required_min' => 2000,
+        if ($wordCount < PublishGate::MIN_WORDS) {
+            Log::warning('Generated content below publish threshold', [
+                'required_min' => PublishGate::MIN_WORDS,
                 'actual_words' => $wordCount,
                 'title' => $postData['title'],
             ]);
-            throw new \Exception("Content too short: {$wordCount} words. Minimum required: 2000 words for a 10+ minute deep read.");
+
+            throw new \Exception(
+                "Content too short: {$wordCount} words. Minimum required: "
+                . PublishGate::MIN_WORDS . ' words.'
+            );
         }
 
         $readMinutes = ceil($wordCount / 250);
