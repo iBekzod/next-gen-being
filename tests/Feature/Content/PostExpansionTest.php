@@ -284,6 +284,39 @@ class PostExpansionTest extends TestCase
         $this->assertSame(2, substr_count($content, '```'));
     }
 
+    /**
+     * Javob fence bilan BOSHLANIB, fence bilan TUGASHI mumkin, lekin ular
+     * ikkita HAR XIL kod bloki bo'lsa (orasida nasr bilan). `(.*)` /s ostida
+     * ochko'z bo'lgani uchun eski shart bunday javobni ham "butunlay o'ralgan"
+     * deb hisoblab, tashqi belgilarni yechardi va ichkilari nasrni o'rab qolardi.
+     */
+    public function test_expandPostContent_ikki_blok_orasidagi_nasr_ochilmaydi(): void
+    {
+        $javob = "```php\necho 'birinchi';\n```\n\nOraliq nasr matni.\n\n```php\necho 'ikkinchi';\n```";
+
+        Http::fake([
+            '*' => Http::response([
+                'choices' => [
+                    ['message' => ['content' => $javob]],
+                ],
+            ], 200),
+        ]);
+
+        $command = new GenerateAiPost();
+        $this->setPrivateProviderProps($command);
+
+        $result = $this->invokeOn($command, 'expandPostContent', [[
+            'title' => 'Test post',
+            'content' => "## Bolim\nAsl matn.",
+        ]]);
+        $content = $result['content'];
+
+        $this->assertStringContainsString($javob, $content, 'Ikkita alohida blok teginilmasligi kerak.');
+        // Eski (ochko'z) shart tashqi belgilarni yechib, atigi 2 ta marker
+        // qoldirardi va ular nasrni o'rab qolardi.
+        $this->assertSame(4, substr_count($content, '```'));
+    }
+
     public function test_expandPostContent_kesilgan_kod_bloki_tashlab_yuboriladi(): void
     {
         Log::shouldReceive('warning')

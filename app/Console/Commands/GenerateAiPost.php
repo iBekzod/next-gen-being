@@ -1347,7 +1347,15 @@ Return ONLY this JSON (ensure proper escaping):
                 // response - stripping just one side (as the old code did) turns
                 // a genuine embedded code example into an unbalanced fence, which
                 // fails PublishGate's fence-parity check.
-                if (preg_match('/^```[a-zA-Z0-9]*\r?\n(.*)\r?\n```$/s', $addition, $fenceMatch) === 1) {
+                //
+                // (.*) is greedy under /s, so a reply that merely STARTS and
+                // ENDS with a fence - two genuine code blocks with prose between
+                // them - also matches. Unwrapping that strips the outer markers
+                // of two different blocks and leaves the inner ones delimiting
+                // the prose. If the captured body still contains a fence, this
+                // was never a single whole-response wrap: leave it alone.
+                if (preg_match('/^```[a-zA-Z0-9]*\r?\n(.*)\r?\n```$/s', $addition, $fenceMatch) === 1
+                    && ! str_contains($fenceMatch[1], '```')) {
                     $addition = trim($fenceMatch[1]);
                 }
 
