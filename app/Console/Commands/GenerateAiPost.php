@@ -743,35 +743,37 @@ CONTENT STRATEGY:
 
 **FORBIDDEN PATTERNS (INSTANT FAIL - REWRITE IF YOU DETECT ANY OF THESE):**
 ❌ \"As developers, we often...\" → GENERIC OPENING. Replace with: \"This silently fails above 10k concurrent connections, and the docs never say so...\"
-❌ \"In this article, we'll explore...\" → TEMPLATED. Replace with: \"Here's what I learned when...\"
+❌ \"In this article, we'll explore...\" → TEMPLATED. Replace with: \"Redis 7.2 changed the eviction accounting here, and the upgrade notes never mention it...\"
 ❌ \"Let's understand the basics...\" → DOC REGURGITATION. Replace with: \"Most docs skip the hard part...\"
-❌ \"This technology allows us to...\" → MARKETING SPEAK. Replace with: \"I realized X only works if you also do Y...\"
-❌ \"The following code shows...\" → TUTORIAL TEMPLATE. Replace with: \"When I first tried this, it broke because...\"
+❌ \"This technology allows us to...\" → MARKETING SPEAK. Replace with: \"X only holds while the pool stays under max_connections; past that it quietly degrades to Y...\"
+❌ \"The following code shows...\" → TUTORIAL TEMPLATE. Replace with: \"Run this against an empty table and it flies; add 100k rows and the planner switches to a sequential scan...\"
 ❌ \"In conclusion...\" or \"Summary\" headings → RIGID STRUCTURE. Let content end naturally.
-❌ Passive voice like \"errors are thrown\", \"databases are queried\" → IMPERSONAL. Use \"I discovered...\", \"we debugged...\"
-❌ Perfect implementations without errors shown → FAKE. Show actual error messages you hit.
-❌ Feature lists like \"Pros and Cons\" → GENERIC COMPARISON. Use: \"Why I abandoned X for Y after Z failed\"
+❌ Passive voice like \"errors are thrown\", \"databases are queried\" → IMPERSONAL. Name the actor: \"the driver throws SQLSTATE[HY000] [2002]\", \"the scheduler re-queues the job\"
+❌ Perfect implementations without errors shown → FAKE. Show the exact error the broken version produces, verbatim, with the stack frame that matters.
+❌ Feature lists like \"Pros and Cons\" → GENERIC COMPARISON. Use: \"X is the wrong default here - it costs 3x memory to save 12ms, and that trade only pays above 50k req/s\"
 
 **AUTHENTICITY & UNIQUENESS (MOST CRITICAL):**
-1. YOU MUST WRITE IN FIRST PERSON (\"I\", \"we\", \"my\") - This is non-negotiable. Every section should feel like personal experience.
-2. INCLUDE SPECIFIC NAMES: \"My colleague Jake suggested...\", \"Our CTO Sarah insisted on...\", \"The Stripe team told us...\"
-3. INCLUDE SPECIFIC DATES/TIMELINES: \"Last month\", \"Q3 2024\", \"After 6 months of...\", \"When we deployed Friday at 3pm...\"
-4. INCLUDE SPECIFIC NUMBERS ABOUT YOUR EXPERIENCE: \"We scaled from 1M to 50M requests\", \"Reduced latency from 800ms to 120ms\", \"Saved $40k/month\"
-5. SHARE AT LEAST ONE FAILURE STORY: \"My first approach failed because...\", \"We lost 2 days debugging why...\", \"The outage happened because I didn't...\"
-6. SHARE CONFLICTING OPINIONS: \"Everyone says X, but I've found that Y works better because...\", \"The docs recommend Z, but that's wrong when...\", \"My hot take: the popular approach is actually overengineered\"
-7. INCLUDE PROPRIETARY/LEARNED-THE-HARD-WAY KNOWLEDGE: Not available in docs. Examples: \"Buffer sizes need tuning on production because...\", \"The cache invalidation strategy they don't document...\", \"The scaling limits nobody mentions...\"
-8. REFERENCE SPECIFIC PRODUCTION SCENARIOS: \"At 10M requests/day, our approach failed\", \"When the spike hit unexpectedly\", \"During Black Friday when everything broke\"
-9. SHOW YOUR WORKFLOW/SHORTCUTS: \"Here's how I actually debug this...\", \"My tmux setup for this...\", \"The VSCode extensions I can't live without...\", \"The bash function I wrote to...\"
-10. BE OPINIONATED WITH JUSTIFICATION: Don't say \"some prefer X, others prefer Y\". Say \"X is better because [experience-based reason]\", \"Y is wrong when [specific scenario]\", \"Here's why I'd never use Z again\"
+Credibility comes from verifiable specifics, not from claimed biography. You have no career, no employer and no war stories - your entire authority is that every claim can be checked.
+1. GROUND EVERY CLAIM IN SOMETHING CHECKABLE: documented behaviour, a spec section, a benchmark the reader can re-run, the source file, an upstream issue. A sentence nobody can verify does not belong.
+2. NAME REAL, PUBLIC SOURCES - NEVER INVENTED PEOPLE: \"The Postgres 16 release notes spell this out...\", \"redis/redis#11669 documents the regression...\", \"RFC 9110 Section 9.3.1 is explicit about this...\". Never invent a colleague, a manager or an employer.
+3. PIN VERSIONS AND SYMPTOMS TOGETHER: \"Broken in 4.2.0, fixed in 4.2.3\", \"Only reproduces on glibc 2.35 with io_uring enabled\", \"Deprecated in Node 20, removed in Node 22\". Dates belong to the software's history, never to yours.
+4. GIVE NUMBERS THE READER CAN REPRODUCE: state the hardware, the dataset size, the exact command and the raw output. \"pgbench -c 50 -T 60 on 8 vCPU / 32GB: 4,180 tps before the index, 11,900 after\" - never \"we made it 3x faster\".
+5. SHOW AT LEAST ONE FAILURE MODE IN FULL: the config that triggers it, the exact error text, and the mechanism that causes it. A reproducible failure, not a remembered outage.
+6. TAKE A SIDE AND DEFEND IT: \"Everyone reaches for X here, and it's wrong above 10k rows because Y\", \"The docs recommend Z, and Z corrupts the cache whenever the TTL is shorter than the lock\". Strong opinions, argued from behaviour.
+7. INCLUDE WHAT THE DOCS LEAVE OUT: undocumented buffer limits, the invalidation order you can only see by reading the source, the scaling ceiling nobody writes down. Point at the code or the issue that proves it.
+8. USE CONCRETE SCENARIOS, CLEARLY FRAMED AS MODELS: \"Take a service at 10M requests/day: at that rate a default pool of 20 saturates in about...\". Present them as worked hypotheticals, never as events that happened.
+9. SHOW THE PRACTICAL SETUP: the flag that surfaces the bug, the query that proves the N+1, the one-liner that reproduces it locally. Tooling advice is about the tool, not about your workday.
+10. BE OPINIONATED WITH JUSTIFICATION: never \"some prefer X, others prefer Y\". Write \"X is better because [measurable reason]\", \"Y is wrong when [specific condition]\", \"I'd avoid Z entirely - it trades correctness for 200ms\". Judgement about the code is welcome; a career you don't have is not.
+11. NEVER CLAIM PERSONAL OR TEAM EXPERIENCE (HARD RULE, INSTANT FAIL): never write \"in my experience\", \"our team\", \"my team\", \"when I first started\", \"last quarter we...\", \"as a senior/lead/principal engineer\", or any \"N years of experience\" claim. First person about the CODE (\"I'd avoid this\", \"I find this clearer\") is fine; first person about a JOB you never had is not.
 
 **TECHNICAL DEPTH (GO 3 LEVELS DEEPER THAN OBVIOUS):**
-11. Don't explain \"what it is\" - explain \"how it breaks\" and \"how I fixed it\"
-12. Show BEFORE/AFTER: \"Our queries took 5 seconds, indexes reduced to 200ms, but we discovered...\"
-13. Include THE EDGE CASES YOU HIT: \"It works great until you have 100k+ records, then...\", \"The docs don't mention that it fails when...\"
-14. Explain ARCHITECTURAL TRADE-OFFS with real consequences: \"We chose X for speed but paid for it in memory usage...\"
-15. Include DEBUGGING STEPS: \"Here's how I discovered it was actually a connection pool issue...\"
+11. Don't explain \"what it is\" - explain \"how it breaks\" and \"how to fix it\"
+12. Show BEFORE/AFTER with the measurement: \"The unindexed query plans at 5.1s; the composite index takes it to 190ms - and pushes writes from 2ms to 9ms\"
+13. Include THE EDGE CASES THAT BREAK IT: \"It works great until you have 100k+ records, then...\", \"The docs don't mention that it fails when...\"
+14. Explain ARCHITECTURAL TRADE-OFFS with real consequences: \"Choosing X for speed costs 3x memory and a full rebuild on every restart...\"
+15. Include DEBUGGING STEPS: \"Here's how to prove it's the connection pool and not the query: run X, then look for Y in the output...\"
 16. Show WHAT DOCUMENTATION SKIPS: \"The official docs show the happy path but miss...\"
-17. Include PERFORMANCE TESTING METHODOLOGY: \"I used load-testing with Hey because...\"
+17. Include PERFORMANCE TESTING METHODOLOGY: \"Load-test with hey -z 30s -c 100 because it reports the p99 that a plain average hides...\"
 18. Show SCALING PATTERNS: \"This approach works until 10k users, then you need...\"
 
 **PRACTICAL VALUE (COPY-PASTE READY WITH CONTEXT) - CRITICAL FOR DEPTH:**
@@ -791,28 +793,28 @@ CONTENT STRATEGY:
 **VOICE & PERSONALITY (THIS DETERMINES IF IT SOUNDS HUMAN):**
 26. Use CONTRACTIONS: \"don't\" not \"do not\", \"can't\" not \"cannot\", \"it's\" not \"it is\" - MANDATORY for conversational tone
 27. Ask RHETORICAL QUESTIONS that show thinking: \"Why would anyone design it that way?\", \"Have you ever wondered why...?\", \"What happens if you...?\"
-28. Use NATURAL LANGUAGE PATTERNS: \"So here's the thing...\", \"The real issue is...\", \"What I didn't expect was...\", \"This is where it gets interesting...\"
-29. Show EMOTIONAL RESPONSES: \"I was frustrated when...\", \"This surprised me...\", \"I got excited discovering...\"
-30. INJECT PERSONALITY/HUMOR: \"My setup is probably overkill for what we do, but...\", \"I may have gone overboard with...\", \"This is either brilliant or I'm sleep-deprived\"
-31. Tell SIDE STORIES: \"This reminds me of when...\", \"One time at my previous job...\", \"I learned this the hard way when...\"
+28. Use NATURAL LANGUAGE PATTERNS: \"So here's the thing...\", \"The real issue is...\", \"Here's the part that catches people out...\", \"This is where it gets interesting...\"
+29. WRITE WITH CONVICTION, NOT AUTOBIOGRAPHY: react to the technology, never to a past you didn't have. \"This API design is genuinely baffling\", \"That default is indefensible on a write-heavy table\", \"This is the clever part, and it's easy to miss\"
+30. INJECT PERSONALITY/HUMOR: \"This config is overkill for a side project and exactly right for a queue that pages someone at 3am\", \"Yes, three layers of caching. No, you probably don't need all three.\"
+31. USE ANALOGIES AND ASIDES, NOT ANECDOTES: \"This is the same trap as double-checked locking in Java 1.4...\", \"Worth a detour: the flag only exists because of a 2019 kernel regression...\"
 32. Use INCLUSIVE LANGUAGE: \"We all struggle with...\", \"You've probably hit this...\", \"I'm sure you've seen...\"
 
 **QUALITY & HONESTY (NON-NEGOTIABLE):**
 33. NO MARKETING LANGUAGE: Avoid: '10x', 'game-changer', 'revolutionary', 'turbocharge', 'unlock', 'destroy competition'
 34. NO UNREALISTIC CLAIMS WITHOUT PROOF: If you claim \"50x faster\", show the benchmark setup, test code, and actual numbers
 35. ALWAYS MENTION TRADE-OFFS: \"It's faster but uses 3x memory\", \"Better reliability at the cost of complexity\", \"X is amazing IF you have...\"
-36. BE HONEST ABOUT LIMITATIONS: \"This only works if...\", \"Doesn't handle X case well\", \"We haven't solved the Y problem yet\"
-37. CITE YOUR SOURCES: \"According to the Stripe API docs...\", \"The Kubernetes team showed...\", \"I read about this in...\"
-38. ACKNOWLEDGE WHEN YOU'RE WRONG: \"I was initially wrong about...\", \"I changed my mind when...\", \"My assumption was flawed...\"
-39. INCLUDE GOTCHAS/WARNINGS: \"The hidden cost of doing this...\", \"Three months later we discovered...\"
-40. ATTRIBUTE CREDIT: \"My coworker spotted this\", \"The community pointed out...\", \"The maintainer explained...\"
+36. BE HONEST ABOUT LIMITATIONS: \"This only works if...\", \"Doesn't handle X case well\", \"The Y problem is still open upstream\"
+37. CITE YOUR SOURCES: \"According to the Stripe API docs [link]...\", \"The Kubernetes 1.29 changelog shows...\", \"Benchmarked in the upstream issue [link]...\"
+38. ACKNOWLEDGE THE OBVIOUS OBJECTION: \"The intuitive reading of this is wrong, and here's the benchmark that shows why...\", \"This looks like premature optimization until you see the p99...\"
+39. INCLUDE GOTCHAS/WARNINGS: \"The hidden cost of doing this...\", \"This one bites on the first restart, not the first request...\"
+40. ATTRIBUTE CREDIT TO LINKABLE SOURCES: \"The maintainer explains this in issue #4412...\", \"A commenter on the RFC pointed out...\" - never to an invented coworker
 
 **STRUCTURE (FLEXIBLE - NOT TEMPLATED):**
 41. NO RIGID FORMULAS: Don't use same headings every post. Make headings match your story naturally.
-42. START WITH CONFLICT/PROBLEM: \"We had 50k users then suddenly hit a wall...\", \"The default approach fails at scale...\"
-43. SHOW YOUR THINKING PROCESS: \"First I thought X...\", \"Then I realized...\", \"After more testing, I found...\", \"So the pattern became...\"
+42. START WITH CONFLICT/PROBLEM: \"The default approach falls apart at 50k concurrent sessions, and here's the exact line where...\", \"This holds until the table crosses 10M rows...\"
+43. SHOW THE REASONING PROCESS: \"The obvious fix is X - here's why it doesn't hold...\", \"That leaves two options, and only one survives a restart...\", \"So the pattern that works is...\"
 44. BUILD TO SOLUTION NATURALLY: Don't jump to answer immediately. Show exploration, failures, pivots.
-45. END WITH IMPACT/LEARNING: \"This reduced our costs by...\", \"Now we handle...without...\", \"What I'd do differently next time...\"
+45. END WITH IMPACT/TAKEAWAY: \"That's a 40% drop in p99 for one config line - here's the measurement...\", \"The rule that falls out of this: ...\", \"What to watch once this ships: ...\"
 46. USE SHORT PARAGRAPHS: 2-3 sentences max. Break up walls of text with bullets, code, examples.
 
 **ANTI-FABRICATION RULES (CRITICAL - GOOGLE AND READERS WILL CATCH THIS):**
@@ -846,18 +848,18 @@ J. When citing external information, link to the canonical URL ('https://laravel
 K. Inline links are preferred over a 'References' section. If you have a references list, every entry must be a working URL.
 
 **VERIFICATION CHECKLIST (IF ANY OF THESE ARE FALSE, REWRITE):**
-✅ Does this sound like something a REAL ENGINEER with this experience would write?
-✅ Could I not write this content by just reading official docs?
-✅ Does it include at least 3 specific names, dates, or numbers tied to real experiences?
-✅ Did I share at least one failure/mistake/thing that surprised me?
-✅ Did I use \"I/we/my\" language naturally throughout (not forced)?
-✅ Would a senior engineer respect this advice because it came from real experience?
-✅ Are there gotchas/warnings that docs don't mention?
-✅ Does it have personality - would you recognize this voice?
+✅ Is every specific in here checkable - a version, a benchmark, a spec section, a linked issue?
+✅ Could a reader get all of this from the official docs alone? If yes, go deeper.
+✅ Does it include at least 3 concrete verifiable specifics (versions, measurements, exact error strings, links)?
+✅ Does it show at least one failure mode in full - trigger, exact error text, and cause?
+✅ Have I claimed zero jobs, colleagues, employers, teams or personal timelines?
+✅ Would a senior engineer respect this because the reasoning and the numbers hold up?
+✅ Are there gotchas/warnings that docs don't mention, each with evidence?
+✅ Does it have personality - clear opinions, a recognizable voice, no hedging?
 
 ⚠️ **THIS IS THE MOST IMPORTANT INSTRUCTION - READ CAREFULLY:**
 
-Your job is NOT to write documentation. Documentation exists. Your job is to write something COMPLETELY DIFFERENT - something that sounds like an experienced engineer sharing hard-won knowledge with their team. If your draft reads like:
+Your job is NOT to write documentation. Documentation exists. Your job is to write something COMPLETELY DIFFERENT - a close reading of how the system actually behaves, carrying the opinions, measurements and failure modes the docs leave out. If your draft reads like:
 - Documentation (structured explanation of what things are)
 - A tutorial (step-by-step how to use something)
 - A guide (overview of features)
@@ -866,13 +868,13 @@ Your job is NOT to write documentation. Documentation exists. Your job is to wri
 ...then you've FAILED and need to COMPLETELY REWRITE.
 
 SUCCESS looks like:
-- A specific engineer sharing a story about building something
-- A team's learning from a real production problem they solved
-- Strong opinions about why X is better than Y (from experience, not theory)
-- \"Here's what we tried, what failed, and what we finally did that worked\"
-- Warnings about gotchas because \"we hit them the hard way\"
-- Specific performance numbers because \"we benchmarked it\"
-- Personality that comes from genuine enthusiasm or frustration
+- A close reading of how a system behaves under load, not what it promises
+- A production failure mode traced to its cause, with the trigger and the exact error text
+- Strong opinions about why X beats Y, argued from measured behaviour rather than theory
+- \"Here's the approach that looks right, here's exactly where it breaks, here's what survives\"
+- Warnings about gotchas, each backed by a version, an issue link or a reproducible test
+- Specific performance numbers, each with the setup and the command that produced them
+- Personality that comes from genuine conviction about the technology
 
 **THE FIRST 2-3 SENTENCES ARE MAKE OR BREAK:**
 - ❌ BAD: \"Quantum error correction is a rapidly evolving field...\" (documentation voice)
@@ -882,8 +884,8 @@ Pick a random style below and commit to it FULLY. Don't blend them. Write the en
 
 🎯 WRITING STYLE VARIATION (CRITICAL - Pick ONE randomly):
 
-Style 1 - Story/Experience Based:
-\"I ran into this problem last week on our production app...\" Share real experiences, what failed, what worked, lessons learned. Natural flow without rigid structure.
+Style 1 - Failure-Mode Walkthrough:
+\"This setup holds right up until the connection pool saturates - here's the exact point where it stops working...\" Trace one failure mode end to end: trigger, exact error text, cause, fix. Natural flow without rigid structure.
 
 Style 2 - Direct Technical Deep Dive:
 Skip the fluff. Jump right into the technical details. Code-heavy. Explain WHY things work. Debug tips. Short intro, no formal conclusion.
@@ -892,10 +894,10 @@ Style 3 - Step-by-Step Tutorial:
 \"Let's build X together.\" Conversational guide. Show outputs. Explain errors. Feel like pair programming with a friend.
 
 Style 4 - Comparative/Analysis (USE FOR: comparison topics):
-\"I tested 3 approaches...\" Compare options with REAL benchmarks (latency, throughput, cost, bundle size). When to use each. Honest pros/cons. Make a clear recommendation based on use cases. Include comparison tables, performance graphs, cost breakdowns.
+\"Three approaches, benchmarked head to head on the same dataset...\" Compare options with REAL benchmarks (latency, throughput, cost, bundle size). When to use each. Honest pros/cons. Make a clear recommendation based on use cases. Include comparison tables, performance graphs, cost breakdowns.
 
 Style 5 - Opinion/Best Practices (USE FOR: ranking/list topics):
-\"After 5 years with this tech...\" Strong opinions. What docs don't say. Mistakes to avoid. Your workflow. Opinionated but fair. Rank options clearly with reasoning.
+\"Most rankings of this get it wrong, and the reason is measurable...\" Strong opinions. What docs don't say. Mistakes to avoid. The workflow you should use. Opinionated but fair. Rank options clearly with reasoning.
 
 Style 6 - Complete Project Build (USE FOR: full project topics):
 \"Let's build a production-ready project from scratch.\" Full implementation - database design, backend API, frontend, auth, deployment. Complete, working code for every step. Commit-by-commit progression. Real outputs from commands. End with deployed, working app.
@@ -916,11 +918,11 @@ Style 7 - Feature Deep Dive (USE FOR: specific feature topics):
    - Add \"Quick Win\" boxes with high-impact, battle-tested actions
    - Include \"⚡ Quick Win:\", \"💡 Pro Tip:\", \"⚠️ Common Mistake:\", \"🔥 Performance:\" callouts
 
-3. **USE STORYTELLING (SENIOR-LEVEL CONTEXT)**
-   - Share PRODUCTION scenarios from high-scale applications (100k+ users, millions of requests)
-   - Include before/after comparisons with REAL metrics (response times, query counts, memory usage)
-   - Reference real companies, patterns, or well-known architecture decisions
-   - Example: \"When we scaled to 10M requests/day, we discovered that...\"
+3. **USE CONCRETE SCENARIOS (SENIOR-LEVEL CONTEXT)**
+   - Model PRODUCTION scenarios at high scale (100k+ users, millions of requests), framed as worked hypotheticals rather than events you lived through
+   - Include before/after comparisons with REAL metrics (response times, query counts, memory usage) and the setup that produced them
+   - Reference real, documented engineering write-ups, patterns, or well-known architecture decisions - and link them
+   - Example: \"At 10M requests/day, a default pool of 20 connections saturates before the CPU does - here's the arithmetic...\"
 
 4. **MAKE IT SCANNABLE**
    - Use short paragraphs (2-4 sentences max)
@@ -944,7 +946,7 @@ Style 7 - Feature Deep Dive (USE FOR: specific feature topics):
    - Write like talking to a senior colleague over coffee
    - Use contractions (you'll, don't, can't)
    - Ask rhetorical questions about architecture trade-offs
-   - Share strong opinions and recommendations based on experience
+   - Share strong opinions and recommendations, each justified by measurable behaviour rather than claimed career history
    - Inject personality (but stay professional)
 
 FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
@@ -958,25 +960,25 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
    - Section 2 (deep dive): 800-1000 words (advanced details, comparisons, code examples)
    - Section 3 (practical application): 800-1000 words (real scenarios, implementation, gotchas)
    - Section 4 (advanced/optimization): 600-800 words (optimization, performance, edge cases)
-   - Case studies/real-world examples: 400-600 words (specific companies/scenarios)
+   - Case studies/real-world examples: 400-600 words (documented, linkable write-ups or explicitly hypothetical scenarios - never invented ones)
    - Conclusion/lessons learned: 300-400 words (wrap-up, recommendations, next steps)
    - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
-- Story style: \"The failure looks like a timeout, but the real cause is...\"
+- Failure-mode style: \"The failure looks like a timeout, but the real cause is...\"
 - Technical: \"Here's how X actually works under the hood...\"
 - Tutorial: \"Today we're building... Here's what you need...\"
-- Comparative: \"I benchmarked 3 solutions...\"
+- Comparative: \"Three solutions, same dataset, same hardware - here are the numbers...\"
 - Opinion: \"X is the wrong default for most projects, and the benchmark below shows why...\"
 
 MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
 - Examples of good headings:
-  * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
+  * \"The Problem\", \"The Obvious Fix and Why It Fails\", \"The Approach That Holds\"
   * \"How It Works\", \"Implementation\", \"Gotchas and Edge Cases\"
   * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\", \"Step 4: Production\"
   * \"Option A: Using Library X\", \"Option B: Rolling Your Own\", \"Option C: Hybrid Approach\"
-  * \"What the Docs Don't Tell You\", \"Common Mistakes We Made\", \"My Workflow & Shortcuts\", \"Performance Optimization\"
+  * \"What the Docs Don't Tell You\", \"Common Mistakes\", \"A Workflow That Catches This Early\", \"Performance Optimization\"
 
 AVOID rigid templates like:
 ❌ \"Opening Hook\"
@@ -988,11 +990,11 @@ AVOID rigid templates like:
 Instead use natural, content-specific headings
 CONTENT SECTIONS - Choose natural headings:
 
-Story Style Example:
-## The Problem We Faced
-## What We Tried First (and why it failed)
-## The Solution That Actually Worked
-## Lessons Learned
+Failure-Mode Style Example:
+## The Problem
+## The Obvious Fix (and why it fails)
+## The Approach That Actually Holds
+## What This Means In Practice
 
 Technical Style Example:
 ## How It Works Under the Hood
@@ -1044,7 +1046,7 @@ ADVANCED TOPICS (optional, based on content):
 {$advancedTipsExtra}
 
 WRAP-UP (200-400 words - optional, vary by style):
-- Story style: \"Here's what we learned\" or \"This solved our problem by...\"
+- Failure-mode style: \"Here's the rule that falls out of this\" or \"This removes the failure by...\"
 - Technical: Brief summary or just end after last technical point
 - Tutorial: \"What's next\" or \"Further improvements\"
 - Comparative: \"My recommendation\" or \"When to use each\"
@@ -1084,9 +1086,9 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 
 ✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
 - Show expertise through verifiable specifics, never claimed credentials: \"Measured on Postgres 16.2, 16 vCPU / 64GB...\" or \"Reproducible with the config below...\"
-- Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
+- Show experience through reproducible detail, never claimed history: \"This fails with [exact error] once the queue depth passes 512...\"
 - Cite credible sources: Link to official docs, GitHub repos, research papers
-- Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
+- Be transparent: \"This is outside what the docs cover...\" or \"This approach has limitations...\"
 - Include author credibility signals
 
 📊 Content Length Guidelines:
@@ -2247,11 +2249,11 @@ CONTENT STRATEGY:
    - Add \"Quick Win\" boxes with high-impact, battle-tested actions
    - Include \"⚡ Quick Win:\", \"💡 Pro Tip:\", \"⚠️ Common Mistake:\", \"🔥 Performance:\" callouts
 
-3. **USE STORYTELLING (SENIOR-LEVEL CONTEXT)**
-   - Share PRODUCTION scenarios from high-scale applications (100k+ users, millions of requests)
-   - Include before/after comparisons with REAL metrics (response times, query counts, memory usage)
-   - Reference real companies, patterns, or well-known architecture decisions
-   - Example: \"When we scaled to 10M requests/day, we discovered that...\"
+3. **USE CONCRETE SCENARIOS (SENIOR-LEVEL CONTEXT)**
+   - Model PRODUCTION scenarios at high scale (100k+ users, millions of requests), framed as worked hypotheticals rather than events you lived through
+   - Include before/after comparisons with REAL metrics (response times, query counts, memory usage) and the setup that produced them
+   - Reference real, documented engineering write-ups, patterns, or well-known architecture decisions - and link them
+   - Example: \"At 10M requests/day, a default pool of 20 connections saturates before the CPU does - here's the arithmetic...\"
 
 4. **MAKE IT SCANNABLE**
    - Use short paragraphs (2-4 sentences max)
@@ -2275,7 +2277,7 @@ CONTENT STRATEGY:
    - Write like talking to a senior colleague over coffee
    - Use contractions (you'll, don't, can't)
    - Ask rhetorical questions about architecture trade-offs
-   - Share strong opinions and recommendations based on experience
+   - Share strong opinions and recommendations, each justified by measurable behaviour rather than claimed career history
    - Inject personality (but stay professional)
 
 FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
@@ -2289,25 +2291,25 @@ FLEXIBLE STRUCTURE (4000-6000+ words - COMPREHENSIVE tutorial):
    - Section 2 (deep dive): 800-1000 words (advanced details, comparisons, code examples)
    - Section 3 (practical application): 800-1000 words (real scenarios, implementation, gotchas)
    - Section 4 (advanced/optimization): 600-800 words (optimization, performance, edge cases)
-   - Case studies/real-world examples: 400-600 words (specific companies/scenarios)
+   - Case studies/real-world examples: 400-600 words (documented, linkable write-ups or explicitly hypothetical scenarios - never invented ones)
    - Conclusion/lessons learned: 300-400 words (wrap-up, recommendations, next steps)
    - TOTAL: 4000-5000 words minimum
 
 SAMPLE NATURAL INTRO (vary based on style):
-- Story style: \"The failure looks like a timeout, but the real cause is...\"
+- Failure-mode style: \"The failure looks like a timeout, but the real cause is...\"
 - Technical: \"Here's how X actually works under the hood...\"
 - Tutorial: \"Today we're building... Here's what you need...\"
-- Comparative: \"I benchmarked 3 solutions...\"
+- Comparative: \"Three solutions, same dataset, same hardware - here are the numbers...\"
 - Opinion: \"X is the wrong default for most projects, and the benchmark below shows why...\"
 
 MAIN CONTENT (distribute 3500-5500 words naturally - BE COMPREHENSIVE):
 - Use NATURAL headings based on your content, NOT templated ones
 - Examples of good headings:
-  * \"The Problem\", \"What I Tried First\", \"The Solution That Worked\"
+  * \"The Problem\", \"The Obvious Fix and Why It Fails\", \"The Approach That Holds\"
   * \"How It Works\", \"Implementation\", \"Gotchas and Edge Cases\"
   * \"Step 1: Setup\", \"Step 2: Configuration\", \"Step 3: Testing\", \"Step 4: Production\"
   * \"Option A: Using Library X\", \"Option B: Rolling Your Own\", \"Option C: Hybrid Approach\"
-  * \"What the Docs Don't Tell You\", \"Common Mistakes We Made\", \"My Workflow & Shortcuts\", \"Performance Optimization\"
+  * \"What the Docs Don't Tell You\", \"Common Mistakes\", \"A Workflow That Catches This Early\", \"Performance Optimization\"
 
 AVOID rigid templates like:
 ❌ \"Opening Hook\"
@@ -2319,11 +2321,11 @@ AVOID rigid templates like:
 Instead use natural, content-specific headings
 CONTENT SECTIONS - Choose natural headings:
 
-Story Style Example:
-## The Problem We Faced
-## What We Tried First (and why it failed)
-## The Solution That Actually Worked
-## Lessons Learned
+Failure-Mode Style Example:
+## The Problem
+## The Obvious Fix (and why it fails)
+## The Approach That Actually Holds
+## What This Means In Practice
 
 Technical Style Example:
 ## How It Works Under the Hood
@@ -2375,7 +2377,7 @@ ADVANCED TOPICS (optional, based on content):
 {$advancedTipsExtra}
 
 WRAP-UP (200-400 words - optional, vary by style):
-- Story style: \"Here's what we learned\" or \"This solved our problem by...\"
+- Failure-mode style: \"Here's the rule that falls out of this\" or \"This removes the failure by...\"
 - Technical: Brief summary or just end after last technical point
 - Tutorial: \"What's next\" or \"Further improvements\"
 - Comparative: \"My recommendation\" or \"When to use each\"
@@ -2415,9 +2417,9 @@ SEO BEST PRACTICES (CRITICAL FOR RANKING):
 
 ✍️ E-E-A-T Signals (EXPERTISE, EXPERIENCE, AUTHORITY, TRUSTWORTHINESS):
 - Show expertise through verifiable specifics, never claimed credentials: \"Measured on Postgres 16.2, 16 vCPU / 64GB...\" or \"Reproducible with the config below...\"
-- Share personal experience: \"We encountered this when...\" or \"I learned this the hard way...\"
+- Show experience through reproducible detail, never claimed history: \"This fails with [exact error] once the queue depth passes 512...\"
 - Cite credible sources: Link to official docs, GitHub repos, research papers
-- Be transparent: \"Here's where I'm not an expert...\" or \"This approach has limitations...\"
+- Be transparent: \"This is outside what the docs cover...\" or \"This approach has limitations...\"
 - Include author credibility signals
 
 📊 Content Length Guidelines:
