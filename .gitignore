@@ -34,3 +34,6 @@ supervisord.pid
 *_SECRETS.md
 credentials.json
 secrets.json
+
+# Superpowers scratch workspaces (ledgers, briefs, review packages)
+.superpowers
