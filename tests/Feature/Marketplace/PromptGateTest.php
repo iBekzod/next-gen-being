@@ -169,4 +169,64 @@ class PromptGateTest extends TestCase
         $this->get(route('newsletter.verify', $subscription->token))
             ->assertOk();
     }
+
+    public function test_tasdiqlashdan_song_kutilayotgan_prompt_kaliti_ochirilaladi(): void
+    {
+        Mail::fake();
+        $listing = $this->listing();
+
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'kalit@example.org']);
+
+        $subscription = NewsletterSubscription::where('email', 'kalit@example.org')->firstOrFail();
+
+        $this->get(route('newsletter.verify', $subscription->token));
+
+        $this->assertArrayNotHasKey(
+            'pending_prompt_listing',
+            $subscription->fresh()->preferences ?? [],
+            'pending_prompt_listing kaliti tasdiqlashdan keyin ham saqlanib qolyapti'
+        );
+    }
+
+    public function test_ikkinchi_bosish_xatolik_sahifasini_koradi(): void
+    {
+        Mail::fake();
+        $listing = $this->listing();
+
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'ikkinchi@example.org']);
+
+        $subscription = NewsletterSubscription::where('email', 'ikkinchi@example.org')->firstOrFail();
+
+        // Birinchi bosish — tasdiqlaydi va faylga yo'naltiradi.
+        $this->get(route('newsletter.verify', $subscription->token));
+
+        // Xuddi shu havolaga ikkinchi bosish — obuna allaqachon tasdiqlangan,
+        // shuning uchun verify() endi null qaytaradi.
+        $response = $this->get(route('newsletter.verify', $subscription->token));
+
+        $response->assertOk();
+        $response->assertDontSee('/prompt/');
+        $this->assertNull($response->headers->get('Location'));
+    }
+
+    public function test_tasdiqlangan_obunachi_qayta_sorasa_yangi_havola_oladi(): void
+    {
+        Mail::fake();
+        $listing = $this->listing();
+
+        $subscription = NewsletterSubscription::create([
+            'email' => 'qaytauchun@example.org',
+            'token' => \Illuminate\Support\Str::random(40),
+            'frequency' => 'daily',
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
+
+        $response = $this->post(route('marketplace.prompt.request', $listing), [
+            'email' => $subscription->email,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('/prompt/', (string) $response->headers->get('Location'));
+    }
 }

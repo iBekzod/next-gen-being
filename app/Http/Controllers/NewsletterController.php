@@ -37,22 +37,6 @@ class NewsletterController extends Controller
     public function verify($token)
     {
         $subscription = $this->newsletterService->verify($token);
-        $secondClick = false;
-
-        if (! $subscription) {
-            // NewsletterService::verify() returns null both for an unknown token and for a
-            // token that already belongs to a verified subscriber (e.g. the subscriber clicked
-            // the confirmation link a second time). For an ordinary subscriber the second case
-            // is indistinguishable from the first and the failure page is correct either way.
-            // But when this link also hands over a prompt-magnet file (spec §7), a second click
-            // must not strand the subscriber on a failure page just because they already
-            // confirmed — re-check the token here to detect that specific case.
-            $subscription = \App\Models\NewsletterSubscription::where('token', $token)
-                ->whereNotNull('verified_at')
-                ->first();
-
-            $secondClick = true;
-        }
 
         if (! $subscription) {
             return view('newsletter.verify-failed');
@@ -68,17 +52,22 @@ class NewsletterController extends Controller
                 ->first();
 
             if ($listing) {
+                // Kalitni butunlay olib tashlaymiz — null qilib qo'yish emas, chunki
+                // NewsletterSubscription::updatePreferences() array_merge ishlatadi va
+                // null qiymatli kalit abadiy saqlanib qolardi. Bu havolani bir martalik
+                // qiladi: tasdiqlash tokeni muddatsiz yangi imzolangan yuklab olish
+                // havolasi yasovchisiga aylanmaydi. Qayta yuklab olish kerak bo'lsa,
+                // foydalanuvchi xuddi shu emailni qayta yuborishi mumkin —
+                // PromptGateController::request() allaqachon tasdiqlangan obunachini
+                // to'g'ridan-to'g'ri yangi imzolangan havolaga yo'naltiradi.
+                $preferences = $subscription->preferences ?? [];
+                unset($preferences['pending_prompt_listing']);
+                $subscription->update(['preferences' => $preferences]);
+
                 return redirect()->to(
                     $this->newsletterService->promptDownloadUrl($subscription, $listing)
                 );
             }
-        }
-
-        if ($secondClick) {
-            // Already verified, and no (valid) pending prompt to hand over — this is a plain
-            // repeat visit to an ordinary confirmation link with nothing new to deliver, so
-            // preserve the pre-existing failure-page behavior for that case.
-            return view('newsletter.verify-failed');
         }
 
         return view('newsletter.verified', compact('subscription'));
