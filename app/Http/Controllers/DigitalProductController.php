@@ -81,6 +81,18 @@ class DigitalProductController extends Controller
      */
     public function purchase(DigitalProduct $product)
     {
+        // A marketplace `prompt` tier is an email magnet, NOT a sale. It is
+        // reachable from /resources too (DigitalProduct::published() filters on
+        // status only), and since the tier became `is_free` the free branch
+        // below would mint a ProductPurchase for it — corrupting sales_count and
+        // breaking the rule that a free prompt never produces a purchase row.
+        // Send the visitor to the marketplace listing, where the email gate lives.
+        if ($product->listing_id && $product->tier === 'prompt') {
+            return $product->listing
+                ? redirect()->route('marketplace.show', $product->listing)
+                : back()->with('info', 'This prompt is available from its marketplace page.');
+        }
+
         if ($product->status !== 'published') {
             return back()->with('error', 'Product is no longer available');
         }

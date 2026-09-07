@@ -4,6 +4,7 @@ namespace Tests\Feature\Marketplace;
 
 use App\Models\DigitalProduct;
 use App\Models\MarketplaceListing;
+use App\Models\ProductPurchase;
 use App\Models\User;
 use App\Services\LemonSqueezyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,7 +14,32 @@ class MarketplacePurchaseTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_free_tier_creates_a_completed_purchase_inline(): void
+    public function test_free_product_creates_a_completed_purchase_inline(): void
+    {
+        $buyer = User::factory()->create();
+        $seller = User::factory()->create();
+        // A standalone free digital product (no marketplace listing): the free
+        // branch of purchase() still hands it over inline.
+        $product = DigitalProduct::factory()->create([
+            'creator_id' => $seller->id, 'listing_id' => null,
+            'is_free' => true, 'price' => 0, 'file_path' => 'private/demo.txt',
+        ]);
+
+        $this->actingAs($buyer)
+            ->post(route('digital-products.purchase', $product))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('product_purchases', [
+            'digital_product_id' => $product->id, 'user_id' => $buyer->id, 'status' => 'completed',
+        ]);
+    }
+
+    /**
+     * The free prompt tier is an email magnet, not a sale. It is reachable from
+     * /resources and its own digital-product page, so purchase() must refuse it
+     * outright rather than fall into the free branch and mint a purchase row.
+     */
+    public function test_marketplace_prompt_tier_never_creates_a_purchase(): void
     {
         $buyer = User::factory()->create();
         $seller = User::factory()->create();
@@ -25,11 +51,10 @@ class MarketplacePurchaseTest extends TestCase
 
         $this->actingAs($buyer)
             ->post(route('digital-products.purchase', $tier))
-            ->assertRedirect();
+            ->assertRedirect(route('marketplace.show', $listing));
 
-        $this->assertDatabaseHas('product_purchases', [
-            'digital_product_id' => $tier->id, 'user_id' => $buyer->id, 'status' => 'completed',
-        ]);
+        $this->assertSame(0, ProductPurchase::count(), 'a free prompt was recorded as a sale');
+        $this->assertSame(0, (int) $tier->fresh()->purchases_count);
     }
 
     public function test_paid_tier_redirects_to_lemon_squeezy_checkout(): void
