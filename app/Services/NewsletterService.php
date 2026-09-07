@@ -245,6 +245,39 @@ class NewsletterService
         ]);
     }
 
+    /**
+     * So'nggi 24 soatda nashr qilingan postlardan kunlik digest.
+     *
+     * Aytadigan narsa bo'lmasa NULL qaytaradi — bo'sh kunlik xat
+     * obunadan chiqishga olib keladi (spec §10).
+     */
+    public function generateDailyDigest(): ?NewsletterCampaign
+    {
+        $posts = \App\Models\Post::where('status', 'published')
+            ->where('published_at', '>=', now()->subDay())
+            ->orderByDesc('published_at')
+            ->take(5)
+            ->get();
+
+        if ($posts->isEmpty()) {
+            return null;
+        }
+
+        $content = "<h2>Bugun NextGenBeing'da</h2>\n";
+        foreach ($posts as $post) {
+            $url = route('posts.show', $post->slug);
+            $content .= '<p><a href="' . e($url) . '">' . e($post->title) . '</a><br>'
+                . e(\Illuminate\Support\Str::limit(strip_tags((string) $post->excerpt), 140)) . "</p>\n";
+        }
+
+        return NewsletterCampaign::create([
+            'subject' => 'NextGenBeing — ' . now()->format('d.m.Y'),
+            'content' => $content,
+            'type' => 'digest',
+            'status' => 'draft',
+        ]);
+    }
+
     private function generateSubjectLine($posts): string
     {
         if ($posts->isEmpty()) {

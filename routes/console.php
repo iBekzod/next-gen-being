@@ -88,6 +88,12 @@ Schedule::command('newsletter:send-weekly')
     ->weeklyOn(1, '9:00')
     ->timezone(config('app.timezone'));
 
+// Kunlik digest — haftalik flagman chiqarish orasidagi kunlarni to'ldiradi (spec D2).
+Schedule::command('newsletter:send-daily')
+    ->dailyAt('08:00')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
+
 // Welcome/onboarding drip — deliver the next due onboarding email to newly
 // confirmed subscribers (step 1 fires immediately on verification; this sweeps
 // the day-2/4/6 follow-ups).
