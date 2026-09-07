@@ -109,18 +109,34 @@
       <div>
         <div style="background:var(--surface); border:1px solid var(--line-strong); border-radius:14px; padding:16px;">
           <p style="font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px;">Choose your tier</p>
+          @if(session('success'))
+            <p style="font-size:.8rem; color:var(--signal); margin:0 0 10px;">{{ session('success') }}</p>
+          @endif
+          @error('email')
+            <p style="font-size:.8rem; color:#b3313e; margin:0 0 10px;">{{ $message }}</p>
+          @enderror
           <div style="display:flex; flex-direction:column; gap:10px;">
-            @forelse($listing->tiers as $tier)
+            @forelse($listing->tiers->where('status', 'published') as $tier)
               <div class="tier">
                 <div>
                   <div style="font-weight:700; text-transform:capitalize;">{{ $tier->tier ?? $tier->type }}</div>
                   <div style="font-size:.78rem; color:var(--ink-faint);">{{ Str::limit($tier->short_description ?? $tier->description, 42) }}</div>
                 </div>
-                <div style="text-align:right;">
-                  <div class="t-price">{{ $tier->is_free ? 'Free' : '$'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}</div>
-                </div>
+                @unless($tier->tier === 'prompt')
+                  <div style="text-align:right;">
+                    <div class="t-price">{{ $tier->is_free ? 'Free' : '$'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}</div>
+                  </div>
+                @endunless
               </div>
-              @if($tier->is_free || $tier->file_path)
+              @if($tier->tier === 'prompt')
+                <form method="POST" action="{{ route('marketplace.prompt.request', $listing) }}" style="display:flex; gap:6px; align-items:center;">
+                  @csrf
+                  <input type="email" name="email" required placeholder="siz@email.com"
+                         aria-label="Promptni olish uchun email"
+                         style="flex:1; padding:7px 10px; border:1.5px solid var(--line); border-radius:8px; font:inherit; min-width:0;">
+                  <button type="submit" class="buy-btn" style="width:auto; padding:8px 12px;">Bepul olish</button>
+                </form>
+              @elseif($tier->is_free || $tier->file_path)
                 <form method="POST" action="{{ route('digital-products.purchase', $tier) }}">
                   @csrf
                   <button type="submit" class="buy-btn">

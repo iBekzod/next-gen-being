@@ -229,4 +229,25 @@ class PromptGateTest extends TestCase
         $response->assertRedirect();
         $this->assertStringContainsString('/prompt/', (string) $response->headers->get('Location'));
     }
+
+    public function test_sahifada_prompt_uchun_email_formasi_bor(): void
+    {
+        $listing = $this->listing();
+
+        $response = $this->get(route('marketplace.show', $listing));
+
+        $response->assertOk();
+        $response->assertSee(route('marketplace.prompt.request', $listing), false);
+        $response->assertSee('name="email"', false);
+    }
+
+    public function test_arxivlangan_code_tier_sahifada_korinmaydi(): void
+    {
+        $listing = $this->listing();
+
+        $response = $this->get(route('marketplace.show', $listing));
+
+        $response->assertOk();
+        $response->assertDontSee('>code<', false);
+    }
 }

@@ -44,7 +44,10 @@ class MarketplacePageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('FitTrack Workout SaaS');
-        $response->assertSee('$5');
+        // The prompt tier is a free lead magnet: it shows an email-collection
+        // form instead of a price, so it is asserted via the form marker
+        // rather than "$5" (see PromptGateTest for the gate behaviour itself).
+        $response->assertSee(route('marketplace.prompt.request', $listing), false);
         $response->assertSee('$7');
     }
 
