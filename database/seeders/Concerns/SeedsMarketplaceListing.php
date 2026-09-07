@@ -62,8 +62,11 @@ trait SeedsMarketplaceListing
                     'description'              => $t['desc'],
                     'type'                     => $t['type'],
                     'price'                    => $t['price'],
-                    'is_free'                  => $t['is_free'] ?? false,
-                    'status'                   => 'published',
+                    // prompt tier — bepul magnit (spec §7, qaror D1).
+                    // code tier hech qachon deliverable olmagan, shuning uchun
+                    // arxivlanadi: o'lik qatorni o'chirish, mahsulot yo'nalishini emas.
+                    'is_free'                  => $t['tier'] === 'prompt' ? true : ($t['is_free'] ?? false),
+                    'status'                   => $t['tier'] === 'code' ? 'archived' : 'published',
                     'published_at'             => now(),
                     'revenue_share_percentage' => DigitalProduct::MARKETPLACE_REVENUE_SHARE,
                     'file_path'                => $filePath,

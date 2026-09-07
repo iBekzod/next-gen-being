@@ -5,7 +5,13 @@
 
 @section('content')
 @php
-    $__tierPrices = $listing->tiers->pluck('price')->map(fn ($p) => (float) $p);
+    // JSON-LD offerlari sahifadagi tierlarga MOS kelishi shart: arxivlangan
+    // `code` tier offerCount ni shishirmasin, va bepul tier crawlerlarga narx
+    // e'lon qilmasin (sahifa uni tekinga beryapti).
+    $__tierPrices = $listing->tiers
+        ->where('status', 'published')
+        ->map(fn ($t) => $t->is_free ? 0.0 : (float) $t->price)
+        ->values();
     $__productLd = array_filter([
         '@context' => 'https://schema.org',
         '@type' => 'Product',
@@ -58,6 +64,12 @@
   }
   #ngb-market .tier{ border:1.5px solid var(--line); border-radius:12px; padding:13px 15px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
   #ngb-market .tier .t-price{ font-family:var(--font-display); font-weight:800; font-size:1.1rem; }
+  #ngb-market .gate-form{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  #ngb-market .gate-freq{ flex-basis:100%; display:flex; align-items:center; justify-content:flex-end; gap:6px;
+    font-size:.72rem; color:var(--ink-faint); }
+  #ngb-market .gate-freq select{ padding:3px 6px; border:1.5px solid var(--line); border-radius:8px;
+    background:var(--surface); color:var(--ink-soft); font:inherit; font-weight:700; cursor:pointer; }
+  #ngb-market .gate-freq select:focus-visible{ outline:2px solid var(--signal); outline-offset:1px; }
   #ngb-market .buy-btn{ width:100%; background:var(--signal); color:#fff; border:none; border-radius:10px; padding:11px; font-weight:700; cursor:pointer; }
   #ngb-market .buy-btn:hover{ filter:brightness(1.06); }
 </style>
@@ -109,18 +121,43 @@
       <div>
         <div style="background:var(--surface); border:1px solid var(--line-strong); border-radius:14px; padding:16px;">
           <p style="font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px;">Choose your tier</p>
+          @if(session('success'))
+            <p style="font-size:.8rem; color:var(--signal); margin:0 0 10px;">{{ session('success') }}</p>
+          @endif
+          @error('email')
+            <p style="font-size:.8rem; color:#b3313e; margin:0 0 10px;">{{ $message }}</p>
+          @enderror
           <div style="display:flex; flex-direction:column; gap:10px;">
-            @forelse($listing->tiers as $tier)
+            @forelse($listing->tiers->where('status', 'published') as $tier)
               <div class="tier">
                 <div>
                   <div style="font-weight:700; text-transform:capitalize;">{{ $tier->tier ?? $tier->type }}</div>
                   <div style="font-size:.78rem; color:var(--ink-faint);">{{ Str::limit($tier->short_description ?? $tier->description, 42) }}</div>
                 </div>
-                <div style="text-align:right;">
-                  <div class="t-price">{{ $tier->is_free ? 'Free' : '$'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}</div>
-                </div>
+                @unless($tier->tier === 'prompt')
+                  <div style="text-align:right;">
+                    <div class="t-price">{{ $tier->is_free ? 'Free' : '$'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}</div>
+                  </div>
+                @endunless
               </div>
-              @if($tier->is_free || $tier->file_path)
+              @if($tier->tier === 'prompt')
+                <form method="POST" action="{{ route('marketplace.prompt.request', $listing) }}" class="gate-form">
+                  @csrf
+                  <input type="email" name="email" required placeholder="siz@email.com"
+                         aria-label="Promptni olish uchun email"
+                         style="flex:1; padding:7px 10px; border:1.5px solid var(--line); border-radius:8px; font:inherit; min-width:0;">
+                  <button type="submit" class="buy-btn" style="width:auto; padding:8px 12px;">Bepul olish</button>
+                  {{-- Chastota tanlovi (spec §7). Standart — haftalik: kunlik digest
+                       faqat oxirgi 24 soatda post chiqqanda yuboriladi. --}}
+                  <label class="gate-freq">
+                    <span>Xat chastotasi</span>
+                    <select name="frequency" aria-label="Xat chastotasi">
+                      <option value="weekly" @selected(old('frequency', 'weekly') === 'weekly')>haftalik</option>
+                      <option value="daily" @selected(old('frequency') === 'daily')>kunlik</option>
+                    </select>
+                  </label>
+                </form>
+              @elseif($tier->is_free || $tier->file_path)
                 <form method="POST" action="{{ route('digital-products.purchase', $tier) }}">
                   @csrf
                   <button type="submit" class="buy-btn">

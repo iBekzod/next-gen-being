@@ -44,7 +44,10 @@ class MarketplacePageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('FitTrack Workout SaaS');
-        $response->assertSee('$5');
+        // The prompt tier is a free lead magnet: it shows an email-collection
+        // form instead of a price, so it is asserted via the form marker
+        // rather than "$5" (see PromptGateTest for the gate behaviour itself).
+        $response->assertSee(route('marketplace.prompt.request', $listing), false);
         $response->assertSee('$7');
     }
 
@@ -64,6 +67,53 @@ class MarketplacePageTest extends TestCase
         $response->assertSee('"@type":"Product"', false);
         $response->assertSee('"lowPrice":"5.00"', false);
         $response->assertSee('"highPrice":"7.00"', false);
+    }
+
+    /**
+     * The JSON-LD must describe what the page actually offers: the archived
+     * `code` tier is not an offer, and the free prompt tier costs 0, not the
+     * $5 its `price` column still carries.
+     */
+    public function test_schema_prices_only_published_tiers_and_zeroes_free_ones(): void
+    {
+        User::factory()->create();
+        $this->artisan('marketplace:sync-listings');
+        $listing = MarketplaceListing::where('slug', 'fittrack-workout-saas')->firstOrFail();
+
+        $offers = $this->productOffers($this->get(route('marketplace.show', $listing))->getContent());
+
+        $published = $listing->tiers()->where('status', 'published')->count();
+
+        $this->assertSame('0.00', $offers['lowPrice'], 'bepul prompt hali ham narx e\'lon qilyapti');
+        $this->assertSame($published, $offers['offerCount']);
+        $this->assertLessThan(
+            $listing->tiers()->count(),
+            $offers['offerCount'],
+            'arxivlangan tier offerCount ni shishiryapti'
+        );
+    }
+
+    /**
+     * Pull the AggregateOffer out of the page's Product ld+json block.
+     *
+     * The layout emits its own Organization block first, so the Product one has
+     * to be picked out by @type rather than by position.
+     */
+    private function productOffers(string $html): array
+    {
+        preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
+
+        foreach ($m[1] as $json) {
+            $ld = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+            if (($ld['@type'] ?? null) === 'Product') {
+                $this->assertArrayHasKey('offers', $ld, 'Product JSON-LD da offers yo\'q');
+
+                return $ld['offers'];
+            }
+        }
+
+        $this->fail('sahifada Product JSON-LD topilmadi');
     }
 
     public function test_sitemap_includes_marketplace(): void

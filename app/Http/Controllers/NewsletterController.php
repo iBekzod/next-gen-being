@@ -38,11 +38,39 @@ class NewsletterController extends Controller
     {
         $subscription = $this->newsletterService->verify($token);
 
-        if ($subscription) {
-            return view('newsletter.verified', compact('subscription'));
+        if (! $subscription) {
+            return view('newsletter.verify-failed');
         }
 
-        return view('newsletter.verify-failed');
+        // Prompt magniti orqali kelgan bo'lsa, tasdiqlash bitta harakatda
+        // faylni ham yetkazadi (spec §7): bitta ishqalanish nuqtasi.
+        $slug = data_get($subscription->preferences, 'pending_prompt_listing');
+
+        if ($slug) {
+            $listing = \App\Models\MarketplaceListing::where('slug', $slug)
+                ->where('status', 'published')
+                ->first();
+
+            if ($listing) {
+                // Kalitni butunlay olib tashlaymiz — null qilib qo'yish emas, chunki
+                // NewsletterSubscription::updatePreferences() array_merge ishlatadi va
+                // null qiymatli kalit abadiy saqlanib qolardi. Bu havolani bir martalik
+                // qiladi: tasdiqlash tokeni muddatsiz yangi imzolangan yuklab olish
+                // havolasi yasovchisiga aylanmaydi. Qayta yuklab olish kerak bo'lsa,
+                // foydalanuvchi xuddi shu emailni qayta yuborishi mumkin —
+                // PromptGateController::request() allaqachon tasdiqlangan obunachini
+                // to'g'ridan-to'g'ri yangi imzolangan havolaga yo'naltiradi.
+                $preferences = $subscription->preferences ?? [];
+                unset($preferences['pending_prompt_listing']);
+                $subscription->update(['preferences' => $preferences]);
+
+                return redirect()->to(
+                    $this->newsletterService->promptDownloadUrl($subscription, $listing)
+                );
+            }
+        }
+
+        return view('newsletter.verified', compact('subscription'));
     }
 
     public function unsubscribe($token)
