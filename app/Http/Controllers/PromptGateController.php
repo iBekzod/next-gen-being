@@ -23,6 +23,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class PromptGateController extends Controller
 {
+    /** Formada chastota tanlanmaganda ishlatiladigan qiymat. */
+    private const DEFAULT_FREQUENCY = 'weekly';
+
     public function __construct(private readonly NewsletterService $newsletter)
     {
     }
@@ -33,7 +36,14 @@ class PromptGateController extends Controller
 
         $validated = $request->validate([
             'email' => 'required|email|max:255',
+            // Spec §7: obunachining o'zi chastotani tanlaydi. Standart —
+            // HAFTALIK: kunlik digest faqat oxirgi 24 soatda post chiqqanda
+            // yuboriladi, shuning uchun "daily" ni majburlash yangi
+            // obunachilarni onboarding tugagach jimlikka mahkum qilardi.
+            'frequency' => 'nullable|in:daily,weekly',
         ]);
+
+        $frequency = $validated['frequency'] ?? self::DEFAULT_FREQUENCY;
 
         try {
             // DIQQAT: NewsletterService::subscribe() updateOrCreate ishlatadi va
@@ -56,7 +66,7 @@ class PromptGateController extends Controller
                 $subscription = $this->newsletter->subscribe(
                     $validated['email'],
                     null,
-                    'daily',
+                    $frequency,
                     ['pending_prompt_listing' => $listing->slug]
                 );
             }

@@ -34,11 +34,54 @@ class PromptGateTest extends TestCase
         $subscription = NewsletterSubscription::where('email', 'yangi@example.org')->first();
 
         $this->assertNotNull($subscription, 'obuna yaratilmadi');
-        $this->assertSame('daily', $subscription->frequency);
+        // Chastota tanlanmagan — standart HAFTALIK bo'lishi kerak, chunki
+        // kunlik digest ko'p kunlar hech narsa yubormaydi.
+        $this->assertSame('weekly', $subscription->frequency);
         $this->assertSame(
             $listing->slug,
             data_get($subscription->preferences, 'pending_prompt_listing')
         );
+    }
+
+    public function test_kunlikni_tanlagan_obunachi_kunlik_oladi(): void
+    {
+        Mail::fake();
+        $listing = $this->listing();
+
+        $this->post(route('marketplace.prompt.request', $listing), [
+            'email' => 'kunlik@example.org',
+            'frequency' => 'daily',
+        ])->assertRedirect();
+
+        $this->assertSame(
+            'daily',
+            NewsletterSubscription::where('email', 'kunlik@example.org')->firstOrFail()->frequency
+        );
+    }
+
+    public function test_yaroqsiz_chastota_rad_etiladi(): void
+    {
+        Mail::fake();
+        $listing = $this->listing();
+
+        $this->post(route('marketplace.prompt.request', $listing), [
+            'email' => 'yaroqsiz@example.org',
+            'frequency' => 'hourly',
+        ])->assertSessionHasErrors('frequency');
+
+        $this->assertSame(0, NewsletterSubscription::count());
+    }
+
+    public function test_sahifada_chastota_tanlovi_bor(): void
+    {
+        $listing = $this->listing();
+
+        $response = $this->get(route('marketplace.show', $listing));
+
+        $response->assertOk();
+        $response->assertSee('name="frequency"', false);
+        $response->assertSee('value="weekly"', false);
+        $response->assertSee('value="daily"', false);
     }
 
     public function test_bepul_prompt_uchun_sotuv_yozuvi_yaratilmaydi(): void
@@ -61,8 +104,10 @@ class PromptGateTest extends TestCase
         $haftalik = app(\App\Services\NewsletterService::class)
             ->subscribe('haftalik@example.org', null, 'weekly', ['topics' => ['devops']]);
 
+        // Formadan "kunlik" kelsa ham mavjud obunachining tanloviga tegilmaydi.
         $this->post(route('marketplace.prompt.request', $listing), [
             'email' => 'haftalik@example.org',
+            'frequency' => 'daily',
         ]);
 
         $yangilangan = $haftalik->fresh();
