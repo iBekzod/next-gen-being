@@ -57,6 +57,10 @@ php artisan migrate --force || fail "php artisan migrate"
 echo "⚙️  Updating site settings..."
 php artisan db:seed --class=SiteSettingSeeder --force || fail "db:seed SiteSettingSeeder"
 
+# Sync first-party marketplace listings (idempotent).
+echo "🛍️  Syncing marketplace listings..."
+php artisan marketplace:sync-listings || fail "marketplace:sync-listings"
+
 # Clear and cache configs
 echo "🧹 Clearing caches..."
 php artisan config:clear || fail "config:clear"
