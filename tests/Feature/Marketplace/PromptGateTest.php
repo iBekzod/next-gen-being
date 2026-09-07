@@ -143,4 +143,30 @@ class PromptGateTest extends TestCase
 
         $this->get($url . 'buzildi')->assertForbidden();
     }
+
+    public function test_tasdiqlash_promptga_yonaltiradi(): void
+    {
+        Mail::fake();
+        $listing = $this->listing();
+
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'yangi@example.org']);
+
+        $subscription = NewsletterSubscription::where('email', 'yangi@example.org')->firstOrFail();
+
+        $response = $this->get(route('newsletter.verify', $subscription->token));
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('/prompt/', (string) $response->headers->get('Location'));
+        $this->assertNotNull($subscription->fresh()->verified_at);
+    }
+
+    public function test_promptsiz_obuna_odatdagi_sahifani_koradi(): void
+    {
+        Mail::fake();
+        $subscription = app(\App\Services\NewsletterService::class)
+            ->subscribe('oddiy@example.org', null, 'weekly');
+
+        $this->get(route('newsletter.verify', $subscription->token))
+            ->assertOk();
+    }
 }
