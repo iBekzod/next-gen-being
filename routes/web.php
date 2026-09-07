@@ -88,6 +88,9 @@ Route::prefix('resources')->name('digital-products.')->group(function () {
 Route::prefix('market')->name('marketplace.')->group(function () {
     Route::get('/', [\App\Http\Controllers\MarketplaceController::class, 'index'])->name('index');
     Route::get('/{listing:slug}', [\App\Http\Controllers\MarketplaceController::class, 'show'])->name('show');
+
+    Route::post('/{listing:slug}/prompt', [\App\Http\Controllers\PromptGateController::class, 'request'])
+        ->middleware('throttle:5,1')->name('prompt.request');
 });
 
 // Authentication routes

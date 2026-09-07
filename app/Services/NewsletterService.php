@@ -190,6 +190,18 @@ class NewsletterService
         return null;
     }
 
+    /**
+     * Obunachi uchun bitta listing promptiga vaqtinchalik imzolangan havola.
+     */
+    public function promptDownloadUrl(NewsletterSubscription $subscription, \App\Models\MarketplaceListing $listing): string
+    {
+        return \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'marketplace.prompt.download',
+            now()->addDays(7),
+            ['listing' => $listing->slug, 'subscription' => $subscription->id]
+        );
+    }
+
     public function generateWeeklyDigest(): NewsletterCampaign
     {
         $topPosts = Post::where('status', 'published')
