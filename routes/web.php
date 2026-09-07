@@ -91,6 +91,9 @@ Route::prefix('market')->name('marketplace.')->group(function () {
 
     Route::post('/{listing:slug}/prompt', [\App\Http\Controllers\PromptGateController::class, 'request'])
         ->middleware('throttle:5,1')->name('prompt.request');
+
+    Route::get('/{listing:slug}/prompt/{subscription}', [\App\Http\Controllers\PromptGateController::class, 'download'])
+        ->middleware('signed')->name('prompt.download');
 });
 
 // Authentication routes

@@ -8,6 +8,8 @@ use App\Services\NewsletterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Bepul prompt magnitining email darvozasi (spec §7).
@@ -72,5 +74,28 @@ class PromptGateController extends Controller
         }
 
         return back()->with('success', 'Tasdiqlash havolasini emailingizga yubordik — bosing va prompt sizniki.');
+    }
+
+    public function download(MarketplaceListing $listing, NewsletterSubscription $subscription): StreamedResponse
+    {
+        abort_unless($listing->status === 'published', 404);
+
+        $product = $listing->tiers()
+            ->where('tier', 'prompt')
+            ->whereNotNull('file_path')
+            ->first();
+
+        abort_if($product === null, 404, 'Bu mahsulot uchun prompt hali tayyor emas.');
+        abort_unless(Storage::disk('private')->exists($product->file_path), 404);
+
+        Log::info('Prompt magnet delivered', [
+            'listing' => $listing->slug,
+            'subscription_id' => $subscription->id,
+        ]);
+
+        return Storage::disk('private')->download(
+            $product->file_path,
+            $listing->slug . '-prompt.md'
+        );
     }
 }

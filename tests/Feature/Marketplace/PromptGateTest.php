@@ -84,4 +84,63 @@ class PromptGateTest extends TestCase
 
         $this->assertSame(0, NewsletterSubscription::count());
     }
+
+    public function test_imzolangan_havola_faylni_beradi(): void
+    {
+        $listing = $this->listing();
+        $subscription = NewsletterSubscription::create([
+            'email' => 'tasdiqlangan@example.org',
+            'token' => \Illuminate\Support\Str::random(40),
+            'frequency' => 'daily',
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
+
+        $url = app(\App\Services\NewsletterService::class)->promptDownloadUrl($subscription, $listing);
+
+        $response = $this->get($url);
+
+        $response->assertOk();
+        // Storage::download() infers the content-type from the file extension via
+        // Symfony's MIME guesser. For a .md deliverable that resolves to
+        // 'text/markdown', not the generic 'application/octet-stream' the brief
+        // assumed — verified by running this test and reading the actual header.
+        $this->assertSame(
+            'text/markdown',
+            explode(';', (string) $response->headers->get('content-type'))[0]
+        );
+    }
+
+    public function test_imzosiz_havola_rad_etiladi(): void
+    {
+        $listing = $this->listing();
+        $subscription = NewsletterSubscription::create([
+            'email' => 'tasdiqlangan@example.org',
+            'token' => \Illuminate\Support\Str::random(40),
+            'frequency' => 'daily',
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
+
+        $this->get(route('marketplace.prompt.download', [
+            'listing' => $listing->slug,
+            'subscription' => $subscription->id,
+        ]))->assertForbidden();
+    }
+
+    public function test_buzilgan_imzo_rad_etiladi(): void
+    {
+        $listing = $this->listing();
+        $subscription = NewsletterSubscription::create([
+            'email' => 'tasdiqlangan@example.org',
+            'token' => \Illuminate\Support\Str::random(40),
+            'frequency' => 'daily',
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
+
+        $url = app(\App\Services\NewsletterService::class)->promptDownloadUrl($subscription, $listing);
+
+        $this->get($url . 'buzildi')->assertForbidden();
+    }
 }
