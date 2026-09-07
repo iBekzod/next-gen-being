@@ -5,7 +5,13 @@
 
 @section('content')
 @php
-    $__tierPrices = $listing->tiers->pluck('price')->map(fn ($p) => (float) $p);
+    // JSON-LD offerlari sahifadagi tierlarga MOS kelishi shart: arxivlangan
+    // `code` tier offerCount ni shishirmasin, va bepul tier crawlerlarga narx
+    // e'lon qilmasin (sahifa uni tekinga beryapti).
+    $__tierPrices = $listing->tiers
+        ->where('status', 'published')
+        ->map(fn ($t) => $t->is_free ? 0.0 : (float) $t->price)
+        ->values();
     $__productLd = array_filter([
         '@context' => 'https://schema.org',
         '@type' => 'Product',
