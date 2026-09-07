@@ -275,6 +275,50 @@ class PromptGateTest extends TestCase
         $this->assertStringContainsString('/prompt/', (string) $response->headers->get('Location'));
     }
 
+    /**
+     * FINDING 4: har bir so'rovda tasdiqlash xatini qayta yubormaymiz.
+     *
+     * Mail::fake() bu yerda yaramaydi — NewsletterService::sendVerificationEmail()
+     * Mail::send() ni VIEW nomi bilan chaqiradi, MailFake esa faqat Mailable
+     * obyektlarini yozib oladi (ContentHealthCheckTest dagi izohga qarang).
+     * Shuning uchun testdagi MAIL_MAILER=array orqali haqiqiy ArrayTransport
+     * xabarlarini sanaymiz.
+     */
+    public function test_ketma_ket_sorovlar_bitta_tasdiqlash_xati_yuboradi(): void
+    {
+        $listing = $this->listing();
+
+        /** @var \Illuminate\Mail\Transport\ArrayTransport $transport */
+        $transport = Mail::getSymfonyTransport();
+        $transport->flush();
+
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'takror@example.org']);
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'takror@example.org']);
+
+        $this->assertCount(
+            1,
+            $transport->messages(),
+            'tasdiqlangan bo\'lmagan manzilga har so\'rovda xat ketyapti'
+        );
+    }
+
+    public function test_oraliq_otgach_tasdiqlash_xati_qayta_yuboriladi(): void
+    {
+        $listing = $this->listing();
+
+        /** @var \Illuminate\Mail\Transport\ArrayTransport $transport */
+        $transport = Mail::getSymfonyTransport();
+        $transport->flush();
+
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'kutgan@example.org']);
+
+        $this->travel(30)->minutes();
+
+        $this->post(route('marketplace.prompt.request', $listing), ['email' => 'kutgan@example.org']);
+
+        $this->assertCount(2, $transport->messages());
+    }
+
     public function test_sahifada_prompt_uchun_email_formasi_bor(): void
     {
         $listing = $this->listing();

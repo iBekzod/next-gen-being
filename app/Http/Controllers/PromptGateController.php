@@ -26,6 +26,9 @@ class PromptGateController extends Controller
     /** Formada chastota tanlanmaganda ishlatiladigan qiymat. */
     private const DEFAULT_FREQUENCY = 'weekly';
 
+    /** Tasdiqlash xatini shu oraliqdan tez-tez qayta yubormaymiz. */
+    private const VERIFICATION_RESEND_MINUTES = 15;
+
     public function __construct(private readonly NewsletterService $newsletter)
     {
     }
@@ -56,10 +59,20 @@ class PromptGateController extends Controller
             $existing = NewsletterSubscription::where('email', $validated['email'])->first();
 
             if ($existing) {
+                // Tasdiqlash xatining YOSHINI o'lchash uchun `updated_at` ni
+                // yozishdan OLDIN o'qiymiz. Bu oqimda yozuv faqat shu yerda
+                // (updatePreferences) yoki subscribe() da yangilanadi, va
+                // ikkalasi ham tasdiqlash xati bilan birga sodir bo'ladi —
+                // ya'ni `updated_at` migratsiyasiz ishonchli proksi.
+                // Yangi ustun qo'shmaymiz: migratsiya taqiqlangan.
+                $lastTouchedAt = $existing->updated_at;
+
                 $existing->updatePreferences(['pending_prompt_listing' => $listing->slug]);
                 $subscription = $existing->fresh();
 
-                if (! $subscription->verified_at) {
+                // Har bir so'rovda qayta yubormaymiz: email egasi so'ramagan
+                // odam bo'lishi mumkin, throttle:5,1 esa faqat IP bo'yicha cheklaydi.
+                if (! $subscription->verified_at && $this->mayResendVerification($lastTouchedAt)) {
                     $this->newsletter->sendVerificationEmail($subscription);
                 }
             } else {
@@ -84,6 +97,17 @@ class PromptGateController extends Controller
         }
 
         return back()->with('success', 'Tasdiqlash havolasini emailingizga yubordik — bosing va prompt sizniki.');
+    }
+
+    /**
+     * Oldingi tasdiqlash xati yetarlicha eskirganmi?
+     *
+     * $lastTouchedAt null bo'lsa (yozuv timestampsiz yaratilgan) — yuboramiz.
+     */
+    private function mayResendVerification(?\Illuminate\Support\Carbon $lastTouchedAt): bool
+    {
+        return $lastTouchedAt === null
+            || $lastTouchedAt->lte(now()->subMinutes(self::VERIFICATION_RESEND_MINUTES));
     }
 
     public function download(MarketplaceListing $listing, NewsletterSubscription $subscription): StreamedResponse
