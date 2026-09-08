@@ -1,0 +1,31 @@
+<?php
+
+namespace Tests\Feature\Content;
+
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ScrapeScheduleTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /** @return string[] */
+    private function scheduledCommands(): array
+    {
+        return array_map(
+            fn ($e) => (string) $e->command,
+            app(Schedule::class)->events()
+        );
+    }
+
+    public function test_scraping_jadvalga_qoyilgan(): void
+    {
+        $found = array_filter(
+            $this->scheduledCommands(),
+            fn (string $c) => str_contains($c, 'content:scrape-all')
+        );
+
+        $this->assertNotEmpty($found, 'content:scrape-all jadvalda yo\'q');
+    }
+}

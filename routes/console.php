@@ -285,6 +285,21 @@ Schedule::command('content:drip')
         \Illuminate\Support\Facades\Log::info('content:drip completed');
     });
 
+// ========================================
+// TREND MAVZULAR (C2)
+// ========================================
+// Kontent manbalarini yig'ish. Bu quyi tizim 2026-01 dan beri kodda bor edi,
+// lekin hech qachon jadvalga qo'yilmagan — ya'ni bir marta ham ishlamagan.
+// --async: har bir manba alohida queue job'ga tushadi, shuning uchun bitta
+// sekin sayt qolganlarini to'xtatib qo'ymaydi.
+Schedule::command('content:scrape-all', ['--async', '--limit=40'])
+    ->everySixHours()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('content:scrape-all failed');
+    });
+
 // Cache pre-warm: hit top URLs every 6 hours to keep DB/view caches hot
 Schedule::command('cache:prewarm', ['--limit=10'])
     ->everySixHours()
