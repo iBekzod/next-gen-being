@@ -328,6 +328,21 @@ class GenerateAiPost extends Command
     }
 
     /**
+     * similar_text() sarlavha o'xshashligi uchun bo'sag'a.
+     *
+     * similar_text() MOS TUSHGAN BELGILAR sonini hisoblaydi, mavzuni emas —
+     * shuning uchun bir xil tech-blog shabloniga ega ikkita MUTLAQO BOSHQA
+     * mavzu ham yuqori ball oladi. 0.7 bo'sag'asi haqiqatda turli mavzularni
+     * rad etardi: "Docker Autoscaling Best Practices Guide" nomzodi
+     * "Kubernetes Autoscaling Best Practices" nashr etilgan sarlavha bilan
+     * solishtirilganda 0.7692 ball oldi — ikkisi ham bir xil shablon, lekin
+     * mutlaqo boshqa texnologiyalar haqida. 0.88 bunday juftlikni saqlab
+     * qoladi, lekin haqiqiy takrorlarni (masalan, bir xil sarlavhaning
+     * ko'plik/birlik farqi, o'lchangan 0.9697) hali ham rad etadi.
+     */
+    private const TOPIC_SIMILARITY_THRESHOLD = 0.88;
+
+    /**
      * Trend navbatidan eng yuqori nomzodni oladi, yoki navbat bo'sh bo'lsa null.
      *
      * Yaqinda ishlatilgan mavzular takrorlanmasligi uchun so'nggi postlar
@@ -343,7 +358,16 @@ class GenerateAiPost extends Command
             $title = mb_strtolower($candidate['title']);
 
             foreach ($recent as $seen) {
-                if (similar_text($title, $seen) / max(1, mb_strlen($title)) > 0.7) {
+                $ratio = similar_text($title, $seen) / max(1, mb_strlen($title));
+
+                if ($ratio > self::TOPIC_SIMILARITY_THRESHOLD) {
+                    Log::info('Trend navbati: nomzod juda o\'xshash deb o\'tkazib yuborildi', [
+                        'candidate_title' => $candidate['title'],
+                        'matched_recent_title' => $seen,
+                        'ratio' => round($ratio, 4),
+                        'threshold' => self::TOPIC_SIMILARITY_THRESHOLD,
+                    ]);
+
                     continue 2;
                 }
             }
