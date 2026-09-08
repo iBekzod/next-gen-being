@@ -327,6 +327,38 @@ class GenerateAiPost extends Command
         return $post;
     }
 
+    /**
+     * Trend navbatidan eng yuqori nomzodni oladi, yoki navbat bo'sh bo'lsa null.
+     *
+     * Yaqinda ishlatilgan mavzular takrorlanmasligi uchun so'nggi postlar
+     * sarlavhalari bilan solishtiriladi.
+     */
+    private function topicFromQueue(): ?array
+    {
+        $recent = \App\Models\Post::whereNotNull('published_at')
+            ->latest('published_at')->take(30)->pluck('title')
+            ->map(fn ($t) => mb_strtolower((string) $t))->all();
+
+        foreach (app(\App\Services\Content\TopicQueueService::class)->topCandidates(10) as $candidate) {
+            $title = mb_strtolower($candidate['title']);
+
+            foreach ($recent as $seen) {
+                if (similar_text($title, $seen) / max(1, mb_strlen($title)) > 0.7) {
+                    continue 2;
+                }
+            }
+
+            return [
+                'title' => $candidate['title'],
+                'category' => $candidate['category'],
+                'from_queue' => true,
+                'sources' => $candidate['sources'],
+            ];
+        }
+
+        return null;
+    }
+
     private function selectTrendingTopic(): array
     {
         // Check if there's a monthly content plan
@@ -361,6 +393,15 @@ class GenerateAiPost extends Command
                     'week' => $week,
                 ];
             }
+        }
+
+        // Trend navbati (C2). Qo'lda tuzilgan oylik reja ustuvor bo'lib qoladi —
+        // odam tanlagan mavzu avtomatik signaldan muhimroq. Lekin rejadan
+        // keyin, eski kalit-so'z evristikasidan oldin, kuzatilgan trend keladi.
+        if ($queued = $this->topicFromQueue()) {
+            $this->info("📈 Trend navbatidan: {$queued['title']}");
+
+            return $queued;
         }
 
         // Get recent topics to avoid duplication - include keywords for better matching

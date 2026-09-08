@@ -128,4 +128,34 @@ class TopicQueueServiceTest extends TestCase
     {
         $this->assertTrue(app(TopicQueueService::class)->topCandidates(5, 7)->isEmpty());
     }
+
+    public function test_generator_navbatdan_mavzu_oladi(): void
+    {
+        $a = $this->source('Alpha');
+        $b = $this->source('Beta');
+        $p = $this->item($a, 'Redis 8 changes eviction defaults');
+        $this->item($b, 'Redis 8 eviction rework', $p->id);
+
+        $command = new \App\Console\Commands\GenerateAiPost();
+        $ref = new \ReflectionClass($command);
+        $m = $ref->getMethod('topicFromQueue');
+        $m->setAccessible(true);
+
+        $topic = $m->invoke($command);
+
+        $this->assertIsArray($topic);
+        $this->assertSame('Redis 8 changes eviction defaults', $topic['title']);
+        $this->assertArrayHasKey('sources', $topic);
+        $this->assertNotEmpty($topic['sources']);
+    }
+
+    public function test_navbat_bosh_bolsa_null_qaytadi(): void
+    {
+        $command = new \App\Console\Commands\GenerateAiPost();
+        $ref = new \ReflectionClass($command);
+        $m = $ref->getMethod('topicFromQueue');
+        $m->setAccessible(true);
+
+        $this->assertNull($m->invoke($command));
+    }
 }
