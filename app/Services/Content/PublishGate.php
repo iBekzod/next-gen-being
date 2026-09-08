@@ -104,10 +104,23 @@ class PublishGate
         return $this->failures($post) === [];
     }
 
+    /**
+     * Markdown-safe plain text.
+     *
+     * strip_tags() cannot be used here: the content is markdown, so a bare `<`
+     * in a code example ("if ($x<self::TTL)") reads as an unterminated tag and
+     * deletes the rest of the article before it is measured. Requiring a letter
+     * after `<` removes real HTML tags while leaving comparison operators alone.
+     */
+    private function plainText(string $content): string
+    {
+        return (string) preg_replace('/<\/?[a-zA-Z][^>]*>/s', '', $content);
+    }
+
     /** Matnni normallashtirilgan jumlalarga bo'ladi. @return string[] */
     public function sentences(string $content): array
     {
-        $text = strip_tags($content);
+        $text = $this->plainText($content);
         $text = str_replace(["\r\n", "\r"], "\n", $text);
         // Faqat probel/tab yig'iladi — qatorlarni ajratish uchun \n saqlanadi,
         // shunda tinish belgisiz takrorlangan qatorlar (masalan, kod bloklari)
@@ -158,7 +171,7 @@ class PublishGate
      */
     public function fabricatedExperience(string $content): array
     {
-        $text = (string) preg_replace('/\s+/', ' ', strip_tags($content));
+        $text = (string) preg_replace('/\s+/', ' ', $this->plainText($content));
 
         $patterns = [
             '/\bas (?:an?|the) (?:senior|seasoned|experienced|lead|principal|staff)\b/i',

@@ -300,4 +300,74 @@ class PublishGateTest extends TestCase
             $this->assertNotContains('fabricated_experience', $gate->failures($this->makePost($content)));
         }
     }
+
+    /**
+     * PRODUCTION BUG: content is markdown, not HTML. `strip_tags()` reads a bare
+     * `<` immediately followed by a letter (no surrounding whitespace, e.g. a
+     * compact comparison like `$elapsed<self::LOCK_TTL_SECONDS`) as the start of
+     * an unterminated tag and deletes everything to the end of the string before
+     * the gate measures anything — verified directly against PHP 8.4's
+     * strip_tags(): `< self` (with a space) is left alone, but `<self` is not,
+     * and when nothing in the remaining article contains a literal `>` the
+     * deletion runs to end-of-string. A real production draft lost 64% of its
+     * words this way and was rejected as `too_short` at 3555 real words.
+     *
+     * This fixture reproduces the shape: clean prose, then a fenced code block
+     * containing a spaceless `<` comparison, then a large amount of additional
+     * clean prose AFTER the bare `<` — exactly the part that strip_tags()
+     * silently erases. Before the fix this fails with `too_short` even though
+     * the article is comfortably over MIN_WORDS. After the fix it must pass
+     * every gate.
+     */
+    public function test_kod_ichidagi_taqqoslash_belgisi_maqolani_qisqartirmaydi(): void
+    {
+        $gate = new PublishGate();
+
+        $codeBlock = "```php\nif (\$elapsed<self::LOCK_TTL_SECONDS) {\n    return true;\n}\n```";
+        $content = "Kirish jumlasi maqolani boshlaydi."
+            . "\n\n" . $codeBlock
+            . "\n\n" . $this->cleanContent();
+
+        $this->assertSame(
+            [],
+            $gate->failures($this->makePost($content)),
+            "Kod ichidagi '<' taqqoslash belgisi undan keyingi matnni yo'q qilmasligi kerak."
+        );
+    }
+
+    /**
+     * Haqiqiy HTML teglari hamon olib tashlanishi kerak — yechim faqat
+     * strip_tags()'ning noto'g'ri xatti-harakatini (belgisiz `<`) tuzatadi,
+     * lekin haqiqiy teglarni matn sifatida qoldirmaydi.
+     */
+    public function test_haqiqiy_html_teglari_hamon_olib_tashlanadi(): void
+    {
+        $gate = new PublishGate();
+        $content = '<p>Salom</p><div class="foo"></div>';
+
+        $this->assertSame(1, $gate->uniqueWordCount($content));
+        $this->assertNotContains('p', $gate->sentences($content));
+        $this->assertNotContains('div', $gate->sentences($content));
+    }
+
+    /**
+     * Regressiya: ilgari bare `<` dan keyingi butun matn strip_tags() tomonidan
+     * o'chirilgani uchun undan keyin kelgan "in my experience" kabi soxta
+     * tajriba da'vosi darvozaga UMUMAN ko'rinmas edi. Endi ko'rinishi shart.
+     */
+    public function test_bare_belgidan_keyingi_soxta_tajriba_hamon_aniqlanadi(): void
+    {
+        $gate = new PublishGate();
+
+        $codeBlock = "```php\nif (\$elapsed<self::LOCK_TTL_SECONDS) {\n    return true;\n}\n```";
+        $content = $this->cleanContent()
+            . "\n\n" . $codeBlock
+            . "\n\n" . 'In my experience, connection pooling solves most of these problems.';
+
+        $this->assertNotEmpty(
+            $gate->fabricatedExperience($content),
+            'Bare "<" dan keyingi soxta tajriba iborasi ushlanishi kerak edi.'
+        );
+        $this->assertContains('fabricated_experience', $gate->failures($this->makePost($content)));
+    }
 }
