@@ -144,6 +144,28 @@ class BotPostController extends Controller
     }
 
     /**
+     * Serve the top of the trending-topic queue to the blog-bot, so it stops
+     * picking topics from a hand-maintained YAML file.
+     */
+    public function nextTopic(Request $request, \App\Services\Content\TopicQueueService $queue): JsonResponse
+    {
+        if (! $this->verifySignature($request)) {
+            return response()->json(['error' => 'Invalid signature'], 401);
+        }
+
+        $candidate = $queue->topCandidates(1)->first();
+
+        return response()->json([
+            'ok' => true,
+            'topic' => $candidate ? [
+                'title' => $candidate['title'],
+                'category' => $candidate['category'],
+                'sources' => $candidate['sources'],
+            ] : null,
+        ]);
+    }
+
+    /**
      * Verify HMAC-SHA256 signature: hmac(secret, "<timestamp>.<raw_body>") in hex.
      * Reject if timestamp is stale (> 5 min skew) to prevent replay attacks.
      */
