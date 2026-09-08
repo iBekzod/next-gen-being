@@ -31,8 +31,19 @@ class TopicQueueService
     {
         $since = now()->subDays($windowDays);
 
+        // Oyna `published_at` YOKI `created_at` bo'yicha ochiladi.
+        //
+        // Sabab: ContentDeduplicationService qatorlarni `created_at` bo'yicha
+        // tanlaydi, bu yerda esa ilgari faqat `published_at` filtrlanardi.
+        // Feed eski `pubDate` bergan maqola (masalan hafta oldin nashr
+        // qilingan, lekin bugun yig'ilgan) deduplikatsiyadan o'tib klaster
+        // hosil qilardi-yu, ranglash uchun ko'rinmay qolardi — ya'ni
+        // deduplikator qilgan ishi ranglashga hech qachon yetib bormasdi.
         $rows = CollectedContent::with('source')
-            ->where('published_at', '>=', $since)
+            ->where(function ($q) use ($since) {
+                $q->where('published_at', '>=', $since)
+                    ->orWhere('created_at', '>=', $since);
+            })
             ->get();
 
         if ($rows->isEmpty()) {

@@ -93,6 +93,12 @@ class TopicQueueServiceTest extends TestCase
         $this->assertSame('Fresher subject', $out->first()['title']);
     }
 
+    /**
+     * Oyna endi `published_at` YOKI `created_at` bo'yicha ochiladi, shuning
+     * uchun "oyna tashqarisida" degani IKKALA vaqt belgisi ham eski degani.
+     * Faqat `published_at`ni eskirtirish yetarli emas edi: bunday qator
+     * bugun yig'ilgan bo'lardi va (to'g'ri ravishda) hali ham ko'rinardi.
+     */
     public function test_oyna_tashqarisidagi_kontent_hisobga_olinmaydi(): void
     {
         $a = $this->source('Alpha');
@@ -101,9 +107,39 @@ class TopicQueueServiceTest extends TestCase
         $old = $this->item($a, 'Ancient news', null, 24 * 30);
         $this->item($b, 'Ancient news echo', $old->id, 24 * 30);
 
+        CollectedContent::query()->update(['created_at' => now()->subDays(30)]);
+
         $out = app(TopicQueueService::class)->topCandidates(5, 7);
 
         $this->assertTrue($out->isEmpty(), 'oyna tashqarisidagi klaster qaytdi');
+    }
+
+    /**
+     * ContentDeduplicationService qatorlarni `created_at` bo'yicha tanlaydi,
+     * TopicQueueService esa ilgari faqat `published_at`ni filtrlardi. Feed
+     * eski `pubDate` bergan maqola (bu yerda 30 kun) deduplikatsiyadan o'tib
+     * klaster hosil qilardi, lekin ranglashda ko'rinmay qolardi — ya'ni
+     * deduplikator qilgan ish yo'qolardi. Yaqinda YIG'ILGAN klaster
+     * ranglanishi shart.
+     */
+    public function test_yaqinda_yigilgan_lekin_eski_pubdate_klasteri_ranglanadi(): void
+    {
+        $a = $this->source('Alpha');
+        $b = $this->source('Beta');
+
+        $primary = $this->item($a, 'Kernel 6.20 reworks the scheduler', null, 24 * 30);
+        $this->item($b, 'What the 6.20 scheduler rework changes', $primary->id, 24 * 30);
+
+        // Yig'ilgani bugun: `created_at` sukut bo'yicha now().
+        $this->assertSame(
+            2,
+            CollectedContent::query()->where('created_at', '>=', now()->subDay())->count()
+        );
+
+        $out = app(TopicQueueService::class)->topCandidates(5, 7);
+
+        $this->assertCount(1, $out, "yaqinda yig'ilgan klaster ranglashdan tushib qoldi");
+        $this->assertSame(2, $out->first()['cluster_size']);
     }
 
     public function test_manbalar_havolalari_qaytariladi(): void
