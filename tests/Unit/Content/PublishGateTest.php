@@ -370,4 +370,57 @@ class PublishGateTest extends TestCase
         );
         $this->assertContains('fabricated_experience', $gate->failures($this->makePost($content)));
     }
+
+    /**
+     * PRODUCTION BUG, ROUND 2: the first version of the fix required a letter
+     * after `<`, but its tag body (`[^>]*`) could still cross paragraph
+     * breaks — `[^>]` matches newlines. A generics-like `List<Item` early in
+     * the article, followed much later by an unrelated `>` (a markdown
+     * blockquote marker, say), read as one giant "tag" spanning everything in
+     * between and deleted all of it. Same failure class as the original
+     * strip_tags() bug — a bare `<` erasing real prose before the gate can
+     * measure it — just a smaller blast radius.
+     *
+     * The body is now bounded to `[^<>\n]{0,200}`: no newline, no nested `<`,
+     * length-capped, so a match can only span something that actually looks
+     * like a single HTML tag. `List<Item` has no `>` before the next
+     * paragraph break, so nothing is stripped there at all, and the prose
+     * between it and the blockquote survives intact.
+     */
+    public function test_generika_va_uzoqdagi_iqtibos_orasidagi_matn_ochirilmaydi(): void
+    {
+        $gate = new PublishGate();
+
+        $content = 'Kirish qismi maqolani boshlaydi.'
+            . "\n\n" . 'Bu qatorda List<Item kabi umumiy turlash namunasi keltirilgan, lekin u shu qatorning o\'zida yopilmaydi.'
+            . "\n\n" . $this->cleanContent()
+            . "\n\n" . '> Bu iqtibos qatori boshida katta-kichik belgisi bor.';
+
+        $this->assertGreaterThan(
+            PublishGate::MIN_WORDS,
+            $gate->uniqueWordCount($content),
+            "List<Item' bilan uzoqdagi '>' orasidagi nasr o'chirilmasligi kerak."
+        );
+        $this->assertSame([], $gate->failures($this->makePost($content)));
+    }
+
+    /**
+     * Tortishish (yangi chegara) haqiqiy, bir qatorli HTML teglarini
+     * so'z sifatida saqlab qolmasligi kerak — chegara faqat paragraflar
+     * orasidagi noto'g'ri moslashuvni oldini oladi, oddiy teglarni emas.
+     */
+    public function test_oddiy_html_teglar_tortishishdan_songgacha_olib_tashlanadi(): void
+    {
+        $gate = new PublishGate();
+        $content = '<p class="lead">Salom</p> <div id="wrap">Dunyo</div>';
+
+        $plain = implode(' ', $gate->sentences($content));
+
+        $this->assertStringNotContainsString('<p', $plain);
+        $this->assertStringNotContainsString('</p>', $plain);
+        $this->assertStringNotContainsString('<div', $plain);
+        $this->assertStringNotContainsString('</div>', $plain);
+        $this->assertStringNotContainsString('class=', $plain);
+        $this->assertSame(2, $gate->uniqueWordCount($content));
+    }
 }

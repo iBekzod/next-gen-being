@@ -111,10 +111,19 @@ class PublishGate
      * in a code example ("if ($x<self::TTL)") reads as an unterminated tag and
      * deletes the rest of the article before it is measured. Requiring a letter
      * after `<` removes real HTML tags while leaving comparison operators alone.
+     *
+     * The tag body is bounded to `[^<>\n]{0,200}` — no newline, no nested `<`,
+     * capped length — so the match can only span something that actually looks
+     * like a single HTML tag. Without that bound, `[^>]*` happily crosses
+     * paragraph breaks: a generics-like `List<Item` followed, pages later, by
+     * an unrelated `>` (a markdown blockquote marker, say) would delete every
+     * word in between. That is the exact same failure class as the original
+     * bug, just with a smaller blast radius, so it gets the same fix: require
+     * the `>` that closes the tag to show up close by, on the same line.
      */
     private function plainText(string $content): string
     {
-        return (string) preg_replace('/<\/?[a-zA-Z][^>]*>/s', '', $content);
+        return (string) preg_replace('/<\/?[a-zA-Z][^<>\n]{0,200}>/', '', $content);
     }
 
     /** Matnni normallashtirilgan jumlalarga bo'ladi. @return string[] */
