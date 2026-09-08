@@ -48,4 +48,14 @@ class ScrapeScheduleTest extends TestCase
 
         $this->assertNotEmpty($found, 'content:deduplicate jadvalda yo\'q');
     }
+
+    public function test_deduplikatsiya_72_soatlik_oyna_bilan_qoyilgan(): void
+    {
+        $found = array_filter(
+            $this->scheduledCommands(),
+            fn (string $c) => str_contains($c, 'content:deduplicate') && str_contains($c, '--hours=72')
+        );
+
+        $this->assertNotEmpty($found, 'content:deduplicate --hours=72 bilan jadvalda yo\'q');
+    }
 }
