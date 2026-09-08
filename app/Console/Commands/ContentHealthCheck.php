@@ -85,17 +85,20 @@ class ContentHealthCheck extends Command
         // Scraping to'xtaganini aniqlash. Faol manba bo'lsa-yu, hech biri
         // 24 soat ichida yig'ilmagan bo'lsa — quvurning kirish uchi qurigan.
         //
-        // Faol manba SONI 0 bo'lsa — bu holat qasddan jim qoldirilgan.
-        // Manba hech qachon ro'yxatga olinmagan yoki hammasi ataylab
-        // o'chirilgan (masalan texnik xizmat uchun) muhitni "buzilgan"
-        // deb belgilash noto'g'ri signal beradi: bu tekshiruv faqat ILGARI
-        // ishlab turgan quvurning JIMGINA to'xtashini ushlash uchun (regressiya),
-        // manbalarning umuman sozlanmaganligi esa boshqa turdagi (konfiguratsiya)
-        // muammo — alohida qaror talab qiladi. Agar navbat haqiqatan ham
-        // quriydigan bo'lsa, buni yuqoridagi backlog tekshiruvlari baribir ushlaydi.
+        // Faol manba SONI 0 bo'lsa, bu ALOHIDA, aniqroq kalit bilan
+        // xabar qilinadi (`no_active_sources`, `stale_scraping` emas):
+        // ikkisi turli xil nosozlik — biri ILGARI ishlab turgan
+        // scraper'ning jimgina to'xtashi (regressiya), ikkinchisi esa
+        // tizim hech qachon sozlanmaganligi (masalan `content:init-sources`
+        // hech qachon ishga tushirilmagan). Ikkalasini bitta kalit ostida
+        // qo'shib yuborish operatorni chalg'itadi va "stale" so'zi
+        // "hech qachon sozlanmagan" degani emasligini yashiradi.
         $activeSources = \App\Models\ContentSource::active()->count();
 
-        if ($activeSources > 0) {
+        if ($activeSources === 0) {
+            $problems['no_active_sources'] = "Hech qanday kontent manbasi yoqilmagan, mavzular navbati hech qachon to'lmaydi. "
+                . "Davolash: `content:init-sources` buyrug'ini ishga tushiring.";
+        } else {
             $freshlyScraped = \App\Models\ContentSource::active()
                 ->where('last_scraped_at', '>=', now()->subDay())
                 ->count();

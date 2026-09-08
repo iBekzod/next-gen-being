@@ -96,6 +96,17 @@ class ContentHealthCheckTest extends TestCase
         $this->makePublishableDrafts(3, null);
         $this->makePublishableDrafts(3, 'Laravel navbatlari seriyasi');
 
+        // Testning maqsadi "sog'lom quvur 0 kod bilan tugaydi", "nol faol
+        // manba sog'lom holat" emas — shuning uchun nol faol manba endi
+        // o'zi alohida muammo (`no_active_sources`) bo'lgani sababli, bu
+        // yerda kamida bitta faol, yaqinda yig'ilgan manba bo'lishi kerak,
+        // aks holda test "sog'lom" holatni emas, balki yangi muammoni sinaydi.
+        \App\Models\ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHours(2),
+        ]);
+
         $this->artisan('content:health-check')
             ->expectsOutputToContain("Kontent quvuri sog'lom")
             ->assertExitCode(0);
@@ -234,6 +245,23 @@ class ContentHealthCheckTest extends TestCase
         $this->assertCount(0, $transport->messages(), '--dry-run must never send mail.');
     }
 
+    /**
+     * Nol faol manba — o'zi alohida, aniqroq muammo (`no_active_sources`),
+     * `stale_scraping` emas. Production 2026-01 dan beri `content:init-sources`
+     * ishga tushirilmagan holda deploy bo'ladi, ya'ni bu — kutilgan/gipotetik
+     * emas, deploy kunidagi haqiqiy holat: mavzular navbati hech qachon
+     * to'lmaydi, health-check esa buni aytmasa "sog'lom" ko'rinib qoladi.
+     */
+    public function test_faol_manba_yoqligi_ogohlantiradi(): void
+    {
+        $this->assertSame(0, \App\Models\ContentSource::active()->count());
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('no_active_sources')
+            ->doesntExpectOutputToContain('stale_scraping')
+            ->assertExitCode(1);
+    }
+
     public function test_eskirgan_scraping_ogohlantiradi(): void
     {
         \App\Models\ContentSource::create([
@@ -244,6 +272,7 @@ class ContentHealthCheckTest extends TestCase
 
         $this->artisan('content:health-check --dry-run')
             ->expectsOutputToContain('stale_scraping')
+            ->doesntExpectOutputToContain('no_active_sources')
             ->assertExitCode(1);
     }
 
@@ -256,6 +285,25 @@ class ContentHealthCheckTest extends TestCase
         ]);
 
         $this->artisan('content:health-check --dry-run')
-            ->doesntExpectOutputToContain('stale_scraping');
+            ->doesntExpectOutputToContain('stale_scraping')
+            ->doesntExpectOutputToContain('no_active_sources');
+
+        // Yuqoridagi doesntExpectOutputToContain o'zi kuchsiz: butun
+        // stale_scraping blokini o'chirib tashlasa ham shu assertion o'tadi.
+        // Shuning uchun quyida musbat isbot: qolgan quvur ham sog'lom
+        // qilib qurilsa (yangi post/tutorial, to'liq draft zaxirasi,
+        // moderatsiyada kutayotgan draft yo'q) va manba yaqinda yig'ilgan
+        // bo'lsa, buyruq aniq 0 kod bilan tugashi kerak — bu "yangi
+        // scraping" yo'lining haqiqatan ham ishlab, muammo qo'shmasligini
+        // isbotlaydi.
+        Post::where('status', 'draft')->delete();
+
+        $this->makeFreshPublished();
+        $this->makePublishableDrafts(3, null);
+        $this->makePublishableDrafts(3, 'Laravel navbatlari seriyasi');
+
+        $this->artisan('content:health-check')
+            ->expectsOutputToContain("Kontent quvuri sog'lom")
+            ->assertExitCode(0);
     }
 }
