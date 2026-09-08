@@ -391,37 +391,57 @@ class GenerateAiPost extends Command
      */
     private function topicFromQueue(): ?array
     {
-        $recent = \App\Models\Post::whereNotNull('published_at')
-            ->latest('published_at')->take(30)->pluck('title')
-            ->map(fn ($t) => mb_strtolower((string) $t))->all();
+        // Butun tana try/catch ichida. Trend navbati QO'SHIMCHA signal: u
+        // ishlamay qolsa, generatsiya eski kalit-so'z evristikasiga qaytishi
+        // kerak, butun ishga tushirish qulashi emas. Ilgari bu yerdagi har
+        // qanday istisno (DB xatosi, kutilmagan nomzod tuzilmasi) kunlik
+        // post generatsiyasini butunlay to'xtatib qo'yardi — holbuki
+        // evristika yo'li mavjud va har doim biror natija beradi.
+        try {
+            $recent = \App\Models\Post::whereNotNull('published_at')
+                ->latest('published_at')->take(30)->pluck('title')
+                ->map(fn ($t) => mb_strtolower((string) $t))->all();
 
-        foreach (app(\App\Services\Content\TopicQueueService::class)->topCandidates(10) as $candidate) {
-            $title = mb_strtolower($candidate['title']);
+            foreach (app(\App\Services\Content\TopicQueueService::class)->topCandidates(10) as $candidate) {
+                $title = mb_strtolower($candidate['title']);
 
-            foreach ($recent as $seen) {
-                $ratio = similar_text($title, $seen) / max(1, mb_strlen($title));
+                foreach ($recent as $seen) {
+                    // Bo'luvchi BAYT bo'yicha o'lchanadi. similar_text() mos
+                    // kelgan BAYTLAR sonini qaytaradi, mb_strlen() esa
+                    // BELGILAR sonini — ASCII bo'lmagan sarlavhada (kirill,
+                    // o'zbek apostrofi, emoji) baytlar belgilardan ko'p
+                    // bo'lib, nisbat 1.0 dan oshib ketardi va mutlaqo boshqa
+                    // mavzu "juda o'xshash" deb noto'g'ri rad etilardi.
+                    $ratio = similar_text($title, $seen) / max(1, strlen($title));
 
-                if ($ratio > self::TOPIC_SIMILARITY_THRESHOLD) {
-                    Log::info('Trend navbati: nomzod juda o\'xshash deb o\'tkazib yuborildi', [
-                        'candidate_title' => $candidate['title'],
-                        'matched_recent_title' => $seen,
-                        'ratio' => round($ratio, 4),
-                        'threshold' => self::TOPIC_SIMILARITY_THRESHOLD,
-                    ]);
+                    if ($ratio > self::TOPIC_SIMILARITY_THRESHOLD) {
+                        Log::info('Trend navbati: nomzod juda o\'xshash deb o\'tkazib yuborildi', [
+                            'candidate_title' => $candidate['title'],
+                            'matched_recent_title' => $seen,
+                            'ratio' => round($ratio, 4),
+                            'threshold' => self::TOPIC_SIMILARITY_THRESHOLD,
+                        ]);
 
-                    continue 2;
+                        continue 2;
+                    }
                 }
+
+                return [
+                    'title' => $candidate['title'],
+                    'category' => $candidate['category'],
+                    'from_queue' => true,
+                    'sources' => $candidate['sources'],
+                ];
             }
 
-            return [
-                'title' => $candidate['title'],
-                'category' => $candidate['category'],
-                'from_queue' => true,
-                'sources' => $candidate['sources'],
-            ];
-        }
+            return null;
+        } catch (\Throwable $e) {
+            Log::warning('Trend navbatidan mavzu olinmadi, kalit-so\'z evristikasiga qaytiladi', [
+                'error' => $e->getMessage(),
+            ]);
 
-        return null;
+            return null;
+        }
     }
 
     private function selectTrendingTopic(): array

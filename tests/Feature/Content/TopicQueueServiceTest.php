@@ -275,4 +275,67 @@ class TopicQueueServiceTest extends TestCase
             $refs->pluck('url')->all()
         );
     }
+
+    /**
+     * Regression: nisbat 1.0 dan oshib ketardi va ASCII bo'lmagan sarlavhali
+     * nomzod noto'g'ri rad etilardi.
+     *
+     * similar_text() mos kelgan BAYTLAR sonini qaytaradi, mb_strlen() esa
+     * BELGILAR sonini — kirill matnida bayt belgidan ikki baravar ko'p.
+     * O'lchangan: nomzod "Редис 8 меняет настройки вытеснения" va nashr
+     * etilgan "Кубернетес: лучшие практики автомасштабирования" (mutlaqo
+     * boshqa mavzular) eski bo'luvchida 1.0000 ball olardi — ya'ni 0.88
+     * bo'sag'asidan yuqori va o'tkazib yuborilardi. Bayt bo'yicha bo'luvchi
+     * bilan bir xil juftlik 0.5385 ball oladi va nomzod saqlanib qoladi.
+     */
+    public function test_ascii_bolmagan_sarlavha_notogri_rad_etilmaydi(): void
+    {
+        \App\Models\Post::factory()->create([
+            'status' => 'published',
+            'title' => 'Кубернетес: лучшие практики автомасштабирования',
+            'published_at' => now()->subDay(),
+        ]);
+
+        $a = $this->source('Alpha');
+        $b = $this->source('Beta');
+        $p = $this->item($a, 'Редис 8 меняет настройки вытеснения');
+        $this->item($b, 'Редис 8: новые правила вытеснения ключей', $p->id);
+
+        $command = new \App\Console\Commands\GenerateAiPost();
+        $ref = new \ReflectionClass($command);
+        $m = $ref->getMethod('topicFromQueue');
+        $m->setAccessible(true);
+
+        $topic = $m->invoke($command);
+
+        $this->assertIsArray(
+            $topic,
+            "ASCII bo'lmagan sarlavha 1.0 dan katta nisbat tufayli rad etildi"
+        );
+        $this->assertSame('Редис 8 меняет настройки вытеснения', $topic['title']);
+    }
+
+    /**
+     * Trend navbati QO'SHIMCHA signal: u qulasa, generatsiya eski kalit-so'z
+     * evristikasiga qaytishi kerak, butun ishga tushirish to'xtashi emas.
+     */
+    public function test_navbat_istisno_tashlasa_generatsiya_toxtamaydi(): void
+    {
+        $this->app->bind(TopicQueueService::class, function () {
+            return new class extends TopicQueueService
+            {
+                public function topCandidates(int $limit = 10, int $windowDays = self::DEFAULT_WINDOW_DAYS): \Illuminate\Support\Collection
+                {
+                    throw new \RuntimeException('navbat qulab tushdi');
+                }
+            };
+        });
+
+        $command = new \App\Console\Commands\GenerateAiPost();
+        $ref = new \ReflectionClass($command);
+        $m = $ref->getMethod('topicFromQueue');
+        $m->setAccessible(true);
+
+        $this->assertNull($m->invoke($command), 'istisno yuqoriga otildi');
+    }
 }
