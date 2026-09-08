@@ -28,4 +28,24 @@ class ScrapeScheduleTest extends TestCase
 
         $this->assertNotEmpty($found, 'content:scrape-all jadvalda yo\'q');
     }
+
+    public function test_mavzu_ranking_jadvalga_qoyilgan(): void
+    {
+        $found = array_filter(
+            $this->scheduledCommands(),
+            fn (string $c) => str_contains($c, 'content:rank-topics')
+        );
+
+        $this->assertNotEmpty($found, 'content:rank-topics jadvalda yo\'q');
+    }
+
+    public function test_deduplikatsiya_jadvalga_qoyilgan(): void
+    {
+        $found = array_filter(
+            $this->scheduledCommands(),
+            fn (string $c) => str_contains($c, 'content:deduplicate')
+        );
+
+        $this->assertNotEmpty($found, 'content:deduplicate jadvalda yo\'q');
+    }
 }

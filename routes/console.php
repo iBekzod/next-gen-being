@@ -300,6 +300,22 @@ Schedule::command('content:scrape-all', ['--async', '--limit=40'])
         \Illuminate\Support\Facades\Log::error('content:scrape-all failed');
     });
 
+// Dublikatlarni aniqlash — `duplicate_of` ustunini shu yerda to'ldiradi, bu esa
+// mavzu klasterlashning yagona manbasi (TopicQueueService shu ustunga qarab
+// guruhlaydi). Ranking'dan (08:30) OLDIN ishlashi shart: aks holda har bir
+// maqola o'zining bitta qatorli klasteri bo'lib qoladi va hech qachon
+// ikkita mustaqil manba chegarasiga yetmaydi — navbat doim bo'sh chiqadi.
+Schedule::command('content:deduplicate')
+    ->dailyAt('08:00')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
+
+// Mavzularni ballash — generatsiya slotidan (09:00) oldin ishlaydi.
+Schedule::command('content:rank-topics')
+    ->dailyAt('08:30')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
+
 // Cache pre-warm: hit top URLs every 6 hours to keep DB/view caches hot
 Schedule::command('cache:prewarm', ['--limit=10'])
     ->everySixHours()
