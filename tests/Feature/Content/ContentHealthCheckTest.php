@@ -233,4 +233,29 @@ class ContentHealthCheckTest extends TestCase
 
         $this->assertCount(0, $transport->messages(), '--dry-run must never send mail.');
     }
+
+    public function test_eskirgan_scraping_ogohlantiradi(): void
+    {
+        \App\Models\ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subDays(3),
+        ]);
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('stale_scraping')
+            ->assertExitCode(1);
+    }
+
+    public function test_yangi_scraping_ogohlantirmaydi(): void
+    {
+        \App\Models\ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHours(2),
+        ]);
+
+        $this->artisan('content:health-check --dry-run')
+            ->doesntExpectOutputToContain('stale_scraping');
+    }
 }

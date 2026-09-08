@@ -82,6 +82,29 @@ class ContentHealthCheck extends Command
             $problems['unattended_moderation'] = "Faqat moderatsiya kutayotgan draftlar: {$pendingOnly}";
         }
 
+        // Scraping to'xtaganini aniqlash. Faol manba bo'lsa-yu, hech biri
+        // 24 soat ichida yig'ilmagan bo'lsa — quvurning kirish uchi qurigan.
+        //
+        // Faol manba SONI 0 bo'lsa — bu holat qasddan jim qoldirilgan.
+        // Manba hech qachon ro'yxatga olinmagan yoki hammasi ataylab
+        // o'chirilgan (masalan texnik xizmat uchun) muhitni "buzilgan"
+        // deb belgilash noto'g'ri signal beradi: bu tekshiruv faqat ILGARI
+        // ishlab turgan quvurning JIMGINA to'xtashini ushlash uchun (regressiya),
+        // manbalarning umuman sozlanmaganligi esa boshqa turdagi (konfiguratsiya)
+        // muammo — alohida qaror talab qiladi. Agar navbat haqiqatan ham
+        // quriydigan bo'lsa, buni yuqoridagi backlog tekshiruvlari baribir ushlaydi.
+        $activeSources = \App\Models\ContentSource::active()->count();
+
+        if ($activeSources > 0) {
+            $freshlyScraped = \App\Models\ContentSource::active()
+                ->where('last_scraped_at', '>=', now()->subDay())
+                ->count();
+
+            if ($freshlyScraped === 0) {
+                $problems['stale_scraping'] = "So'nggi 24 soatda birorta manba yig'ilmadi ({$activeSources} ta faol manba)";
+            }
+        }
+
         if ($problems === []) {
             $this->info(
                 "✅ Kontent quvuri sog'lom. Nashrga tayyor draftlar: "
