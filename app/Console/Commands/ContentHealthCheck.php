@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Post;
 use App\Services\Content\PublishGate;
+use App\Services\Content\TopicQueueService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -27,8 +28,10 @@ class ContentHealthCheck extends Command
 
     private const MIN_PUBLISHABLE_BACKLOG = 3;
 
-    public function __construct(private readonly PublishGate $gate)
-    {
+    public function __construct(
+        private readonly PublishGate $gate,
+        private readonly TopicQueueService $topicQueue,
+    ) {
         parent::__construct();
     }
 
@@ -105,6 +108,23 @@ class ContentHealthCheck extends Command
 
             if ($freshlyScraped === 0) {
                 $problems['stale_scraping'] = "So'nggi 24 soatda birorta manba yig'ilmadi ({$activeSources} ta faol manba)";
+            } elseif ($this->topicQueue->topCandidates()->isEmpty()) {
+                // Uchinchi, ALOHIDA nosozlik turi. `no_active_sources` —
+                // hech narsa sozlanmagan; `stale_scraping` — sozlangan, lekin
+                // yig'ish to'xtagan. Bu esa: yig'ish AYNI PAYTDA ishlayapti,
+                // maqolalar kelayotir, ammo hech bir mavzu MUSTAQIL MANBALAR
+                // bilan tasdiqlanmadi, ya'ni klasterlash bosqichi bo'sh
+                // chiqmoqda va trend navbati hech qachon to'lmayapti.
+                //
+                // Bu jimgina buziladigan holat: `content:rank-topics` bo'sh
+                // navbatni SUCCESS bilan chiqaradi, GenerateAiPost esa eski
+                // kalit-so'z evristikasiga qaytib, har doim biror natija
+                // beradi — shuning uchun tashqaridan hamma narsa sog'lom
+                // ko'rinadi. Aynan shu sababli buni health-check aytishi shart.
+                $problems['empty_topic_queue'] = "Manbalar yig'ilmoqda ({$activeSources} ta faol manba, yig'ish yangi), "
+                    . "lekin trend navbati bo'sh: birorta mavzu mustaqil manbalar bilan tasdiqlanmadi. "
+                    . "Kirish uchi ishlayapti, klasterlash bosqichi hech narsa bermayapti — "
+                    . "generatsiya jimgina eski kalit-so'z evristikasiga qaytadi.";
             }
         }
 

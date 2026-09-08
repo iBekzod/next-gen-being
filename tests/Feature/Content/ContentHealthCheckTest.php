@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Content;
 
+use App\Models\CollectedContent;
+use App\Models\ContentSource;
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -106,6 +108,12 @@ class ContentHealthCheckTest extends TestCase
             'trust_level' => 90, 'scraping_enabled' => true,
             'last_scraped_at' => now()->subHours(2),
         ]);
+
+        // Yig'ish yangi bo'lsa-yu trend navbati bo'sh qolsa — bu endi
+        // alohida muammo (`empty_topic_queue`). Shuning uchun "sog'lom"
+        // holat ikki mustaqil manba tasdiqlagan kamida bitta klasterni
+        // ham talab qiladi, aks holda bu test yana yangi muammoni sinaydi.
+        $this->makeQualifyingCluster();
 
         $this->artisan('content:health-check')
             ->expectsOutputToContain("Kontent quvuri sog'lom")
@@ -301,9 +309,75 @@ class ContentHealthCheckTest extends TestCase
         $this->makeFreshPublished();
         $this->makePublishableDrafts(3, null);
         $this->makePublishableDrafts(3, 'Laravel navbatlari seriyasi');
+        $this->makeQualifyingCluster();
 
         $this->artisan('content:health-check')
             ->expectsOutputToContain("Kontent quvuri sog'lom")
             ->assertExitCode(0);
+    }
+
+    /**
+     * Bo'sh trend navbati — UCHINCHI, alohida nosozlik. Manbalar sozlangan
+     * VA yaqinda yig'ilgan (ya'ni `no_active_sources` ham, `stale_scraping`
+     * ham tinch), lekin birorta mavzu ikkinchi mustaqil manba bilan
+     * tasdiqlanmagan. Bu holat production'da jimgina o'tib ketardi:
+     * `content:rank-topics` bo'sh navbatni SUCCESS bilan chiqaradi va
+     * generatsiya eski kalit-so'z evristikasiga qaytib har doim biror
+     * natija beradi, ya'ni tizim tashqaridan sog'lom ko'rinadi.
+     */
+    public function test_bosh_mavzular_navbati_ogohlantiradi(): void
+    {
+        ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHours(2),
+        ]);
+
+        // Yig'ilgan kontent bor, lekin hammasi BITTA manbadan — korroboratsiya yo'q.
+        $this->collected('Alpha', "Yolg'iz manba yozgan mavzu");
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('empty_topic_queue')
+            ->doesntExpectOutputToContain('stale_scraping')
+            ->doesntExpectOutputToContain('no_active_sources')
+            ->assertExitCode(1);
+    }
+
+    /**
+     * Ikki mustaqil manba tasdiqlagan bitta klaster — trend navbati
+     * to'ladigan minimal holat. `duplicate_of` bu yerda qo'lda yoziladi:
+     * bu test klasterlashni emas, health-check mantiqini sinaydi
+     * (klasterlashning o'zi DeduplicationIntegrationTest'da o'lchanadi).
+     */
+    private function makeQualifyingCluster(): void
+    {
+        $primary = $this->collected('Corroborating Alpha', "Postgres 18 pooling o'zgarishi");
+        $this->collected('Corroborating Beta', 'Postgres 18 pooling qayta ishlandi', $primary->id);
+    }
+
+    private function collected(string $sourceName, string $title, ?int $primaryId = null): CollectedContent
+    {
+        $source = ContentSource::firstOrCreate(
+            ['name' => $sourceName],
+            [
+                'url' => 'https://' . str_replace(' ', '-', strtolower($sourceName)) . '.example',
+                'category' => 'news',
+                'trust_level' => 90,
+                'scraping_enabled' => true,
+                'last_scraped_at' => now()->subHours(2),
+            ]
+        );
+
+        return CollectedContent::create([
+            'content_source_id' => $source->id,
+            'external_url' => 'https://x.example/' . uniqid('', true),
+            'title' => $title,
+            'excerpt' => 'Excerpt for ' . $title,
+            'full_content' => str_repeat('Body text about the subject. ', 20),
+            'content_type' => 'article',
+            'published_at' => now()->subHours(2),
+            'is_duplicate' => $primaryId !== null,
+            'duplicate_of' => $primaryId,
+        ]);
     }
 }
