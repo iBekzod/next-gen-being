@@ -286,6 +286,14 @@ class GenerateAiPost extends Command
         // Attach tags
         $post->tags()->attach($tags->pluck('id'));
 
+        // Step 11: Cite the sources that produced this trending topic (EEAT).
+        // Only topics pulled from the trending queue carry a 'sources' key;
+        // content-plan and keyword-heuristic topics do not, so posts from
+        // those paths are simply created with no references, as before.
+        if (! empty($topic['sources'])) {
+            $this->attachQueueSources($post, $topic['sources']);
+        }
+
         $status = $this->option('draft') ? 'draft' : 'published';
         $premiumLabel = $isPremium ? '💎 PREMIUM' : '🆓 FREE';
 
@@ -325,6 +333,39 @@ class GenerateAiPost extends Command
         ]);
 
         return $post;
+    }
+
+    /**
+     * Trend klasterini hosil qilgan manbalarni postga havola qilib yozadi.
+     *
+     * Mavjud ReferenceTrackingService ishlatiladi — yangi jadval yoki yangi
+     * format yaratilmaydi.
+     */
+    private function attachQueueSources(Post $post, array $sources): void
+    {
+        $service = app(\App\Services\ReferenceTrackingService::class);
+
+        foreach ($sources as $src) {
+            if (empty($src['url'])) {
+                continue;
+            }
+
+            try {
+                $service->addReference(
+                    $post,
+                    (string) ($src['title'] ?? $src['url']),
+                    (string) $src['url'],
+                    null,
+                    ! empty($src['published_at']) ? new \DateTime($src['published_at']) : null
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Queue source reference failed', [
+                    'post_id' => $post->id,
+                    'url' => $src['url'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     /**

@@ -216,4 +216,27 @@ class TopicQueueServiceTest extends TestCase
 
         $this->assertNull($m->invoke($command), 'near-identical recent title was not filtered out');
     }
+
+    public function test_navbatdagi_manbalar_postga_havola_sifatida_yoziladi(): void
+    {
+        $post = \App\Models\Post::factory()->create();
+
+        $command = new \App\Console\Commands\GenerateAiPost();
+        $ref = new \ReflectionClass($command);
+        $m = $ref->getMethod('attachQueueSources');
+        $m->setAccessible(true);
+
+        $m->invokeArgs($command, [$post, [
+            ['title' => 'Alpha wrote this', 'url' => 'https://alpha.example/a', 'published_at' => null],
+            ['title' => 'Beta wrote this',  'url' => 'https://beta.example/b',  'published_at' => null],
+        ]]);
+
+        $refs = \App\Models\SourceReference::where('post_id', $post->id)->get();
+
+        $this->assertCount(2, $refs);
+        $this->assertEqualsCanonicalizing(
+            ['https://alpha.example/a', 'https://beta.example/b'],
+            $refs->pluck('url')->all()
+        );
+    }
 }
