@@ -13,21 +13,31 @@ class ContentDeduplicationService
      * Minimum term-frequency cosine at which two articles are treated as the
      * same subject.
      *
-     * Derived from measurement, not taste. Controls (see the two tests in
-     * tests/Feature/Content/DeduplicationIntegrationTest.php, which assert
-     * these bands):
+     * Derived from measurement, not taste — but the two sides of that
+     * measurement do NOT rest on equally solid ground, and the difference
+     * matters when reading these numbers:
      *
-     *   positive control  two independent write-ups of the same subject
-     *                     (PostgreSQL 18 async I/O, different headlines,
-     *                     different opening sentences)            0.5417
-     *   negative control  unrelated subjects in the same register,
-     *                     worst of four cross pairs (Postgres vs
-     *                     Rust release, vs Kubernetes Gateway API)  0.0987
+     * NEGATIVE SIDE — calibrated on real production text. Over the 15
+     * articles production has actually scraped, all 75 cross-source pairs
+     * peaked at 0.2545 (mean 0.0511) and none reached 0.35. 0.35 therefore
+     * sits about 0.095 above every real negative. Same-source pairs went
+     * higher (30 pairs, peak 0.3920 between two unrelated CSS-Tricks
+     * articles that share the site's boilerplate), which is why
+     * findAllDuplicates() excludes same-source pairs outright rather than
+     * raising this number.
      *
-     * Measured margin 0.4430. 0.35 clears the positive by 0.1917 and stays
-     * 0.2513 above the worst negative. It is deliberately placed above the
-     * midpoint of the two: a false cluster invents a "corroborated" topic out
-     * of two unrelated articles, which is worse than missing one.
+     * POSITIVE SIDE — fixtures only, not real data. Three hand-written pairs
+     * of independent write-ups of one subject measured 0.5417, 0.5234 and
+     * 0.5159 (see tests/Feature/Content/DeduplicationIntegrationTest.php,
+     * which asserts the band). No real corroborating pair exists to measure
+     * yet: only 3 of 10 sources currently return articles and they cover
+     * different beats, so production has never produced two publications
+     * writing up the same subject. The positive band is a designed estimate
+     * and should be re-measured the moment real corroboration appears.
+     *
+     * 0.35 is deliberately placed above the midpoint of the two bands: a
+     * false cluster invents a "corroborated" topic out of unrelated
+     * articles, which is worse than missing one.
      *
      * The old value of 0.75 was unreachable for anything but near-identical
      * text, and byte-identical syndication never reaches this code because
@@ -87,6 +97,31 @@ class ContentDeduplicationService
 
             foreach ($unprocessed as $potentialDuplicate) {
                 if ($content->id === $potentialDuplicate->id || $potentialDuplicate->is_duplicate) {
+                    continue;
+                }
+
+                // Never merge two articles from the same source.
+                //
+                // Corroboration is the whole point of clustering, and
+                // TopicQueueService requires two DISTINCT sources before a
+                // cluster becomes a topic — so a same-source merge has no
+                // upside whatsoever. It does have a downside: merging sets
+                // is_duplicate = true on the absorbed row, and the query above
+                // filters notDuplicate(), so a wrong same-source merge removes
+                // that article from every future comparison and makes it
+                // inherit the wrong cluster's primary title. It can therefore
+                // hide a genuine cross-source pairing that would have formed
+                // later.
+                //
+                // This is also where the metric's only real-data failure lives.
+                // Over the 15 articles production actually scraped: 75
+                // cross-source pairs peaked at 0.2545 (none over the 0.35
+                // threshold), while 30 same-source pairs peaked at 0.3920 — a
+                // single crossing, between two unrelated CSS-Tricks articles
+                // that share that site's boilerplate. Excluding same-source
+                // pairs removes that false positive without touching the
+                // threshold.
+                if ($content->content_source_id === $potentialDuplicate->content_source_id) {
                     continue;
                 }
 

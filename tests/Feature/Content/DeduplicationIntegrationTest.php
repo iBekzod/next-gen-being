@@ -265,6 +265,53 @@ TXT;
     }
 
     /**
+     * BIR MANBADAGI juftlik hech qachon klaster hosil qilmasligi kerak —
+     * o'xshashlik chegaradan BALAND bo'lsa ham.
+     *
+     * Sabab production ma'lumotidan: haqiqatda yig'ilgan 15 maqolada 75 ta
+     * manbalararo juftlikning eng yuqorisi 0.2545 edi (bittasi ham 0.35 dan
+     * o'tmadi), 30 ta bir manbadagi juftlikning eng yuqorisi esa 0.3920 —
+     * bir-biriga umuman aloqasi yo'q ikki CSS-Tricks maqolasi, sababi
+     * saytning umumiy "boilerplate" matni. Ya'ni metrikaning haqiqiy
+     * matndagi yagona yolg'on ijobiysi aynan shu yerda.
+     *
+     * Birlashtirishning foydasi yo'q (TopicQueueService ikki HAR XIL manba
+     * talab qiladi), zarari esa bor: birlashuv yutilgan qatorga
+     * is_duplicate = true qo'yadi, findAllDuplicates() esa notDuplicate()
+     * bo'yicha filtrlaydi — demak noto'g'ri birlashuv o'sha maqolani
+     * keyingi barcha taqqoslashlardan olib tashlaydi va keyinroq hosil
+     * bo'lishi mumkin bo'lgan HAQIQIY manbalararo juftlikni yashiradi.
+     */
+    public function test_bir_manbadagi_ikki_maqola_yuqori_oxshashlikda_ham_klaster_hosil_qilmaydi(): void
+    {
+        [$a, $b] = $this->seedTwoArticlesFromOneSource();
+
+        $similarity = app(ContentDeduplicationService::class)->calculateSimilarity($a, $b);
+
+        // Ataylab chegaradan BALAND juftlik olingan: bu ijobiy nazoratning
+        // aynan o'sha matni (o'lchangan 0.5417). Ya'ni test metrikani emas,
+        // manba bo'yicha to'siqni sinaydi.
+        $this->assertGreaterThan(
+            $this->minSimilarityThreshold(),
+            $similarity,
+            'Bu test faqat chegaradan BALAND juftlikda ma\'noga ega.'
+        );
+
+        $this->artisan('content:deduplicate')->assertExitCode(0);
+
+        $a->refresh();
+        $b->refresh();
+
+        $this->assertFalse((bool) $a->is_duplicate, 'Bir manbadagi maqola dublikat deb belgilanmasligi kerak.');
+        $this->assertFalse((bool) $b->is_duplicate, 'Bir manbadagi maqola dublikat deb belgilanmasligi kerak.');
+        $this->assertNull($a->duplicate_of);
+        $this->assertNull($b->duplicate_of);
+        $this->assertSame(0, ContentAggregation::count(), 'Bir manbadan agregatsiya yasalmasligi kerak.');
+
+        $this->assertCount(0, app(TopicQueueService::class)->topCandidates(10, 7));
+    }
+
+    /**
      * Servisning haqiqiy chegarasi. Test uni takrorlab yozmaydi, o'qiydi —
      * aks holda konstanta o'zgarganda testlar jim qolib ketishi mumkin.
      */
@@ -272,6 +319,47 @@ TXT;
     {
         return (float) (new ReflectionClass(ContentDeduplicationService::class))
             ->getConstant('MIN_SIMILARITY_THRESHOLD');
+    }
+
+    /**
+     * Ijobiy nazoratning AYNAN o'sha ikki matni, lekin BITTA manbadan.
+     * O'xshashlik o'zgarmaydi (0.5417) — o'zgaradigan narsa faqat manba.
+     *
+     * @return array{0: CollectedContent, 1: CollectedContent}
+     */
+    private function seedTwoArticlesFromOneSource(): array
+    {
+        $source = ContentSource::create([
+            'name' => 'CSS-Tricks style single desk',
+            'url' => 'https://one-desk.example',
+            'category' => 'news',
+            'trust_level' => 85,
+            'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHour(),
+        ]);
+
+        $a = CollectedContent::create([
+            'content_source_id' => $source->id,
+            'external_url' => 'https://one-desk.example/postgresql-18-async-io',
+            'title' => self::DOC_A_TITLE,
+            'excerpt' => self::DOC_A_BODY,
+            'full_content' => self::DOC_A_BODY,
+            'content_type' => 'news',
+            'language' => 'en',
+            'published_at' => now()->subHours(3),
+        ]);
+
+        $b = CollectedContent::create([
+            'content_source_id' => $source->id,
+            'external_url' => 'https://one-desk.example/postgres-18-aio-read-heavy',
+            'title' => self::DOC_B_TITLE,
+            'excerpt' => self::DOC_B_BODY,
+            'full_content' => self::DOC_B_BODY,
+            'content_type' => 'news',
+            'published_at' => now()->subHours(2),
+        ]);
+
+        return [$a, $b];
     }
 
     /**
