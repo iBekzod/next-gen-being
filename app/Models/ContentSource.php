@@ -15,6 +15,7 @@ class ContentSource extends Model
     protected $fillable = [
         'name',
         'url',
+        'rss_url',
         'category',
         'language',
         'trust_level',

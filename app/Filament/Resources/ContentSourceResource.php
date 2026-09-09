@@ -40,6 +40,13 @@ class ContentSourceResource extends Resource
                             ->maxLength(255)
                             ->columnSpanFull(),
 
+                        Forms\Components\TextInput::make('rss_url')
+                            ->label('RSS / Atom feed URL')
+                            ->helperText('Explicit feed URL. Leave empty to let the scraper probe for one.')
+                            ->url()
+                            ->maxLength(2048)
+                            ->columnSpanFull(),
+
                         Forms\Components\Select::make('category')
                             ->options([
                                 'news' => 'Technology News',

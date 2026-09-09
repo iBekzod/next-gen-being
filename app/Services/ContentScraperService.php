@@ -14,6 +14,13 @@ class ContentScraperService
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
 
     /**
+     * Per-instance cache of resolved feed URLs so probing happens at most once per source.
+     *
+     * @var array<string, string|null>
+     */
+    private array $resolvedFeedUrls = [];
+
+    /**
      * Scrape a single content source
      */
     public function scrapeSource(ContentSource $source, int $limit = 50): int
@@ -31,6 +38,25 @@ class ContentScraperService
             // Try to fetch RSS feed first if available
             if ($this->hasRSSFeed($source)) {
                 $articlesFound = $this->scrapeRSSFeed($source, $limit);
+
+                // A *probed* feed URL is a guess: a catch-all route or an SPA soft-404 answers 200
+                // to the HEAD probe and then serves HTML, which parses as no feed at all. Without
+                // this fallback such a source would be silently misrouted to a dead RSS path and
+                // lose the HTML scraping it used to get. A *stored* rss_url is deliberate
+                // configuration, so an empty result there is real information about the feed and
+                // must not be papered over by scraping the homepage instead.
+                if ($articlesFound === 0 && !$this->hasConfiguredFeedUrl($source)) {
+                    Log::info(
+                        "Probed feed produced no articles for {$source->name}, falling back to HTML scraping",
+                        [
+                            'source' => $source->name,
+                            'probed_feed_url' => $this->guessRSSUrl($source),
+                            'site_url' => $source->url,
+                        ]
+                    );
+
+                    $articlesFound = $this->scrapWebsite($source, $limit);
+                }
             } else {
                 // Fall back to direct website scraping
                 $articlesFound = $this->scrapWebsite($source, $limit);
@@ -53,7 +79,12 @@ class ContentScraperService
     private function scrapeRSSFeed(ContentSource $source, int $limit): int
     {
         try {
-            $rssUrl = $this->guessRSSUrl($source->url);
+            $rssUrl = $this->guessRSSUrl($source);
+
+            if ($rssUrl === null) {
+                return 0;
+            }
+
             $response = Http::timeout(self::REQUEST_TIMEOUT)
                 ->withHeaders(['User-Agent' => self::USER_AGENT])
                 ->get($rssUrl);
@@ -62,8 +93,15 @@ class ContentScraperService
                 return 0;
             }
 
+            // A probed URL may well serve HTML (catch-all route, soft-404). Keep libxml's parse
+            // errors internal so that turns into a clean `false` instead of a warning storm.
+            $previousLibxmlState = libxml_use_internal_errors(true);
             $xml = simplexml_load_string($response->body());
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousLibxmlState);
+
             if ($xml === false) {
+                Log::debug("Feed at {$rssUrl} for {$source->name} is not parseable XML");
                 return 0;
             }
 
@@ -77,7 +115,7 @@ class ContentScraperService
 
                 $articleData = [
                     'title' => (string) ($item->title ?? ''),
-                    'url' => (string) ($item->link ?? $item->id ?? ''),
+                    'url' => $this->extractItemUrl($item),
                     'description' => (string) ($item->description ?? $item->summary ?? ''),
                     'author' => (string) ($item->author ?? $item->{'dc:creator'} ?? ''),
                     'published_at' => $this->parseDate((string) ($item->pubDate ?? $item->published ?? '')),
@@ -158,10 +196,14 @@ class ContentScraperService
     private function extractArticleData(Crawler $node, ContentSource $source): ?array
     {
         try {
-            $title = $node->filter('h1, h2, h3, [data-title], .title')->first()?->text() ?? '';
-            $excerpt = $node->filter('p, [data-summary], .excerpt')->first()?->text() ?? '';
-            $link = $node->filter('a')->first()?->attr('href') ?? '';
-            $author = $node->filter('[data-author], .author, .by')->first()?->text() ?? '';
+            // Crawler::first() always returns a Crawler, never null, so `?->text()` does not guard
+            // an empty match — text()/attr() throw "The current node list is empty" instead. Any
+            // listing card without an author element therefore threw and was dropped. Passing an
+            // explicit default is what actually makes these optional.
+            $title = $node->filter('h1, h2, h3, [data-title], .title')->first()->text('');
+            $excerpt = $node->filter('p, [data-summary], .excerpt')->first()->text('');
+            $link = $node->filter('a')->first()->attr('href', '') ?? '';
+            $author = $node->filter('[data-author], .author, .by')->first()->text('');
 
             if (empty($title) || empty($link)) {
                 return null;
@@ -494,19 +536,108 @@ class ContentScraperService
     }
 
     /**
-     * Guess RSS feed URL
+     * Extract the article URL from a feed item.
+     *
+     * RSS puts the URL in the element text (<link>https://…</link>) while Atom puts it in an
+     * attribute (<link href="https://…"/>) and leaves the element empty. Casting the element to
+     * string therefore yields '' for Atom, which silently dropped every Atom article.
      */
-    private function guessRSSUrl(string $siteUrl): string
+    private function extractItemUrl(\SimpleXMLElement $item): string
+    {
+        $alternateHref = null;   // <link rel="alternate" href="…"/> — the canonical Atom article link
+        $relFreeHref = null;     // <link href="…"/> with no rel; Atom defaults rel to "alternate"
+        $otherHref = null;       // rel="self", rel="related", … only used as a last resort
+        $linkText = null;        // RSS <link>https://…</link>
+
+        if (isset($item->link)) {
+            foreach ($item->link as $link) {
+                $href = trim((string) ($link['href'] ?? ''));
+
+                if ($href !== '') {
+                    $rel = strtolower(trim((string) ($link['rel'] ?? '')));
+
+                    if ($rel === 'alternate') {
+                        $alternateHref ??= $href;
+                    } elseif ($rel === '') {
+                        $relFreeHref ??= $href;
+                    } else {
+                        $otherHref ??= $href;
+                    }
+
+                    continue;
+                }
+
+                $text = trim((string) $link);
+                if ($text !== '') {
+                    $linkText ??= $text;
+                }
+            }
+        }
+
+        $url = $alternateHref ?? $relFreeHref ?? $linkText ?? $otherHref;
+
+        if (is_string($url) && $url !== '') {
+            return $url;
+        }
+
+        // Atom <id> is only a URL by convention; fall back to it only when it really is one.
+        $id = trim((string) ($item->id ?? ''));
+        if ($id !== '' && preg_match('#^https?://#i', $id) === 1) {
+            return $id;
+        }
+
+        return '';
+    }
+
+    /**
+     * Resolve the feed URL for a source.
+     *
+     * Uses the explicitly configured rss_url when present; otherwise falls back to probing a few
+     * common feed paths, so sources added without a stored URL keep working. Returns null when no
+     * feed could be found, which sends the source down the HTML scraping path instead.
+     */
+    private function hasConfiguredFeedUrl(ContentSource $source): bool
+    {
+        return trim((string) ($source->rss_url ?? '')) !== '';
+    }
+
+    private function guessRSSUrl(ContentSource $source): ?string
+    {
+        $cacheKey = (string) ($source->getKey() ?? $source->url);
+
+        if (array_key_exists($cacheKey, $this->resolvedFeedUrls)) {
+            return $this->resolvedFeedUrls[$cacheKey];
+        }
+
+        if ($this->hasConfiguredFeedUrl($source)) {
+            return $this->resolvedFeedUrls[$cacheKey] = trim((string) $source->rss_url);
+        }
+
+        return $this->resolvedFeedUrls[$cacheKey] = $this->probeForRSSUrl((string) $source->url);
+    }
+
+    /**
+     * Probe a site for a feed at the usual locations.
+     */
+    private function probeForRSSUrl(string $siteUrl): ?string
     {
         $baseParts = parse_url($siteUrl);
         $baseScheme = $baseParts['scheme'] ?? 'https';
         $baseHost = $baseParts['host'] ?? '';
 
+        if ($baseHost === '') {
+            return null;
+        }
+
         $commonPaths = [
             '/feed/',
+            '/feed',
             '/rss/',
+            '/rss',
             '/feed.xml',
             '/rss.xml',
+            '/atom.xml',
+            '/index.xml',
             '/feed/atom/',
             '/?feed=rss2',
         ];
@@ -523,17 +654,14 @@ class ContentScraperService
             }
         }
 
-        return "{$baseScheme}://{$baseHost}/feed/";
+        return null;
     }
 
     /**
-     * Check if source has RSS feed
+     * Check if source has an RSS/Atom feed we can use.
      */
     private function hasRSSFeed(ContentSource $source): bool
     {
-        // Sources known to have good RSS feeds
-        $rssKnownSources = ['Dev.to', 'Medium', 'Hacker News', 'TechCrunch', 'CSS-Tricks'];
-
-        return in_array($source->name, $rssKnownSources);
+        return $this->guessRSSUrl($source) !== null;
     }
 }
