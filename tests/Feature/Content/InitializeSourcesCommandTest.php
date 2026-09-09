@@ -59,6 +59,33 @@ class InitializeSourcesCommandTest extends TestCase
         );
     }
 
+    public function test_operator_qoygan_rss_url_ozgarmaydi(): void
+    {
+        ContentSource::create([
+            'name' => 'Hacker News',
+            'url' => 'https://news.ycombinator.com',
+            'rss_url' => 'https://news.ycombinator.com/rss?custom=1',
+            'category' => 'news',
+            'trust_level' => 90,
+            'scraping_enabled' => true,
+            'rate_limit_per_sec' => 2,
+        ]);
+
+        $this->artisan('content:init-sources')->assertSuccessful();
+
+        $this->assertSame(
+            'https://news.ycombinator.com/rss?custom=1',
+            ContentSource::where('name', 'Hacker News')->value('rss_url'),
+            'Operator qoygan rss_url qayta yozildi'
+        );
+
+        // A row that was left NULL is still filled from the defaults in the same run.
+        $this->assertSame(
+            'https://www.theverge.com/rss/index.xml',
+            ContentSource::where('name', 'The Verge')->value('rss_url')
+        );
+    }
+
     public function test_github_trending_feedsiz_ochirilgan(): void
     {
         $this->artisan('content:init-sources')->assertSuccessful();

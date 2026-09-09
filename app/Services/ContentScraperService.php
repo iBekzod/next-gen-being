@@ -38,6 +38,25 @@ class ContentScraperService
             // Try to fetch RSS feed first if available
             if ($this->hasRSSFeed($source)) {
                 $articlesFound = $this->scrapeRSSFeed($source, $limit);
+
+                // A *probed* feed URL is a guess: a catch-all route or an SPA soft-404 answers 200
+                // to the HEAD probe and then serves HTML, which parses as no feed at all. Without
+                // this fallback such a source would be silently misrouted to a dead RSS path and
+                // lose the HTML scraping it used to get. A *stored* rss_url is deliberate
+                // configuration, so an empty result there is real information about the feed and
+                // must not be papered over by scraping the homepage instead.
+                if ($articlesFound === 0 && !$this->hasConfiguredFeedUrl($source)) {
+                    Log::info(
+                        "Probed feed produced no articles for {$source->name}, falling back to HTML scraping",
+                        [
+                            'source' => $source->name,
+                            'probed_feed_url' => $this->guessRSSUrl($source),
+                            'site_url' => $source->url,
+                        ]
+                    );
+
+                    $articlesFound = $this->scrapWebsite($source, $limit);
+                }
             } else {
                 // Fall back to direct website scraping
                 $articlesFound = $this->scrapWebsite($source, $limit);
@@ -74,8 +93,15 @@ class ContentScraperService
                 return 0;
             }
 
+            // A probed URL may well serve HTML (catch-all route, soft-404). Keep libxml's parse
+            // errors internal so that turns into a clean `false` instead of a warning storm.
+            $previousLibxmlState = libxml_use_internal_errors(true);
             $xml = simplexml_load_string($response->body());
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousLibxmlState);
+
             if ($xml === false) {
+                Log::debug("Feed at {$rssUrl} for {$source->name} is not parseable XML");
                 return 0;
             }
 
@@ -170,10 +196,14 @@ class ContentScraperService
     private function extractArticleData(Crawler $node, ContentSource $source): ?array
     {
         try {
-            $title = $node->filter('h1, h2, h3, [data-title], .title')->first()?->text() ?? '';
-            $excerpt = $node->filter('p, [data-summary], .excerpt')->first()?->text() ?? '';
-            $link = $node->filter('a')->first()?->attr('href') ?? '';
-            $author = $node->filter('[data-author], .author, .by')->first()?->text() ?? '';
+            // Crawler::first() always returns a Crawler, never null, so `?->text()` does not guard
+            // an empty match — text()/attr() throw "The current node list is empty" instead. Any
+            // listing card without an author element therefore threw and was dropped. Passing an
+            // explicit default is what actually makes these optional.
+            $title = $node->filter('h1, h2, h3, [data-title], .title')->first()->text('');
+            $excerpt = $node->filter('p, [data-summary], .excerpt')->first()->text('');
+            $link = $node->filter('a')->first()->attr('href', '') ?? '';
+            $author = $node->filter('[data-author], .author, .by')->first()->text('');
 
             if (empty($title) || empty($link)) {
                 return null;
@@ -566,6 +596,11 @@ class ContentScraperService
      * common feed paths, so sources added without a stored URL keep working. Returns null when no
      * feed could be found, which sends the source down the HTML scraping path instead.
      */
+    private function hasConfiguredFeedUrl(ContentSource $source): bool
+    {
+        return trim((string) ($source->rss_url ?? '')) !== '';
+    }
+
     private function guessRSSUrl(ContentSource $source): ?string
     {
         $cacheKey = (string) ($source->getKey() ?? $source->url);
@@ -574,9 +609,8 @@ class ContentScraperService
             return $this->resolvedFeedUrls[$cacheKey];
         }
 
-        $configured = trim((string) ($source->rss_url ?? ''));
-        if ($configured !== '') {
-            return $this->resolvedFeedUrls[$cacheKey] = $configured;
+        if ($this->hasConfiguredFeedUrl($source)) {
+            return $this->resolvedFeedUrls[$cacheKey] = trim((string) $source->rss_url);
         }
 
         return $this->resolvedFeedUrls[$cacheKey] = $this->probeForRSSUrl((string) $source->url);

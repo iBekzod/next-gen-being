@@ -356,11 +356,26 @@ class SourceWhitelistService
 
                 $updates = [
                     'url' => $sourceData['url'],
-                    'rss_url' => $sourceData['rss_url'] ?? null,
                     'category' => $sourceData['category'],
                     'description' => $sourceData['description'] ?? null,
                     'rate_limit_per_sec' => $sourceData['rate_limit_per_sec'],
                 ];
+
+                // rss_url is operator-editable in the admin panel, so re-seeding must not silently
+                // revert a hand-fixed feed URL. Only fill it when it is still empty — which is the
+                // case for every production row today, the column having just been added.
+                $defaultRssUrl = $sourceData['rss_url'] ?? null;
+                $storedRssUrl = $existing->rss_url;
+
+                if ($storedRssUrl === null || trim((string) $storedRssUrl) === '') {
+                    $updates['rss_url'] = $defaultRssUrl;
+                } elseif ($storedRssUrl !== $defaultRssUrl) {
+                    Log::info("Keeping operator-set rss_url for {$sourceData['name']}", [
+                        'source' => $sourceData['name'],
+                        'stored_rss_url' => $storedRssUrl,
+                        'default_rss_url' => $defaultRssUrl,
+                    ]);
+                }
 
                 // Only force scraping_enabled when the default pins it deliberately
                 // (GitHub Trending, which has no feed at all).
