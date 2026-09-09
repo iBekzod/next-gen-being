@@ -9,8 +9,54 @@ use Illuminate\Support\Str;
 
 class ContentDeduplicationService
 {
-    private const MIN_SIMILARITY_THRESHOLD = 0.75; // 75% similarity = probably same topic
+    /**
+     * Minimum term-frequency cosine at which two articles are treated as the
+     * same subject.
+     *
+     * Derived from measurement, not taste. Controls (see the two tests in
+     * tests/Feature/Content/DeduplicationIntegrationTest.php, which assert
+     * these bands):
+     *
+     *   positive control  two independent write-ups of the same subject
+     *                     (PostgreSQL 18 async I/O, different headlines,
+     *                     different opening sentences)            0.5417
+     *   negative control  unrelated subjects in the same register,
+     *                     worst of four cross pairs (Postgres vs
+     *                     Rust release, vs Kubernetes Gateway API)  0.0987
+     *
+     * Measured margin 0.4430. 0.35 clears the positive by 0.1917 and stays
+     * 0.2513 above the worst negative. It is deliberately placed above the
+     * midpoint of the two: a false cluster invents a "corroborated" topic out
+     * of two unrelated articles, which is worse than missing one.
+     *
+     * The old value of 0.75 was unreachable for anything but near-identical
+     * text, and byte-identical syndication never reaches this code because
+     * the `external_url` unique constraint rejects it at insert.
+     */
+    private const MIN_SIMILARITY_THRESHOLD = 0.35;
+
     private const HIGH_CONFIDENCE_THRESHOLD = 0.85; // 85% = definitely same/very similar
+
+    /**
+     * How much of `full_content` feeds the comparison.
+     *
+     * The excerpt alone is 84-228 chars on real rows while bodies run
+     * 4,558-9,707, which left roughly a dozen non-stopword terms per document
+     * to compare. But reading the whole body is worse than reading none of it:
+     * scraped `full_content` carries the publication's standing furniture
+     * (newsletter pitch, related-links block, licensing notice), which is
+     * byte-identical across every article that publication runs. Measured on
+     * production-length documents, the separation between the positive and
+     * negative controls peaks around 2,000-2,500 chars and then inverts —
+     * unbounded, two unrelated articles from the SAME source scored 0.74
+     * while the genuine cross-source pair scored 0.43.
+     *
+     * 2,000 chars keeps the subject-dense opening of a typical article,
+     * stays inside the prose even for the shortest production body observed,
+     * and costs about a third of the unbounded vector build in the O(n^2)
+     * pairwise loop.
+     */
+    private const BODY_CHARS_FOR_COMPARISON = 2000;
 
     /**
      * Find all duplicate/similar content from the last N hours
@@ -66,7 +112,14 @@ class ContentDeduplicationService
     }
 
     /**
-     * Calculate similarity between two content pieces
+     * Calculate similarity between two content pieces.
+     *
+     * This is a term-frequency cosine over title + excerpt + the opening of
+     * the body, with stopwords removed. It is NOT TF-IDF: this method is a
+     * pairwise API called from a loop, so there is no corpus in scope, and
+     * computing document frequency over just the two documents being compared
+     * would give every shared word log(2/2) = 0 and erase exactly the signal
+     * we are looking for.
      */
     public function calculateSimilarity(CollectedContent $content1, CollectedContent $content2): float
     {
@@ -75,17 +128,42 @@ class ContentDeduplicationService
             return 1.0;
         }
 
-        // Extract text features
-        $text1 = $this->normalizeText($content1->title . ' ' . $content1->excerpt);
-        $text2 = $this->normalizeText($content2->title . ' ' . $content2->excerpt);
-
-        // Use TF-IDF based similarity
         $similarity = $this->cosineSimilarity(
-            $this->getTFIDFVector($text1),
-            $this->getTFIDFVector($text2)
+            $this->getTermFrequencyVector($this->comparisonText($content1)),
+            $this->getTermFrequencyVector($this->comparisonText($content2))
         );
 
         return min(1.0, max(0.0, $similarity));
+    }
+
+    /**
+     * Build the normalized text that represents one article for comparison.
+     *
+     * Title and excerpt on their own are too thin to compare (see
+     * BODY_CHARS_FOR_COMPARISON), so the opening of the body is appended.
+     */
+    private function comparisonText(CollectedContent $content): string
+    {
+        return $this->normalizeText(
+            $content->title . ' '
+            . $content->excerpt . ' '
+            . $this->truncateOnWordBoundary((string) $content->full_content, self::BODY_CHARS_FOR_COMPARISON)
+        );
+    }
+
+    /**
+     * Cut text to at most $limit characters without splitting the final word.
+     */
+    private function truncateOnWordBoundary(string $text, int $limit): string
+    {
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        $cut = mb_substr($text, 0, $limit);
+        $lastSpace = mb_strrpos($cut, ' ');
+
+        return $lastSpace === false ? $cut : mb_substr($cut, 0, $lastSpace);
     }
 
     /**
@@ -205,9 +283,15 @@ class ContentDeduplicationService
     }
 
     /**
-     * Get TF-IDF vector for text
+     * Get the term-frequency vector for a normalized text.
+     *
+     * Deliberately plain TF with stopword filtering — no IDF. The previous
+     * version multiplied TF by log(1000 / (array_search($word, $words) + 1)),
+     * i.e. by the word's first POSITION IN THE ARRAY rather than by any
+     * document frequency, so the same word carried a different weight
+     * depending on where in the article it happened to appear first.
      */
-    private function getTFIDFVector(string $text): array
+    private function getTermFrequencyVector(string $text): array
     {
         $words = array_filter(explode(' ', $text));
         $vector = [];
@@ -217,20 +301,13 @@ class ContentDeduplicationService
             return [];
         }
 
-        // Calculate TF (Term Frequency)
-        $wordCounts = array_count_values($words);
-
-        foreach ($wordCounts as $word => $count) {
+        foreach (array_count_values($words) as $word => $count) {
             // Skip very common words
-            if ($this->isStopWord($word)) {
+            if ($this->isStopWord((string) $word)) {
                 continue;
             }
 
-            $tf = $count / $totalWords;
-            // IDF is approximated (in production, use a real IDF corpus)
-            $idf = log(1000 / (array_search($word, $words) + 1));
-
-            $vector[$word] = $tf * $idf;
+            $vector[$word] = $count / $totalWords;
         }
 
         return $vector;
