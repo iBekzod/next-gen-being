@@ -285,6 +285,53 @@ Schedule::command('content:drip')
         \Illuminate\Support\Facades\Log::info('content:drip completed');
     });
 
+// ========================================
+// TREND MAVZULAR (C2)
+// ========================================
+// Kontent manbalarini yig'ish. Bu quyi tizim 2026-01 dan beri kodda bor edi,
+// lekin hech qachon jadvalga qo'yilmagan — ya'ni bir marta ham ishlamagan.
+// --async: har bir manba alohida queue job'ga tushadi, shuning uchun bitta
+// sekin sayt qolganlarini to'xtatib qo'ymaydi.
+Schedule::command('content:scrape-all', ['--async', '--limit=40'])
+    ->everySixHours()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('content:scrape-all failed');
+    });
+
+// Dublikatlarni aniqlash — `duplicate_of` ustunini shu yerda to'ldiradi, bu esa
+// mavzu klasterlashning yagona manbasi (TopicQueueService shu ustunga qarab
+// guruhlaydi). Ranking'dan (08:30) OLDIN tugashi SHART, lekin bu ikki alohida
+// cron yozuvi — `withoutOverlapping()` har biri faqat o'zining oldingi
+// nusxasidan himoyalaydi, ikkinchi buyruqdan emas. Shuning uchun 06:00 va
+// 08:30 orasidagi 2.5 soatlik farq KAFOLAT emas, faqat zaxira vaqt: agar
+// dedup shu oraliqda tugamasa, ranking baribir ishga tushib, yarim
+// deduplikatsiya qilingan (ya'ni klaster o'lchamlari kamroq ko'rsatilgan)
+// suratni ballaydi.
+//
+// --hours=72 (standart 24 emas): pairwise solishtiruv narxi va ko'p kunlik
+// mos kelish (corroboration) o'rtasidagi ataylab tanlangan murosa.
+// findAllDuplicates() qatorlarni `created_at >= now()->subHours($hours)`
+// bilan cheklaydi va hech narsa markAsProcessed() chaqirmagani uchun har bir
+// qator taqqoslash to'plamida abadiy qoladi — ya'ni bu O(n^2). 24 soatda
+// ~1600 qator/kun ~1.3M taqqoslash beradi; to'liq 7 kunlik (168 soat) oyna
+// ~11000 qator va ~60M taqqoslash bo'lar edi — PHP'da bu daqiqalar emas.
+// 72 soat kross-kunlik mos kelishning ko'pini ushlaydi va hisob narxini bir
+// tartib pastroq saqlaydi. Haqiqiy hajm ma'lum bo'lgach qayta o'lchash kerak;
+// asl tuzilmaviy tuzatish (kategoriya/kalit so'z bo'yicha nomzodlarni oldindan
+// bloklash, taqqoslash to'plami o'sishini to'xtatish uchun) — alohida ish.
+Schedule::command('content:deduplicate', ['--hours=72'])
+    ->dailyAt('06:00')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
+
+// Mavzularni ballash — generatsiya slotidan (09:00) oldin ishlaydi.
+Schedule::command('content:rank-topics')
+    ->dailyAt('08:30')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping();
+
 // Cache pre-warm: hit top URLs every 6 hours to keep DB/view caches hot
 Schedule::command('cache:prewarm', ['--limit=10'])
     ->everySixHours()

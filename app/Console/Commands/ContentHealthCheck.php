@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Post;
 use App\Services\Content\PublishGate;
+use App\Services\Content\TopicQueueService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -27,8 +28,10 @@ class ContentHealthCheck extends Command
 
     private const MIN_PUBLISHABLE_BACKLOG = 3;
 
-    public function __construct(private readonly PublishGate $gate)
-    {
+    public function __construct(
+        private readonly PublishGate $gate,
+        private readonly TopicQueueService $topicQueue,
+    ) {
         parent::__construct();
     }
 
@@ -80,6 +83,49 @@ class ContentHealthCheck extends Command
 
         if ($pendingOnly > 0) {
             $problems['unattended_moderation'] = "Faqat moderatsiya kutayotgan draftlar: {$pendingOnly}";
+        }
+
+        // Scraping to'xtaganini aniqlash. Faol manba bo'lsa-yu, hech biri
+        // 24 soat ichida yig'ilmagan bo'lsa — quvurning kirish uchi qurigan.
+        //
+        // Faol manba SONI 0 bo'lsa, bu ALOHIDA, aniqroq kalit bilan
+        // xabar qilinadi (`no_active_sources`, `stale_scraping` emas):
+        // ikkisi turli xil nosozlik — biri ILGARI ishlab turgan
+        // scraper'ning jimgina to'xtashi (regressiya), ikkinchisi esa
+        // tizim hech qachon sozlanmaganligi (masalan `content:init-sources`
+        // hech qachon ishga tushirilmagan). Ikkalasini bitta kalit ostida
+        // qo'shib yuborish operatorni chalg'itadi va "stale" so'zi
+        // "hech qachon sozlanmagan" degani emasligini yashiradi.
+        $activeSources = \App\Models\ContentSource::active()->count();
+
+        if ($activeSources === 0) {
+            $problems['no_active_sources'] = "Hech qanday kontent manbasi yoqilmagan, mavzular navbati hech qachon to'lmaydi. "
+                . "Davolash: `content:init-sources` buyrug'ini ishga tushiring.";
+        } else {
+            $freshlyScraped = \App\Models\ContentSource::active()
+                ->where('last_scraped_at', '>=', now()->subDay())
+                ->count();
+
+            if ($freshlyScraped === 0) {
+                $problems['stale_scraping'] = "So'nggi 24 soatda birorta manba yig'ilmadi ({$activeSources} ta faol manba)";
+            } elseif ($this->topicQueue->topCandidates()->isEmpty()) {
+                // Uchinchi, ALOHIDA nosozlik turi. `no_active_sources` —
+                // hech narsa sozlanmagan; `stale_scraping` — sozlangan, lekin
+                // yig'ish to'xtagan. Bu esa: yig'ish AYNI PAYTDA ishlayapti,
+                // maqolalar kelayotir, ammo hech bir mavzu MUSTAQIL MANBALAR
+                // bilan tasdiqlanmadi, ya'ni klasterlash bosqichi bo'sh
+                // chiqmoqda va trend navbati hech qachon to'lmayapti.
+                //
+                // Bu jimgina buziladigan holat: `content:rank-topics` bo'sh
+                // navbatni SUCCESS bilan chiqaradi, GenerateAiPost esa eski
+                // kalit-so'z evristikasiga qaytib, har doim biror natija
+                // beradi — shuning uchun tashqaridan hamma narsa sog'lom
+                // ko'rinadi. Aynan shu sababli buni health-check aytishi shart.
+                $problems['empty_topic_queue'] = "Manbalar yig'ilmoqda ({$activeSources} ta faol manba, yig'ish yangi), "
+                    . "lekin trend navbati bo'sh: birorta mavzu mustaqil manbalar bilan tasdiqlanmadi. "
+                    . "Kirish uchi ishlayapti, klasterlash bosqichi hech narsa bermayapti — "
+                    . "generatsiya jimgina eski kalit-so'z evristikasiga qaytadi.";
+            }
         }
 
         if ($problems === []) {

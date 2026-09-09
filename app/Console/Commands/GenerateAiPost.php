@@ -286,6 +286,14 @@ class GenerateAiPost extends Command
         // Attach tags
         $post->tags()->attach($tags->pluck('id'));
 
+        // Step 11: Cite the sources that produced this trending topic (EEAT).
+        // Only topics pulled from the trending queue carry a 'sources' key;
+        // content-plan and keyword-heuristic topics do not, so posts from
+        // those paths are simply created with no references, as before.
+        if (! empty($topic['sources'])) {
+            $this->attachQueueSources($post, $topic['sources']);
+        }
+
         $status = $this->option('draft') ? 'draft' : 'published';
         $premiumLabel = $isPremium ? '💎 PREMIUM' : '🆓 FREE';
 
@@ -327,6 +335,115 @@ class GenerateAiPost extends Command
         return $post;
     }
 
+    /**
+     * Trend klasterini hosil qilgan manbalarni postga havola qilib yozadi.
+     *
+     * Mavjud ReferenceTrackingService ishlatiladi — yangi jadval yoki yangi
+     * format yaratilmaydi.
+     */
+    private function attachQueueSources(Post $post, array $sources): void
+    {
+        $service = app(\App\Services\ReferenceTrackingService::class);
+
+        foreach ($sources as $src) {
+            if (empty($src['url'])) {
+                continue;
+            }
+
+            try {
+                $service->addReference(
+                    $post,
+                    (string) ($src['title'] ?? $src['url']),
+                    (string) $src['url'],
+                    null,
+                    ! empty($src['published_at']) ? new \DateTime($src['published_at']) : null
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Queue source reference failed', [
+                    'post_id' => $post->id,
+                    'url' => $src['url'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * similar_text() sarlavha o'xshashligi uchun bo'sag'a.
+     *
+     * similar_text() MOS TUSHGAN BELGILAR sonini hisoblaydi, mavzuni emas —
+     * shuning uchun bir xil tech-blog shabloniga ega ikkita MUTLAQO BOSHQA
+     * mavzu ham yuqori ball oladi. 0.7 bo'sag'asi haqiqatda turli mavzularni
+     * rad etardi: "Docker Autoscaling Best Practices Guide" nomzodi
+     * "Kubernetes Autoscaling Best Practices" nashr etilgan sarlavha bilan
+     * solishtirilganda 0.7692 ball oldi — ikkisi ham bir xil shablon, lekin
+     * mutlaqo boshqa texnologiyalar haqida. 0.88 bunday juftlikni saqlab
+     * qoladi, lekin haqiqiy takrorlarni (masalan, bir xil sarlavhaning
+     * ko'plik/birlik farqi, o'lchangan 0.9697) hali ham rad etadi.
+     */
+    private const TOPIC_SIMILARITY_THRESHOLD = 0.88;
+
+    /**
+     * Trend navbatidan eng yuqori nomzodni oladi, yoki navbat bo'sh bo'lsa null.
+     *
+     * Yaqinda ishlatilgan mavzular takrorlanmasligi uchun so'nggi postlar
+     * sarlavhalari bilan solishtiriladi.
+     */
+    private function topicFromQueue(): ?array
+    {
+        // Butun tana try/catch ichida. Trend navbati QO'SHIMCHA signal: u
+        // ishlamay qolsa, generatsiya eski kalit-so'z evristikasiga qaytishi
+        // kerak, butun ishga tushirish qulashi emas. Ilgari bu yerdagi har
+        // qanday istisno (DB xatosi, kutilmagan nomzod tuzilmasi) kunlik
+        // post generatsiyasini butunlay to'xtatib qo'yardi — holbuki
+        // evristika yo'li mavjud va har doim biror natija beradi.
+        try {
+            $recent = \App\Models\Post::whereNotNull('published_at')
+                ->latest('published_at')->take(30)->pluck('title')
+                ->map(fn ($t) => mb_strtolower((string) $t))->all();
+
+            foreach (app(\App\Services\Content\TopicQueueService::class)->topCandidates(10) as $candidate) {
+                $title = mb_strtolower($candidate['title']);
+
+                foreach ($recent as $seen) {
+                    // Bo'luvchi BAYT bo'yicha o'lchanadi. similar_text() mos
+                    // kelgan BAYTLAR sonini qaytaradi, mb_strlen() esa
+                    // BELGILAR sonini — ASCII bo'lmagan sarlavhada (kirill,
+                    // o'zbek apostrofi, emoji) baytlar belgilardan ko'p
+                    // bo'lib, nisbat 1.0 dan oshib ketardi va mutlaqo boshqa
+                    // mavzu "juda o'xshash" deb noto'g'ri rad etilardi.
+                    $ratio = similar_text($title, $seen) / max(1, strlen($title));
+
+                    if ($ratio > self::TOPIC_SIMILARITY_THRESHOLD) {
+                        Log::info('Trend navbati: nomzod juda o\'xshash deb o\'tkazib yuborildi', [
+                            'candidate_title' => $candidate['title'],
+                            'matched_recent_title' => $seen,
+                            'ratio' => round($ratio, 4),
+                            'threshold' => self::TOPIC_SIMILARITY_THRESHOLD,
+                        ]);
+
+                        continue 2;
+                    }
+                }
+
+                return [
+                    'title' => $candidate['title'],
+                    'category' => $candidate['category'],
+                    'from_queue' => true,
+                    'sources' => $candidate['sources'],
+                ];
+            }
+
+            return null;
+        } catch (\Throwable $e) {
+            Log::warning('Trend navbatidan mavzu olinmadi, kalit-so\'z evristikasiga qaytiladi', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
     private function selectTrendingTopic(): array
     {
         // Check if there's a monthly content plan
@@ -361,6 +478,15 @@ class GenerateAiPost extends Command
                     'week' => $week,
                 ];
             }
+        }
+
+        // Trend navbati (C2). Qo'lda tuzilgan oylik reja ustuvor bo'lib qoladi —
+        // odam tanlagan mavzu avtomatik signaldan muhimroq. Lekin rejadan
+        // keyin, eski kalit-so'z evristikasidan oldin, kuzatilgan trend keladi.
+        if ($queued = $this->topicFromQueue()) {
+            $this->info("📈 Trend navbatidan: {$queued['title']}");
+
+            return $queued;
         }
 
         // Get recent topics to avoid duplication - include keywords for better matching

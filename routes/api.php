@@ -190,3 +190,5 @@ Route::post('/bot/post', [\App\Http\Controllers\Api\BotPostController::class, 's
     ->middleware('throttle:10,1')->name('api.bot.post');
 Route::post('/bot/heartbeat', [\App\Http\Controllers\Api\BotPostController::class, 'heartbeat'])
     ->middleware('throttle:30,1')->name('api.bot.heartbeat');
+Route::get('/bot/next-topic', [\App\Http\Controllers\Api\BotPostController::class, 'nextTopic'])
+    ->middleware('throttle:30,1')->name('api.bot.next-topic');

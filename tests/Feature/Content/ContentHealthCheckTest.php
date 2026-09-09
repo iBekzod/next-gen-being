@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Content;
 
+use App\Models\CollectedContent;
+use App\Models\ContentSource;
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -95,6 +97,23 @@ class ContentHealthCheckTest extends TestCase
         $this->makeFreshPublished();
         $this->makePublishableDrafts(3, null);
         $this->makePublishableDrafts(3, 'Laravel navbatlari seriyasi');
+
+        // Testning maqsadi "sog'lom quvur 0 kod bilan tugaydi", "nol faol
+        // manba sog'lom holat" emas — shuning uchun nol faol manba endi
+        // o'zi alohida muammo (`no_active_sources`) bo'lgani sababli, bu
+        // yerda kamida bitta faol, yaqinda yig'ilgan manba bo'lishi kerak,
+        // aks holda test "sog'lom" holatni emas, balki yangi muammoni sinaydi.
+        \App\Models\ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHours(2),
+        ]);
+
+        // Yig'ish yangi bo'lsa-yu trend navbati bo'sh qolsa — bu endi
+        // alohida muammo (`empty_topic_queue`). Shuning uchun "sog'lom"
+        // holat ikki mustaqil manba tasdiqlagan kamida bitta klasterni
+        // ham talab qiladi, aks holda bu test yana yangi muammoni sinaydi.
+        $this->makeQualifyingCluster();
 
         $this->artisan('content:health-check')
             ->expectsOutputToContain("Kontent quvuri sog'lom")
@@ -232,5 +251,133 @@ class ContentHealthCheckTest extends TestCase
         $this->artisan('content:health-check', ['--dry-run' => true])->assertExitCode(1);
 
         $this->assertCount(0, $transport->messages(), '--dry-run must never send mail.');
+    }
+
+    /**
+     * Nol faol manba — o'zi alohida, aniqroq muammo (`no_active_sources`),
+     * `stale_scraping` emas. Production 2026-01 dan beri `content:init-sources`
+     * ishga tushirilmagan holda deploy bo'ladi, ya'ni bu — kutilgan/gipotetik
+     * emas, deploy kunidagi haqiqiy holat: mavzular navbati hech qachon
+     * to'lmaydi, health-check esa buni aytmasa "sog'lom" ko'rinib qoladi.
+     */
+    public function test_faol_manba_yoqligi_ogohlantiradi(): void
+    {
+        $this->assertSame(0, \App\Models\ContentSource::active()->count());
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('no_active_sources')
+            ->doesntExpectOutputToContain('stale_scraping')
+            ->assertExitCode(1);
+    }
+
+    public function test_eskirgan_scraping_ogohlantiradi(): void
+    {
+        \App\Models\ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subDays(3),
+        ]);
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('stale_scraping')
+            ->doesntExpectOutputToContain('no_active_sources')
+            ->assertExitCode(1);
+    }
+
+    public function test_yangi_scraping_ogohlantirmaydi(): void
+    {
+        \App\Models\ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHours(2),
+        ]);
+
+        $this->artisan('content:health-check --dry-run')
+            ->doesntExpectOutputToContain('stale_scraping')
+            ->doesntExpectOutputToContain('no_active_sources');
+
+        // Yuqoridagi doesntExpectOutputToContain o'zi kuchsiz: butun
+        // stale_scraping blokini o'chirib tashlasa ham shu assertion o'tadi.
+        // Shuning uchun quyida musbat isbot: qolgan quvur ham sog'lom
+        // qilib qurilsa (yangi post/tutorial, to'liq draft zaxirasi,
+        // moderatsiyada kutayotgan draft yo'q) va manba yaqinda yig'ilgan
+        // bo'lsa, buyruq aniq 0 kod bilan tugashi kerak — bu "yangi
+        // scraping" yo'lining haqiqatan ham ishlab, muammo qo'shmasligini
+        // isbotlaydi.
+        Post::where('status', 'draft')->delete();
+
+        $this->makeFreshPublished();
+        $this->makePublishableDrafts(3, null);
+        $this->makePublishableDrafts(3, 'Laravel navbatlari seriyasi');
+        $this->makeQualifyingCluster();
+
+        $this->artisan('content:health-check')
+            ->expectsOutputToContain("Kontent quvuri sog'lom")
+            ->assertExitCode(0);
+    }
+
+    /**
+     * Bo'sh trend navbati — UCHINCHI, alohida nosozlik. Manbalar sozlangan
+     * VA yaqinda yig'ilgan (ya'ni `no_active_sources` ham, `stale_scraping`
+     * ham tinch), lekin birorta mavzu ikkinchi mustaqil manba bilan
+     * tasdiqlanmagan. Bu holat production'da jimgina o'tib ketardi:
+     * `content:rank-topics` bo'sh navbatni SUCCESS bilan chiqaradi va
+     * generatsiya eski kalit-so'z evristikasiga qaytib har doim biror
+     * natija beradi, ya'ni tizim tashqaridan sog'lom ko'rinadi.
+     */
+    public function test_bosh_mavzular_navbati_ogohlantiradi(): void
+    {
+        ContentSource::create([
+            'name' => 'Alpha', 'url' => 'https://a.example', 'category' => 'news',
+            'trust_level' => 90, 'scraping_enabled' => true,
+            'last_scraped_at' => now()->subHours(2),
+        ]);
+
+        // Yig'ilgan kontent bor, lekin hammasi BITTA manbadan — korroboratsiya yo'q.
+        $this->collected('Alpha', "Yolg'iz manba yozgan mavzu");
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('empty_topic_queue')
+            ->doesntExpectOutputToContain('stale_scraping')
+            ->doesntExpectOutputToContain('no_active_sources')
+            ->assertExitCode(1);
+    }
+
+    /**
+     * Ikki mustaqil manba tasdiqlagan bitta klaster — trend navbati
+     * to'ladigan minimal holat. `duplicate_of` bu yerda qo'lda yoziladi:
+     * bu test klasterlashni emas, health-check mantiqini sinaydi
+     * (klasterlashning o'zi DeduplicationIntegrationTest'da o'lchanadi).
+     */
+    private function makeQualifyingCluster(): void
+    {
+        $primary = $this->collected('Corroborating Alpha', "Postgres 18 pooling o'zgarishi");
+        $this->collected('Corroborating Beta', 'Postgres 18 pooling qayta ishlandi', $primary->id);
+    }
+
+    private function collected(string $sourceName, string $title, ?int $primaryId = null): CollectedContent
+    {
+        $source = ContentSource::firstOrCreate(
+            ['name' => $sourceName],
+            [
+                'url' => 'https://' . str_replace(' ', '-', strtolower($sourceName)) . '.example',
+                'category' => 'news',
+                'trust_level' => 90,
+                'scraping_enabled' => true,
+                'last_scraped_at' => now()->subHours(2),
+            ]
+        );
+
+        return CollectedContent::create([
+            'content_source_id' => $source->id,
+            'external_url' => 'https://x.example/' . uniqid('', true),
+            'title' => $title,
+            'excerpt' => 'Excerpt for ' . $title,
+            'full_content' => str_repeat('Body text about the subject. ', 20),
+            'content_type' => 'article',
+            'published_at' => now()->subHours(2),
+            'is_duplicate' => $primaryId !== null,
+            'duplicate_of' => $primaryId,
+        ]);
     }
 }
