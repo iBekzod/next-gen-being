@@ -22,7 +22,7 @@ class InitializeSourcesCommand extends Command
             // Initialize defaults
             $count = $service->initializeDefaultSources();
 
-            $this->info("✓ Initialized {$count} sources");
+            $this->info("✓ Created/updated {$count} sources");
 
             // Show sources
             $stats = $service->getStatistics();

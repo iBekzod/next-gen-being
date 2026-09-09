@@ -16,6 +16,7 @@ class SourceWhitelistService
             [
                 'name' => 'TechCrunch',
                 'url' => 'https://techcrunch.com',
+                'rss_url' => 'https://techcrunch.com/feed/',
                 'category' => 'news',
                 'trust_level' => 100,
                 'description' => 'Breaking tech news and startup coverage',
@@ -24,6 +25,7 @@ class SourceWhitelistService
             [
                 'name' => 'Dev.to',
                 'url' => 'https://dev.to',
+                'rss_url' => 'https://dev.to/feed',
                 'category' => 'blog',
                 'trust_level' => 95,
                 'description' => 'Community of software developers sharing knowledge',
@@ -32,6 +34,7 @@ class SourceWhitelistService
             [
                 'name' => 'Hacker News',
                 'url' => 'https://news.ycombinator.com',
+                'rss_url' => 'https://news.ycombinator.com/rss',
                 'category' => 'news',
                 'trust_level' => 90,
                 'description' => 'Community-curated tech and startup news',
@@ -40,6 +43,7 @@ class SourceWhitelistService
             [
                 'name' => 'CSS-Tricks',
                 'url' => 'https://css-tricks.com',
+                'rss_url' => 'https://css-tricks.com/feed/',
                 'category' => 'blog',
                 'trust_level' => 95,
                 'description' => 'Daily articles about CSS, HTML, JavaScript, and web design',
@@ -48,6 +52,7 @@ class SourceWhitelistService
             [
                 'name' => 'Smashing Magazine',
                 'url' => 'https://www.smashingmagazine.com',
+                'rss_url' => 'https://www.smashingmagazine.com/feed/',
                 'category' => 'blog',
                 'trust_level' => 95,
                 'description' => 'Web design and development insights',
@@ -56,6 +61,7 @@ class SourceWhitelistService
             [
                 'name' => 'The Verge',
                 'url' => 'https://www.theverge.com',
+                'rss_url' => 'https://www.theverge.com/rss/index.xml',
                 'category' => 'news',
                 'trust_level' => 90,
                 'description' => 'Technology, science, and culture coverage',
@@ -64,6 +70,7 @@ class SourceWhitelistService
             [
                 'name' => 'Wired',
                 'url' => 'https://www.wired.com',
+                'rss_url' => 'https://www.wired.com/feed/rss',
                 'category' => 'news',
                 'trust_level' => 90,
                 'description' => 'News, culture, and technology insights',
@@ -72,6 +79,7 @@ class SourceWhitelistService
             [
                 'name' => 'ArXiv',
                 'url' => 'https://arxiv.org',
+                'rss_url' => 'http://export.arxiv.org/api/query?search_query=cat:cs.SE&max_results=10',
                 'category' => 'research',
                 'trust_level' => 100,
                 'description' => 'Open-access preprints in physics, CS, math, and more',
@@ -80,17 +88,23 @@ class SourceWhitelistService
             [
                 'name' => 'Product Hunt',
                 'url' => 'https://www.producthunt.com',
+                'rss_url' => 'https://www.producthunt.com/feed',
                 'category' => 'news',
                 'trust_level' => 85,
                 'description' => 'Community-driven product discovery',
                 'rate_limit_per_sec' => 2,
             ],
             [
+                // GitHub does not publish a feed for /trending and the generic HTML scrape returns
+                // nothing, so the source is kept on the whitelist but disabled instead of pretending
+                // to contribute. Re-enable it only together with a real, measured feed URL.
                 'name' => 'GitHub Trending',
                 'url' => 'https://github.com/trending',
+                'rss_url' => null,
                 'category' => 'blog',
                 'trust_level' => 90,
-                'description' => 'Trending open-source repositories on GitHub',
+                'scraping_enabled' => false,
+                'description' => 'Trending open-source repositories on GitHub (disabled: no RSS/Atom feed exists)',
                 'rate_limit_per_sec' => 1,
             ],
         ];
@@ -105,7 +119,9 @@ class SourceWhitelistService
         string $category,
         int $trustLevel = 75,
         ?string $description = null,
-        int $rateLimitPerSec = 1
+        int $rateLimitPerSec = 1,
+        ?string $rssUrl = null,
+        ?bool $scrapingEnabled = null
     ): ContentSource {
         Log::info("Adding source to whitelist: {$name}");
 
@@ -130,14 +146,19 @@ class SourceWhitelistService
             throw new \Exception("Source '{$name}' already exists");
         }
 
+        if ($rssUrl !== null && !filter_var($rssUrl, FILTER_VALIDATE_URL)) {
+            throw new \Exception("Invalid RSS URL: {$rssUrl}");
+        }
+
         $source = ContentSource::create([
             'name' => $name,
             'url' => $url,
+            'rss_url' => $rssUrl,
             'category' => $category,
             'trust_level' => $trustLevel,
             'description' => $description,
             'rate_limit_per_sec' => $rateLimitPerSec,
-            'scraping_enabled' => $trustLevel >= 70,
+            'scraping_enabled' => $scrapingEnabled ?? ($trustLevel >= 70),
         ]);
 
         Log::info("Source added successfully: {$source->name} (Trust: {$source->trust_level})");
@@ -247,6 +268,7 @@ class SourceWhitelistService
             'source_id' => $source->id,
             'source_name' => $source->name,
             'url' => $source->url,
+            'rss_url' => $source->rss_url,
             'category' => $source->category,
             'enabled' => $source->scraping_enabled,
             'trust_level' => $source->trust_level,
@@ -300,7 +322,13 @@ class SourceWhitelistService
     }
 
     /**
-     * Initialize default sources
+     * Initialize default sources.
+     *
+     * Existing rows are UPDATED rather than skipped, otherwise a production database seeded before
+     * feed URLs existed would never pick them up. Operator-managed fields (trust_level, and
+     * scraping_enabled unless the default explicitly pins it) are left untouched.
+     *
+     * @return int number of sources created or updated
      */
     public function initializeDefaultSources(): int
     {
@@ -309,7 +337,9 @@ class SourceWhitelistService
 
         foreach ($defaults as $sourceData) {
             try {
-                if (!ContentSource::where('name', $sourceData['name'])->exists()) {
+                $existing = ContentSource::where('name', $sourceData['name'])->first();
+
+                if ($existing === null) {
                     $this->addSource(
                         name: $sourceData['name'],
                         url: $sourceData['url'],
@@ -317,9 +347,29 @@ class SourceWhitelistService
                         trustLevel: $sourceData['trust_level'],
                         description: $sourceData['description'] ?? null,
                         rateLimitPerSec: $sourceData['rate_limit_per_sec'],
+                        rssUrl: $sourceData['rss_url'] ?? null,
+                        scrapingEnabled: $sourceData['scraping_enabled'] ?? null,
                     );
                     $count++;
+                    continue;
                 }
+
+                $updates = [
+                    'url' => $sourceData['url'],
+                    'rss_url' => $sourceData['rss_url'] ?? null,
+                    'category' => $sourceData['category'],
+                    'description' => $sourceData['description'] ?? null,
+                    'rate_limit_per_sec' => $sourceData['rate_limit_per_sec'],
+                ];
+
+                // Only force scraping_enabled when the default pins it deliberately
+                // (GitHub Trending, which has no feed at all).
+                if (array_key_exists('scraping_enabled', $sourceData)) {
+                    $updates['scraping_enabled'] = $sourceData['scraping_enabled'];
+                }
+
+                $existing->update($updates);
+                $count++;
             } catch (\Exception $e) {
                 Log::error("Failed to initialize source {$sourceData['name']}: {$e->getMessage()}");
             }
