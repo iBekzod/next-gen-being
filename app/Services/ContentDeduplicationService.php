@@ -9,8 +9,64 @@ use Illuminate\Support\Str;
 
 class ContentDeduplicationService
 {
-    private const MIN_SIMILARITY_THRESHOLD = 0.75; // 75% similarity = probably same topic
+    /**
+     * Minimum term-frequency cosine at which two articles are treated as the
+     * same subject.
+     *
+     * Derived from measurement, not taste — but the two sides of that
+     * measurement do NOT rest on equally solid ground, and the difference
+     * matters when reading these numbers:
+     *
+     * NEGATIVE SIDE — calibrated on real production text. Over the 15
+     * articles production has actually scraped, all 75 cross-source pairs
+     * peaked at 0.2545 (mean 0.0511) and none reached 0.35. 0.35 therefore
+     * sits about 0.095 above every real negative. Same-source pairs went
+     * higher (30 pairs, peak 0.3920 between two unrelated CSS-Tricks
+     * articles that share the site's boilerplate), which is why
+     * findAllDuplicates() excludes same-source pairs outright rather than
+     * raising this number.
+     *
+     * POSITIVE SIDE — fixtures only, not real data. Three hand-written pairs
+     * of independent write-ups of one subject measured 0.5417, 0.5234 and
+     * 0.5159 (see tests/Feature/Content/DeduplicationIntegrationTest.php,
+     * which asserts the band). No real corroborating pair exists to measure
+     * yet: only 3 of 10 sources currently return articles and they cover
+     * different beats, so production has never produced two publications
+     * writing up the same subject. The positive band is a designed estimate
+     * and should be re-measured the moment real corroboration appears.
+     *
+     * 0.35 is deliberately placed above the midpoint of the two bands: a
+     * false cluster invents a "corroborated" topic out of unrelated
+     * articles, which is worse than missing one.
+     *
+     * The old value of 0.75 was unreachable for anything but near-identical
+     * text, and byte-identical syndication never reaches this code because
+     * the `external_url` unique constraint rejects it at insert.
+     */
+    private const MIN_SIMILARITY_THRESHOLD = 0.35;
+
     private const HIGH_CONFIDENCE_THRESHOLD = 0.85; // 85% = definitely same/very similar
+
+    /**
+     * How much of `full_content` feeds the comparison.
+     *
+     * The excerpt alone is 84-228 chars on real rows while bodies run
+     * 4,558-9,707, which left roughly a dozen non-stopword terms per document
+     * to compare. But reading the whole body is worse than reading none of it:
+     * scraped `full_content` carries the publication's standing furniture
+     * (newsletter pitch, related-links block, licensing notice), which is
+     * byte-identical across every article that publication runs. Measured on
+     * production-length documents, the separation between the positive and
+     * negative controls peaks around 2,000-2,500 chars and then inverts —
+     * unbounded, two unrelated articles from the SAME source scored 0.74
+     * while the genuine cross-source pair scored 0.43.
+     *
+     * 2,000 chars keeps the subject-dense opening of a typical article,
+     * stays inside the prose even for the shortest production body observed,
+     * and costs about a third of the unbounded vector build in the O(n^2)
+     * pairwise loop.
+     */
+    private const BODY_CHARS_FOR_COMPARISON = 2000;
 
     /**
      * Find all duplicate/similar content from the last N hours
@@ -44,6 +100,31 @@ class ContentDeduplicationService
                     continue;
                 }
 
+                // Never merge two articles from the same source.
+                //
+                // Corroboration is the whole point of clustering, and
+                // TopicQueueService requires two DISTINCT sources before a
+                // cluster becomes a topic — so a same-source merge has no
+                // upside whatsoever. It does have a downside: merging sets
+                // is_duplicate = true on the absorbed row, and the query above
+                // filters notDuplicate(), so a wrong same-source merge removes
+                // that article from every future comparison and makes it
+                // inherit the wrong cluster's primary title. It can therefore
+                // hide a genuine cross-source pairing that would have formed
+                // later.
+                //
+                // This is also where the metric's only real-data failure lives.
+                // Over the 15 articles production actually scraped: 75
+                // cross-source pairs peaked at 0.2545 (none over the 0.35
+                // threshold), while 30 same-source pairs peaked at 0.3920 — a
+                // single crossing, between two unrelated CSS-Tricks articles
+                // that share that site's boilerplate. Excluding same-source
+                // pairs removes that false positive without touching the
+                // threshold.
+                if ($content->content_source_id === $potentialDuplicate->content_source_id) {
+                    continue;
+                }
+
                 $similarity = $this->calculateSimilarity($content, $potentialDuplicate);
 
                 if ($similarity >= self::MIN_SIMILARITY_THRESHOLD) {
@@ -66,7 +147,14 @@ class ContentDeduplicationService
     }
 
     /**
-     * Calculate similarity between two content pieces
+     * Calculate similarity between two content pieces.
+     *
+     * This is a term-frequency cosine over title + excerpt + the opening of
+     * the body, with stopwords removed. It is NOT TF-IDF: this method is a
+     * pairwise API called from a loop, so there is no corpus in scope, and
+     * computing document frequency over just the two documents being compared
+     * would give every shared word log(2/2) = 0 and erase exactly the signal
+     * we are looking for.
      */
     public function calculateSimilarity(CollectedContent $content1, CollectedContent $content2): float
     {
@@ -75,17 +163,42 @@ class ContentDeduplicationService
             return 1.0;
         }
 
-        // Extract text features
-        $text1 = $this->normalizeText($content1->title . ' ' . $content1->excerpt);
-        $text2 = $this->normalizeText($content2->title . ' ' . $content2->excerpt);
-
-        // Use TF-IDF based similarity
         $similarity = $this->cosineSimilarity(
-            $this->getTFIDFVector($text1),
-            $this->getTFIDFVector($text2)
+            $this->getTermFrequencyVector($this->comparisonText($content1)),
+            $this->getTermFrequencyVector($this->comparisonText($content2))
         );
 
         return min(1.0, max(0.0, $similarity));
+    }
+
+    /**
+     * Build the normalized text that represents one article for comparison.
+     *
+     * Title and excerpt on their own are too thin to compare (see
+     * BODY_CHARS_FOR_COMPARISON), so the opening of the body is appended.
+     */
+    private function comparisonText(CollectedContent $content): string
+    {
+        return $this->normalizeText(
+            $content->title . ' '
+            . $content->excerpt . ' '
+            . $this->truncateOnWordBoundary((string) $content->full_content, self::BODY_CHARS_FOR_COMPARISON)
+        );
+    }
+
+    /**
+     * Cut text to at most $limit characters without splitting the final word.
+     */
+    private function truncateOnWordBoundary(string $text, int $limit): string
+    {
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        $cut = mb_substr($text, 0, $limit);
+        $lastSpace = mb_strrpos($cut, ' ');
+
+        return $lastSpace === false ? $cut : mb_substr($cut, 0, $lastSpace);
     }
 
     /**
@@ -205,9 +318,15 @@ class ContentDeduplicationService
     }
 
     /**
-     * Get TF-IDF vector for text
+     * Get the term-frequency vector for a normalized text.
+     *
+     * Deliberately plain TF with stopword filtering — no IDF. The previous
+     * version multiplied TF by log(1000 / (array_search($word, $words) + 1)),
+     * i.e. by the word's first POSITION IN THE ARRAY rather than by any
+     * document frequency, so the same word carried a different weight
+     * depending on where in the article it happened to appear first.
      */
-    private function getTFIDFVector(string $text): array
+    private function getTermFrequencyVector(string $text): array
     {
         $words = array_filter(explode(' ', $text));
         $vector = [];
@@ -217,20 +336,13 @@ class ContentDeduplicationService
             return [];
         }
 
-        // Calculate TF (Term Frequency)
-        $wordCounts = array_count_values($words);
-
-        foreach ($wordCounts as $word => $count) {
+        foreach (array_count_values($words) as $word => $count) {
             // Skip very common words
-            if ($this->isStopWord($word)) {
+            if ($this->isStopWord((string) $word)) {
                 continue;
             }
 
-            $tf = $count / $totalWords;
-            // IDF is approximated (in production, use a real IDF corpus)
-            $idf = log(1000 / (array_search($word, $words) + 1));
-
-            $vector[$word] = $tf * $idf;
+            $vector[$word] = $count / $totalWords;
         }
 
         return $vector;
