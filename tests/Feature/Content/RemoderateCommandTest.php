@@ -95,4 +95,55 @@ class RemoderateCommandTest extends TestCase
 
         $this->assertSame('pending', $post->refresh()->moderation_status);
     }
+
+    public function test_rate_limit_draftni_qayta_urinadigan_holatda_qoldiradi(): void
+    {
+        config(['services.groq.api_key' => 'test-key']);
+
+        Http::preventStrayRequests();
+        Http::fake([
+            'api.groq.com/*' => Http::response(['error' => ['message' => 'Rate limit reached']], 429, ['retry-after' => '0']),
+        ]);
+
+        $post = Post::factory()->create([
+            'status' => 'draft',
+            'moderation_status' => 'pending',
+            'content' => $this->cleanContent(),
+            'ai_moderation_check' => ['passed' => false, 'score' => 50, 'flags' => ['moderation_unavailable']],
+        ]);
+
+        // Navbat to'lishi VAQTINCHA, shuning uchun muvaffaqiyatsizlik emas —
+        // keyingi kunlik ishga tushish uni oladi.
+        $this->artisan('content:remoderate')->assertExitCode(0);
+
+        $post->refresh();
+        $this->assertSame('pending', $post->moderation_status);
+
+        // ENG MUHIMI: yozuv USTIGA YOZILMAYDI. Aks holda bayroq
+        // `moderation_rate_limited` ga o'zgarardi, keyingi ishga tushish esa
+        // bu draftni nomzod deb hisoblamasdi — ya'ni bitta rate limit draftni
+        // abadiy tashlab ketardi. Aynan shu jimgina yo'qotish sinfini tuzatib
+        // o'tirmiz.
+        $this->assertContains('moderation_unavailable', $post->ai_moderation_check['flags']);
+    }
+
+    public function test_rate_limit_yozuvi_bor_draft_ham_nomzod(): void
+    {
+        config(['services.groq.api_key' => 'test-key']);
+        $this->fakeApproval();
+
+        // BotPostController `moderateContent()` natijasini qanday bo'lsa
+        // shunday yozadi, shuning uchun 429 ga urilgan bot posti shu bayroq
+        // bilan bazaga tushadi. U ham qayta ko'rilishi kerak.
+        $post = Post::factory()->create([
+            'status' => 'draft',
+            'moderation_status' => 'pending',
+            'content' => $this->cleanContent(),
+            'ai_moderation_check' => ['passed' => false, 'score' => 50, 'flags' => ['moderation_rate_limited']],
+        ]);
+
+        $this->artisan('content:remoderate')->assertExitCode(0);
+
+        $this->assertSame('approved', $post->refresh()->moderation_status);
+    }
 }

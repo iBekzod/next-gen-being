@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\Log;
 
 class ContentModerationService
 {
+    /** 429 uchun urinishlar soni (birinchisi ham shu ichida). */
+    private const RATE_LIMIT_ATTEMPTS = 4;
+
+    /** `retry-after` sarlavhasi bo'lmasa, urinish raqamiga ko'paytiriladi. */
+    private const RATE_LIMIT_BACKOFF_SECONDS = 4;
+
     /**
      * Check content for quality, appropriateness, and relevance using AI
      *
@@ -117,30 +123,38 @@ Return ONLY valid JSON:
 
 Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\", \"plagiarism\", \"harmful_content\", \"explicit_content\", \"needs_review\"";
 
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type' => 'application/json',
-                ])
-                ->post('https://api.groq.com/openai/v1/chat/completions', [
-                    // Sozlamadan, QATTIQ YOZILMAGAN holda. Ilgari model nomi
-                    // shu yerda turardi; Groq uni o'chirib tashlaganda
-                    // `.env` dagi GROQ_MODEL ni tuzatish HECH NARSA
-                    // o'zgartirmasdi, chunki uni hech kim o'qimasdi.
-                    'model' => config('services.groq.model'),
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'You are a professional content moderator for a technical blog. You ensure content is high-quality, appropriate, and relevant. You MUST return ONLY valid JSON.'
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $prompt
-                        ]
-                    ],
-                    'temperature' => 0.3, // Lower temperature for consistent moderation
-                    'max_tokens' => 500,
-                ]);
+            // 429 uchun qayta urinish. Groq bepul tarifi daqiqadagi so'rov
+            // sonini cheklaydi, `content:remoderate` esa draftlarni ketma-ket
+            // o'tkazadi — production'da 14 draftdan 9 tasi aynan shu sababdan
+            // yiqildi. Bu VAQTINCHA nosozlik: kutish yetarli.
+            $response = null;
+
+            for ($attempt = 1; $attempt <= self::RATE_LIMIT_ATTEMPTS; $attempt++) {
+                $response = $this->callModerationApi($apiKey, $prompt);
+
+                if ($response->status() !== 429) {
+                    break;
+                }
+
+                if ($attempt === self::RATE_LIMIT_ATTEMPTS) {
+                    Log::warning('Content moderation rate limited after all attempts', [
+                        'model' => config('services.groq.model'),
+                        'attempts' => $attempt,
+                    ]);
+
+                    return $this->rateLimitedResult();
+                }
+
+                // Server o'zi qancha kutishni AYTGAN bo'lsa — shunga
+                // bo'ysunamiz; Groq `retry-after` ni soniyalarda yuboradi.
+                // Sarlavha bo'lmasa, o'sib boruvchi kutishga qaytamiz.
+                // Pastdagi 1 soniya chegarasi zich tsikldan saqlaydi.
+                $header = $response->header('retry-after');
+
+                sleep($header !== ''
+                    ? max(1, (int) $header)
+                    : $attempt * self::RATE_LIMIT_BACKOFF_SECONDS);
+            }
 
             if (!$response->successful()) {
                 Log::error('Content moderation API failed', [
@@ -190,6 +204,51 @@ Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\
 
             return $this->unavailableResult('Moderation call threw: ' . $e->getMessage());
         }
+    }
+
+    /** Bir marta chaqiriladigan HTTP so'rov — qayta urinish mantiqidan ajratilgan. */
+    private function callModerationApi(string $apiKey, string $prompt): \Illuminate\Http\Client\Response
+    {
+        return Http::timeout(30)
+            ->withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ])
+            ->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model' => config('services.groq.model'),
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a professional content moderator for a technical blog. You ensure content is high-quality, appropriate, and relevant. You MUST return ONLY valid JSON.',
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt,
+                    ],
+                ],
+                'temperature' => 0.3, // Lower temperature for consistent moderation
+                'max_tokens' => 500,
+            ]);
+    }
+
+    /**
+     * Navbat to'lganda qaytariladigan natija.
+     *
+     * `moderation_unavailable` dan ATAYLAB alohida: model joyida va sozlama
+     * to'g'ri, shunchaki hozir navbat to'lgan. Ikkisini aralashtirish
+     * production'da 9 ta draftni "moderator o'chirilgan" deb belgilagan va
+     * tuzatilgan xizmat hamon buzuq ko'ringan edi. Keyingi ishga tushish
+     * ularni o'zi oladi, shuning uchun ogohlantirish ham kerak emas.
+     */
+    private function rateLimitedResult(): array
+    {
+        return [
+            'passed' => false,
+            'score' => 50,
+            'flags' => ['moderation_rate_limited'],
+            'recommendations' => ['Rate limited - the next `content:remoderate` run will pick this up'],
+            'reason' => 'Moderation API rate limit (HTTP 429) not cleared within ' . self::RATE_LIMIT_ATTEMPTS . ' attempts',
+        ];
     }
 
     /**

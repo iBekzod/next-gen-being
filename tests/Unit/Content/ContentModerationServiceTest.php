@@ -94,4 +94,45 @@ class ContentModerationServiceTest extends TestCase
         $this->assertSame(['too_short'], $result['flags']);
         Http::assertNothingSent();
     }
+
+    public function test_429_kutib_qayta_urinadi(): void
+    {
+        config(['services.groq.api_key' => 'test-key', 'services.groq.model' => 'openai/gpt-oss-120b']);
+
+        Http::preventStrayRequests();
+        Http::fake([
+            'api.groq.com/*' => Http::sequence()
+                ->push(['error' => ['message' => 'Rate limit reached']], 429, ['retry-after' => '0'])
+                ->push(['choices' => [['message' => ['content' => '{"passed":true,"score":91,"flags":[],"recommendations":[],"reason":"ok"}']]]]),
+        ]);
+
+        $result = (new ContentModerationService())->moderateContent('Sarlavha', $this->longContent(), 'Qisqa izoh');
+
+        // 429 — VAQTINCHA nosozlik, sozlama nosozligi emas. Ikkisini
+        // aralashtirish qimmatga tushdi: production'da 15 ta draftdan 9 tasi
+        // rate limit'ga urilib "moderator ishlamayapti" deb belgilandi, ya'ni
+        // tuzatilgan xizmat hamon buzuq ko'rindi.
+        $this->assertTrue($result['passed']);
+        $this->assertSame(91, $result['score']);
+        Http::assertSentCount(2);
+    }
+
+    public function test_429_tugamasa_sozlama_nosozligi_deb_belgilanmaydi(): void
+    {
+        config(['services.groq.api_key' => 'test-key', 'services.groq.model' => 'openai/gpt-oss-120b']);
+
+        Http::preventStrayRequests();
+        Http::fake([
+            'api.groq.com/*' => Http::response(['error' => ['message' => 'Rate limit reached']], 429, ['retry-after' => '0']),
+        ]);
+
+        $result = (new ContentModerationService())->moderateContent('Sarlavha', $this->longContent(), 'Qisqa izoh');
+
+        // Urinishlar tugagach ham bu SOZLAMA nosozligi emas — model joyida,
+        // shunchaki navbat to'lgan. Shuning uchun alohida bayroq: aks holda
+        // `content:health-check` har gala rate limit'ni "model o'chirilgan"
+        // deb e'lon qiladi va ogohlantirish ishonchini yo'qotadi.
+        $this->assertContains('moderation_rate_limited', $result['flags']);
+        $this->assertNotContains('moderation_unavailable', $result['flags']);
+    }
 }

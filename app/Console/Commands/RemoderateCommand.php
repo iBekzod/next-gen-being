@@ -22,10 +22,11 @@ use Illuminate\Support\Facades\Log;
  * 15 tasi (ular orasida 4287 va 3722 so'zli, darvozadan to'liq o'tadigan
  * tutoriallar) abadiy `pending` bo'lib turardi. Shu buyruq ularni qutqaradi.
  *
- * QASDDAN CHEKLANGAN: faqat `moderation_unavailable` / `ai_check_failed`
- * bayrog'i bor draftlar qayta ko'riladi. Moderator ISHLAB, past ball
- * bergan draftlar tegilmaydi — ularni qayta so'rash darvozani bekor qilish
- * bo'lardi ("yoqmaguncha qayta urin").
+ * QASDDAN CHEKLANGAN: faqat moderator HUKM CHIQARMAGAN draftlar qayta
+ * ko'riladi (`moderation_unavailable`, `ai_check_failed`,
+ * `moderation_rate_limited`, yoki umuman yozuvi yo'q). Moderator ISHLAB, past
+ * ball bergan draftlar tegilmaydi — ularni qayta so'rash darvozani bekor
+ * qilish bo'lardi ("yoqmaguncha qayta urin").
  */
 class RemoderateCommand extends Command
 {
@@ -43,6 +44,16 @@ class RemoderateCommand extends Command
      * edi, shuning uchun tarixiy qatorlar faqat shu nom bilan belgilangan.
      */
     private const UNAVAILABLE_FLAGS = ['moderation_unavailable', 'ai_check_failed'];
+
+    /**
+     * Navbat to'lgani uchun baholanmagan draftlar ham nomzod.
+     *
+     * BotPostController `moderateContent()` natijasini qanday bo'lsa shunday
+     * yozadi, shuning uchun 429 ga urilgan bot posti shu bayroq bilan bazaga
+     * tushadi — u ham qayta ko'rilishi shart, aks holda bitta rate limit
+     * draftni abadiy tashlab ketadi.
+     */
+    private const RETRYABLE_FLAGS = ['moderation_unavailable', 'ai_check_failed', 'moderation_rate_limited'];
 
     public function handle(ContentModerationService $moderation): int
     {
@@ -64,6 +75,7 @@ class RemoderateCommand extends Command
         $approved = 0;
         $rejected = 0;
         $stillUnavailable = 0;
+        $rateLimited = 0;
 
         foreach ($candidates as $post) {
             $result = $moderation->moderateContent(
@@ -72,7 +84,22 @@ class RemoderateCommand extends Command
                 (string) $post->excerpt
             );
 
-            if ($this->flagsSay($result['flags'] ?? [])) {
+            $flags = $result['flags'] ?? [];
+
+            // Navbat to'lgan: HECH NARSA YOZILMAYDI.
+            //
+            // Yozilsa, bayroq `moderation_rate_limited` ga o'zgarar edi-ku,
+            // lekin gap undan kattaroq — mavjud `moderation_unavailable`
+            // yozuvi ustiga yozilib, keyingi ishga tushish bu draftni
+            // nomzod deb ko'rmasligi mumkin. Ya'ni bitta vaqtinchalik
+            // 429 draftni butunlay yo'qotardi.
+            if (is_array($flags) && in_array('moderation_rate_limited', $flags, true)) {
+                $rateLimited++;
+                $this->warn("  ⏳ {$post->id}: navbat to'lgan, keyingi ishga tushishda qayta ko'riladi");
+                continue;
+            }
+
+            if ($this->flagsSay($flags)) {
                 $stillUnavailable++;
                 $this->warn("  ⚠ {$post->id}: moderator hamon ishlamayapti — " . ($result['reason'] ?? ''));
                 continue;
@@ -105,7 +132,10 @@ class RemoderateCommand extends Command
         }
 
         $this->newLine();
-        $this->info("Tasdiqlandi: {$approved} · Kutishda qoldi: {$rejected} · Moderator ishlamadi: {$stillUnavailable}");
+        $this->info(
+            "Tasdiqlandi: {$approved} · Kutishda qoldi: {$rejected} · "
+            . "Navbat to'lgan: {$rateLimited} · Moderator ishlamadi: {$stillUnavailable}"
+        );
 
         // Bitta ham chaqiruv sozlama nosozligi bilan qaytsa, bu MUVAFFAQIYAT
         // emas. Aks holda "0 ta tuzatildi" muvaffaqiyat deb ko'rinadi va
@@ -142,7 +172,9 @@ class RemoderateCommand extends Command
             return true;
         }
 
-        return $this->flagsSay($check['flags'] ?? []);
+        $flags = $check['flags'] ?? [];
+
+        return is_array($flags) && array_intersect(self::RETRYABLE_FLAGS, $flags) !== [];
     }
 
     /** @param array<int, string>|mixed $flags */
