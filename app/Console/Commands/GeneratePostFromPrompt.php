@@ -33,7 +33,7 @@ class GeneratePostFromPrompt extends Command
     {
         // Get Groq API key
         $this->apiKey = config('services.groq.api_key');
-        $this->model = 'llama-3.3-70b-versatile';
+        $this->model = config('services.groq.model');
 
         if (!$this->apiKey) {
             $this->error('Groq API key not configured. Set GROQ_API_KEY in .env');

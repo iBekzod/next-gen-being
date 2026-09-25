@@ -380,4 +380,49 @@ class ContentHealthCheckTest extends TestCase
             'duplicate_of' => $primaryId,
         ]);
     }
+
+    public function test_moderator_ishlamagani_alohida_ogohlantiradi(): void
+    {
+        Post::factory()->create([
+            'status' => 'published',
+            'series_title' => null,
+            'published_at' => now(),
+            'content' => $this->cleanContent(),
+        ]);
+
+        Post::factory()->create([
+            'status' => 'draft',
+            'moderation_status' => 'pending',
+            'content' => $this->cleanContent(),
+            'ai_moderation_check' => ['passed' => false, 'score' => 50, 'flags' => ['moderation_unavailable']],
+        ]);
+
+        $this->artisan('content:health-check --dry-run')
+            ->expectsOutputToContain('moderation_unavailable')
+            ->assertExitCode(1);
+    }
+
+    public function test_haqiqiy_sifat_hukmi_sozlama_ogohlantirishini_qozgatmaydi(): void
+    {
+        Post::factory()->create([
+            'status' => 'published',
+            'series_title' => null,
+            'published_at' => now(),
+            'content' => $this->cleanContent(),
+        ]);
+
+        // Moderator ISHLADI va past ball berdi. Bu `unattended_moderation`
+        // (kimdir ko'rib chiqsin), `moderation_unavailable` EMAS — aks holda
+        // yangi ogohlantirish shovqinga aylanadi va o'z ma'nosini yo'qotadi.
+        Post::factory()->create([
+            'status' => 'draft',
+            'moderation_status' => 'pending',
+            'content' => $this->cleanContent(),
+            'ai_moderation_check' => ['passed' => false, 'score' => 40, 'flags' => ['low_quality']],
+        ]);
+
+        $this->artisan('content:health-check --dry-run')
+            ->doesntExpectOutputToContain('moderation_unavailable')
+            ->assertExitCode(1);
+    }
 }

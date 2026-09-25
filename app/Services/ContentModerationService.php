@@ -60,14 +60,8 @@ class ContentModerationService
 
         if (!$apiKey) {
             Log::warning('Groq API key not configured for content moderation');
-            // Default to manual review if AI check fails
-            return [
-                'passed' => false,
-                'score' => 50,
-                'flags' => ['ai_check_unavailable'],
-                'recommendations' => ['Manual review required - AI check unavailable'],
-                'reason' => 'AI moderation service unavailable',
-            ];
+
+            return $this->unavailableResult('Groq API key not configured');
         }
 
         try {
@@ -129,7 +123,11 @@ Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\
                     'Content-Type' => 'application/json',
                 ])
                 ->post('https://api.groq.com/openai/v1/chat/completions', [
-                    'model' => 'llama-3.3-70b-versatile',
+                    // Sozlamadan, QATTIQ YOZILMAGAN holda. Ilgari model nomi
+                    // shu yerda turardi; Groq uni o'chirib tashlaganda
+                    // `.env` dagi GROQ_MODEL ni tuzatish HECH NARSA
+                    // o'zgartirmasdi, chunki uni hech kim o'qimasdi.
+                    'model' => config('services.groq.model'),
                     'messages' => [
                         [
                             'role' => 'system',
@@ -145,8 +143,15 @@ Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\
                 ]);
 
             if (!$response->successful()) {
-                Log::error('Content moderation API failed', ['error' => $response->body()]);
-                return $this->defaultPendingResult();
+                Log::error('Content moderation API failed', [
+                    'model' => config('services.groq.model'),
+                    'status' => $response->status(),
+                    'error' => $response->body(),
+                ]);
+
+                return $this->unavailableResult(
+                    'Moderation API returned HTTP ' . $response->status() . ' for model ' . config('services.groq.model')
+                );
             }
 
             $content = $response->json()['choices'][0]['message']['content'];
@@ -159,7 +164,8 @@ Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\
 
             if (!$result || !isset($result['passed']) || !isset($result['score'])) {
                 Log::error('Invalid moderation response format', ['response' => $content]);
-                return $this->defaultPendingResult();
+
+                return $this->unavailableResult('Moderation model returned an unparseable response');
             }
 
             // Ensure all required fields exist
@@ -182,7 +188,7 @@ Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\
                 'title' => $title,
             ]);
 
-            return $this->defaultPendingResult();
+            return $this->unavailableResult('Moderation call threw: ' . $e->getMessage());
         }
     }
 
@@ -231,16 +237,29 @@ Flags can be: \"low_quality\", \"inappropriate_content\", \"off_topic\", \"spam\
     }
 
     /**
-     * Default result when AI check fails - requires manual review
+     * Moderator ISHGA TUSHMAGANDA qaytariladigan natija.
+     *
+     * Bu kontent hukmi EMAS va shunday o'qilmasligi kerak. Farq qimmatga
+     * tushdi: Groq `llama-3.3-70b-versatile` ni o'chirganda har chaqiruv
+     * `model_not_found` qaytardi, bu yer esa uni `ai_check_failed` + 50 ball
+     * deb yozdi. 50 < 75 — demak har draft `pending` bo'ldi, PublishGate
+     * hammasini rad etdi va sayt 2026-08-04 dan 2026-09-26 gacha hech narsa
+     * nashr qilmadi. Log'da 295 qator xato bor edi, lekin panelda ko'rinadigan
+     * yagona narsa "moderatsiya kutayotgan 15 ta draft" edi — ya'ni sozlama
+     * nosozligi kontent muammosiga o'xshab ketdi.
+     *
+     * Shuning uchun `moderation_unavailable` alohida bayroq: `content:health-check`
+     * shu bayroqni ko'rib ALOHIDA ogohlantiradi, `content:remoderate` esa aynan
+     * shu draftlarni qayta o'tkazadi.
      */
-    private function defaultPendingResult(): array
+    private function unavailableResult(string $reason): array
     {
         return [
-            'passed' => false, // Requires manual review
+            'passed' => false, // Qo'lda ko'rib chiqish talab qiladi.
             'score' => 50,
-            'flags' => ['ai_check_failed'],
-            'recommendations' => ['Manual moderation required'],
-            'reason' => 'AI moderation check could not be completed',
+            'flags' => ['moderation_unavailable', 'ai_check_failed'],
+            'recommendations' => ['Moderation service is misconfigured or unreachable - fix the service, then run `content:remoderate`'],
+            'reason' => $reason,
         ];
     }
 }

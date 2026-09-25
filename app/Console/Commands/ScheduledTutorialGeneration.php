@@ -103,6 +103,29 @@ class ScheduledTutorialGeneration extends Command
                 publish: false // Always save as draft for review
             );
 
+            // Nol post — MUVAFFAQIYAT EMAS.
+            //
+            // Ilgari bu yer nol postni ham "✨ generated successfully!" deb
+            // e'lon qilardi va 0 qaytarardi. 2026-09-14 va 2026-09-21 da
+            // aynan shu bo'ldi: Anthropic API krediti tugagani uchun 8 qism ×
+            // 3 urinish = 24 chaqiruv HTTP 400 "Your credit balance is too low"
+            // qaytardi, `generateComprehensiveSeries()` har qismni alohida
+            // ushlab keyingisiga o'tdi, natijada bo'sh massiv qaytdi — va
+            // rejalashtiruvchi buni bajarilgan ish deb yozdi. Keyin kesh 24
+            // soatga qo'yilib, qayta urinishni ham to'sib qo'ydi.
+            if ($posts === []) {
+                $this->error('❌ Birorta ham qism yaratilmadi — hisobot uchun log\'ga qara.');
+
+                Log::error('Scheduled tutorial generation produced nothing', [
+                    'topic' => $topic['topic'],
+                    'parts_requested' => $topic['parts'],
+                ]);
+
+                // Kesh QO'YILMAYDI: muvaffaqiyatsiz urinish keyingisini
+                // to'smasligi kerak.
+                return self::FAILURE;
+            }
+
             $this->newLine();
             $this->info("✨ Tutorial series generated successfully!");
             $this->line("Created " . count($posts) . " posts");

@@ -109,7 +109,12 @@ return [
 
     'groq' => [
         'api_key' => env('GROQ_API_KEY'),
-        'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+        // Groq eski modellarni ogohlantirmasdan o'chiradi. `llama-3.3-70b-versatile`
+        // shunday yo'qoldi va uni ishlatgan har chaqiruv `model_not_found`
+        // qaytardi — moderatsiya yetti hafta ishlamadi. Bu standart qiymatni
+        // o'zgartirganda https://api.groq.com/openai/v1/models dan model hali
+        // ro'yxatda turganini TEKSHIRING.
+        'model' => env('GROQ_MODEL', 'openai/gpt-oss-120b'),
         'base_url' => 'https://api.groq.com/openai/v1',
     ],
 

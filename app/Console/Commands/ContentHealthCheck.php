@@ -55,9 +55,11 @@ class ContentHealthCheck extends Command
         $publishablePosts = 0;
         $publishableTutorials = 0;
         $pendingOnly = 0;
+        $moderatorNeverRan = 0;
 
-        Post::where('status', 'draft')->select('id', 'content', 'moderation_status', 'series_title')
-            ->chunk(200, function ($drafts) use (&$publishablePosts, &$publishableTutorials, &$pendingOnly) {
+        Post::where('status', 'draft')
+            ->select('id', 'content', 'moderation_status', 'series_title', 'ai_moderation_check')
+            ->chunk(200, function ($drafts) use (&$publishablePosts, &$publishableTutorials, &$pendingOnly, &$moderatorNeverRan) {
                 foreach ($drafts as $draft) {
                     $failures = $this->gate->failures($draft);
 
@@ -69,6 +71,10 @@ class ContentHealthCheck extends Command
                         }
                     } elseif ($failures === ['moderation_pending']) {
                         $pendingOnly++;
+
+                        if ($this->moderatorWasUnavailable($draft)) {
+                            $moderatorNeverRan++;
+                        }
                     }
                 }
             });
@@ -83,6 +89,23 @@ class ContentHealthCheck extends Command
 
         if ($pendingOnly > 0) {
             $problems['unattended_moderation'] = "Faqat moderatsiya kutayotgan draftlar: {$pendingOnly}";
+        }
+
+        // ALOHIDA, ANIQROQ kalit. `unattended_moderation` "kimdir ko'rib
+        // chiqsin" degani; bu esa "moderator umuman ishga tushmadi" degani —
+        // butunlay boshqa nosozlik va davosi ham boshqa.
+        //
+        // Farq qimmatga tushdi: Groq `llama-3.3-70b-versatile` ni o'chirganda
+        // har moderatsiya chaqiruvi `model_not_found` qaytardi, xizmat esa uni
+        // "50 ball, qo'lda ko'rilsin" deb yozdi. Panelda ko'ringan yagona
+        // narsa "moderatsiya kutayotgan 15 ta draft" edi — bu esa kontent
+        // muammosiga o'xshaydi, shuning uchun hech kim sozlamaga qaramadi va
+        // sayt 2026-08-04 dan 2026-09-26 gacha jim turdi.
+        if ($moderatorNeverRan > 0) {
+            $problems['moderation_unavailable'] = "Moderator ishga tushmagani uchun kutishda qolgan draftlar: {$moderatorNeverRan} "
+                . "(model: " . config('services.groq.model') . "). Bu SIFAT muammosi emas, SOZLAMA muammosi: "
+                . "https://api.groq.com/openai/v1/models dan model hali borligini tekshiring, "
+                . "keyin `content:remoderate` ni ishga tushiring.";
         }
 
         // Scraping to'xtaganini aniqlash. Faol manba bo'lsa-yu, hech biri
@@ -148,6 +171,26 @@ class ContentHealthCheck extends Command
         }
 
         return self::FAILURE;
+    }
+
+    /**
+     * Shu draft moderator ISHLAMAGANI uchun kutishda turganmi?
+     *
+     * `ai_check_failed` — 2026-09-26 gacha yozilgan tarixiy qatorlar uchun:
+     * o'sha paytda sozlama nosozligi va kontent hukmi bitta bayroq ostida edi.
+     */
+    private function moderatorWasUnavailable(Post $draft): bool
+    {
+        $check = $draft->ai_moderation_check;
+
+        if (! is_array($check)) {
+            return false;
+        }
+
+        $flags = $check['flags'] ?? [];
+
+        return is_array($flags)
+            && array_intersect(['moderation_unavailable', 'ai_check_failed'], $flags) !== [];
     }
 
     private function notify(array $problems): void

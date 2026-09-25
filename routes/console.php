@@ -252,25 +252,45 @@ Schedule::call(function () {
 // ========================================
 // TUTORIAL GENERATION (Weekly)
 // ========================================
-// Generate multi-part tutorial series every Monday at 9 AM.
-// Gated by BLOG_AUTO_PUBLISH: when the local blog-bot is the active engine this
-// stays off (the bot generates tutorials for free via Claude CLI). Flip
-// BLOG_AUTO_PUBLISH=true only when the server-side Anthropic API has credits.
-Schedule::command('tutorials:scheduled')
-    ->weeklyOn(1, '9:00')
+// `tutorials:scheduled` ATAYLAB rejalashtirilmagan. Buyruq o'zi joyida qoldi
+// (qo'lda ishga tushirish uchun), lekin har dushanba avtomatik ishlamaydi.
+//
+// Sabab: u `AITutorialGenerationService` orqali TO'LOVLI Anthropic API'ga
+// boradi, akkauntda esa kredit yo'q. 2026-09-14 va 2026-09-21 dagi
+// ishga tushishlar 8 qism × 3 urinish = 24 ta HTTP 400 "Your credit balance
+// is too low" bilan tugadi va nol post yaratdi. Ilgari BLOG_AUTO_PUBLISH
+// darvozasi buni to'sib turardi; 2026-09-22 da u `true` ga o'tkazilgach,
+// haftalik behuda urinish boshlandi.
+//
+// Tutoriallarni ENDI blog-bot yozadi (blog-bot/main.py,
+// `_generate_and_post_tutorial`, har TUTORIAL_EVERY_DAYS kunda) — u Claude
+// CLI orqali Max obunasidan foydalanadi, ya'ni bepul, va natijani
+// `/api/bot/post` ga `series_title` bilan yuboradi. Postlar ham shu yo'ldan
+// keladi. Server tomonida to'lovli API'ga parallel ikkinchi yo'l saqlash —
+// bu faqat kredit tugaganda jimgina nol qaytaradigan ortiqcha yo'l.
+//
+// Anthropic krediti to'ldirilsa va server tomonidan generatsiya kerak bo'lsa,
+// shu blokni qaytarish yetarli.
+
+// Nashrdan YARIM SOAT OLDIN: moderator ishlamagani uchun kutishda qolgan
+// draftlarni qayta o'tkazadi.
+//
+// Sabab: moderatsiya modeli (Groq) o'chirilganda har draft `pending` bo'lib
+// yozildi va shu holatda QOLDI — modelni tuzatish ularni o'zi qutqarmaydi,
+// chunki `moderation_status` bir marta yoziladi. Shuning uchun 2026-08-04 dan
+// 2026-09-26 gacha 15 ta draft (ularning ikkitasi darvozadan to'liq o'tadigan,
+// 4000 so'zlik tutoriallar) abadiy kutishda turdi va `content:drip` har kuni
+// nol post nashr qildi.
+//
+// Sog'lom holatda bu buyruq BEKORCHI: nomzod topilmasa bitta ham API
+// chaqiruvi qilmaydi. Ya'ni narxi nol, foydasi esa — xizmat qaytib kelganda
+// orqada qolgan draftlar o'zi qo'shilib ketadi.
+Schedule::command('content:remoderate')
+    ->dailyAt('17:30')
     ->timezone(config('app.timezone'))
-    // config(), not env(): see the note on the content cron above - env() is
-    // dead once `php artisan config:cache` has run, which every deploy does.
-    ->when(fn () => filter_var(config('content.auto_publish'), FILTER_VALIDATE_BOOLEAN))
     ->withoutOverlapping()
     ->onOneServer()
-    ->runInBackground()
-    ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Weekly tutorial generation completed');
-    })
-    ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('Weekly tutorial generation failed');
-    });
+    ->runInBackground();
 
 // Controlled publishing cadence — 1 regular post / 5 days + 1 tutorial / 7 days,
 // quality-gated (see App\Console\Commands\ContentDripPublish). Replaces the old

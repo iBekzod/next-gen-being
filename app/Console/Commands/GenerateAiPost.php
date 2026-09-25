@@ -1645,7 +1645,7 @@ Return ONLY this JSON (ensure proper escaping):
             case 'groq':
                 $this->apiKey = config('services.groq.api_key');
                 $this->baseUrl = config('services.groq.base_url');
-                $this->model = config('services.groq.model', 'llama-3.1-70b-versatile');
+                $this->model = config('services.groq.model');
                 break;
 
             case 'openai':
