@@ -18,5 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Every unhandled exception goes to the shared error-report bot
+        // (Nextgenbeing topic) and to storage/logs/error-feed.jsonl for Jarvis.
+        // Filtering (4xx), dedupe and the hourly cap live in ErrorReporter;
+        // it never throws back into the request.
+        $exceptions->reportable(function (\Throwable $e): void {
+            app(\App\Services\Telemetry\ErrorReporter::class)->report($e);
+        });
     })->create();
