@@ -77,6 +77,16 @@ php artisan view:cache || fail "view:cache"
 echo "🔒 Setting permissions..."
 chmod -R 775 storage bootstrap/cache || fail "chmod"
 
+# Make the new code live. php-fpm runs with opcache.validate_timestamps=Off
+# (/etc/php/8.4/fpm/conf.d/custom.ini), so without a reload the web keeps
+# serving the old compiled PHP forever - a deploy that "succeeds" but changes
+# nothing. The queue worker is a long-running process with the same problem.
+echo "♻️  Reloading PHP-FPM and restarting the queue worker..."
+systemctl reload php8.4-fpm || fail "reload php8.4-fpm"
+if systemctl list-unit-files nextgenbeing-queue.service >/dev/null 2>&1; then
+    systemctl restart nextgenbeing-queue.service || fail "restart nextgenbeing-queue.service"
+fi
+
 # Prove the deployed tree actually boots before declaring success.
 echo "🩺 Verifying the application boots..."
 php artisan --version > /dev/null || fail "application boot check"

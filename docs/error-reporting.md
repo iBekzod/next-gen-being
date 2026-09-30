@@ -70,3 +70,8 @@ Tests: `tests/Unit/Telemetry/`.
 `bootstrap/cache/config.php` on the server references FilamentTiptapEditor
 classes, so loading the cached config with a bare `php -r` fatals. `artisan`
 itself boots fine. Use artisan (tinker) for checks, not `php -r` + require.
+
+`deploy.sh` did not reload php-fpm, and fpm runs with
+`opcache.validate_timestamps=Off` - so web requests kept the old code (no
+reporter) after a "successful" deploy. `deploy.sh` now reloads php8.4-fpm and
+restarts nextgenbeing-queue.service.
