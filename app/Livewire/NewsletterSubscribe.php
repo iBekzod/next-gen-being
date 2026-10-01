@@ -8,11 +8,14 @@ use Illuminate\Support\Facades\Log;
 
 class NewsletterSubscribe extends Component
 {
-    public string $email = '';
-    public string $frequency = 'weekly';
-    public bool $subscribed = false;
-    public string $error = '';
-    public bool $compact = false;
+    // Intentionally untyped: Livewire assigns the raw client value BEFORE updated*
+    // hooks run, so typed properties throw TypeError on array payloads from bots.
+    // The updated* hooks below coerce values to the expected type.
+    public $email = '';
+    public $frequency = 'weekly';
+    public $subscribed = false;
+    public $error = '';
+    public $compact = false;
 
     protected $rules = [
         'email' => 'required|email|max:255',
