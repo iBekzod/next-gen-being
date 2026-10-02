@@ -11,17 +11,20 @@ class HelpContact extends Component
 {
     public bool $showModal = false;
 
-    #[Validate('required|in:help,report,bug,feature_request')]
-    public string $type = 'help';
+    // Tiplar ataylab yozilmagan: mijoz massiv yuborsa Livewire tipli
+    // propertyga o'rnatishda TypeError tashlardi (updated* hooklar undan keyin
+    // ishlaydi). Endi updated* hook normallashtiradi, 'string' qoidasi tekshiradi.
+    #[Validate('required|string|in:help,report,bug,feature_request')]
+    public $type = 'help';
 
-    #[Validate('required|min:5|max:255')]
-    public string $subject = '';
+    #[Validate('required|string|min:5|max:255')]
+    public $subject = '';
 
-    #[Validate('required|min:20|max:2000')]
-    public string $description = '';
+    #[Validate('required|string|min:20|max:2000')]
+    public $description = '';
 
-    #[Validate('required|in:low,normal,high,urgent')]
-    public string $priority = 'normal';
+    #[Validate('required|string|in:low,normal,high,urgent')]
+    public $priority = 'normal';
 
     protected $listeners = ['show-help-modal' => 'openModal'];
 
