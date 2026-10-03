@@ -9,7 +9,14 @@ use Illuminate\Support\Facades\Auth;
 
 class HelpContact extends Component
 {
-    public bool $showModal = false;
+    // Tip ataylab yozilmagan: mijoz massiv yuborsa bool propertyga
+    // o'rnatishda TypeError bo'lardi. updatedShowModal normallashtiradi.
+    public $showModal = false;
+
+    public function updatedShowModal($value)
+    {
+        $this->showModal = is_array($value) ? false : (bool) $value;
+    }
 
     // Tiplar ataylab yozilmagan: mijoz massiv yuborsa Livewire tipli
     // propertyga o'rnatishda TypeError tashlardi (updated* hooklar undan keyin
