@@ -45,6 +45,10 @@ else
     echo "   ${BEFORE} → ${AFTER}"
 fi
 
+# Eski keshlangan konfig bilan artisan ishlamasin: composer install ichidagi
+# package:discover yangi paket (masalan schedule-monitor) konfigini ko'rmay qoladi.
+php artisan config:clear || true
+
 # Install/update dependencies
 echo "📦 Installing dependencies..."
 composer install --no-dev --optimize-autoloader || fail "composer install"
