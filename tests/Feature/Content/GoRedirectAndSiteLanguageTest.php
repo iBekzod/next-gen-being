@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class GoRedirectAndUzbekSectionTest extends TestCase
+class GoRedirectAndSiteLanguageTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -64,29 +64,47 @@ class GoRedirectAndUzbekSectionTest extends TestCase
         $this->assertStringNotContainsString('href="https://example.com" rel="sponsored', $html);
     }
 
-    public function test_uz_section_lists_only_uzbek_posts_with_uz_lang(): void
+    public function test_uz_section_is_retired_with_a_permanent_redirect(): void
     {
-        $author = User::factory()->create();
-        $category = Category::factory()->create();
+        $this->get('/uz')->assertStatus(301)->assertRedirect('/');
+    }
 
-        $base = [
-            'author_id' => $author->id,
-            'category_id' => $category->id,
-            'status' => 'published',
-            'published_at' => now()->subHour(),
-            'content' => 'x',
-            'excerpt' => 'x',
-        ];
-        Post::factory()->create($base + ['title' => "O'zbekcha sinov maqolasi", 'slug' => 'ozbekcha-sinov', 'base_language' => 'uz']);
-        Post::factory()->create($base + ['title' => 'English only post', 'slug' => 'english-only', 'base_language' => 'en']);
+    public function test_retired_post_slugs_redirect_permanently(): void
+    {
+        foreach (config('redirects.posts') as $from => $to) {
+            $this->get('/posts/' . $from)->assertStatus(301)->assertRedirect('/posts/' . $to);
+        }
+        $this->assertTrue(true);
+    }
 
-        $res = $this->get('/uz')->assertOk();
+    public function test_slug_does_not_change_when_title_is_edited(): void
+    {
+        $post = Post::factory()->create([
+            'author_id' => User::factory()->create()->id,
+            'category_id' => Category::factory()->create()->id,
+            'title' => 'Original title for slug stability',
+            'slug' => null,
+        ]);
+        $slug = $post->slug;
+        $this->assertNotEmpty($slug);
 
-        $res->assertSee('<html lang="uz"', false);
-        $res->assertSee('hreflang="uz"', false);
-        $res->assertSee('sinov maqolasi');
-        $res->assertDontSee('English only post');
-        // Title must be escaped once, not twice (regression: "&amp;#039;").
-        $res->assertDontSee('&amp;#039;', false);
+        $post->update(['title' => 'A completely different title']);
+
+        $this->assertSame($slug, $post->fresh()->slug);
+    }
+
+    public function test_review_is_required_for_auto_publication(): void
+    {
+        config(['content.require_quality_review' => true]);
+        $gate = app(\App\Services\Content\PublishGate::class);
+
+        $post = new Post(['content' => 'x', 'moderation_status' => 'approved']);
+        $this->assertContains('no_quality_review', $gate->failures($post));
+
+        $post->quality_report = ['passed' => true, 'mean' => 4.4];
+        $this->assertNotContains('no_quality_review', $gate->failures($post));
+
+        $post->quality_report = ['passed' => false, 'mean' => 3.1];
+        $this->assertContains('no_quality_review', $gate->failures($post));
     }
 }

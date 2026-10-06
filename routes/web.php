@@ -25,8 +25,15 @@ Route::get('/about', function () {
     return view('pages.about');
 })->name('about');
 
-// Uzbek-language section + partner-link redirector (see GoController).
-Route::get('/uz', [\App\Http\Controllers\UzbekController::class, 'index'])->name('uz.index');
+// The /uz section was removed on 2026-10-07 (the site is English-only;
+// its four posts were replaced by English ones). 301 keeps old links alive.
+Route::permanentRedirect('/uz', '/');
+// Retired post URLs -> their replacements (config/redirects.php). Must be
+// registered before posts.show, which would otherwise 404 on them.
+foreach (config('redirects.posts', []) as $from => $to) {
+    Route::permanentRedirect('/posts/' . $from, '/posts/' . $to);
+}
+// Partner-link redirector (see GoController).
 Route::get('/go/{slug}', \App\Http\Controllers\GoController::class)
     ->where('slug', '[a-z0-9-]{1,64}')
     ->middleware('throttle:60,1')

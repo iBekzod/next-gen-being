@@ -328,11 +328,6 @@
                                 Articles
                             </a>
 
-                            <!-- Uzbek section -->
-                            <a href="{{ route('uz.index') }}" hreflang="uz" lang="uz"
-                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
-                                O'zbekcha
-                            </a>
 
                             <!-- Marketplace -->
                             <a href="{{ route('marketplace.index') }}"
@@ -613,9 +608,6 @@
                             class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
                     </div>
 
-                    <!-- Uzbek section -->
-                    <a href="{{ route('uz.index') }}" hreflang="uz" lang="uz"
-                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">O'zbekcha maqolalar</a>
 
                     <!-- Authors -->
                     <a href="{{ route('authors.index') }}"
@@ -757,8 +749,6 @@
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Learning Paths</a></li>
                             <li><a href="{{ route('tutorial-collections.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Collections</a></li>
-                            <li><a href="{{ route('uz.index') }}" hreflang="uz" lang="uz"
-                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">O'zbekcha maqolalar</a></li>
                             <li><a href="{{ route('about') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">About
                                     Us</a></li>

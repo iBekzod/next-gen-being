@@ -20,7 +20,7 @@ class Post extends Model implements HasMedia
         'scheduled_at', 'publish_strategy', 'is_featured', 'featured_at', 'allow_comments', 'is_premium',
         'premium_tier', 'preview_percentage', 'paywall_message',
         'read_time', 'views_count', 'likes_count', 'comments_count',
-        'bookmarks_count', 'seo_meta', 'author_id', 'category_id',
+        'bookmarks_count', 'seo_meta', 'quality_report', 'author_id', 'category_id',
         'series_title', 'series_slug', 'series_part', 'series_total_parts', 'series_description',
         'moderation_status', 'moderated_by', 'moderated_at', 'moderation_notes', 'ai_moderation_check',
         'post_type', 'video_url', 'video_duration', 'video_thumbnail', 'video_captions_url',
@@ -44,6 +44,7 @@ class Post extends Model implements HasMedia
         'noindex' => 'boolean',
         'gallery' => 'array',
         'seo_meta' => 'array',
+        'quality_report' => 'array',
         'image_attribution' => 'array',
         'ai_moderation_check' => 'array',
         'source_ids' => 'array',
@@ -55,7 +56,10 @@ class Post extends Model implements HasMedia
     {
         return SlugOptions::create()
             ->generateSlugsFrom('title')
-            ->saveSlugsTo('slug');
+            ->saveSlugsTo('slug')
+            // A published URL must never change because a title was edited:
+            // re-saving post 580 on 2026-10-06 silently moved its URL.
+            ->doNotGenerateSlugsOnUpdate();
     }
 
     /**

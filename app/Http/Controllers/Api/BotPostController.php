@@ -48,6 +48,17 @@ class BotPostController extends Controller
             'featured_image_url' => 'nullable|url|max:2048',
             'image_attribution' => 'nullable|array',
             'series_title' => 'nullable|string|max:255',
+            // From blog-bot's pipeline (quality_gate.py): SEO fields and the
+            // editor review that content:drip requires before auto-publishing.
+            'seo' => 'nullable|array',
+            'seo.description' => 'nullable|string|max:320',
+            'seo.focus_keyword' => 'nullable|string|max:120',
+            'seo.meta_title' => 'nullable|string|max:120',
+            'quality' => 'nullable|array',
+            'quality.passed' => 'nullable|boolean',
+            'quality.mean' => 'nullable|numeric',
+            'quality.scores' => 'nullable|array',
+            'quality.summary' => 'nullable|string|max:1000',
         ]);
 
         // Quality gate — same one we apply to AI-generated posts
@@ -102,6 +113,8 @@ class BotPostController extends Controller
             'moderated_at' => $moderationStatus === 'approved' ? now() : null,
             'moderation_notes' => 'Submitted via blog-bot (Claude Code CLI, subscription-backed)',
             'ai_moderation_check' => $moderation,
+            'seo_meta' => array_filter($data['seo'] ?? []) ?: null,
+            'quality_report' => $data['quality'] ?? null,
         ]);
 
         // Attach tags

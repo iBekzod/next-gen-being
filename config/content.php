@@ -12,6 +12,23 @@ return [
     'auto_publish' => env('BLOG_AUTO_PUBLISH', false),
 
     /**
+     * Auto-publication requires a passed editor review (posts.quality_report,
+     * written by blog-bot's quality_gate.py). Structural gates alone let
+     * generic 4,000-word drafts through (2026-10-07 audit).
+     */
+    'require_quality_review' => env('CONTENT_REQUIRE_REVIEW', true),
+
+    /**
+     * Server-side API generation when the local blog-bot is offline. Off by
+     * default since 2026-10-07: that path (GenerateAiPost) cannot research
+     * or run code, its prompt demanded 4,000-5,000 words and "actual command
+     * output", which is how the corpus got invented benchmarks and
+     * "What we learned scaling to 50M requests" posts. A dead bot now shows
+     * up in content:health-check instead of being papered over.
+     */
+    'api_fallback' => env('CONTENT_API_FALLBACK', false),
+
+    /**
      * Daily Publication Configuration
      * Controls the strategic 3-article daily publication mix
      */

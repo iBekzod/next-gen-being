@@ -71,9 +71,6 @@ class SeoController extends Controller
         if (Route::has('marketplace.index')) {
             $entries[] = $this->formatEntry(route('marketplace.index'), $now, 'daily', '0.9');
         }
-        if (Route::has('uz.index')) {
-            $entries[] = $this->formatEntry(route('uz.index'), $now, 'weekly', '0.8');
-        }
         if (Route::has('affiliate.disclosure')) {
             $entries[] = $this->formatEntry(route('affiliate.disclosure'), $now, 'yearly', '0.3');
         }

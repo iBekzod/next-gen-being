@@ -47,6 +47,13 @@ Schedule::call(function () {
         }
     }
 
+    // The server-side API generator is off unless explicitly enabled
+    // (config/content.php 'api_fallback'): it cannot research or run code.
+    if (! filter_var(config('content.api_fallback'), FILTER_VALIDATE_BOOLEAN)) {
+        \Illuminate\Support\Facades\Log::warning('Content cron: blog-bot heartbeat stale and API fallback disabled - no post generated', ['last_seen' => $lastSeen]);
+        return;
+    }
+
     // Throttle to one standalone post every 5 days (tutorials are excluded so the
     // weekly tutorial schedule does not delay regular posts).
     $lastPostAt = \App\Models\Post::whereNull('series_title')

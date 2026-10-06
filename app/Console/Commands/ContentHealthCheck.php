@@ -58,7 +58,7 @@ class ContentHealthCheck extends Command
         $moderatorNeverRan = 0;
 
         Post::where('status', 'draft')
-            ->select('id', 'content', 'moderation_status', 'series_title', 'ai_moderation_check')
+            ->select('id', 'content', 'moderation_status', 'series_title', 'ai_moderation_check', 'quality_report')
             ->chunk(200, function ($drafts) use (&$publishablePosts, &$publishableTutorials, &$pendingOnly, &$moderatorNeverRan) {
                 foreach ($drafts as $draft) {
                     $failures = $this->gate->failures($draft);

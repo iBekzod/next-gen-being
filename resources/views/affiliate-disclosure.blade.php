@@ -33,19 +33,6 @@
             </ul>
 
             <p>Questions: <a href="{{ route('contact') }}">contact us</a>.</p>
-
-            <hr>
-
-            <h2 id="uz" lang="uz">Hamkorlik havolalari haqida (o'zbekcha)</h2>
-            <div lang="uz">
-                <p>Saytdagi ba'zi havolalar <strong>hamkorlik (affiliate) havolalari</strong>. Ular orqali o'tib pullik tarifga obuna bo'lsangiz, xizmat egasi bizga komissiya to'lashi mumkin. <strong>Siz uchun narx o'zgarmaydi</strong> - ba'zan yangi foydalanuvchiga chegirma ham bo'ladi.</p>
-                <ul>
-                    <li>Bunday havolalar saytimizdagi <code>/go/...</code> manzili orqali o'tadi va keyin xizmat sahifasiga yo'naltiradi.</li>
-                    <li>Bosishda faqat havola nomi, qaysi sahifadan kelganingiz, vaqt, brauzer turi va IP manzilingizning qaytarib bo'lmaydigan xeshi saqlanadi.</li>
-                    <li>Biz o'zimiz sinab ko'rgan vositalarni tavsiya qilamiz va kamchiliklarini ham ochiq yozamiz. Komissiya vosita maqolaga kiradimi-yo'qmi, shuni hal qilmaydi.</li>
-                </ul>
-                <p><a href="{{ route('uz.index') }}">O'zbekcha maqolalarga qaytish</a></p>
-            </div>
         </div>
     </div>
 </div>

@@ -34,16 +34,6 @@ class SeoService
                 ->setPriority(0.9)
         );
 
-        // Uzbek-language section (/uz)
-        if (\Illuminate\Support\Facades\Route::has('uz.index')) {
-            $sitemap->add(
-                Url::create(route('uz.index'))
-                    ->setLastModificationDate(now())
-                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
-                    ->setPriority(0.8)
-            );
-        }
-
         // Add published posts (exclude noindex'd ones — they shouldn't be in the sitemap)
         Post::published()
             ->where('noindex', false)

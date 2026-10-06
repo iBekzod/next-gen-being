@@ -55,6 +55,12 @@ class PublishGate
             $failures[] = 'moderation_pending';
         }
 
+        // Editor review (blog-bot quality_gate.py). Structural gates alone
+        // let generic, padded drafts through; see config/content.php.
+        if (config('content.require_quality_review') && ! data_get($post->quality_report, 'passed')) {
+            $failures[] = 'no_quality_review';
+        }
+
         return $failures;
     }
 
