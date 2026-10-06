@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="themeSwitcher()" x-init="init()"
+<html lang="@yield('html_lang', str_replace('_', '-', app()->getLocale()))" x-data="themeSwitcher()" x-init="init()"
     x-effect="document.documentElement.classList.toggle('dark', darkMode)">
 
 <head>
@@ -24,8 +24,7 @@
         window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     </script>
 
-    <title>@yield('title', setting('site_name', 'NextGenBeing'))</title>
-    <meta name="description" content="@yield('description', setting('site_description'))">
+    {{-- <title> and meta description are emitted once, below, from $pageTitle/$pageDescription. --}}
 
     <!-- Favicon and Site Icons -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -162,17 +161,22 @@
     @php
         $siteName = setting('site_name', config('app.name'));
         $siteUrl = rtrim(config('app.url', url('/')), '/');
-        $pageTitle = trim(strip_tags($__env->yieldContent('title', $siteName)));
+        // @section('x', 'value') stores the value already HTML-escaped; decode it
+        // here so {{ }} below escapes exactly once. Without this every apostrophe
+        // (all Uzbek o'/g' text) showed up as a literal "&#039;" in titles.
+        $__decode = fn ($v) => html_entity_decode((string) $v, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $pageTitle = trim($__decode(strip_tags($__env->yieldContent('title', $siteName))));
         $pageTitle = $pageTitle !== '' ? $pageTitle : $siteName;
-        $pageDescription = trim(strip_tags($__env->yieldContent('description', setting('site_description', 'Insights for ambitious builders.'))));
-        $pageKeywords = trim($__env->yieldContent('keywords', setting('default_meta_keywords', 'NextGenBeing, AI workflows, startup playbooks')));
-        $pageAuthor = trim($__env->yieldContent('author', setting('company_name', $siteName)));
+        $pageDescription = trim($__decode(strip_tags($__env->yieldContent('description', setting('site_description', 'Insights for ambitious builders.')))));
+        $pageKeywords = trim($__decode($__env->yieldContent('keywords', setting('default_meta_keywords', 'NextGenBeing, AI workflows, startup playbooks'))));
+        $pageAuthor = trim($__decode($__env->yieldContent('author', setting('company_name', $siteName))));
         $pageType = trim($__env->yieldContent('og_type', 'website'));
         $robots = trim($__env->yieldContent('robots', 'index, follow'));
         $shareImage = $__env->yieldContent('share_image', setting('default_meta_image', setting('site_logo', asset('uploads/logo.png'))));
         $canonical = $__env->yieldContent('canonical', url()->current());
-        $locale = str_replace('_', '-', app()->getLocale());
-        $ogLocale = str_replace('-', '_', $locale);
+        $locale = trim($__env->yieldContent('html_lang', str_replace('_', '-', app()->getLocale())));
+        // og:locale wants language_TERRITORY; Uzbek pages (lang="uz") are uz_UZ.
+        $ogLocale = $locale === 'uz' ? 'uz_UZ' : str_replace('-', '_', $locale);
         $twitterHandle = ltrim((string) setting('social_twitter_handle'), '@');
         $socialLinks = setting('social_links', []);
         $sameAs = [];
@@ -322,6 +326,12 @@
                             <a href="{{ route('posts.index') }}"
                                 class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
                                 Articles
+                            </a>
+
+                            <!-- Uzbek section -->
+                            <a href="{{ route('uz.index') }}" hreflang="uz" lang="uz"
+                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-700 transition-colors border-b-2 border-transparent dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600">
+                                O'zbekcha
                             </a>
 
                             <!-- Marketplace -->
@@ -603,6 +613,10 @@
                             class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Tutorials</a>
                     </div>
 
+                    <!-- Uzbek section -->
+                    <a href="{{ route('uz.index') }}" hreflang="uz" lang="uz"
+                            class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">O'zbekcha maqolalar</a>
+
                     <!-- Authors -->
                     <a href="{{ route('authors.index') }}"
                             class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Authors</a>
@@ -743,6 +757,8 @@
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Learning Paths</a></li>
                             <li><a href="{{ route('tutorial-collections.index') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Collections</a></li>
+                            <li><a href="{{ route('uz.index') }}" hreflang="uz" lang="uz"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">O'zbekcha maqolalar</a></li>
                             <li><a href="{{ route('about') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">About
                                     Us</a></li>
@@ -779,6 +795,8 @@
                                     Policy</a></li>
                             <li><a href="{{ route('terms') }}"
                                     class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Terms &amp; Conditions</a></li>
+                            <li><a href="{{ route('affiliate.disclosure') }}"
+                                    class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Affiliate Disclosure</a></li>
                         </ul>
                     </div>
                 </div>

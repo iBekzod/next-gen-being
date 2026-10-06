@@ -5,6 +5,7 @@
 User-agent: *
 Disallow: /admin
 Disallow: /api/
+Disallow: /go/
 Disallow: /dashboard
 Disallow: /posts/*/edit
 Disallow: /dashboard/*

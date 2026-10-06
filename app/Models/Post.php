@@ -176,6 +176,13 @@ class Post extends Model implements HasMedia
             },
             $html
         );
+        // Partner links (/go/<slug>) must be marked sponsored for search engines
+        // and open in a new tab; the redirect itself is logged by GoController.
+        $html = preg_replace(
+            '#<a href="((?:https?://[^/"]+)?/go/[a-z0-9-]+[^"]*)"#i',
+            '<a href="$1" rel="sponsored nofollow noopener" target="_blank"',
+            $html
+        );
         return $this->renderedCache = ['html' => $html, 'toc' => $toc];
     }
 

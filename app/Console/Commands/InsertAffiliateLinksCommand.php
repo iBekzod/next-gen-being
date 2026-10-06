@@ -19,7 +19,7 @@ class InsertAffiliateLinksCommand extends Command
     {
         return array_filter(
             config('affiliate.links', []),
-            fn ($c) => !empty($c['url'])
+            fn ($c) => !empty($c['url']) && !empty($c['patterns'])
         );
     }
 
@@ -74,9 +74,11 @@ class InsertAffiliateLinksCommand extends Command
                 // Check if pattern exists and not already linked
                 if (preg_match($regex, $updatedContent)) {
                     // Only add link to first mention of each tool
-                    if (!str_contains($updatedContent, $config['url'])) {
-                        // Replace first occurrence only
-                        $replacement = "[{$config['anchor']}]({$config['url']})";
+                    $goUrl = route('go', $tool);
+                    if (!str_contains($updatedContent, $config['url']) && !str_contains($updatedContent, '/go/' . $tool . ')')) {
+                        // Replace first occurrence only. Link through /go/<tool> so the
+                        // click is logged and the program can be swapped in .env.
+                        $replacement = "[{$config['anchor']}]({$goUrl})";
                         $updatedContent = preg_replace($regex, $replacement, $updatedContent, 1);
                         $linksAdded++;
                         break; // Move to next tool

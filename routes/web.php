@@ -24,6 +24,14 @@ Route::get('/', [LandingPageController::class, 'index'])->name('home');
 Route::get('/about', function () {
     return view('pages.about');
 })->name('about');
+
+// Uzbek-language section + partner-link redirector (see GoController).
+Route::get('/uz', [\App\Http\Controllers\UzbekController::class, 'index'])->name('uz.index');
+Route::get('/go/{slug}', \App\Http\Controllers\GoController::class)
+    ->where('slug', '[a-z0-9-]{1,64}')
+    ->middleware('throttle:60,1')
+    ->name('go');
+Route::view('/affiliate-disclosure', 'affiliate-disclosure')->name('affiliate.disclosure');
 Route::get('/write', [WriteEarnController::class, 'show'])->name('write.earn');
 Route::post('/landing/subscribe', [LandingPageController::class, 'store'])->name('landing.subscribe');
 Route::get('/health', HealthCheckController::class)->name('health.check');

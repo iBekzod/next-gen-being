@@ -4,6 +4,7 @@
 @section('description', $post->getSeoDescription())
 @section('keywords', $post->getSeoKeywords())
 @section('og_type', 'article')
+@section('html_lang', $post->base_language ?: 'en')
 
 @php
     $shareImage = $post->featured_image ? url($post->featured_image) : setting('default_meta_image', setting('site_logo', asset('uploads/logo.png')));
@@ -25,6 +26,9 @@
 
 
 @push('head')
+@if($post->base_language === 'uz')
+<link rel="alternate" hreflang="uz" href="{{ route('posts.show', $post->slug) }}">
+@endif
 <meta property="article:author" content="{{ $post->author->name }}">
 <meta property="article:published_time" content="{{ optional($post->published_at)->toIso8601String() }}">
 <meta property="article:modified_time" content="{{ optional($post->updated_at)->toIso8601String() }}">
@@ -177,10 +181,17 @@ $breadcrumbItems[] = [
 @section('content')
 <section class="bg-slate-950 text-white">
     <div class="px-6 py-16 mx-auto max-w-6xl">
+        @if($post->base_language === 'uz')
+        <a href="{{ route('uz.index') }}" class="inline-flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-blue-200 hover:text-white">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Barcha o'zbekcha maqolalar
+        </a>
+        @else
         <a href="{{ url()->previous() }}" class="inline-flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-blue-200 hover:text-white">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to discoveries
         </a>
+        @endif
 
         @if($post->isPartOfSeries())
         <div class="inline-flex items-center gap-2 px-3 py-1 mt-4 text-xs font-semibold tracking-wide uppercase rounded-full bg-blue-500/20 text-blue-200">
