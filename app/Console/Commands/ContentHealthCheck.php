@@ -80,11 +80,29 @@ class ContentHealthCheck extends Command
             });
 
         if ($publishablePosts < self::MIN_PUBLISHABLE_BACKLOG) {
-            $problems['empty_publishable_post_backlog'] = "Darvozadan o'tadigan post draftlari: {$publishablePosts}";
+            $daysSinceLastPost = $lastPost ? Carbon::parse($lastPost)->diffInDays(now()) : 999;
+            $daysUntilNextPost = max(0, PublishGate::POST_INTERVAL_DAYS - $daysSinceLastPost);
+            
+            // Faqat nashr vaqti yaqinlashganda (<= 2 kun qolganda) va zaxira mutlaqo bo'sh bo'lsa xato beramiz.
+            // Yangi quvurda (blog-bot + inson tekshiruvi) katta zaxira ushlab turish qiyin va doimiy 0 zaxira
+            // false alarm beradi.
+            if ($publishablePosts === 0 && $daysUntilNextPost <= 2) {
+                $problems['empty_publishable_post_backlog'] = "Darvozadan o'tadigan post draftlari: 0 (Keyingi nashrga {$daysUntilNextPost} kun qoldi, zaxira bo'sh!)";
+            } elseif ($publishablePosts === 0) {
+                // Nashrga hali vaqt bor, shuning uchun faqat logga yozamiz, xato bermaymiz.
+                Log::info("Post zaxirasi bo'sh, lekin nashrga yana {$daysUntilNextPost} kun bor.");
+            }
         }
 
         if ($publishableTutorials < self::MIN_PUBLISHABLE_BACKLOG) {
-            $problems['empty_publishable_tutorial_backlog'] = "Darvozadan o'tadigan tutorial draftlari: {$publishableTutorials}";
+            $daysSinceLastTutorial = $lastTutorial ? Carbon::parse($lastTutorial)->diffInDays(now()) : 999;
+            $daysUntilNextTutorial = max(0, PublishGate::TUTORIAL_INTERVAL_DAYS - $daysSinceLastTutorial);
+            
+            if ($publishableTutorials === 0 && $daysUntilNextTutorial <= 2) {
+                $problems['empty_publishable_tutorial_backlog'] = "Darvozadan o'tadigan tutorial draftlari: 0 (Keyingi nashrga {$daysUntilNextTutorial} kun qoldi, zaxira bo'sh!)";
+            } elseif ($publishableTutorials === 0) {
+                Log::info("Tutorial zaxirasi bo'sh, lekin nashrga yana {$daysUntilNextTutorial} kun bor.");
+            }
         }
 
         if ($pendingOnly > 0) {
