@@ -45,7 +45,7 @@
 
             <div class="text-center">
                 <span class="inline-flex items-center gap-1 px-3 py-1 mb-4 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full dark:bg-blue-900/40 dark:text-blue-300">
-                    🎁 Free guide
+                    <x-icon name="gift" class="w-3.5 h-3.5 mr-1"/> Free guide
                 </span>
                 <h3 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Before you go…</h3>
                 <p class="mb-6 text-gray-600 dark:text-gray-400">

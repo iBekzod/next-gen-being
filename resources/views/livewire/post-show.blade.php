@@ -314,7 +314,7 @@
     <div class="my-12 p-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
         <div class="max-w-2xl mx-auto text-center">
             <span class="inline-flex items-center gap-1 px-3 py-1 mb-4 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full dark:bg-blue-900/40 dark:text-blue-300">
-                🎁 Free guide
+                <x-icon name="gift" class="w-3.5 h-3.5 mr-1"/> Free guide
             </span>
             <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 Get the AI-Assisted Developer's Field Guide
