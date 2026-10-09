@@ -29,10 +29,10 @@
 
                     <div class="flex gap-4 mt-4">
                         <button wire:click="likePost({{ $post->id }})" class="text-red-500 hover:text-red-600">
-                            ❤️ {{ $post->likes_count ?? 0 }}
+                            <x-icon name="heart" class="w-4 h-4 mr-1"/> {{ $post->likes_count ?? 0 }}
                         </button>
                         <button class="text-blue-500 hover:text-blue-600">
-                            💬 {{ $post->comments_count ?? 0 }}
+                            <x-icon name="chat" class="w-4 h-4 mr-1"/> {{ $post->comments_count ?? 0 }}
                         </button>
                         <button wire:click="bookmarkPost({{ $post->id }})" class="text-yellow-500 hover:text-yellow-600">
                             🔖

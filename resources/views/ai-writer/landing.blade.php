@@ -10,7 +10,7 @@
     <section class="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
         <div class="max-w-5xl mx-auto px-6 py-20 text-center">
             <span class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full dark:bg-blue-900/40 dark:text-blue-300">
-                ✨ AI Writing Studio
+                <x-icon name="sparkles" class="w-4 h-4 mr-1"/> AI Writing Studio
             </span>
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                 Publish-ready content,<br class="hidden sm:block"> generated in minutes
@@ -56,15 +56,15 @@
             <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">Everything you need to publish consistently</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
                 @foreach([
-                    ['📝', 'Long-form articles', 'Structured, on-topic drafts — not thin autocomplete.'],
-                    ['🖼️', 'Matching images', 'Auto-generated or sourced visuals for every post.'],
-                    ['🔍', 'SEO-ready', 'Headings, meta, and internal structure built in.'],
-                    ['🔑', 'Bring your own keys', 'Start free using your own Groq / Unsplash keys.'],
-                    ['⚡', 'GPT-4 + DALL·E 3', 'Premium plans unlock the strongest models.'],
-                    ['🎛️', 'You stay in control', 'Every draft is editable before it goes live.'],
-                ] as [$icon, $title, $body])
+                    ['document-text', 'Long-form articles', 'Structured, on-topic drafts — not thin autocomplete.'],
+                    ['photo', 'Matching images', 'Auto-generated or sourced visuals for every post.'],
+                    ['magnifying-glass', 'SEO-ready', 'Headings, meta, and internal structure built in.'],
+                    ['key', 'Bring your own keys', 'Start free using your own Groq / Unsplash keys.'],
+                    ['bolt', 'GPT-4 + DALL·E 3', 'Premium plans unlock the strongest models.'],
+                    ['cog', 'You stay in control', 'Every draft is editable before it goes live.'],
+                ] as [$iconName, $title, $body])
                 <div class="flex gap-4">
-                    <div class="text-2xl">{{ $icon }}</div>
+                    <div class="text-2xl"><x-icon :name="$iconName" class="w-8 h-8 text-blue-600"/></div>
                     <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white">{{ $title }}</h3>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $body }}</p>

@@ -2,7 +2,7 @@
     <!-- Comments Header -->
     <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <span>💬</span> Editorial Comments
+            <span><x-icon name="chat" class="w-4 h-4 mr-1"/></span> Editorial Comments
             @if(count($comments) > 0)
                 <span class="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold rounded-full">
                     {{ count($comments) }}
@@ -137,7 +137,7 @@
                                 wire:click="$set('replyingTo', {{ $comment['id'] }})"
                                 class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                             >
-                                💬 Reply
+                                <x-icon name="chat" class="w-4 h-4 mr-1"/> Reply
                             </button>
                         @endif
 

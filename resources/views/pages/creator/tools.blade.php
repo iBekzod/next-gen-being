@@ -15,7 +15,7 @@
         <!-- Content Ideas Tool -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
             <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
-                <h3 class="text-2xl font-bold">💡 Content Ideas</h3>
+                <h3 class="text-2xl font-bold"><x-icon name="light-bulb" class="w-4 h-4 mr-1"/> Content Ideas</h3>
             </div>
             <div class="p-6">
                 <p class="text-gray-600 mb-4">Get AI-powered content ideas based on your niche and audience.</p>

@@ -137,7 +137,7 @@ function handleVideoGeneration(e) {
     closePublishModal();
 
     // Show notification
-    showNotification('✨ Video generation started!', 'Your post is being converted to a video. You\'ll be notified when it\'s ready.');
+    showNotification('<x-icon name="sparkles" class="w-4 h-4 mr-1"/> Video generation started!', 'Your post is being converted to a video. You\'ll be notified when it\'s ready.');
 
     // Trigger API call to start video generation
     fetch(`/api/videos/generate`, {
@@ -154,7 +154,7 @@ function handleVideoGeneration(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('✨ Video generation in progress', 'Check your dashboard for updates.');
+            showNotification('<x-icon name="sparkles" class="w-4 h-4 mr-1"/> Video generation in progress', 'Check your dashboard for updates.');
         }
     })
     .catch(error => console.error('Video generation error:', error));

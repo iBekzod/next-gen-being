@@ -41,7 +41,7 @@
         <div class="max-w-7xl mx-auto">
             <div class="text-center">
                 <div class="inline-block mb-4 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                    🚀 Platform Launching Soon
+                    <x-icon name="rocket" class="w-4 h-4 mr-1"/> Platform Launching Soon
                 </div>
                 <h2 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6">
                     Elevate Your Mind.<br/>
@@ -102,7 +102,7 @@
                 </div>
 
                 <div class="p-8 rounded-2xl border-2 border-gray-200 hover:border-indigo-300 transition">
-                    <div class="text-4xl mb-4">💡</div>
+                    <div class="text-4xl mb-4"><x-icon name="light-bulb" class="w-4 h-4 mr-1"/></div>
                     <h4 class="text-xl font-bold text-gray-900 mb-3">Tutorials & Guides</h4>
                     <p class="text-gray-600">
                         Step-by-step tutorials on practical skills, tools, and techniques for personal transformation.

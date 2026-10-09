@@ -23,7 +23,7 @@
 
             <!-- Content Types -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-bold mb-4">📖 Content Type Preferences</h3>
+                <h3 class="text-lg font-bold mb-4"><x-icon name="book-open" class="w-4 h-4 mr-1"/> Content Type Preferences</h3>
                 <div class="space-y-3">
                     @foreach(['article' => 'Articles', 'tutorial' => 'Tutorials', 'story' => 'Stories', 'news' => 'News'] as $type => $label)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded">

@@ -23,7 +23,7 @@
                     <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Learning Streak</p>
                     <p class="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-1">{{ $streak['current'] ?? 0 }}</p>
                 </div>
-                <span class="text-3xl">🔥</span>
+                <span class="text-3xl"><x-icon name="fire" class="w-4 h-4 mr-1"/></span>
             </div>
             <p class="text-sm text-gray-700 dark:text-gray-300">{{ $streak['status'] ?? 'No streak yet' }}</p>
             <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">Best: {{ $streak['best'] ?? 0 }} days</p>
@@ -63,7 +63,7 @@
                     <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">This Week</p>
                     <p class="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-1">{{ $velocity['this_week'] ?? 0 }}</p>
                 </div>
-                <span class="text-3xl">🚀</span>
+                <span class="text-3xl"><x-icon name="rocket" class="w-4 h-4 mr-1"/></span>
             </div>
             <p class="text-sm text-gray-700 dark:text-gray-300">Parts completed</p>
         </div>
@@ -159,7 +159,7 @@
         <!-- Recommendations Impact -->
         <div class="rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-slate-800 dark:to-slate-900 border border-amber-200 dark:border-slate-700 p-6 shadow-lg">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <span>💡</span>
+                <span><x-icon name="light-bulb" class="w-4 h-4 mr-1"/></span>
                 AI Recommendations
             </h3>
             <div class="space-y-3">

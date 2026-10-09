@@ -269,9 +269,9 @@
                         <!-- Meta Info -->
                         <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-3">
-                                <span>👁️ {{ number_format($post->views_count) }}</span>
-                                <span>❤️ {{ number_format($post->likes_count) }}</span>
-                                <span>💬 {{ $post->comments_count }}</span>
+                                <span><x-icon name="eye" class="w-4 h-4 mr-1"/> {{ number_format($post->views_count) }}</span>
+                                <span><x-icon name="heart" class="w-4 h-4 mr-1"/> {{ number_format($post->likes_count) }}</span>
+                                <span><x-icon name="chat" class="w-4 h-4 mr-1"/> {{ $post->comments_count }}</span>
                             </div>
                             <span>{{ $post->read_time }} min</span>
                         </div>

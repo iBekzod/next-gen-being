@@ -500,7 +500,7 @@
     <!-- Recommended For You -->
     @if(auth()->check() && $recommendedPosts->count() > 0)
     <section class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700">
-        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">✨ Recommended For You</h2>
+        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white"><x-icon name="sparkles" class="w-4 h-4 mr-1"/> Recommended For You</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             @foreach($recommendedPosts as $recommendedPost)
             <article class="group p-5 bg-gray-50 dark:bg-slate-900 rounded-xl transition-all duration-300 hover:-translate-y-2 hover:bg-white" style="border: 3px solid #616161; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);">

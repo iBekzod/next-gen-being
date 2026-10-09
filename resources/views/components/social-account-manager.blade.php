@@ -86,7 +86,7 @@
     <!-- Security Notice -->
     <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <p class="text-sm text-blue-900 dark:text-blue-200">
-            <strong>💡 Tip:</strong> Connecting your accounts allows you to sign in with any connected provider. You can manage all connected accounts here.
+            <strong><x-icon name="light-bulb" class="w-4 h-4 mr-1"/> Tip:</strong> Connecting your accounts allows you to sign in with any connected provider. You can manage all connected accounts here.
         </p>
     </div>
 </div>

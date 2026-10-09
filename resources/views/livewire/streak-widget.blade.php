@@ -1,5 +1,5 @@
 <div class="bg-white rounded-lg shadow-md p-6">
-    <h3 class="text-lg font-bold mb-4">🔥 Your Streaks</h3>
+    <h3 class="text-lg font-bold mb-4"><x-icon name="fire" class="w-4 h-4 mr-1"/> Your Streaks</h3>
 
     @if($isLoading)
         <div class="text-center text-gray-500">Loading...</div>

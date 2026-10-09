@@ -13,7 +13,7 @@
     <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-700 dark:to-slate-700 border-b border-gray-200 dark:border-slate-700">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <span class="text-2xl">💡</span>
+                <span class="text-2xl"><x-icon name="light-bulb" class="w-4 h-4 mr-1"/></span>
                 AI-Powered Recommendations
             </h2>
             <span class="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-bold">
@@ -43,7 +43,7 @@
                             'review' => '🔄',
                         ];
                     @endphp
-                    <span class="text-2xl">{{ $iconMap[$recommendation->recommendation_type] ?? '💡' }}</span>
+                    <span class="text-2xl">{{ $iconMap[$recommendation->recommendation_type] ?? '<x-icon name="light-bulb" class="w-4 h-4 mr-1"/>' }}</span>
                 </div>
 
                 <!-- Content -->

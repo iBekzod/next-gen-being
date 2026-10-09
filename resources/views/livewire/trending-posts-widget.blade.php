@@ -2,7 +2,7 @@
     <!-- Header -->
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div class="flex items-center space-x-2">
-            <span class="text-2xl">🔥</span>
+            <span class="text-2xl"><x-icon name="fire" class="w-4 h-4 mr-1"/></span>
             <h2 class="text-lg font-bold text-gray-900 dark:text-white">Trending Now</h2>
         </div>
 
@@ -56,13 +56,13 @@
                         <!-- Engagement Stats -->
                         <div class="mt-3 flex items-center space-x-4 text-xs">
                             <span class="text-gray-600 dark:text-gray-400">
-                                👁️ {{ number_format($post['views']) }}
+                                <x-icon name="eye" class="w-4 h-4 mr-1"/> {{ number_format($post['views']) }}
                             </span>
                             <span class="text-gray-600 dark:text-gray-400">
-                                ❤️ {{ number_format($post['likes']) }}
+                                <x-icon name="heart" class="w-4 h-4 mr-1"/> {{ number_format($post['likes']) }}
                             </span>
                             <span class="text-gray-600 dark:text-gray-400">
-                                💬 {{ number_format($post['comments']) }}
+                                <x-icon name="chat" class="w-4 h-4 mr-1"/> {{ number_format($post['comments']) }}
                             </span>
                         </div>
                     </div>
@@ -74,7 +74,7 @@
                             class="w-20 h-20 object-cover rounded flex-shrink-0">
                     @else
                         <div class="w-20 h-20 rounded bg-gradient-to-br from-blue-400 to-blue-600 flex-shrink-0 flex items-center justify-center">
-                            <span class="text-2xl">📝</span>
+                            <span class="text-2xl"><x-icon name="document-text" class="w-4 h-4 mr-1"/></span>
                         </div>
                     @endif
                 </div>

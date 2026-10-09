@@ -39,7 +39,7 @@
 
         <!-- Drafts -->
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-bold mb-4">📝 Drafts</h3>
+            <h3 class="text-lg font-bold mb-4"><x-icon name="document-text" class="w-4 h-4 mr-1"/> Drafts</h3>
             @forelse($drafts as $draft)
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded mb-2">
                     <p class="font-semibold">{{ Str::limit($draft->title, 40) }}</p>

@@ -853,6 +853,7 @@
   }
 
   .card:hover {
+    transform: translateY(-2px);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
     border-color: #bdbdbd;
   }
@@ -1081,4 +1082,15 @@
 
 
 
+
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 

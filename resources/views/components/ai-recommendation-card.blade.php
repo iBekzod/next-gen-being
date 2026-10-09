@@ -21,7 +21,7 @@
         'review' => 'emerald',
     ];
 
-    $icon = $iconMap[$recommendation->recommendation_type] ?? '💡';
+    $icon = $iconMap[$recommendation->recommendation_type] ?? '<x-icon name="light-bulb" class="w-4 h-4 mr-1"/>';
     $color = $colorMap[$recommendation->recommendation_type] ?? 'gray';
     $colorClasses = match($color) {
         'blue' => 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
@@ -53,7 +53,7 @@
             <!-- Reason -->
             @if($recommendation->reason)
             <div class="inline-flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700 text-xs text-gray-600 dark:text-gray-400 mb-3">
-                <span>💡</span>
+                <span><x-icon name="light-bulb" class="w-4 h-4 mr-1"/></span>
                 <span class="line-clamp-1">{{ $recommendation->reason }}</span>
             </div>
             @endif

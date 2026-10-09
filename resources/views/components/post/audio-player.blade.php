@@ -15,11 +15,11 @@
 
         <!-- Play/Pause Button -->
         <button @click="togglePlay()"
-                class="flex items-center justify-center flex-shrink-0 w-10 h-10 text-white transition-all transform bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow hover:shadow-lg hover:scale-105">
-            <svg x-show="!isPlaying" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                class="relative flex items-center justify-center flex-shrink-0 w-10 h-10 text-white transition-all transform bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow hover:shadow-lg hover:scale-105">
+            <svg x-show="!isPlaying" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" class="w-5 h-5 ml-0.5 absolute" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
             </svg>
-            <svg x-show="isPlaying" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <svg x-show="isPlaying" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" class="w-5 h-5 absolute" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
             </svg>
         </button>

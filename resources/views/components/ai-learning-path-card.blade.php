@@ -76,7 +76,7 @@
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $nextItem->title }}</p>
                 @if($nextItem->estimated_duration_minutes)
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">⏱️ {{ $nextItem->getEstimatedTimeLabel() }}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1"><x-icon name="clock" class="w-4 h-4 mr-1"/> {{ $nextItem->getEstimatedTimeLabel() }}</p>
                 @endif
             </div>
         </div>
