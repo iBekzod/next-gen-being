@@ -23,13 +23,13 @@
                     }}">
                         @switch($activity['type'] ?? 'view')
                             @case('view')
-                                <x-icon name="eye" class="w-4 h-4 mr-1"/>
+                                <x-ui-icon name="eye" class="w-4 h-4 mr-1"/>
                                 @break
                             @case('comment')
-                                <x-icon name="chat" class="w-4 h-4 mr-1"/>
+                                <x-ui-icon name="chat" class="w-4 h-4 mr-1"/>
                                 @break
                             @case('like')
-                                <x-icon name="heart" class="w-4 h-4 mr-1"/>
+                                <x-ui-icon name="heart" class="w-4 h-4 mr-1"/>
                                 @break
                             @case('share')
                                 📤

@@ -63,7 +63,7 @@
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="text-4xl font-bold text-white">{{ $stats['total_hours_spent'] }}</div>
                     <p class="text-sm text-white/90 mt-1">Hours Learning</p>
-                    <div class="mt-3 text-xs text-white/80 font-medium"><x-icon name="clock" class="w-4 h-4 mr-1"/> Keep it up!</div>
+                    <div class="mt-3 text-xs text-white/80 font-medium"><x-ui-icon name="clock" class="w-4 h-4 mr-1"/> Keep it up!</div>
                 </div>
             </div>
         </div>
@@ -137,7 +137,7 @@
         <div class="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
         <div class="relative z-10 flex items-center justify-between">
             <div>
-                <h3 class="text-2xl font-bold text-white mb-2"><x-icon name="rocket" class="w-4 h-4 mr-1"/> Ready to Start Learning?</h3>
+                <h3 class="text-2xl font-bold text-white mb-2"><x-ui-icon name="rocket" class="w-4 h-4 mr-1"/> Ready to Start Learning?</h3>
                 <p class="text-blue-100">Explore hundreds of tutorials and start your learning journey</p>
             </div>
             <a href="{{ route('tutorials.index') }}" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 hover:scale-105 transition-all shadow-lg">
@@ -159,7 +159,7 @@
                     📚 {{ 3 - $stats['total_achievements'] }} badges to go
                 </span>
                 <span class="inline-flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                    <x-icon name="fire" class="w-4 h-4 mr-1"/> {{ $stats['total_hours_spent'] === 0 ? 'Start now' : 'You\'re on a roll!' }}
+                    <x-ui-icon name="fire" class="w-4 h-4 mr-1"/> {{ $stats['total_hours_spent'] === 0 ? 'Start now' : 'You\'re on a roll!' }}
                 </span>
             </div>
         </div>

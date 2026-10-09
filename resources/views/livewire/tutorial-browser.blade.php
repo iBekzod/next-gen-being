@@ -49,7 +49,7 @@
 
                 <div class="space-y-2 mb-4 text-sm text-gray-600">
                     <p>📚 {{ $tutorial['lesson_count'] ?? 0 }} lessons</p>
-                    <p><x-icon name="clock" class="w-4 h-4 mr-1"/> {{ $tutorial['duration'] ?? 'Unknown' }} hours</p>
+                    <p><x-ui-icon name="clock" class="w-4 h-4 mr-1"/> {{ $tutorial['duration'] ?? 'Unknown' }} hours</p>
                     <p>👤 By {{ $tutorial['author'] ?? 'Admin' }}</p>
                 </div>
 

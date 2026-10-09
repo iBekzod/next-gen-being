@@ -13,7 +13,7 @@
                     @endif
                 </p>
             </div>
-            <div class="text-6xl opacity-20"><x-icon name="eye" class="w-4 h-4 mr-1"/></div>
+            <div class="text-6xl opacity-20"><x-ui-icon name="eye" class="w-4 h-4 mr-1"/></div>
         </div>
     </div>
 
@@ -126,7 +126,7 @@
     @else
     <div class="text-center py-8 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700">
         <p class="text-gray-600 dark:text-gray-400">
-            <span class="text-2xl"><x-icon name="book-open" class="w-4 h-4 mr-1"/></span><br>
+            <span class="text-2xl"><x-ui-icon name="book-open" class="w-4 h-4 mr-1"/></span><br>
             No one is reading this post right now. Be the first to share it!
         </p>
     </div>

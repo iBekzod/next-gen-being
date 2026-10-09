@@ -46,7 +46,7 @@
                 <h2 class="text-xl font-bold mb-4">Creator Tools</h2>
                 <div class="space-y-3">
                     <a href="/dashboard/ideas" class="block p-3 bg-blue-50 hover:bg-blue-100 rounded text-blue-700 font-semibold">
-                        <x-icon name="light-bulb" class="w-4 h-4 mr-1"/> Content Ideas
+                        <x-ui-icon name="light-bulb" class="w-4 h-4 mr-1"/> Content Ideas
                     </a>
                     <a href="/dashboard/seo" class="block p-3 bg-green-50 hover:bg-green-100 rounded text-green-700 font-semibold">
                         🔍 SEO Analyzer

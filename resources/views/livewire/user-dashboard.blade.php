@@ -231,9 +231,9 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         <div class="flex items-center space-x-4">
-                            <span title="Views"><x-icon name="eye" class="w-4 h-4 mr-1"/> {{ number_format($post->views_count) }}</span>
-                            <span title="Likes"><x-icon name="heart" class="w-4 h-4 mr-1"/> {{ number_format($post->likes_count) }}</span>
-                            <span title="Comments"><x-icon name="chat" class="w-4 h-4 mr-1"/> {{ number_format($post->comments_count) }}</span>
+                            <span title="Views"><x-ui-icon name="eye" class="w-4 h-4 mr-1"/> {{ number_format($post->views_count) }}</span>
+                            <span title="Likes"><x-ui-icon name="heart" class="w-4 h-4 mr-1"/> {{ number_format($post->likes_count) }}</span>
+                            <span title="Comments"><x-ui-icon name="chat" class="w-4 h-4 mr-1"/> {{ number_format($post->comments_count) }}</span>
                         </div>
                     </td>
                     <td class="px-6 py-4 text-sm font-medium">

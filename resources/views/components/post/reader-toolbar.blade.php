@@ -110,10 +110,10 @@
 
         <!-- Reading Info Bar -->
         <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-4">
-            <span><x-icon name="book-open" class="w-4 h-4 mr-1"/> {{ $post->read_time ?? '5' }} min read</span>
-            <span><x-icon name="document-text" class="w-4 h-4 mr-1"/> {{ number_format(strlen($post->content) / 5) }} words</span>
-            <span><x-icon name="eye" class="w-4 h-4 mr-1"/> Focus mode: <span x-text="isFocusMode ? 'ON' : 'OFF'"></span></span>
-            <span><x-icon name="sparkles" class="w-4 h-4 mr-1"/> Eye care: <span x-text="isEyeFriendlyMode ? 'ON' : 'OFF'"></span></span>
+            <span><x-ui-icon name="book-open" class="w-4 h-4 mr-1"/> {{ $post->read_time ?? '5' }} min read</span>
+            <span><x-ui-icon name="document-text" class="w-4 h-4 mr-1"/> {{ number_format(strlen($post->content) / 5) }} words</span>
+            <span><x-ui-icon name="eye" class="w-4 h-4 mr-1"/> Focus mode: <span x-text="isFocusMode ? 'ON' : 'OFF'"></span></span>
+            <span><x-ui-icon name="sparkles" class="w-4 h-4 mr-1"/> Eye care: <span x-text="isEyeFriendlyMode ? 'ON' : 'OFF'"></span></span>
         </div>
     </div>
 </div>

@@ -103,7 +103,7 @@
 
                 <!-- Help Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/50 rounded-lg p-4">
-                    <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2"><x-icon name="light-bulb" class="w-4 h-4 mr-1"/> Webhook Payload</h4>
+                    <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2"><x-ui-icon name="light-bulb" class="w-4 h-4 mr-1"/> Webhook Payload</h4>
                     <p class="text-sm text-blue-800 dark:text-blue-300">
                         Each webhook event will be sent as a POST request with JSON payload containing event details.
                         Your endpoint should return a 2xx status code to confirm successful delivery.

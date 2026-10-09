@@ -5,7 +5,7 @@
         'pending' => [
             'bg' => 'bg-amber-100 dark:bg-amber-900/30',
             'text' => 'text-amber-800 dark:text-amber-300',
-            'icon' => '<x-icon name="clock" class="w-4 h-4 mr-1"/>',
+            'icon' => '<x-ui-icon name="clock" class="w-4 h-4 mr-1"/>',
             'label' => 'Pending',
         ],
         'processing' => [
@@ -29,7 +29,7 @@
         'draft' => [
             'bg' => 'bg-gray-100 dark:bg-slate-700',
             'text' => 'text-gray-800 dark:text-gray-300',
-            'icon' => '<x-icon name="document-text" class="w-4 h-4 mr-1"/>',
+            'icon' => '<x-ui-icon name="document-text" class="w-4 h-4 mr-1"/>',
             'label' => 'Draft',
         ],
         'published' => [

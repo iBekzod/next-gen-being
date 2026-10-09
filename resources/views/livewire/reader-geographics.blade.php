@@ -117,7 +117,7 @@
     <!-- Insights -->
     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
         <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
-            <span><x-icon name="light-bulb" class="w-4 h-4 mr-1"/></span> Geographic Insights
+            <span><x-ui-icon name="light-bulb" class="w-4 h-4 mr-1"/></span> Geographic Insights
         </h4>
         <ul class="space-y-2 text-sm text-blue-800 dark:text-blue-200">
             @if($readerBreakdown['total'] > 0)
@@ -128,7 +128,7 @@
                 @endif
                 <li>✓ Continue creating quality content to expand your global audience</li>
             @else
-                <li><x-icon name="book-open" class="w-4 h-4 mr-1"/> Insights will appear as readers engage with your post</li>
+                <li><x-ui-icon name="book-open" class="w-4 h-4 mr-1"/> Insights will appear as readers engage with your post</li>
             @endif
         </ul>
     </div>

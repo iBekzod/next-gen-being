@@ -10,7 +10,7 @@
     <section class="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
         <div class="max-w-5xl mx-auto px-6 py-20 text-center">
             <span class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full dark:bg-blue-900/40 dark:text-blue-300">
-                <x-icon name="sparkles" class="w-4 h-4 mr-1"/> AI Writing Studio
+                <x-ui-icon name="sparkles" class="w-4 h-4 mr-1"/> AI Writing Studio
             </span>
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                 Publish-ready content,<br class="hidden sm:block"> generated in minutes
@@ -64,7 +64,7 @@
                     ['cog', 'You stay in control', 'Every draft is editable before it goes live.'],
                 ] as [$iconName, $title, $body])
                 <div class="flex gap-4">
-                    <div class="text-2xl"><x-icon :name="$iconName" class="w-8 h-8 text-blue-600"/></div>
+                    <div class="text-2xl"><x-ui-icon :name="$iconName" class="w-8 h-8 text-blue-600"/></div>
                     <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white">{{ $title }}</h3>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $body }}</p>

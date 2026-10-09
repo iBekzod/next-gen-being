@@ -57,7 +57,7 @@
                                         @case('owner') 👑 Owner @break
                                         @case('editor') ✏️ Editor @break
                                         @case('reviewer') 🔍 Reviewer @break
-                                        @case('viewer') <x-icon name="eye" class="w-4 h-4 mr-1"/> Viewer @break
+                                        @case('viewer') <x-ui-icon name="eye" class="w-4 h-4 mr-1"/> Viewer @break
                                     @endswitch
                                 </span>
                             </td>

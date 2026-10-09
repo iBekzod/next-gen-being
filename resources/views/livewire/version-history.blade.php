@@ -46,7 +46,7 @@
                     @endswitch
                 ">
                     @switch($version['change_type'])
-                        @case('published') <x-icon name="rocket" class="w-4 h-4 mr-1"/> Published @break
+                        @case('published') <x-ui-icon name="rocket" class="w-4 h-4 mr-1"/> Published @break
                         @case('scheduled') 📅 Scheduled @break
                         @case('auto_save') 💾 Auto-saved @break
                         @default 💾 {{ ucfirst(str_replace('_', ' ', $version['change_type'])) }} @break

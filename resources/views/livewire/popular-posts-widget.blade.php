@@ -16,9 +16,9 @@
                 </h4>
 
                 <div class="mt-2 flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                    <span><x-icon name="eye" class="w-4 h-4 mr-1"/> {{ number_format($post['views']) }}</span>
+                    <span><x-ui-icon name="eye" class="w-4 h-4 mr-1"/> {{ number_format($post['views']) }}</span>
                     <span class="mx-1">•</span>
-                    <span><x-icon name="heart" class="w-4 h-4 mr-1"/> {{ number_format($post['likes']) }}</span>
+                    <span><x-ui-icon name="heart" class="w-4 h-4 mr-1"/> {{ number_format($post['likes']) }}</span>
                 </div>
             </a>
         @empty

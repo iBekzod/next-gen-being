@@ -21,7 +21,7 @@
                     <div class="flex-shrink-0 text-lg">
                         @switch($insight['type'])
                             @case('positive')
-                                <x-icon name="sparkles" class="w-4 h-4 mr-1"/>
+                                <x-ui-icon name="sparkles" class="w-4 h-4 mr-1"/>
                                 @break
                             @case('warning')
                                 ⚠️
@@ -30,7 +30,7 @@
                                 ℹ️
                                 @break
                             @default
-                                <x-icon name="light-bulb" class="w-4 h-4 mr-1"/>
+                                <x-ui-icon name="light-bulb" class="w-4 h-4 mr-1"/>
                         @endswitch
                     </div>
                     <div>

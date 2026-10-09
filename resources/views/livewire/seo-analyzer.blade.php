@@ -2,7 +2,7 @@
     <form wire:submit="analyzeSEO" class="space-y-4">
         <!-- Title Input -->
         <div class="bg-white rounded-lg shadow-md p-4">
-            <label class="block text-sm font-medium mb-2"><x-icon name="document-text" class="w-4 h-4 mr-1"/> Title (60 chars max)</label>
+            <label class="block text-sm font-medium mb-2"><x-ui-icon name="document-text" class="w-4 h-4 mr-1"/> Title (60 chars max)</label>
             <input 
                 type="text" 
                 wire:model="title" 
@@ -32,7 +32,7 @@
 
         <!-- Content -->
         <div class="bg-white rounded-lg shadow-md p-4">
-            <label class="block text-sm font-medium mb-2"><x-icon name="document-text" class="w-4 h-4 mr-1"/> Content (minimum 100 chars)</label>
+            <label class="block text-sm font-medium mb-2"><x-ui-icon name="document-text" class="w-4 h-4 mr-1"/> Content (minimum 100 chars)</label>
             <textarea 
                 wire:model="content" 
                 rows="6"
@@ -82,7 +82,7 @@
             <!-- Recommendations -->
             @if($recommendations)
                 <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-                    <h4 class="font-semibold mb-2"><x-icon name="light-bulb" class="w-4 h-4 mr-1"/> Recommendations</h4>
+                    <h4 class="font-semibold mb-2"><x-ui-icon name="light-bulb" class="w-4 h-4 mr-1"/> Recommendations</h4>
                     <ul class="space-y-2">
                         @foreach($recommendations as $rec)
                             <li class="flex items-start gap-2">
