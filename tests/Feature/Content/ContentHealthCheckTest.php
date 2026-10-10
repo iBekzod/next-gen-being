@@ -49,7 +49,8 @@ class ContentHealthCheckTest extends TestCase
         Post::factory()->create([
             'status' => 'published',
             'series_title' => null,
-            'published_at' => now(),
+            // Nashrga 1 kun qoldi (5 kunlik kadensiya): 70f9e70d dan beri faqat <=2 kunda ogohlantiradi.
+            'published_at' => now()->subDays(4),
             'content' => $this->cleanContent(),
         ]);
         Post::factory()->create([
@@ -72,7 +73,8 @@ class ContentHealthCheckTest extends TestCase
     {
         Post::where('status', 'draft')->delete();
 
-        $this->makeFreshPublished();
+        // Tutorial nashriga 1 kun qoldi (7 kunlik kadensiya) - bo'sh zaxira endi shunda ogohlantiradi.
+        $this->makeFreshPublished(tutorialAgeDays: 6);
 
         // Faqat postlar tomonida to'liq zaxira; tutoriallar tomoni bo'sh.
         $this->makePublishableDrafts(3, null);
@@ -121,7 +123,7 @@ class ContentHealthCheckTest extends TestCase
     }
 
     /** Yaqinda nashr qilingan bitta post va bitta tutorial. */
-    private function makeFreshPublished(): void
+    private function makeFreshPublished(int $tutorialAgeDays = 0): void
     {
         Post::factory()->create([
             'status' => 'published',
@@ -133,7 +135,7 @@ class ContentHealthCheckTest extends TestCase
         Post::factory()->create([
             'status' => 'published',
             'series_title' => 'Laravel navbatlari seriyasi',
-            'published_at' => now(),
+            'published_at' => now()->subDays($tutorialAgeDays),
             'content' => $this->cleanContent(),
         ]);
     }
