@@ -14,6 +14,20 @@ class ContentModerationService
     private const RATE_LIMIT_BACKOFF_SECONDS = 4;
 
     /**
+     * Markdown-safe plain text (PublishGate::plainText bilan bir xil qoida).
+     *
+     * strip_tags() markdown uchun yaroqsiz: kod ichidagi `$a<self::X` kabi
+     * probelsiz `<` tugallanmagan teg deb o'qiladi va keyingi `>` gacha (ko'pincha
+     * maqola oxirigacha) hamma matnni o'chiradi. #588/#590 shu sabab `too_short`
+     * bo'lgan (784 so'z vs 2766 haqiqiy). Faqat `<` dan keyin harf kelgan, bir
+     * qatorda yopilgan haqiqiy HTML teglari olib tashlanadi.
+     */
+    private function plainText(string $content): string
+    {
+        return (string) preg_replace('/<\/?[a-zA-Z][^<>\n]{0,200}>/', '', $content);
+    }
+
+    /**
      * Check content for quality, appropriateness, and relevance using AI
      *
      * @param string $title
@@ -30,7 +44,7 @@ class ContentModerationService
     public function moderateContent(string $title, string $content, string $excerpt): array
     {
         // Hard pre-checks: cheap deterministic filters that don't need an AI call
-        $wordCount = str_word_count(strip_tags($content));
+        $wordCount = str_word_count($this->plainText($content));
 
         if ($wordCount < 1500) {
             return [
@@ -85,7 +99,7 @@ POST TO REVIEW:
 
 **Excerpt:** {$excerpt}
 
-**Content:** " . substr(strip_tags($content), 0, 3000) . "
+**Content:** " . substr($this->plainText($content), 0, 3000) . "
 
 MODERATION RULES:
 ✅ APPROVE if:

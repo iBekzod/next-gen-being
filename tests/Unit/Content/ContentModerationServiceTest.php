@@ -95,6 +95,29 @@ class ContentModerationServiceTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_kod_ichidagi_bare_kichik_belgi_sozlarni_yoqotmaydi(): void
+    {
+        config(['services.groq.api_key' => 'test-key']);
+
+        Http::preventStrayRequests();
+        Http::fake(['api.groq.com/*' => Http::response(['choices' => [['message' => ['content' => '{"passed":true,"score":91,"flags":[],"recommendations":[],"reason":"ok"}']]]])]);
+
+        // Kod bloki ichida probelsiz `<` bor, undan keyin ko'p matn — strip_tags
+        // hammasini o'chirib, 'too_short' berardi.
+        $content = "Kirish.
+
+```php
+if (\$e<self::TTL) { return 1; }
+```
+
+" . $this->longContent();
+
+        $result = (new ContentModerationService())->moderateContent('Sarlavha', $content, 'Izoh');
+
+        $this->assertNotContains('too_short', $result['flags']);
+        $this->assertTrue($result['passed']);
+    }
+
     public function test_429_kutib_qayta_urinadi(): void
     {
         config(['services.groq.api_key' => 'test-key', 'services.groq.model' => 'openai/gpt-oss-120b']);
