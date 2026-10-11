@@ -115,7 +115,7 @@
             background-size: 34px 34px; mask-image: radial-gradient(120% 80% at 50% 0%, #000 40%, transparent 78%);
         }
         .ngb-kicker{ font-family:"Bricolage Grotesque", sans-serif; }
-        .ngb-cta{ background: var(--signal); color: oklch(0.99 0.012 250); box-shadow: 0 8px 30px oklch(0.66 0.18 250 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
+        .ngb-cta{ background: oklch(0.55 0.2 255); color: oklch(0.99 0.012 250); box-shadow: 0 8px 30px oklch(0.66 0.18 250 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
         .ngb-cta:hover{ transform: translateY(-2px); box-shadow: 0 14px 44px oklch(0.66 0.18 250 / 0.5); filter: brightness(1.05); }
         .ngb-ghost{ transition: background .25s, transform .25s cubic-bezier(.2,.9,.2,1); }
         .ngb-ghost:hover{ background: oklch(1 0 0 / 0.07); transform: translateY(-2px); }
@@ -340,7 +340,7 @@
                         <article class="p-4 bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-lg transition-shadow border dark:border-slate-700">
                             <div class="flex items-start gap-3">
                                 @if($post->featured_image)
-                                    <img src="{{ $post->featured_image }}" alt="Article preview: {{ $post->title }}" title="{{ $post->title }}" class="w-16 h-16 object-cover rounded flex-shrink-0">
+                                    <img src="{{ $post->featured_image }}" alt="Article preview: {{ $post->title }}" title="{{ $post->title }}" width="64" height="64" loading="lazy" decoding="async" class="w-16 h-16 object-cover rounded flex-shrink-0">
                                 @endif
                                 <div class="flex-1">
                                     @if($post->category)

@@ -116,8 +116,9 @@ Schedule::command('newsletter:cleanup')
 // SEO & SEARCH ENGINE OPTIMIZATION
 // ========================================
 // Update sitemap after new posts are published
+// Hourly: posts drip out 2/day plus a daily AI News post; a daily static sitemap lagged up to 24h.
 Schedule::command('sitemap:generate')
-    ->dailyAt('23:00')
+    ->hourly()
     ->timezone(config('app.timezone'))
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Sitemap generated successfully');
@@ -125,7 +126,7 @@ Schedule::command('sitemap:generate')
 
 // Update RSS feed after new posts
 Schedule::command('rss:generate')
-    ->dailyAt('23:15')
+    ->hourlyAt(15)
     ->timezone(config('app.timezone'))
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('RSS feed generated successfully');

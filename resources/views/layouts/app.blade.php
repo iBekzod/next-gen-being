@@ -8,12 +8,21 @@
 
     @if ($__gaId = config('services.google.analytics_id'))
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $__gaId }}"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', '{{ $__gaId }}');
+        // Load gtag.js after the page is interactive so it does not compete with first paint.
+        window.addEventListener('load', function () {
+            var load = function () {
+                var g = document.createElement('script');
+                g.async = true;
+                g.src = 'https://www.googletagmanager.com/gtag/js?id={{ $__gaId }}';
+                document.head.appendChild(g);
+            };
+            ('requestIdleCallback' in window) ? requestIdleCallback(load, {timeout: 3000}) : setTimeout(load, 1500);
+        });
     </script>
     @endif
 
@@ -292,9 +301,11 @@
         </script>
     @endif
 
+    @if (config('services.adsense.enabled'))
     <!-- Google AdSense Verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8948140381699585"
             crossorigin="anonymous"></script>
+    @endif
 </head>
 
     <body class="font-sans antialiased pt-16">
@@ -397,7 +408,7 @@
                     </div>
 
                     <!-- Search and User Menu -->
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 sm:space-x-4">
                         <!-- Search - Enhanced -->
                         <div class="relative hidden md:block" x-data="searchModal()">
                             <button @click="open" class="p-2 text-gray-500 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400" title="Search articles">
@@ -508,7 +519,7 @@
                         </div>
 
                         <!-- Dark Mode Toggle -->
-                        <button @click="toggle()" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <button @click="toggle()" aria-label="Toggle dark mode" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
                             <svg x-show="!darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -558,16 +569,16 @@
                                 </div>
                             </div>
                         @else
-                            <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-2 sm:space-x-3">
                                 <a href="{{ route('login') }}"
-                                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Sign in</a>
+                                    class="hidden sm:inline-block px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Sign in</a>
                                 <a href="{{ route('register') }}"
                                     class="px-4 py-2 text-sm font-semibold text-white transition-all bg-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-lg">Get Started</a>
                             </div>
                         @endauth
 
                         <!-- Mobile menu button -->
-                        <button @click="mobileMenuOpen = !mobileMenuOpen"
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" aria-label="Toggle menu" :aria-expanded="mobileMenuOpen"
                             class="p-2 text-gray-400 md:hidden hover:text-gray-500 dark:hover:text-gray-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round"
@@ -585,6 +596,10 @@
                 class="bg-white border-t border-gray-200 md:hidden dark:bg-gray-800 dark:border-gray-700"
                 style="display: none;">
                 <div class="pt-2 pb-3 space-y-1">
+                    @guest
+                    <a href="{{ route('login') }}"
+                        class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Sign in</a>
+                    @endguest
                     <!-- Articles -->
                     <a href="{{ route('posts.index') }}"
                         class="block py-2 pl-3 pr-4 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400">Articles</a>
@@ -640,7 +655,7 @@
 
         <!-- Help/Report Button -->
         <div class="fixed z-40 bottom-6 right-6">
-            <button @click="$dispatch('show-help-modal')"
+            <button @click="$dispatch('show-help-modal')" aria-label="Help or report a problem"
                 class="p-3 text-white transition-all bg-blue-500 rounded-full shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 hover:bg-blue-500/90">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -652,6 +667,7 @@
         <!-- Help Contact Component -->
         @livewire('help-contact')
 
+        @if (config('services.adsense.enabled'))
         <!-- Google AdSense Vertical Ad Unit -->
         <div class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
             <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -666,6 +682,7 @@
                 </script>
             </div>
         </div>
+        @endif
 
         <!-- Footer -->
         <footer class="border-t border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">

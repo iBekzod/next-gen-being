@@ -27,7 +27,7 @@
         <!-- Title & Progress (Compact) -->
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-                <h3 class="text-sm font-semibold text-gray-900 truncate dark:text-white">Listen to Article</h3>
+                <p class="text-sm font-semibold text-gray-900 truncate dark:text-white">Listen to Article</p>
                 <span class="text-xs text-gray-600 dark:text-gray-400" x-show="isLoading">Loading...</span>
             </div>
             <!-- Mini Progress Bar -->
@@ -68,7 +68,7 @@
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block mb-1 text-xs font-medium text-gray-700 dark:text-gray-300">Voice</label>
-                <select x-model="selectedVoiceIndex"
+                <select x-model="selectedVoiceIndex" aria-label="Voice"
                         @change="changeVoice()"
                         class="w-full px-2 py-1.5 text-xs bg-white border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <template x-for="(voice, index) in voices" :key="index">

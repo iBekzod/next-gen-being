@@ -52,7 +52,7 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-3">
-                <button wire:click="toggleLike"
+                <button wire:click="toggleLike" aria-label="Like this article"
                         class="flex items-center space-x-2 px-4 py-2 rounded-lg border-2 {{ auth()->user()?->hasLiked($post) ? 'bg-red-50 border-red-400 text-red-600 shadow-md dark:bg-red-900/30 dark:border-red-500 dark:text-red-400' : 'bg-white border-gray-300 text-gray-700 hover:bg-red-50 hover:border-red-400 hover:shadow-md dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-red-900/30 dark:hover:border-red-500' }} transition-all duration-200">
                     <svg class="w-5 h-5" fill="{{ auth()->user()?->hasLiked($post) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -60,7 +60,7 @@
                     <span>{{ number_format($post->likes_count) }}</span>
                 </button>
 
-                <button wire:click="toggleBookmark"
+                <button wire:click="toggleBookmark" aria-label="Bookmark this article"
                         class="flex items-center space-x-2 px-4 py-2 rounded-lg border-2 {{ auth()->user()?->hasBookmarked($post) ? 'bg-blue-50 border-blue-400 text-blue-600 shadow-md dark:bg-blue-900/30 dark:border-blue-500 dark:text-blue-400' : 'bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-400 hover:shadow-md dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-blue-900/30 dark:hover:border-blue-500' }} transition-all duration-200">
                     <svg class="w-5 h-5" fill="{{ auth()->user()?->hasBookmarked($post) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
@@ -68,7 +68,7 @@
                 </button>
 
                 <div class="relative" x-data="shareMenu()" @keydown.escape="open = false">
-                    <button @click="open = !open"
+                    <button @click="open = !open" aria-label="Share" aria-haspopup="true" :aria-expanded="open"
                             class="flex items-center px-4 py-2 space-x-2 text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 hover:shadow-md dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:border-slate-500 transition-all duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
@@ -328,11 +328,11 @@
 
     <!-- Tags -->
     @if($post->tags->count() > 0)
-    <div class="flex items-center mb-8 space-x-2">
-        <span class="font-medium text-gray-700">Tags:</span>
+    <div class="flex flex-wrap items-center gap-2 mb-8">
+        <span class="font-medium text-gray-700 dark:text-gray-300">Tags:</span>
         @foreach($post->tags as $tag)
         <a href="{{ route('posts.index', ['tag' => $tag->slug]) }}"
-           class="px-3 py-1 text-sm text-gray-700 transition-colors bg-gray-100 rounded-full hover:bg-gray-200">
+           class="px-3 py-1 text-sm text-gray-700 transition-colors bg-gray-100 rounded-full dark:bg-slate-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600">
             {{ $tag->name }}
         </a>
         @endforeach

@@ -9,7 +9,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
 
             <!-- Left: Font Controls -->
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <!-- Font Size -->
                 <div class="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
                     <span class="text-xs font-medium text-gray-600 dark:text-gray-300 mr-2">Size:</span>
@@ -37,7 +37,7 @@
                 <!-- Line Height -->
                 <div class="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
                     <span class="text-xs font-medium text-gray-600 dark:text-gray-300 mr-2">Height:</span>
-                    <select x-model="lineHeight"
+                    <select x-model="lineHeight" aria-label="Line height"
                             @change="applyLineHeight()"
                             class="text-xs bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none">
                         <option value="1.5">Compact</option>

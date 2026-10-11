@@ -74,6 +74,9 @@ return [
         'redirect' => env('GITHUB_REDIRECT_URI'),
     ],
 
+    // AdSense is off by default (monetization plan: no ads); also needs a CSP that allows googlesyndication.
+    'adsense' => ['enabled' => (bool) env('ADSENSE_ENABLED', false)],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

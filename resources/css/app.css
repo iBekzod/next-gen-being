@@ -4,6 +4,9 @@
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
 
+/* Dark mode is driven by the .dark class on <html> (themeSwitcher), not by the OS setting */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Theme configuration */
 @theme {
   --font-family-sans: Inter, ui-sans-serif, system-ui, sans-serif;
@@ -330,7 +333,7 @@
 
   html.dark .bg-blue-500,
   html.dark .bg-blue-600 {
-    background-color: #3b82f6 !important;
+    background-color: #2563eb !important;
   }
 
   /* Blue color overrides for light mode */
@@ -382,7 +385,7 @@
   html.dark .bg-blue-500,
   html.dark .bg-blue-600,
   html.dark .bg-blue-700 {
-    background-color: #3b82f6 !important;
+    background-color: #2563eb !important;
     color: #ffffff !important;
   }
 
@@ -779,7 +782,7 @@
   }
 
   html.dark .btn-primary {
-    background-color: #3b82f6 !important;
+    background-color: #2563eb !important;
     box-shadow: 0 2px 4px 0 rgba(59, 130, 246, 0.3);
   }
 
