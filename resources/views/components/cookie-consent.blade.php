@@ -1,10 +1,10 @@
 <!-- Cookie Consent Banner -->
-<div id="cookie-consent" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 md:p-6 z-40 shadow-2xl">
+<div id="cookie-consent" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-3 md:p-6 z-40 shadow-2xl">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex-1">
-            <h3 class="font-bold mb-2">Cookie & Ad Consent</h3>
+            <p class="font-bold mb-1">Cookies</p>
             <p class="text-sm text-gray-300">
-                We use cookies and personalized ads to enhance your experience. By clicking "Accept All", you consent to our use of cookies and ads personalization in accordance with our Privacy Policy.
+                We use cookies for analytics and to remember your preferences. By clicking "Accept All" you agree to this, as described in our Privacy Policy.
             </p>
         </div>
         <div class="flex gap-3 whitespace-nowrap">
