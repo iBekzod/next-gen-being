@@ -306,7 +306,9 @@ Schedule::command('content:remoderate')
 // short/truncated AI drafts out of the public corpus (Google HCU / AdSense).
 Schedule::command('content:drip')
     ->twiceDaily(10, 17)
-    ->timezone(config('app.timezone'))
+    // Server and app.timezone are UTC; the owner thinks in Tashkent time, so
+    // "10:00" used to fire at 15:00 local (2026-10-11: looked like a missed slot).
+    ->timezone('Asia/Tashkent')
     ->withoutOverlapping()
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('content:drip completed');

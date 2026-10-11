@@ -125,4 +125,14 @@ class ContentDripPublishTest extends TestCase
 
         $this->assertSame('published', $post->fresh()->status);
     }
+
+    public function test_drip_is_scheduled_in_tashkent_time(): void
+    {
+        $event = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->first(fn ($e) => str_contains($e->command, 'content:drip'));
+
+        $this->assertNotNull($event);
+        $this->assertSame('Asia/Tashkent', (string) $event->timezone);
+        $this->assertSame('0 10,17 * * *', $event->expression);
+    }
 }
