@@ -64,14 +64,8 @@
     color: #1a1a1a;
   }
 
-  /* Universal smooth transitions for theme switching */
-  *,
-  *::before,
-  *::after {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-duration: 200ms;
-    transition-timing-function: ease-in-out;
-  }
+  /* No universal transition: a `*` transition rule made every node animate on load/theme flip
+     (4s of Style & Layout on mobile). Components opt in with transition-colors where wanted. */
 
   /* Navigation improvements for light mode - High contrast */
   nav {
