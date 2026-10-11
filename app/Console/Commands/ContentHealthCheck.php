@@ -39,7 +39,7 @@ class ContentHealthCheck extends Command
     {
         $problems = [];
 
-        $lastPost = Post::where('status', 'published')->whereNull('series_title')->max('published_at');
+        $lastPost = Post::where('status', 'published')->where('post_type', '!=', Post::TYPE_NEWS_BRIEF)->whereNull('series_title')->max('published_at');
         if (! $lastPost || Carbon::parse($lastPost)->lt(now()->subDays(PublishGate::POST_INTERVAL_DAYS + 2))) {
             $problems['stale_posts'] = 'Oxirgi post: ' . ($lastPost ?: 'hech qachon');
         }
@@ -58,7 +58,8 @@ class ContentHealthCheck extends Command
         $moderatorNeverRan = 0;
 
         Post::where('status', 'draft')
-            ->select('id', 'content', 'moderation_status', 'series_title', 'ai_moderation_check', 'quality_report')
+            ->where('post_type', '!=', Post::TYPE_NEWS_BRIEF)
+            ->select('id', 'content', 'moderation_status', 'post_type', 'series_title', 'ai_moderation_check', 'quality_report')
             ->chunk(200, function ($drafts) use (&$publishablePosts, &$publishableTutorials, &$pendingOnly, &$moderatorNeverRan) {
                 foreach ($drafts as $draft) {
                     $failures = $this->gate->failures($draft);

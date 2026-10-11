@@ -49,6 +49,74 @@ class ContentDripPublishTest extends TestCase
         $this->assertSame('draft', $post->fresh()->status);
     }
 
+    private function reviewed(string $content, string $createdAt): Post
+    {
+        return Post::factory()->create([
+            'status' => 'draft',
+            'series_title' => null,
+            'moderation_status' => 'approved',
+            'content' => $content,
+            'published_at' => null,
+            'created_at' => $createdAt,
+            'quality_report' => ['passed' => true],
+        ]);
+    }
+
+    public function test_eng_eski_darvozadan_otgan_draft_birinchi_chiqadi(): void
+    {
+        $new = $this->reviewed($this->cleanContent(), now()->subDay()->toDateTimeString());
+        $old = $this->reviewed($this->cleanContent(1700), now()->subDays(9)->toDateTimeString());
+
+        $this->artisan('content:drip')->assertSuccessful();
+
+        $this->assertSame('published', $old->fresh()->status);
+        $this->assertSame('draft', $new->fresh()->status);
+    }
+
+    public function test_kuniga_ikkitadan_ortiq_va_5_soatdan_tez_nashr_qilinmaydi(): void
+    {
+        $a = $this->reviewed($this->cleanContent(), now()->subDays(3)->toDateTimeString());
+        $b = $this->reviewed($this->cleanContent(1700), now()->subDays(2)->toDateTimeString());
+        $c = $this->reviewed($this->cleanContent(1800), now()->subDay()->toDateTimeString());
+
+        $this->artisan('content:drip')->assertSuccessful();
+        $this->assertSame('published', $a->fresh()->status);
+
+        // darhol qayta ishga tushsa: oraliq 5 soatdan kam
+        $this->artisan('content:drip')->assertSuccessful();
+        $this->assertSame('draft', $b->fresh()->status);
+
+        // 6 soat o'tdi -> ikkinchisi chiqadi
+        $a->fresh()->update(['published_at' => now()->startOfDay()->subHours(6)]);
+        $this->artisan('content:drip')->assertSuccessful();
+        $this->assertSame('published', $b->fresh()->status);
+    }
+
+    public function test_kunlik_chegara_toldi(): void
+    {
+        $x = Post::factory()->create(['status' => 'published', 'series_title' => null, 'published_at' => now()->subHours(7)]);
+        $y = Post::factory()->create(['status' => 'published', 'series_title' => null, 'published_at' => now()->subHours(6)]);
+        $c = $this->reviewed($this->cleanContent(), now()->subDay()->toDateTimeString());
+
+        $this->travelTo(now()->startOfDay()->addHours(20));
+        $x->update(['published_at' => now()->subHours(7)]);
+        $y->update(['published_at' => now()->subHours(6)]);
+
+        $this->artisan('content:drip')->assertSuccessful();
+
+        $this->assertSame('draft', $c->fresh()->status);
+    }
+
+    public function test_news_brief_drip_ni_bloklamaydi(): void
+    {
+        Post::factory()->create(['status' => 'published', 'published_at' => now(), 'post_type' => Post::TYPE_NEWS_BRIEF]);
+        $d = $this->reviewed($this->cleanContent(), now()->subDay()->toDateTimeString());
+
+        $this->artisan('content:drip')->assertSuccessful();
+
+        $this->assertSame('published', $d->fresh()->status);
+    }
+
     public function test_toza_draft_nashr_qilinadi(): void
     {
         $post = $this->draft($this->cleanContent());

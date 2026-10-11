@@ -41,12 +41,16 @@ class ContentModerationService
      *   'reason': string
      * }
      */
-    public function moderateContent(string $title, string $content, string $excerpt): array
+    public function moderateContent(string $title, string $content, string $excerpt, bool $shortForm = false): array
     {
         // Hard pre-checks: cheap deterministic filters that don't need an AI call
         $wordCount = str_word_count($this->plainText($content));
 
-        if ($wordCount < 1500) {
+        // Short-form news briefs have their own deterministic gate (NewsBriefGate);
+        // only the long-form length floor is exempted here, every other check runs.
+        $minWords = $shortForm ? 0 : 1500;
+
+        if ($wordCount < $minWords) {
             return [
                 'passed' => false,
                 'score' => 20,

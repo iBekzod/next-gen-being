@@ -18,6 +18,12 @@ class PublishGate
     public const TUTORIAL_INTERVAL_DAYS = 7;
     public const MIN_WORDS = 1500;
 
+    /** content:drip: at most this many long-form posts/tutorials per calendar day... */
+    public const DRIP_DAILY_LIMIT = 2;
+
+    /** ...and never closer together than this (steady rhythm, no dumps). */
+    public const DRIP_MIN_GAP_HOURS = 5;
+
     /**
      * Generatsiya mo'ljali — nashr chegarasidan 15% yuqori (1725).
      *
@@ -49,6 +55,17 @@ class PublishGate
      */
     public function failures(Post $post): array
     {
+        // Short-form daily news has its own light gate (no 1500-word minimum,
+        // no long-form editor review) but still needs moderation.
+        if ($post->post_type === Post::TYPE_NEWS_BRIEF) {
+            $failures = app(NewsBriefGate::class)->contentFailures((string) $post->content);
+            if ($post->moderation_status === 'pending') {
+                $failures[] = 'moderation_pending';
+            }
+
+            return $failures;
+        }
+
         $failures = $this->contentFailures((string) $post->content);
 
         if ($post->moderation_status === 'pending') {

@@ -52,6 +52,9 @@ class Post extends Model implements HasMedia
         'paraphrase_confidence_score' => 'float',
     ];
 
+    /** Short daily AI-news roundup (own light gate, see NewsBriefGate). */
+    public const TYPE_NEWS_BRIEF = 'news_brief';
+
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
+use App\Services\Content\NewsBriefGate;
 use App\Services\ContentModerationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -144,6 +145,119 @@ class BotPostController extends Controller
             'status' => $post->status,
             'moderation_status' => $moderationStatus,
             'edit_url' => url("/posts/{$post->slug}/edit"),
+        ], 201);
+    }
+
+    /**
+     * Daily "AI News" roundup (short-form, post_type=news_brief).
+     *
+     * The sender provides structured items (headline, English summary, source
+     * link); the server builds the markdown itself, so the shape is fixed.
+     * Passes NewsBriefGate (structure/sources/English) and moderation with the
+     * long-form length floor exempted, then publishes immediately. One post per
+     * date: a repeat for the same date returns the existing post.
+     */
+    public function submitNews(Request $request, NewsBriefGate $gate): JsonResponse
+    {
+        if (! $this->verifySignature($request)) {
+            return response()->json(['error' => 'Invalid signature or stale timestamp'], 401);
+        }
+        Cache::put(self::HEARTBEAT_CACHE_KEY, now()->toIso8601String(), now()->addHours(48));
+
+        $data = $request->validate([
+            'date' => 'required|date_format:Y-m-d',
+            'author_id' => 'required|integer|exists:users,id',
+            'items' => 'required|array|min:1|max:20',
+            'items.*.headline' => 'required|string|max:200',
+            'items.*.summary' => 'required|string|max:1200',
+            'items.*.source_url' => 'required|string|max:2048',
+            'items.*.source_name' => 'nullable|string|max:80',
+        ]);
+
+        $date = \Carbon\Carbon::createFromFormat('Y-m-d', $data['date']);
+        $title = 'AI News — ' . $date->format('F j, Y');
+
+        $existing = Post::where('post_type', Post::TYPE_NEWS_BRIEF)->where('title', $title)->first();
+        if ($existing) {
+            return response()->json([
+                'ok' => true,
+                'duplicate' => true,
+                'post_id' => $existing->id,
+                'status' => $existing->status,
+                'url' => url('/posts/' . $existing->slug),
+            ], 200);
+        }
+
+        $items = array_values($data['items']);
+        $failures = $gate->itemFailures($items);
+        if ($failures !== []) {
+            Log::warning('AI News rejected by NewsBriefGate', ['failures' => $failures]);
+
+            return response()->json(['ok' => false, 'error' => 'gate_failed', 'failures' => $failures], 422);
+        }
+
+        $content = "Today's AI news in short: " . count($items) . " items, each with a link to its source.\n\n";
+        foreach ($items as $item) {
+            $name = trim((string) ($item['source_name'] ?? ''))
+                ?: (string) preg_replace('/^www\./', '', (string) parse_url($item['source_url'], PHP_URL_HOST));
+            $content .= '## ' . trim($item['headline']) . "\n\n" . trim($item['summary'])
+                . "\n\n[Source: {$name}](" . trim($item['source_url']) . ")\n\n";
+        }
+        $content .= "Summaries are condensed from the linked sources; follow each link for the full story.\n";
+
+        $excerpt = Str::limit(implode(' | ', array_map(fn ($i) => trim($i['headline']), $items)), 300, '...');
+        if (mb_strlen($excerpt) < 50) {
+            $excerpt = str_pad($excerpt, 50, '.');
+        }
+
+        $moderation = app(ContentModerationService::class)->moderateContent($title, $content, $excerpt, true);
+        $flags = $moderation['flags'] ?? [];
+        $moderatorDown = (bool) array_intersect($flags, ['moderation_unavailable', 'moderation_rate_limited']);
+        $approved = ($moderation['passed'] ?? false) && ($moderation['score'] ?? 0) >= 75;
+
+        // A moderator OUTAGE is not a verdict: the brief already passed the
+        // deterministic gate and holds only sourced items, so it publishes and
+        // the outage is recorded. An actual rejection stays a draft.
+        $publish = $approved || $moderatorDown;
+
+        $category = Category::firstOrCreate(
+            ['slug' => 'ai-news'],
+            ['name' => 'AI News', 'description' => 'Daily short roundup of AI news with source links',
+                'color' => '#6366f1', 'icon' => 'newspaper', 'is_active' => true]
+        );
+
+        $post = Post::create([
+            'title' => $title,
+            'excerpt' => $excerpt,
+            'content' => $content,
+            'author_id' => $data['author_id'],
+            'category_id' => $category->id,
+            'post_type' => Post::TYPE_NEWS_BRIEF,
+            'status' => $publish ? 'published' : 'draft',
+            'published_at' => $publish ? now() : null,
+            'is_premium' => false,
+            'allow_comments' => true,
+            'moderation_status' => $approved ? 'approved' : 'pending',
+            'moderated_at' => $approved ? now() : null,
+            'moderation_notes' => 'Daily AI News via /api/bot/news'
+                . ($moderatorDown ? ' (moderator unavailable; published on NewsBriefGate alone)' : ''),
+            'ai_moderation_check' => $moderation,
+            'quality_report' => ['passed' => true, 'gate' => 'news_brief', 'items' => count($items)],
+        ]);
+
+        $tagIds = [];
+        foreach (['AI News', 'Artificial Intelligence'] as $name) {
+            $tagIds[] = Tag::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name, 'is_active' => true])->id;
+        }
+        $post->tags()->sync($tagIds);
+
+        Log::info('AI News submitted', ['post_id' => $post->id, 'status' => $post->status]);
+
+        return response()->json([
+            'ok' => true,
+            'post_id' => $post->id,
+            'status' => $post->status,
+            'url' => $publish ? url('/posts/' . $post->slug) : null,
         ], 201);
     }
 

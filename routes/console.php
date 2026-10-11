@@ -299,13 +299,13 @@ Schedule::command('content:remoderate')
     ->onOneServer()
     ->runInBackground();
 
-// Controlled publishing cadence — 1 regular post / 5 days + 1 tutorial / 7 days,
+// Controlled publishing cadence — max 2 long-form posts/day, 5h apart, oldest first,
 // quality-gated (see App\Console\Commands\ContentDripPublish). Replaces the old
 // daily "publish everything recent" job: keeps a steady publishing rhythm feeding
 // SEO, drains the draft backlog slowly (never a slop-dump), and the gates keep
 // short/truncated AI drafts out of the public corpus (Google HCU / AdSense).
 Schedule::command('content:drip')
-    ->dailyAt('18:00')
+    ->twiceDaily(10, 17)
     ->timezone(config('app.timezone'))
     ->withoutOverlapping()
     ->onSuccess(function () {

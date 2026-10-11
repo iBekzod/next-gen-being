@@ -188,6 +188,8 @@ Route::prefix('v1')->group(function () {
 // posts drafts here so we don't have to spend Anthropic API credits)
 Route::post('/bot/post', [\App\Http\Controllers\Api\BotPostController::class, 'submitPost'])
     ->middleware('throttle:10,1')->name('api.bot.post');
+Route::post('/bot/news', [\App\Http\Controllers\Api\BotPostController::class, 'submitNews'])
+    ->middleware('throttle:10,1')->name('api.bot.news');
 Route::post('/bot/heartbeat', [\App\Http\Controllers\Api\BotPostController::class, 'heartbeat'])
     ->middleware('throttle:30,1')->name('api.bot.heartbeat');
 Route::get('/bot/next-topic', [\App\Http\Controllers\Api\BotPostController::class, 'nextTopic'])
