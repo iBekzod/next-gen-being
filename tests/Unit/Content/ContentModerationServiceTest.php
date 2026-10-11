@@ -158,4 +158,48 @@ if (\$e<self::TTL) { return 1; }
         $this->assertContains('moderation_rate_limited', $result['flags']);
         $this->assertNotContains('moderation_unavailable', $result['flags']);
     }
+
+    public function test_kursiv_izoh_bilan_tugagan_matn_kesilgan_hisoblanmaydi(): void
+    {
+        config(['services.groq.api_key' => 'test-key']);
+
+        Http::preventStrayRequests();
+        Http::fake(['api.groq.com/*' => Http::response(['choices' => [['message' => ['content' => '{"passed":true,"score":90,"flags":[],"recommendations":[],"reason":"ok"}']]]])]);
+
+        $content = $this->longContent() . "
+
+*(Updated October 2026. Benchmarks run locally.)*";
+
+        $result = (new ContentModerationService())->moderateContent('Sarlavha', $content, 'Izoh');
+
+        $this->assertNotContains('truncated', $result['flags']);
+        $this->assertTrue($result['passed']);
+    }
+
+    public function test_haqiqatan_kesilgan_matn_rad_etiladi(): void
+    {
+        config(['services.groq.api_key' => 'test-key']);
+        Http::preventStrayRequests();
+
+        $result = (new ContentModerationService())->moderateContent('Sarlavha', $this->longContent() . ' Va keyin esa', 'Izoh');
+
+        $this->assertSame(['truncated'], $result['flags']);
+        Http::assertNothingSent();
+    }
+
+    public function test_kop_baytli_belgi_3000_chegarasida_json_buzmaydi(): void
+    {
+        config(['services.groq.api_key' => 'test-key']);
+
+        Http::preventStrayRequests();
+        Http::fake(['api.groq.com/*' => Http::response(['choices' => [['message' => ['content' => '{"passed":true,"score":90,"flags":[],"recommendations":[],"reason":"ok"}']]]])]);
+
+        // 3000-bayt chegarasi ko'p baytli belgini (→) o'rtasidan kesmasligi kerak.
+        $content = str_repeat('→ arrow step explained here. ', 400) . 'Done.';
+
+        $result = (new ContentModerationService())->moderateContent('Sarlavha', $content, 'Izoh');
+
+        $this->assertTrue($result['passed']);
+        Http::assertSentCount(1);
+    }
 }

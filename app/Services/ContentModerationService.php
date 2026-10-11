@@ -60,7 +60,10 @@ class ContentModerationService
             ];
         }
 
-        if (!preg_match('/[.!?]\s*$/', trim($content))) {
+        // Markdown yopuvchi belgilar (`*`, `_`, `)`, qo'shtirnoq) gap oxiridan keyin
+        // kelishi mumkin: "*(...).*" kursiv izoh kesilgan matn emas (10-11: 7 post
+        // shu tufayli 'truncated' bo'lib turgan edi).
+        if (!preg_match('/[.!?][*_)\]"\'`\s]*$/u', trim($content))) {
             return [
                 'passed' => false,
                 'score' => 25,
@@ -103,7 +106,7 @@ POST TO REVIEW:
 
 **Excerpt:** {$excerpt}
 
-**Content:** " . substr($this->plainText($content), 0, 3000) . "
+**Content:** " . mb_strcut($this->plainText($content), 0, 3000, 'UTF-8') . "
 
 MODERATION RULES:
 ✅ APPROVE if:
