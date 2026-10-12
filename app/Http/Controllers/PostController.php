@@ -19,6 +19,18 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
+        // Drafts and archived posts are not public. Before 2026-10-12 any draft
+        // slug returned 200 with the full article; only the sitemap and listings
+        // hid them. The author and staff can still open them (preview).
+        if ($post->status !== 'published') {
+            $user = Auth::user();
+            $canPreview = $user && (
+                (int) $user->id === (int) $post->author_id
+                || $user->hasAnyRole(['admin', 'content_manager', 'lead'])
+            );
+            abort_unless($canPreview, 404);
+        }
+
         $post->loadMissing(['author', 'category', 'tags']);
 
         // Determine if user should see paywall
