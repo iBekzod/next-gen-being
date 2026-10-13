@@ -150,6 +150,9 @@ jobs:
           # Update site settings (policies, company name, etc.)
           sudo -u www-data php artisan db:seed --class=SiteSettingSeeder --force
 
+          # Sync first-party marketplace listings, demos and deliverables (idempotent)
+          sudo -u www-data php artisan marketplace:sync-listings
+
           # Clear and cache config
           sudo -u www-data php artisan config:clear
           sudo -u www-data php artisan config:cache
