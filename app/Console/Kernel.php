@@ -237,12 +237,7 @@ class Kernel extends ConsoleKernel
 
         // === REVENUE AUTOMATION SCHEDULING ===
 
-        // Insert affiliate links into recent posts (daily at 6 AM - 5 posts)
-        $schedule->command('revenue:insert-affiliate-links --limit=5')
-            ->dailyAt('06:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        // revenue:insert-affiliate-links is scheduled in routes/console.php (this method is not loaded).
 
         // Send product promotions to free users (Tuesday & Friday at 10 AM)
         $schedule->command('revenue:send-product-emails --segment=free')

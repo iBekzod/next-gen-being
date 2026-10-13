@@ -315,6 +315,17 @@ Schedule::command('content:drip')
         \Illuminate\Support\Facades\Log::info('content:drip completed');
     });
 
+// Partner links in published posts. app/Console/Kernel.php::schedule() is NOT
+// loaded in this app (routes/console.php is), so the entry that used to live
+// there never ran - the command was effectively hand-run only. Idempotent;
+// picks up a newly set AFFILIATE_*_URL on the next run.
+Schedule::command('revenue:insert-affiliate-links')
+    ->dailyAt('06:00')
+    ->timezone('Asia/Tashkent')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 // ========================================
 // TREND MAVZULAR (C2)
 // ========================================

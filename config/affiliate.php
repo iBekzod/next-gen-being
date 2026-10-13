@@ -139,6 +139,48 @@ return [
             'anchor' => 'Gamma',
             'homepage' => 'https://gamma.app',
         ],
+        'lovable' => [
+            'patterns' => ['lovable.dev', 'lovable'],
+            'url' => env('AFFILIATE_LOVABLE_URL'),
+            'anchor' => 'Lovable',
+            'homepage' => 'https://lovable.dev',
+        ],
+        'grammarly' => [
+            'patterns' => ['grammarly'],
+            'url' => env('AFFILIATE_GRAMMARLY_URL'),
+            'anchor' => 'Grammarly',
+            'homepage' => 'https://www.grammarly.com',
+        ],
+        'seranking' => [
+            'patterns' => ['se ranking', 'seranking'],
+            'url' => env('AFFILIATE_SERANKING_URL'),
+            'anchor' => 'SE Ranking',
+            'homepage' => 'https://seranking.com',
+        ],
+        'namecheap' => [
+            'patterns' => ['namecheap'],
+            'url' => env('AFFILIATE_NAMECHEAP_URL'),
+            'anchor' => 'Namecheap',
+            'homepage' => 'https://www.namecheap.com',
+        ],
+        'cloudways' => [
+            'patterns' => ['cloudways'],
+            'url' => env('AFFILIATE_CLOUDWAYS_URL'),
+            'anchor' => 'Cloudways',
+            'homepage' => 'https://www.cloudways.com',
+        ],
+        'pictory' => [
+            'patterns' => ['pictory'],
+            'url' => env('AFFILIATE_PICTORY_URL'),
+            'anchor' => 'Pictory',
+            'homepage' => 'https://pictory.ai',
+        ],
+        'contabo' => [
+            'patterns' => ['contabo'],
+            'url' => env('AFFILIATE_CONTABO_URL'),
+            'anchor' => 'Contabo',
+            'homepage' => 'https://contabo.com',
+        ],
     ],
 
 ];

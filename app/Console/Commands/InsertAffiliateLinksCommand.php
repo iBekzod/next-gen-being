@@ -3,96 +3,100 @@
 namespace App\Console\Commands;
 
 use App\Models\Post;
+use App\Services\Content\AffiliateLinker;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
+/**
+ * Adds contextual /go/<slug> partner links, one CTA box and the disclosure to
+ * published posts (see AffiliateLinker for the rules). Idempotent: running it
+ * again changes nothing. Scheduled daily in routes/console.php; when a new
+ * AFFILIATE_<X>_URL is set in .env the next run links that tool everywhere it
+ * is a real subject of a post.
+ */
 class InsertAffiliateLinksCommand extends Command
 {
-    protected $signature = 'revenue:insert-affiliate-links {--limit=5}';
-    protected $description = 'Automatically insert tracked affiliate links into tutorials mentioning AI tools';
+    protected $signature = 'revenue:insert-affiliate-links
+        {--limit=0 : Max posts to change (0 = all)}
+        {--post=* : Only these post ids}
+        {--max-links=4 : Max distinct /go/ links per post}
+        {--include-planned : Also link programs without a referral URL yet (they redirect to the vendor homepage, earn nothing)}
+        {--dry-run : Show what would change, save nothing}';
 
-    /**
-     * Active affiliate links from config/affiliate.php, excluding any tool whose
-     * referral URL hasn't been set yet — so we never insert a non-earning link.
-     */
-    private function activeLinks(): array
+    protected $description = 'Insert tracked affiliate links, a CTA box and the disclosure into published posts';
+
+    /** Programs we may link: referral URL set (earning), or planned when asked. */
+    private function programs(bool $includePlanned): array
     {
         return array_filter(
             config('affiliate.links', []),
-            fn ($c) => !empty($c['url']) && !empty($c['patterns'])
+            fn ($c) => ! empty($c['patterns']) && ($includePlanned || ! empty($c['url']))
         );
     }
 
-    public function handle(): int
+    public function handle(AffiliateLinker $linker): int
     {
-        if (empty($this->activeLinks())) {
-            $this->warn('No affiliate programs configured yet. Set the AFFILIATE_*_URL values in .env first.');
+        $programs = $this->programs((bool) $this->option('include-planned'));
+        if ($programs === []) {
+            $this->warn('No affiliate programs with a referral URL yet. Set AFFILIATE_*_URL in .env.');
+
             return self::SUCCESS;
         }
 
+        $dry = (bool) $this->option('dry-run');
         $limit = (int) $this->option('limit');
-
-        // Recent published posts — the per-link dedup below keeps this idempotent,
-        // so a post is only ever touched for tools it mentions but isn't linked to.
-        $posts = Post::where('status', 'published')
-            ->where('created_at', '>', now()->subDays(7))
-            ->limit($limit)
-            ->get();
-
-        if ($posts->isEmpty()) {
-            $this->info('No posts to update with affiliate links');
-            return self::SUCCESS;
+        $ids = array_filter(array_map('intval', (array) $this->option('post')));
+        $base = rtrim((string) config('app.url'), '/');
+        if (str_contains($base, 'localhost')) {
+            $base = 'https://nextgenbeing.com';
         }
 
-        $updatedCount = 0;
+        $query = Post::where('status', 'published')
+            ->where(fn ($q) => $q->whereNull('post_type')->orWhere('post_type', 'article'))
+            ->orderBy('id');
+        if ($ids) {
+            $query->whereIn('id', $ids);
+        }
 
-        foreach ($posts as $post) {
-            if ($this->insertAffiliateLinks($post)) {
-                $updatedCount++;
-                $this->info("✅ Updated: {$post->title}");
+        $changed = 0;
+        $linksAdded = 0;
+        $query->each(function (Post $post) use ($linker, $programs, $base, $dry, $limit, &$changed, &$linksAdded) {
+            if ($limit > 0 && $changed >= $limit) {
+                return false;
             }
-        }
+            $r = $linker->apply((string) $post->title, (string) $post->content, $programs, $base, (int) $this->option('max-links'));
+            if (! $r['changed']) {
+                return;
+            }
+            $changed++;
+            $linksAdded += count($r['added']);
+            $this->line(sprintf(
+                '%s #%d %s | links: [%s]%s%s',
+                $dry ? 'WOULD UPDATE' : 'UPDATED',
+                $post->id,
+                $post->title,
+                implode(', ', $r['added']),
+                $r['cta'] ? ' +CTA' : '',
+                $r['disclosure'] ? ' +disclosure' : ''
+            ));
+            if ($dry) {
+                $this->showDiff((string) $post->content, $r['content']);
+            } else {
+                // Quietly: no post.updated webhook storm, no status change.
+                $post->content = $r['content'];
+                $post->saveQuietly();
+            }
+        });
 
-        $this->info("📊 Affiliate links inserted into {$updatedCount} posts");
+        $this->info(($dry ? '[dry-run] ' : '') . "Posts changed: {$changed}, new links: {$linksAdded}");
+
         return self::SUCCESS;
     }
 
-    /**
-     * Insert affiliate links into post content
-     */
-    private function insertAffiliateLinks(Post $post): bool
+    private function showDiff(string $old, string $new): void
     {
-        $originalContent = $post->content;
-        $updatedContent = $originalContent;
-        $linksAdded = 0;
-
-        foreach ($this->activeLinks() as $tool => $config) {
-            foreach ($config['patterns'] as $pattern) {
-                // Create case-insensitive regex pattern
-                $regex = '/\b' . preg_quote($pattern, '/') . '\b/i';
-
-                // Check if pattern exists and not already linked
-                if (preg_match($regex, $updatedContent)) {
-                    // Only add link to first mention of each tool
-                    $goUrl = route('go', $tool);
-                    if (!str_contains($updatedContent, $config['url']) && !str_contains($updatedContent, '/go/' . $tool . ')')) {
-                        // Replace first occurrence only. Link through /go/<tool> so the
-                        // click is logged and the program can be swapped in .env.
-                        $replacement = "[{$config['anchor']}]({$goUrl})";
-                        $updatedContent = preg_replace($regex, $replacement, $updatedContent, 1);
-                        $linksAdded++;
-                        break; // Move to next tool
-                    }
-                }
-            }
+        $oldLines = explode("\n", $old);
+        foreach (array_diff(explode("\n", $new), $oldLines) as $line) {
+            $this->line('    + ' . mb_substr($line, 0, 400));
         }
-
-        // Only save if changes were made
-        if ($linksAdded > 0 && $updatedContent !== $originalContent) {
-            $post->update(['content' => $updatedContent]);
-            return true;
-        }
-
-        return false;
     }
 }

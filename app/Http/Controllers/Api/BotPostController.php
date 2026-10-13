@@ -271,6 +271,21 @@ class BotPostController extends Controller
     }
 
     /**
+     * Weekly affiliate click summary for the blog-bot's owner DM.
+     * Body is JSON {"days": 7}; HMAC-signed like every bot endpoint.
+     */
+    public function affiliateStats(Request $request, \App\Services\Revenue\AffiliateStats $stats): JsonResponse
+    {
+        if (! $this->verifySignature($request)) {
+            return response()->json(['error' => 'Invalid signature'], 401);
+        }
+        $days = max(1, min(90, (int) $request->input('days', 7)));
+        $summary = $stats->summary($days);
+
+        return response()->json(['ok' => true, 'summary' => $summary, 'text' => $stats->format($summary)]);
+    }
+
+    /**
      * Serve the top of the trending-topic queue to the blog-bot, so it stops
      * picking topics from a hand-maintained YAML file.
      */
