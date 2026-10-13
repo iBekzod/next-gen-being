@@ -1,7 +1,10 @@
 @extends('layouts.app')
-@section('title', $listing->title.' — live demo & source')
-@section('description', Str::limit(strip_tags($listing->tagline ?: $listing->description), 155))
+@section('title', $listing->title.($listing->category === '3d-scenes' ? ' — live 3D demo, prompt & source' : ' — live demo & source'))
+@section('description', $listing->seoDescription())
 @section('og_type', 'product')
+@if($listing->posterUrl())
+@section('share_image', $listing->posterUrl())
+@endif
 
 @section('content')
 @php
@@ -17,17 +20,30 @@
         '@type' => 'Product',
         'name' => $listing->title,
         'description' => Str::limit(strip_tags($listing->description ?: $listing->tagline), 300),
-        'category' => $listing->category,
+        'category' => \App\Models\MarketplaceListing::categoryLabel($listing->category),
+        'image' => $listing->posterUrl(),
         'brand' => ['@type' => 'Brand', 'name' => 'NextGenBeing'],
-        'offers' => $__tierPrices->isNotEmpty() ? [
-            '@type' => 'AggregateOffer',
-            'priceCurrency' => 'USD',
-            'lowPrice' => number_format($__tierPrices->min(), 2, '.', ''),
-            'highPrice' => number_format($__tierPrices->max(), 2, '.', ''),
-            'offerCount' => $__tierPrices->count(),
-            'availability' => 'https://schema.org/InStock',
-            'url' => route('marketplace.show', $listing),
-        ] : null,
+        // One purchasable option = a plain Offer; several tiers = AggregateOffer.
+        // No aggregateRating / review / sales numbers unless they are real (below).
+        'offers' => match (true) {
+            $__tierPrices->count() === 1 => [
+                '@type' => 'Offer',
+                'priceCurrency' => 'USD',
+                'price' => number_format($__tierPrices->first(), 2, '.', ''),
+                'availability' => 'https://schema.org/InStock',
+                'url' => route('marketplace.show', $listing),
+            ],
+            $__tierPrices->isNotEmpty() => [
+                '@type' => 'AggregateOffer',
+                'priceCurrency' => 'USD',
+                'lowPrice' => number_format($__tierPrices->min(), 2, '.', ''),
+                'highPrice' => number_format($__tierPrices->max(), 2, '.', ''),
+                'offerCount' => $__tierPrices->count(),
+                'availability' => 'https://schema.org/InStock',
+                'url' => route('marketplace.show', $listing),
+            ],
+            default => null,
+        },
         'aggregateRating' => $listing->hasReviews() ? [
             '@type' => 'AggregateRating',
             'ratingValue' => (string) $listing->rating,
@@ -76,7 +92,7 @@
 <div id="ngb-market">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
     <p style="font-size:.78rem; color:var(--ink-faint); margin-bottom:12px;">
-      <a href="{{ route('marketplace.index') }}" style="color:var(--signal-ink);">Marketplace</a> / {{ ucfirst($listing->category) }} / {{ $listing->title }}
+      <a href="{{ route('marketplace.index') }}" style="color:var(--signal-ink);">Marketplace</a> / <a href="{{ route('marketplace.index', ['category' => $listing->category]) }}" style="color:var(--signal-ink);">{{ \App\Models\MarketplaceListing::categoryLabel($listing->category) }}</a> / {{ $listing->title }}
     </p>
     <h1 class="m-display" style="font-size:clamp(1.6rem,3.5vw,2.3rem); line-height:1.05; margin:0 0 6px;">{{ $listing->title }}</h1>
     <p style="color:var(--ink-soft); margin:0 0 20px;">{{ $listing->tagline }} · by <b style="color:var(--ink);">{{ $listing->seller->name }}</b></p>
@@ -103,7 +119,7 @@
       </div>
       <div class="win-body">
         @if($demoUrl)
-          <iframe src="{{ $demoUrl }}" title="Live demo of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+          <iframe src="{{ $demoUrl }}" title="Live demo of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" allow="fullscreen"></iframe>
         @else
           <div style="height:100%; display:grid; place-items:center; color:#8593b5;">Live demo coming soon</div>
         @endif
@@ -124,6 +140,9 @@
           @if(session('success'))
             <p style="font-size:.8rem; color:var(--signal); margin:0 0 10px;">{{ session('success') }}</p>
           @endif
+          @if(session('error'))
+            <p style="font-size:.8rem; color:#b3313e; margin:0 0 10px;">{{ session('error') }}</p>
+          @endif
           @error('email')
             <p style="font-size:.8rem; color:#b3313e; margin:0 0 10px;">{{ $message }}</p>
           @enderror
@@ -131,7 +150,13 @@
             @forelse($listing->tiers->where('status', 'published') as $tier)
               <div class="tier">
                 <div>
-                  <div style="font-weight:700; text-transform:capitalize;">{{ $tier->tier ?? $tier->type }}</div>
+                  <div style="font-weight:700; text-transform:capitalize;">
+                    @if($listing->category === '3d-scenes' && in_array($tier->tier, ['prompt', 'design'], true))
+                      Prompt + source
+                    @else
+                      {{ $tier->tier ?? $tier->type }}
+                    @endif
+                  </div>
                   <div style="font-size:.78rem; color:var(--ink-faint);">{{ Str::limit($tier->short_description ?? $tier->description, 42) }}</div>
                 </div>
                 @unless($tier->tier === 'prompt')
@@ -143,17 +168,17 @@
               @if($tier->tier === 'prompt')
                 <form method="POST" action="{{ route('marketplace.prompt.request', $listing) }}" class="gate-form">
                   @csrf
-                  <input type="email" name="email" required placeholder="siz@email.com"
-                         aria-label="Promptni olish uchun email"
+                  <input type="email" name="email" required placeholder="you@email.com"
+                         aria-label="Your email address"
                          style="flex:1; padding:7px 10px; border:1.5px solid var(--line); border-radius:8px; font:inherit; min-width:0;">
-                  <button type="submit" class="buy-btn" style="width:auto; padding:8px 12px;">Bepul olish</button>
+                  <button type="submit" class="buy-btn" style="width:auto; padding:8px 12px;">Get it free</button>
                   {{-- Chastota tanlovi (spec §7). Standart — haftalik: kunlik digest
                        faqat oxirgi 24 soatda post chiqqanda yuboriladi. --}}
                   <label class="gate-freq">
-                    <span>Xat chastotasi</span>
-                    <select name="frequency" aria-label="Xat chastotasi">
-                      <option value="weekly" @selected(old('frequency', 'weekly') === 'weekly')>haftalik</option>
-                      <option value="daily" @selected(old('frequency') === 'daily')>kunlik</option>
+                    <span>Newsletter</span>
+                    <select name="frequency" aria-label="Newsletter frequency">
+                      <option value="weekly" @selected(old('frequency', 'weekly') === 'weekly')>weekly</option>
+                      <option value="daily" @selected(old('frequency') === 'daily')>daily</option>
                     </select>
                   </label>
                 </form>
@@ -173,6 +198,9 @@
             @endforelse
           </div>
           <p style="text-align:center; font-size:.74rem; color:var(--ink-faint); margin-top:12px;">🔒 Secure checkout · instant download</p>
+          @if($listing->category === '3d-scenes')
+            <p style="text-align:center; font-size:.74rem; color:var(--ink-faint); margin:6px 0 0;">Free tier: confirm your email and the download starts. Paid: checkout by Lemon Squeezy, then download from your account.</p>
+          @endif
         </div>
       </div>
     </div>
@@ -180,6 +208,17 @@
 </div>
 
 <script>
+(function () {
+  // Tell the demo iframe when it is on screen so WebGL scenes can pause themselves.
+  var frame = document.querySelector('[data-ngb-win] iframe');
+  if (frame && 'IntersectionObserver' in window) {
+    var onScreen = true;
+    var post = function () { try { frame.contentWindow.postMessage({ ngbVisible: onScreen && !document.hidden }, '*'); } catch (e) {} };
+    new IntersectionObserver(function (es) { onScreen = es[0].isIntersecting; post(); }, { threshold: 0.02 }).observe(frame);
+    document.addEventListener('visibilitychange', post);
+    frame.addEventListener('load', post);
+  }
+})();
 (function () {
   var win = document.querySelector('[data-ngb-win]');
   if (!win) return;

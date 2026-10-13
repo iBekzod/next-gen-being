@@ -55,6 +55,38 @@ class MarketplaceListing extends Model
         return $query->where('is_featured', true);
     }
 
+    /** Human label for a category slug ("3d-scenes" -> "3D Scenes"). */
+    public static function categoryLabel(?string $category): string
+    {
+        return match ($category) {
+            '3d-scenes' => '3D Scenes',
+            'ai'        => 'AI',
+            'saas'      => 'SaaS',
+            null, ''    => '',
+            default     => ucfirst($category),
+        };
+    }
+
+    /**
+     * Meta description: the first line of the description (written as a
+     * one-sentence summary) when it fits a search snippet, else the tagline.
+     */
+    public function seoDescription(): string
+    {
+        $summary = trim(strtok(str_replace("\r", '', (string) $this->description), "\n") ?: '');
+        if ($summary !== '' && mb_strlen($summary) <= 165) {
+            return $summary;
+        }
+
+        return \Illuminate\Support\Str::limit(strip_tags($this->tagline ?: $summary), 155);
+    }
+
+    /** Poster image URL for grid cards / social sharing, or null. */
+    public function posterUrl(): ?string
+    {
+        return $this->thumbnail ? asset('storage/'.ltrim($this->thumbnail, '/')) : null;
+    }
+
     public function cheapestPrice(): float
     {
         return (float) ($this->tiers()->min('price') ?? 0);

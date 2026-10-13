@@ -8,6 +8,7 @@ use Database\Seeders\HaloListingSeeder;
 use Database\Seeders\LandingPacksSeeder;
 use Database\Seeders\LinkFolioListingSeeder;
 use Database\Seeders\NebulaListingSeeder;
+use Database\Seeders\ThreeDScenesSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -36,6 +37,7 @@ class SyncMarketplaceListings extends Command
         HaloListingSeeder::class,
         AscendListingSeeder::class,
         LandingPacksSeeder::class,
+        ThreeDScenesSeeder::class,
     ];
 
     public function handle(): int

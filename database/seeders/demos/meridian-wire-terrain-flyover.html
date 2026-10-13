@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Meridian — Wireframe Terrain Flyover</title>
+<meta name="color-scheme" content="dark">
+<style>
+  :root{ --bg:#04060f; --fg:#f2f6ff; --muted:#9fb0d2; --glass:rgba(10,16,34,.55); --line:rgba(160,200,255,.18); }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:var(--fg); overflow:hidden;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+  #stage{ position:fixed; inset:0; }
+  canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:pan-y; }
+  .fallback{ position:absolute; inset:0; display:none;
+    background:
+      radial-gradient(60% 18% at 50% 62%, rgba(255,170,100,.45), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(120,190,255,.20) 0 1px, transparent 1px 28px) bottom/100% 38% no-repeat,
+      linear-gradient(180deg, #04060f 0%, #0a1430 62%, #0d1a3c 62%, #060a18 100%); }
+  body.no-gl .fallback{ display:block; } body.no-gl canvas{ display:none; }
+  .veil{ position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg, rgba(4,6,15,.55) 0%, transparent 42%); }
+  .hero{ position:absolute; left:50%; top:clamp(70px,14vh,150px); transform:translateX(-50%); width:min(760px,90vw); text-align:center; pointer-events:none; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:10px; margin:0 0 20px; padding:7px 14px; border-radius:999px; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .eyebrow b{ width:6px; height:6px; border-radius:50%; background:#9be7ff; box-shadow:0 0 10px #9be7ff; }
+  h1{ margin:0 0 16px; font-weight:700; font-size:clamp(2.1rem,6.4vw,4.6rem); line-height:.98; letter-spacing:-.05em; text-wrap:balance; }
+  h1 span{ background:linear-gradient(100deg,#fff,#a9e6ff 50%,#ffc58a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead{ margin:0 auto 26px; color:var(--muted); font-size:clamp(.95rem,1.7vw,1.1rem); line-height:1.6; max-width:50ch; }
+  .row{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; pointer-events:auto; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:13px 22px; border-radius:12px; text-decoration:none; font-weight:600; font-size:.92rem; transition:transform .2s, border-color .2s; }
+  .p{ color:#06101f; background:linear-gradient(180deg,#fff,#cfeeff); box-shadow:0 10px 36px rgba(120,200,255,.28), inset 0 1px 0 #fff; }
+  .g{ color:var(--fg); background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .btn:hover{ transform:translateY(-2px); } .btn:focus-visible,.sw:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+  .tune{ position:absolute; right:clamp(14px,3vw,34px); bottom:clamp(14px,3vh,30px); display:flex; align-items:center; gap:12px;
+    padding:8px 10px 8px 16px; border-radius:999px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    font-size:.72rem; color:var(--muted); }
+  .sw{ width:22px; height:22px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; transition:transform .15s, border-color .15s; }
+  .sw:hover{ transform:scale(1.12); } .sw[aria-pressed="true"]{ border-color:#fff; }
+  @media (max-width:560px){ .tune span.t{ display:none; } .tune{ padding-left:10px; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="fallback" aria-hidden="true"></div>
+  <div class="veil"></div>
+</div>
+<main class="hero">
+  <p class="eyebrow"><b></b>Wireframe flyover</p>
+  <h1>Fly low over <span>your data.</span></h1>
+  <p class="lead">An endless ridge line drawn in a single pass of light. Move your pointer to bank the camera and bend the horizon.</p>
+  <div class="row"><a class="btn p" href="#start">Launch the demo</a><a class="btn g" href="#docs">Read the docs</a></div>
+</main>
+<div class="tune" role="group" aria-label="Color palette">
+  <span class="t">Palette</span>
+  <button class="sw" data-p="0" aria-label="Meridian palette" aria-pressed="true" style="background:linear-gradient(135deg,#cfeeff,#4aa8ff,#ffa66b)"></button>
+  <button class="sw" data-p="1" aria-label="Verdant palette" aria-pressed="false" style="background:linear-gradient(135deg,#eaffd6,#5be7a9,#e7ff6b)"></button>
+  <button class="sw" data-p="2" aria-label="Rose palette" aria-pressed="false" style="background:linear-gradient(135deg,#ffe4f1,#ff6fb1,#8d6bff)"></button>
+</div>
+
+<script type="module">
+/* ---------------------------------------------------------------
+   Meridian - wireframe terrain flyover (three.js r160)
+   - the terrain is ONE static grid; the vertex shader scrolls a ridged-noise
+     height field under it, so the CPU does nothing per frame but update uniforms
+   - a solid occluder with the same displacement hides lines behind ridges
+   - pauses off-screen / hidden tab, adaptive pixel ratio, reduced-motion = still
+   - no WebGL / library blocked: CSS fallback
+---------------------------------------------------------------- */
+const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js';
+const canvas = document.getElementById('gl');
+const noGL = () => document.body.classList.add('no-gl');
+
+let THREE;
+try { THREE = await import(THREE_URL); } catch (e) { noGL(); }
+if (THREE) { try { boot(THREE); } catch (e) { console.warn(e); noGL(); } }
+
+function boot(THREE) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const coarse = matchMedia('(pointer: coarse)').matches || innerWidth < 700;
+  const COLS = coarse ? 90 : 132, ROWS = coarse ? 70 : 100;
+  const WIDTH = 46, DEPTH = 78, DZ = DEPTH / ROWS;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+  let dpr = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2);
+  renderer.setPixelRatio(dpr);
+
+  const scene = new THREE.Scene();
+  const FOV = 52;
+  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 120);
+
+  /* palettes: [zenith, horizon, low line, high line, sun] */
+  const PALETTES = [
+    ['#03050d', '#0f2149', '#2f7fd6', '#e6f6ff', '#ff9d5c'],
+    ['#02080a', '#0b2a26', '#1fa57a', '#f1ffd9', '#d6ff5a'],
+    ['#07040f', '#2a1244', '#a53bd6', '#ffe6f4', '#ff6fa8'],
+  ].map(p => p.map(h => new THREE.Color(h)));
+  const K = PALETTES[0].map(c => c.clone());
+
+  const U = {
+    uTime: { value: 0 }, uScroll: { value: 0 }, uDZ: { value: DZ }, uBend: { value: 0 }, uHorizon: { value: 0.55 },
+    uRes: { value: new THREE.Vector2(1, 1) },
+    uTop: { value: K[0] }, uHz: { value: K[1] }, uLo: { value: K[2] }, uHi: { value: K[3] }, uSun: { value: K[4] },
+  };
+
+  /* ---- sky ---- */
+  const sky = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+    uniforms: U, depthTest: false, depthWrite: false,
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }',
+    fragmentShader: /* glsl */`
+      uniform float uTime, uHorizon; uniform vec2 uRes; uniform vec3 uTop, uHz, uSun;
+      varying vec2 vUv;
+      float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      void main(){
+        float asp = uRes.x / uRes.y;
+        float y = vUv.y - uHorizon;                          // >0 above the horizon
+        float k = clamp(y / (1.0 - uHorizon), 0.0, 1.0);
+        vec3 col = mix(uHz, uTop, pow(k, 0.55));
+        // low sun / moon glow sitting on the horizon
+        vec2 sp = vec2((vUv.x - 0.5) * asp, y);
+        float glow = exp(-dot(sp, sp * vec2(1.0, 3.4)) * 5.5 * (1.0 + 2.5 * (1.0 - min(asp, 1.0))));
+        col += uSun * glow * 0.55;
+        // stars
+        vec2 g = floor(gl_FragCoord.xy / (uRes.y > 900.0 ? 3.0 : 2.0));
+        float r = h21(g), tw = 0.6 + 0.4 * sin(uTime * 2.0 + r * 50.0);
+        float star = step(0.9965, r) * tw * smoothstep(0.1, 0.5, k);
+        col += vec3(0.8, 0.9, 1.0) * star * 0.8;
+        col += (h21(gl_FragCoord.xy + fract(uTime) * 71.0) - 0.5) * 0.02;
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  }));
+  sky.frustumCulled = false; sky.renderOrder = -2;
+  scene.add(sky);
+
+  /* ---- terrain: shared grid attribute, two index buffers (lines + occluder) ---- */
+  const pos = new Float32Array((COLS + 1) * (ROWS + 1) * 3);
+  let n = 0;
+  for (let r = 0; r <= ROWS; r++) for (let c = 0; c <= COLS; c++) {
+    pos[n++] = (c / COLS - 0.5) * WIDTH; pos[n++] = 0; pos[n++] = -r * DZ;
+  }
+  const posAttr = new THREE.BufferAttribute(pos, 3);
+  const vi = (r, c) => r * (COLS + 1) + c;
+  const lineIdx = [], triIdx = [];
+  for (let r = 0; r <= ROWS; r++) for (let c = 0; c <= COLS; c++) {
+    if (c < COLS) lineIdx.push(vi(r, c), vi(r, c + 1));
+    if (r < ROWS) lineIdx.push(vi(r, c), vi(r + 1, c));
+    if (r < ROWS && c < COLS) triIdx.push(vi(r, c), vi(r + 1, c), vi(r, c + 1), vi(r, c + 1), vi(r + 1, c), vi(r + 1, c + 1));
+  }
+  const lineGeo = new THREE.BufferGeometry(); lineGeo.setAttribute('position', posAttr); lineGeo.setIndex(lineIdx);
+  const triGeo = new THREE.BufferGeometry(); triGeo.setAttribute('position', posAttr); triGeo.setIndex(triIdx);
+
+  const TERRAIN = /* glsl */`
+    uniform float uTime, uScroll, uDZ, uBend;
+    varying float vH, vDist, vNz;
+    float hash(vec2 p){ p = fract(p * vec2(0.1031, 0.1030)); p += dot(p, p.yx + 33.33); return fract((p.x + p.y) * p.x); }
+    float vnoise(vec2 p){
+      vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1,0)), f.x), mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), f.x), f.y);
+    }
+    float ridged(vec2 p){
+      float a = 0.5, s = 0.0;
+      for (int i = 0; i < 4; i++){ float n = 1.0 - abs(vnoise(p) * 2.0 - 1.0); s += n * n * a; p = p * 2.07 + 17.3; a *= 0.5; }
+      return s;
+    }
+    vec3 terrain(vec3 p){
+      float zw = p.z + mod(uScroll, uDZ);                    // grid rows travel with the terrain
+      float nz = zw - uScroll;                               // noise coordinate scrolls toward the camera
+      float valley = smoothstep(2.2, 11.0, abs(p.x));        // flat canyon floor down the middle
+      float h = ridged(vec2(p.x * 0.085, nz * 0.07)) * 8.0 * pow(valley, 1.25);
+      h += vnoise(vec2(p.x * 0.4, nz * 0.4)) * 0.5 * valley;
+      vNz = nz; vH = h;
+      float x = p.x + uBend * zw * zw * 0.0042;              // horizon bends with the pointer
+      return vec3(x, h - 3.1, zw);
+    }`;
+
+  const lines = new THREE.LineSegments(lineGeo, new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: TERRAIN + /* glsl */`
+      void main(){
+        vec3 q = terrain(position); q.y += 0.012;
+        vec4 mv = modelViewMatrix * vec4(q, 1.0);
+        vDist = -mv.z;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */`
+      uniform float uTime; uniform vec3 uLo, uHi, uSun;
+      varying float vH, vDist, vNz;
+      void main(){
+        float fog = 1.0 - smoothstep(14.0, 70.0, vDist);
+        float t = clamp(vH / 8.5, 0.0, 1.0);
+        vec3 col = mix(uLo, uHi, pow(t, 1.4));
+        float scan = pow(0.5 + 0.5 * sin(vNz * 0.11 - uTime * 0.55), 10.0);   // slow light sweep
+        col = col * (0.55 + 0.9 * t) + uSun * scan * 0.5 * (0.3 + t);
+        float near = smoothstep(0.0, 2.0, vDist - 1.0);
+        gl_FragColor = vec4(col, fog * near * 0.95);
+      }`,
+  }));
+  lines.frustumCulled = false; lines.renderOrder = 1;
+  scene.add(lines);
+
+  const occluder = new THREE.Mesh(triGeo, new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1,
+    vertexShader: TERRAIN + /* glsl */`
+      void main(){
+        vec3 q = terrain(position);
+        vec4 mv = modelViewMatrix * vec4(q, 1.0);
+        vDist = -mv.z;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */`
+      uniform vec3 uHz, uTop, uLo; varying float vH, vDist, vNz;
+      void main(){
+        float fog = smoothstep(8.0, 52.0, vDist);
+        vec3 ground = mix(uTop * 0.55, uLo * 0.10, 1.0 - clamp(vH / 8.0, 0.0, 1.0));
+        gl_FragColor = vec4(ground, 1.0 - fog);   // far ridges fade out so they melt into the sky glow
+      }`,
+  }));
+  occluder.frustumCulled = false; occluder.renderOrder = 0;
+  scene.add(occluder);
+
+  /* ---- pointer ---- */
+  const ptr = { x: 0, y: 0 }, sm = { x: 0, y: 0 };
+  let lastInput = -1e9;
+  function onMove(e) {
+    if (reduced.matches) return;
+    lastInput = performance.now();
+    const r = canvas.getBoundingClientRect();
+    ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = (e.clientY - r.top) / r.height * 2 - 1;
+  }
+  addEventListener('pointermove', onMove, { passive: true });
+  addEventListener('pointerdown', onMove, { passive: true });
+
+  let palette = 0;
+  document.querySelectorAll('.sw').forEach(b => b.addEventListener('click', () => {
+    palette = +b.dataset.p;
+    document.querySelectorAll('.sw').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (reduced.matches) draw();
+  }));
+
+  function resize() {
+    const w = Math.max(1, innerWidth), h = Math.max(1, innerHeight);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.fov = w / h < 0.8 ? 66 : FOV; camera.updateProjectionMatrix();
+    U.uRes.value.set(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
+    if (reduced.matches) draw();
+  }
+  new ResizeObserver(resize).observe(document.getElementById('stage'));
+
+  /* ---- loop ---- */
+  let time = 5, scroll = 40, running = false, raf = 0, prev = 0, slow = 0, frames = 0;
+  const SPEED = 3.4;
+  function draw() {
+    for (let i = 0; i < 5; i++) K[i].lerp(PALETTES[palette][i], reduced.matches ? 1 : 0.06);
+    // camera: low flight, banks and pitches with the pointer
+    const pitch = 0.11 + sm.y * 0.04;
+    camera.position.set(sm.x * 1.4, -0.2 - sm.y * 0.4, 4.5);
+    camera.rotation.set(pitch, -sm.x * 0.1, -sm.x * 0.07, 'YXZ');
+    camera.updateMatrixWorld();
+    const f = Math.tan((camera.fov * Math.PI / 180) / 2);
+    U.uHorizon.value = 0.5 - 0.5 * Math.tan(pitch) / f;
+    renderer.render(scene, camera);
+  }
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min((now - prev) / 1000, 0.05); prev = now;
+    time += dt; scroll += dt * SPEED;
+    if (now - lastInput > 3500) { ptr.x = Math.sin(time * 0.23) * 0.7; ptr.y = Math.cos(time * 0.17) * 0.25; }   // idle drift
+    sm.x += (ptr.x - sm.x) * 0.04; sm.y += (ptr.y - sm.y) * 0.04;
+    U.uTime.value = time; U.uScroll.value = scroll; U.uBend.value = -sm.x * 0.9;
+    draw();
+    if (++frames > 30) {
+      slow = dt > 0.022 ? slow + 1 : Math.max(0, slow - 1);
+      if (slow > 40 && dpr > 1) { slow = 0; dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); }
+    }
+  }
+  function start() { if (running || reduced.matches) return; running = true; prev = performance.now(); raf = requestAnimationFrame(frame); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+  // run only while on screen: own viewport, tab visibility, and (when embedded) the host page tells us via postMessage
+  let visible = true, hostVisible = true;
+  const sync = () => (visible && hostVisible && !document.hidden) ? start() : stop();
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; sync(); }).observe(canvas);
+  document.addEventListener('visibilitychange', sync);
+  addEventListener('message', e => { if (e.source === parent && e.data && typeof e.data.ngbVisible === 'boolean') { hostVisible = e.data.ngbVisible; sync(); } });
+  reduced.addEventListener('change', () => { reduced.matches ? (stop(), draw()) : start(); });
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); stop(); noGL(); });
+
+  U.uScroll.value = scroll; U.uTime.value = time;
+  resize();
+  draw();
+  start();
+}
+</script>
+</body>
+</html>

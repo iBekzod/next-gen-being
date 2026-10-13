@@ -89,14 +89,14 @@ class PromptGateController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Emailni qabul qilib bo\'lmadi. Birozdan keyin urinib ko\'ring.');
+            return back()->with('error', 'We could not save your email. Please try again in a moment.');
         }
 
         if ($subscription->verified_at) {
             return redirect()->to($this->newsletter->promptDownloadUrl($subscription, $listing));
         }
 
-        return back()->with('success', 'Tasdiqlash havolasini emailingizga yubordik — bosing va prompt sizniki.');
+        return back()->with('success', 'Check your inbox: we sent a confirmation link. Click it and your download starts.');
     }
 
     /**
@@ -119,7 +119,7 @@ class PromptGateController extends Controller
             ->whereNotNull('file_path')
             ->first();
 
-        abort_if($product === null, 404, 'Bu mahsulot uchun prompt hali tayyor emas.');
+        abort_if($product === null, 404, 'The download for this product is not ready yet.');
         abort_unless(Storage::disk('private')->exists($product->file_path), 404);
 
         Log::info('Prompt magnet delivered', [

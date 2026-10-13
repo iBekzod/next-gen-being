@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Liquid Glass — Morphing Blob Hero</title>
+<meta name="color-scheme" content="dark">
+<style>
+  :root{ --bg:#0d0716; --fg:#fbf7ff; --muted:#bdb2d4; --glass:rgba(24,14,40,.5); --line:rgba(255,255,255,.16); }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:var(--fg); overflow:hidden;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+  #stage{ position:fixed; inset:0; }
+  canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:pan-y; }
+  .fallback{ position:absolute; inset:0; display:none;
+    background:
+      radial-gradient(34% 40% at 70% 46%, rgba(255,255,255,.30), rgba(255,255,255,0) 60%),
+      radial-gradient(46% 52% at 72% 48%, rgba(255,128,92,.75), transparent 70%),
+      radial-gradient(50% 60% at 40% 80%, rgba(214,60,160,.55), transparent 70%),
+      radial-gradient(50% 60% at 90% 10%, rgba(52,190,200,.45), transparent 70%), var(--bg); }
+  body.no-gl .fallback{ display:block; } body.no-gl canvas{ display:none; }
+  .hero{ position:absolute; left:clamp(22px,6vw,84px); top:50%; transform:translateY(-50%); max-width:min(520px,86vw); pointer-events:none; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:10px; margin:0 0 20px; padding:7px 14px 7px 10px; border-radius:999px;
+    font-size:.74rem; font-weight:600; letter-spacing:.04em; color:var(--muted); background:var(--glass); border:1px solid var(--line);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .eyebrow b{ width:8px; height:8px; border-radius:50%; background:linear-gradient(135deg,#ffb36b,#ff4fa3); box-shadow:0 0 12px #ff6aa8; }
+  h1{ margin:0 0 18px; font-weight:750; font-size:clamp(2.2rem,6vw,4.3rem); line-height:.98; letter-spacing:-.05em; text-wrap:balance; }
+  h1 span{ background:linear-gradient(100deg,#ffd0a0,#ff72b4 55%,#9d8bff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead{ margin:0 0 28px; color:var(--muted); font-size:clamp(.95rem,1.7vw,1.1rem); line-height:1.6; max-width:44ch; }
+  .row{ display:flex; gap:12px; flex-wrap:wrap; pointer-events:auto; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:13px 22px; border-radius:14px; text-decoration:none; font-weight:600; font-size:.92rem; transition:transform .2s, background .2s; }
+  .p{ color:#1c0d2b; background:linear-gradient(180deg,#fff,#ffe1cf); box-shadow:0 12px 40px rgba(255,120,150,.32), inset 0 1px 0 #fff; }
+  .g{ color:var(--fg); background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .btn:hover{ transform:translateY(-2px); } .btn:focus-visible,.sw:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+  .tune{ position:absolute; right:clamp(14px,3vw,34px); bottom:clamp(14px,3vh,30px); display:flex; align-items:center; gap:12px;
+    padding:8px 10px 8px 16px; border-radius:999px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    font-size:.72rem; color:var(--muted); }
+  .sw{ width:22px; height:22px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; transition:transform .15s, border-color .15s; }
+  .sw:hover{ transform:scale(1.12); } .sw[aria-pressed="true"]{ border-color:#fff; }
+  #stage::after{ content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg, rgba(13,7,22,.38), transparent 55%); }
+  @media (max-width:760px){
+    #stage::after{ background:linear-gradient(180deg, transparent 42%, rgba(13,7,22,.62) 100%); }
+    .hero{ top:auto; bottom:clamp(70px,11vh,110px); transform:none; }
+    .tune span.t{ display:none; } .tune{ padding-left:10px; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="fallback" aria-hidden="true"></div>
+</div>
+<main class="hero">
+  <p class="eyebrow"><b></b>Morphing glass hero</p>
+  <h1>Interfaces that feel <span>alive.</span></h1>
+  <p class="lead">A single shader-driven blob that bends light, breathes on its own and leans toward your cursor. Press it, it pushes back.</p>
+  <div class="row"><a class="btn p" href="#start">Get started</a><a class="btn g" href="#docs">See how it works</a></div>
+</main>
+<div class="tune" role="group" aria-label="Color palette">
+  <span class="t">Palette</span>
+  <button class="sw" data-p="0" aria-label="Dusk palette" aria-pressed="true" style="background:linear-gradient(135deg,#ff9a62,#ff4fa3,#34bec8)"></button>
+  <button class="sw" data-p="1" aria-label="Lagoon palette" aria-pressed="false" style="background:linear-gradient(135deg,#b8f26b,#26d0c6,#3b5bff)"></button>
+  <button class="sw" data-p="2" aria-label="Ink palette" aria-pressed="false" style="background:linear-gradient(135deg,#f4f4ff,#8f98ff,#1a1a3a)"></button>
+</div>
+
+<script type="module">
+/* ---------------------------------------------------------------
+   Liquid Glass - morphing blob hero (three.js r160)
+   - one displaced icosphere + one full-screen gradient quad, two draw calls
+   - the "glass" is faked in the fragment shader (refraction of the same
+     gradient the quad paints), so there are no render targets and it stays
+     cheap on phones
+   - pauses off-screen / hidden tab, adaptive pixel ratio, reduced-motion = still
+   - no WebGL / library blocked: CSS fallback
+---------------------------------------------------------------- */
+const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js';
+const canvas = document.getElementById('gl');
+const noGL = () => document.body.classList.add('no-gl');
+
+let THREE;
+try { THREE = await import(THREE_URL); } catch (e) { noGL(); }
+if (THREE) { try { boot(THREE); } catch (e) { console.warn(e); noGL(); } }
+
+function boot(THREE) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const coarse = matchMedia('(pointer: coarse)').matches || innerWidth < 700;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+  let dpr = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2);
+  renderer.setPixelRatio(dpr);
+  renderer.autoClear = true;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 50);
+  camera.position.set(0, 0, 7);
+
+  /* palettes: [base, light A, light B, light C] */
+  const PALETTES = [
+    ['#0d0716', '#ff8a5c', '#d63ca0', '#34bec8'],
+    ['#04141a', '#b8f26b', '#1fc9c0', '#4258ff'],
+    ['#07070f', '#f4f4ff', '#7b86ff', '#2a2a55'],
+  ].map(p => p.map(h => new THREE.Color(h)));
+  const K = PALETTES[0].map(c => c.clone());
+
+  const U = {
+    uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uPointer: { value: new THREE.Vector2(0, 0) },
+    uK0: { value: K[0] }, uK1: { value: K[1] }, uK2: { value: K[2] }, uK3: { value: K[3] },
+    uAmp: { value: 0.3 }, uBulge: { value: 0 }, uDir: { value: new THREE.Vector3(0, 0, 1) },
+  };
+
+  /* shared GLSL: the background gradient, reused for refraction */
+  const BG = /* glsl */`
+    uniform vec2 uRes; uniform float uTime; uniform vec2 uPointer;
+    uniform vec3 uK0, uK1, uK2, uK3;
+    float h21(vec2 p){ p = fract(p * vec2(123.34, 345.45)); p += dot(p, p + 34.345); return fract(p.x * p.y); }
+    vec3 bgColor(vec2 uv){
+      float asp = uRes.x / uRes.y;
+      vec2 p = (uv - 0.5) * vec2(asp, 1.0);
+      float t = uTime * 0.18;
+      vec2 a = vec2(0.22 * asp + sin(t * 1.1) * 0.22, 0.26 + cos(t * 0.9) * 0.14) + uPointer * 0.05;
+      vec2 b = vec2(0.30 * asp + cos(t * 0.8 + 2.0) * 0.2, -0.30 + sin(t * 1.2 + 1.0) * 0.12);
+      vec2 c = vec2(-0.26 * asp + sin(t * 0.7) * 0.2, 0.18 + cos(t * 1.0 + 4.0) * 0.16);
+      vec3 col = uK0;
+      col += uK1 * smoothstep(0.78, 0.0, length(p - a)) * 1.0;
+      col += uK2 * smoothstep(0.85, 0.0, length(p - b)) * 0.95;
+      col += uK3 * smoothstep(0.95, 0.0, length(p - c)) * 0.75;
+      col *= 1.0 - 0.38 * smoothstep(0.55, 1.25, length(p));          // vignette
+      return col;
+    }`;
+
+  /* background quad */
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+    uniforms: U, depthTest: false, depthWrite: false,
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: BG + /* glsl */`
+      varying vec2 vUv;
+      void main(){
+        vec3 c = bgColor(vUv);
+        c += (h21(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.035;   // film grain, kills banding
+        gl_FragColor = vec4(c, 1.0);
+      }`,
+  }));
+  bg.frustumCulled = false; bg.renderOrder = -1;
+  scene.add(bg);
+
+  /* the glass blob */
+  const blob = new THREE.Mesh(new THREE.IcosahedronGeometry(1, coarse ? 36 : 56), new THREE.ShaderMaterial({
+    uniforms: U,
+    vertexShader: /* glsl */`
+      uniform float uTime, uAmp, uBulge; uniform vec3 uDir;
+      varying vec3 vN, vV, vP;
+      float hash(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+      float vnoise(vec3 x){
+        vec3 i = floor(x), f = fract(x); f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+        return mix(mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                   mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+      }
+      float field(vec3 p){
+        float t = uTime * 0.32;
+        float n = vnoise(p * 1.25 + vec3(0.0, t, t * 0.6)) * 0.64 + vnoise(p * 2.6 - vec3(t * 0.8, 0.0, t)) * 0.3;
+        float b = pow(max(dot(p, uDir), 0.0), 5.0) * uBulge;
+        return (n - 0.47) * uAmp + b;
+      }
+      void main(){
+        vec3 p = normalize(position);
+        vec3 up = abs(p.y) < 0.99 ? vec3(0, 1, 0) : vec3(1, 0, 0);
+        vec3 t1 = normalize(cross(up, p)), t2 = cross(p, t1);
+        float e = 0.025;
+        vec3 q0 = p * (1.0 + field(p));
+        vec3 pa = normalize(p + t1 * e), pb = normalize(p + t2 * e);
+        vec3 qa = pa * (1.0 + field(pa)), qb = pb * (1.0 + field(pb));
+        vec3 n = normalize(cross(qa - q0, qb - q0));
+        vN = normalize(normalMatrix * n);
+        vec4 mv = modelViewMatrix * vec4(q0, 1.0);
+        vV = -mv.xyz; vP = q0;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: BG + /* glsl */`
+      varying vec3 vN, vV, vP;
+      void main(){
+        vec3 N = normalize(vN), V = normalize(vV);
+        float ndv = clamp(dot(N, V), 0.0, 1.0);
+        float fres = pow(1.0 - ndv, 3.0);
+        vec2 suv = gl_FragCoord.xy / uRes;
+        // refraction with a touch of chromatic dispersion
+        vec2 off = N.xy * (0.12 + 0.36 * pow(1.0 - ndv, 1.4));
+        vec3 col = vec3(bgColor(suv - off * 1.00).r, bgColor(suv - off * 1.07).g, bgColor(suv - off * 1.15).b);
+        col = col * 0.5 + col * col * 0.35;
+        vec3 R = reflect(-V, N);
+        col += bgColor(R.xy * 0.5 + 0.5) * fres * 0.9;               // environment reflection
+        // thin-film iridescence on the edges
+        vec3 irid = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + ndv * 1.3 + uTime * 0.03 + vP.y * 0.25));
+        col += irid * (0.10 + fres * 0.65);
+        // two soft key lights + a hard glint
+        vec3 L1 = normalize(vec3(-0.55, 0.8, 0.65)), L2 = normalize(vec3(0.7, -0.35, 0.5));
+        float s1 = pow(max(dot(reflect(-L1, N), V), 0.0), 70.0);
+        float s2 = pow(max(dot(reflect(-L2, N), V), 0.0), 40.0);
+        float broad = pow(max(dot(reflect(-L1, N), V), 0.0), 9.0);
+        float caustic = pow(max(dot(N, -L1), 0.0), 2.5) * ndv;
+        col += vec3(1.0) * (s1 * 0.95 + broad * 0.16) + uK1 * s2 * 0.5 + uK3 * caustic * 0.45;
+        col += pow(1.0 - ndv, 6.0) * 0.35;                                  // bright rim
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  }));
+  blob.frustumCulled = false;
+  scene.add(blob);
+
+  /* ---- pointer ---- */
+  const ptr = { x: 0, y: 0, active: 0 }, dirT = new THREE.Vector3(0, 0, 1), proj = new THREE.Vector3();
+  let lastInput = -1e9, punch = 0;
+  function onMove(e) {
+    if (reduced.matches) return;
+    lastInput = performance.now();
+    const r = canvas.getBoundingClientRect();
+    ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = -((e.clientY - r.top) / r.height * 2 - 1); ptr.active = 1;
+  }
+  addEventListener('pointermove', onMove, { passive: true });
+  addEventListener('pointerdown', e => { if (reduced.matches || e.target.closest('.tune, .btn')) return; onMove(e); punch = 1; }, { passive: true });
+  document.addEventListener('pointerleave', () => { ptr.active = 0; });
+
+  let palette = 0;
+  document.querySelectorAll('.sw').forEach(b => b.addEventListener('click', () => {
+    palette = +b.dataset.p;
+    document.querySelectorAll('.sw').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (reduced.matches) draw();
+  }));
+
+  /* ---- layout: blob sits right on wide screens, upper-centre on phones ---- */
+  let baseScale = 1;
+  function resize() {
+    const w = Math.max(1, innerWidth), h = Math.max(1, innerHeight);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    const px = renderer.getPixelRatio();
+    U.uRes.value.set(w * px, h * px);
+    const wide = w / h > 1.05 && w > 760;
+    const s = wide ? 1.12 : Math.min(1.0, 1.37 * (w / h));
+    baseScale = s; blob.scale.setScalar(s);
+    blob.position.set(wide ? 1.9 * Math.min(1, w / h / 1.6) + 0.35 : 0, wide ? 0.05 : 1.05, 0);
+    if (reduced.matches) draw();
+  }
+  new ResizeObserver(resize).observe(document.getElementById('stage'));
+
+  /* ---- loop ---- */
+  let time = 3.2, running = false, raf = 0, prev = 0, slow = 0, frames = 0;
+  function draw() {
+    for (let i = 0; i < 4; i++) K[i].lerp(PALETTES[palette][i], reduced.matches ? 1 : 0.06);
+    renderer.render(scene, camera);
+  }
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min((now - prev) / 1000, 0.05); prev = now;
+    time += dt;
+    // idle wander so touch screens feel alive
+    if (now - lastInput > 3500) { ptr.x = Math.cos(time * 0.5) * 0.6; ptr.y = Math.sin(time * 0.37) * 0.45; ptr.active = 0.5; }
+    U.uTime.value = time;
+    U.uPointer.value.x += (ptr.x - U.uPointer.value.x) * 0.06; U.uPointer.value.y += (ptr.y - U.uPointer.value.y) * 0.06;
+
+    // pointer direction relative to the blob's on-screen centre -> object-space bulge direction
+    proj.copy(blob.position).project(camera);
+    const asp = camera.aspect;
+    const dx = (U.uPointer.value.x - proj.x) * asp * 0.55, dy = (U.uPointer.value.y - proj.y) * 0.55;
+    dirT.set(dx, dy, Math.max(0.35, 1.0 - Math.hypot(dx, dy) * 0.6)).normalize();
+    U.uDir.value.lerp(dirT, 0.08).normalize();
+    U.uBulge.value += ((0.05 + 0.2 * ptr.active) - U.uBulge.value) * 0.05;
+
+    punch *= Math.pow(0.04, dt);                      // spring-ish decay (~1s)
+    U.uAmp.value = 0.34 + punch * 0.34 * Math.sin(time * 18.0 + 1.0) * 0.4 + punch * 0.22;
+    blob.scale.setScalar(baseScale * (1.0 + punch * 0.05));
+    draw();
+
+    if (++frames > 30) {
+      slow = dt > 0.022 ? slow + 1 : Math.max(0, slow - 1);
+      if (slow > 40 && dpr > 1) { slow = 0; dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); }
+    }
+  }
+  function start() { if (running || reduced.matches) return; running = true; prev = performance.now(); raf = requestAnimationFrame(frame); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+  // run only while on screen: own viewport, tab visibility, and (when embedded) the host page tells us via postMessage
+  let visible = true, hostVisible = true;
+  const sync = () => (visible && hostVisible && !document.hidden) ? start() : stop();
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; sync(); }).observe(canvas);
+  document.addEventListener('visibilitychange', sync);
+  addEventListener('message', e => { if (e.source === parent && e.data && typeof e.data.ngbVisible === 'boolean') { hostVisible = e.data.ngbVisible; sync(); } });
+  reduced.addEventListener('change', () => { reduced.matches ? (stop(), draw()) : start(); });
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); stop(); noGL(); });
+
+  resize();
+  draw();
+  start();
+}
+</script>
+</body>
+</html>

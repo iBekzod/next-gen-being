@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Stellar Drift — Particle Galaxy Hero</title>
+<meta name="color-scheme" content="dark">
+<style>
+  :root{ --bg:#04050c; --fg:#f4f5fb; --muted:#a3a9c4; --accent:#ffd9a0; --glass:rgba(16,18,34,.55); --line:rgba(255,255,255,.14); }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:var(--fg); overflow:hidden;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+  #stage{ position:fixed; inset:0; }
+  canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:pan-y; }
+  /* CSS-only fallback: shown when WebGL or the 3D library is unavailable */
+  .fallback{ position:absolute; inset:0; display:none;
+    background:
+      radial-gradient(40% 28% at 52% 52%, rgba(255,217,160,.55), transparent 70%),
+      radial-gradient(70% 45% at 50% 52%, rgba(214,83,168,.32), transparent 72%),
+      radial-gradient(90% 60% at 50% 55%, rgba(60,120,255,.22), transparent 75%),
+      var(--bg); }
+  body.no-gl .fallback{ display:block; } body.no-gl canvas{ display:none; }
+  .veil{ position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 50%, transparent 40%, rgba(4,5,12,.7) 100%),
+               linear-gradient(90deg, rgba(4,5,12,.55) 0%, rgba(4,5,12,.08) 45%, transparent 60%); }
+  .hero{ position:absolute; left:clamp(22px,6vw,84px); bottom:clamp(64px,13vh,130px); max-width:min(560px,86vw); pointer-events:none; }
+  .eyebrow{ display:inline-flex; gap:10px; align-items:center; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin:0 0 18px; }
+  .eyebrow i{ width:28px; height:1px; background:linear-gradient(90deg,var(--accent),transparent); }
+  h1{ margin:0 0 16px; font-weight:700; font-size:clamp(2.1rem,6.2vw,4.4rem); line-height:.98; letter-spacing:-.045em; text-wrap:balance; }
+  h1 em{ font-style:normal; background:linear-gradient(100deg,#fff 10%,var(--accent) 55%,#f08cd2); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead{ margin:0 0 26px; color:var(--muted); font-size:clamp(.95rem,1.7vw,1.1rem); line-height:1.6; max-width:46ch; }
+  .cta{ pointer-events:auto; display:inline-flex; align-items:center; gap:10px; padding:13px 22px; border-radius:999px; text-decoration:none;
+    font-weight:600; font-size:.92rem; color:#10101c; background:linear-gradient(180deg,#fff,#ffe6c0);
+    box-shadow:0 12px 40px rgba(255,200,130,.28), inset 0 1px 0 #fff; transition:transform .2s, box-shadow .2s; }
+  .cta:hover{ transform:translateY(-2px); box-shadow:0 18px 50px rgba(255,200,130,.4), inset 0 1px 0 #fff; }
+  .cta:focus-visible,.sw:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+  .tune{ position:absolute; right:clamp(14px,3vw,34px); bottom:clamp(14px,3vh,30px); display:flex; align-items:center; gap:12px;
+    padding:8px 10px 8px 16px; border-radius:999px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    font-size:.72rem; color:var(--muted); }
+  .sw{ width:22px; height:22px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; transition:transform .15s, border-color .15s; }
+  .sw:hover{ transform:scale(1.12); } .sw[aria-pressed="true"]{ border-color:#fff; }
+  @media (max-width:560px){ .tune span.t{ display:none; } .tune{ padding-left:10px; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="fallback" aria-hidden="true"></div>
+  <div class="veil"></div>
+</div>
+<main class="hero">
+  <p class="eyebrow"><i></i>Particle galaxy hero</p>
+  <h1>Give the first screen <em>gravity.</em></h1>
+  <p class="lead">Ninety thousand stars, one draw call, and a cursor that bends them. Click anywhere to send a shockwave through the arms.</p>
+  <a class="cta" href="#start">Start exploring <span aria-hidden="true">&rarr;</span></a>
+</main>
+<div class="tune" role="group" aria-label="Galaxy palette">
+  <span class="t">Palette</span>
+  <button class="sw" data-p="0" aria-label="Aurora palette" aria-pressed="true" style="background:linear-gradient(135deg,#ffd9a0,#d653a8,#3c78ff)"></button>
+  <button class="sw" data-p="1" aria-label="Ember palette" aria-pressed="false" style="background:linear-gradient(135deg,#fff3d6,#ff7a3d,#6a1b9a)"></button>
+  <button class="sw" data-p="2" aria-label="Glacier palette" aria-pressed="false" style="background:linear-gradient(135deg,#ffffff,#7fd8ff,#2b4cff)"></button>
+</div>
+
+<script type="module">
+/* ---------------------------------------------------------------
+   Stellar Drift - particle galaxy hero (three.js r160, one draw call)
+   - all star motion runs on the GPU (vertex shader), CPU only moves uniforms
+   - pauses when off-screen / tab hidden, adapts pixel ratio to stay near 60fps
+   - prefers-reduced-motion: renders a single still frame
+   - no WebGL / library blocked: CSS fallback is shown
+---------------------------------------------------------------- */
+const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js';
+const canvas = document.getElementById('gl');
+const noGL = () => document.body.classList.add('no-gl');
+
+let THREE;
+try { THREE = await import(THREE_URL); } catch (e) { noGL(); }
+
+if (THREE) { try { boot(THREE); } catch (e) { console.warn(e); noGL(); } }
+
+function boot(THREE) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const coarse = matchMedia('(pointer: coarse)').matches || innerWidth < 700;
+  const COUNT = coarse ? 38000 : 90000;
+  const RADIUS = 4.6;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
+  let dpr = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2);
+  renderer.setPixelRatio(dpr);
+  renderer.setClearColor(0x04050c, 1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+  camera.up.set(Math.sin(0.2), Math.cos(0.2), 0);        // slight roll for a diagonal composition
+  const camBase = new THREE.Vector3(2.1, 6.0, 5.8);
+
+  /* palettes: core -> mid -> rim */
+  const PALETTES = [
+    ['#ffd9a0', '#d653a8', '#3c78ff'],
+    ['#fff3d6', '#ff7a3d', '#6a1b9a'],
+    ['#ffffff', '#7fd8ff', '#2b4cff'],
+  ].map(p => p.map(h => new THREE.Color(h)));
+  const uC = PALETTES[0].map(c => c.clone());
+
+  /* ---- galaxy particles ---- */
+  const geo = new THREE.BufferGeometry();
+  const A = new Float32Array(COUNT * 4);  // r01, arm, angle jitter, size/brightness rand
+  const B = new Float32Array(COUNT * 3);  // gaussian-ish scatter
+  const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+  for (let i = 0; i < COUNT; i++) {
+    A[i*4]   = Math.random();
+    A[i*4+1] = Math.floor(Math.random() * 4);
+    A[i*4+2] = gauss() * 2.0;
+    A[i*4+3] = Math.random();
+    B[i*3]   = gauss(); B[i*3+1] = gauss(); B[i*3+2] = gauss();
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(COUNT * 3), 3));
+  geo.setAttribute('aA', new THREE.BufferAttribute(A, 4));
+  geo.setAttribute('aB', new THREE.BufferAttribute(B, 3));
+
+  const U = {
+    uTime: { value: 0 }, uPixelRatio: { value: dpr }, uViewH: { value: 800 },
+    uSize: { value: 0.024 }, uRadius: { value: RADIUS }, uTwist: { value: 1.55 }, uArms: { value: 4 },
+    uMouse: { value: new THREE.Vector3(0, 0, 0) },       // x, strength, z
+    uPulse: { value: 99 }, uPulseAt: { value: new THREE.Vector2() },
+    uC0: { value: uC[0] }, uC1: { value: uC[1] }, uC2: { value: uC[2] },
+  };
+
+  const galaxy = new THREE.Points(geo, new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */`
+      uniform float uTime, uPixelRatio, uViewH, uSize, uRadius, uTwist, uArms, uPulse;
+      uniform vec3 uMouse; uniform vec2 uPulseAt;
+      uniform vec3 uC0, uC1, uC2;
+      attribute vec4 aA; attribute vec3 aB;
+      varying vec3 vColor; varying float vAlpha;
+      void main(){
+        float rr0 = aA.x;
+        float r = pow(rr0, 1.3) * uRadius + 0.03;
+        float rr = r / uRadius;
+        // differential rotation: the core spins faster than the rim
+        float omega = 0.55 / (0.30 + r * 0.95);
+        float ang = aA.y * 6.2831853 / uArms + r * uTwist + aA.z * (0.34 - 0.24 * rr) + uTime * omega * 0.32;
+        vec3 p = vec3(cos(ang) * r, 0.0, sin(ang) * r);
+        float spread = 0.03 + 0.17 * rr;
+        p += aB * vec3(spread, spread * 0.42 + 0.008, spread);
+        p.y *= 1.0 + 2.6 * exp(-rr * rr * 16.0);          // central bulge
+
+        // cursor gravity well: stars are pushed away and lifted
+        vec2 d = p.xz - uMouse.xz;
+        float dist = length(d) + 1e-4;
+        float g = exp(-dist * dist / 0.6) * uMouse.y;
+        p.xz += (d / dist * 0.28 + vec2(-d.y, d.x) / dist * 0.42) * g;
+        p.y  += g * 0.5 * sin(ang * 3.0 + uTime * 2.2);
+
+        // click shockwave
+        vec2 pd = p.xz - uPulseAt; float pr = length(pd) + 1e-4;
+        float ring = exp(-pow(pr - uPulse * 4.2, 2.0) / 0.2) * exp(-uPulse * 0.85);
+        p.xz += pd / pr * ring * 0.55;
+        p.y  += ring * 0.55;
+
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+
+        float tw = 0.72 + 0.28 * sin(uTime * 1.6 + aA.w * 60.0);
+        float size = uSize * uPixelRatio * uViewH / -mv.z * (0.45 + aA.w * 1.25) * (1.0 + g * 1.3 + ring * 2.2);
+        gl_PointSize = clamp(size, 1.0, 36.0);
+
+        vec3 col = rr < 0.34 ? mix(uC0, uC1, rr / 0.34) : mix(uC1, uC2, (rr - 0.34) / 0.66);
+        vColor = col * tw * (1.0 + 0.5 * exp(-rr * 6.0)) + g * 0.4 + ring * 0.6;
+        vAlpha = (0.75 + 0.7 * (1.0 - rr)) * (0.6 + 0.4 * aA.w);
+      }`,
+    fragmentShader: /* glsl */`
+      varying vec3 vColor; varying float vAlpha;
+      void main(){
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float a = pow(1.0 - d * 2.0, 1.8);
+        gl_FragColor = vec4(vColor, a * vAlpha);
+      }`,
+  }));
+  galaxy.frustumCulled = false;
+  scene.add(galaxy);
+
+  /* ---- soft disc glow under the stars ---- */
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(RADIUS * 2.6, RADIUS * 2.6), new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: /* glsl */`
+      uniform vec3 uC0, uC1, uC2; varying vec2 vUv;
+      void main(){
+        float r = length(vUv - 0.5) * 2.0;
+        float core = exp(-r * r * 26.0);
+        float halo = exp(-r * r * 4.5);
+        vec3 c = uC0 * core * 0.55 + uC1 * halo * 0.12 + uC2 * exp(-r*r*1.6) * 0.04;
+        gl_FragColor = vec4(c, 1.0);
+      }`,
+  }));
+  glow.rotation.x = -Math.PI / 2; glow.position.y = -0.02;
+  scene.add(glow);
+
+  /* ---- distant star field ---- */
+  const SN = coarse ? 900 : 2200, sp = new Float32Array(SN * 3);
+  for (let i = 0; i < SN; i++) {
+    const u = Math.random() * 2 - 1, t = Math.random() * 6.2831853, s = Math.sqrt(1 - u * u), R = 26 + Math.random() * 10;
+    sp[i*3] = s * Math.cos(t) * R; sp[i*3+1] = u * R; sp[i*3+2] = s * Math.sin(t) * R;
+  }
+  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xaab8ff, size: 1.3 * dpr, sizeAttenuation: false, transparent: true, opacity: 0.55, depthWrite: false });
+  scene.add(new THREE.Points(sg, starMat));
+
+  /* ---- pointer -> galaxy plane ---- */
+  const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3(), ndc = new THREE.Vector2();
+  const target = { x: 0, z: 0, s: 0 }, look = { x: 0, y: 0 };
+  let lastInput = -1e9, pulseT = 99;
+  function toPlane(cx, cy, out) {
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    return ray.ray.intersectPlane(plane, out);
+  }
+  function onMove(e) {
+    if (reduced.matches) return;
+    lastInput = performance.now();
+    const r = canvas.getBoundingClientRect();
+    look.x = ((e.clientX - r.left) / r.width - 0.5) * 2; look.y = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    if (toPlane(e.clientX, e.clientY, hit)) { target.x = hit.x; target.z = hit.z; target.s = 1; }
+  }
+  addEventListener('pointermove', onMove, { passive: true });
+  addEventListener('pointerdown', e => {
+    if (reduced.matches || e.target.closest('.tune, .cta')) return;
+    onMove(e);
+    if (toPlane(e.clientX, e.clientY, hit)) { U.uPulseAt.value.set(hit.x, hit.z); pulseT = 0; }
+  }, { passive: true });
+  document.addEventListener('pointerleave', () => { target.s = 0; });
+
+  /* ---- palette swatches ---- */
+  let palette = 0;
+  document.querySelectorAll('.sw').forEach(b => b.addEventListener('click', () => {
+    palette = +b.dataset.p;
+    document.querySelectorAll('.sw').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (reduced.matches) draw();
+  }));
+
+  /* ---- sizing ---- */
+  function resize() {
+    const w = Math.max(1, innerWidth), h = Math.max(1, innerHeight);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    // keep the galaxy framed on portrait phones
+    narrow = w < 760;
+    const k = w / h < 0.8 ? 1.0 + (0.8 - w / h) * 1.6 : 1.0;
+    camBase.set(2.1 * k, 6.0 * k, 5.8 * k);
+    if (narrow) camera.setViewOffset(w, h, 0, h * 0.2, w, h); else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+    U.uViewH.value = h; U.uPixelRatio.value = renderer.getPixelRatio();
+    starMat.size = 1.3 * renderer.getPixelRatio();
+    if (reduced.matches) draw();
+  }
+  new ResizeObserver(resize).observe(document.getElementById('stage'));
+
+  /* ---- loop ---- */
+  let time = 8, running = false, raf = 0, prev = 0, slow = 0, frames = 0, drawN = COUNT;
+  let narrow = false;
+  function draw() {
+    for (let i = 0; i < 3; i++) uC[i].lerp(PALETTES[palette][i], reduced.matches ? 1 : 0.06);
+    camera.position.set(camBase.x + look.x * 0.5, camBase.y - look.y * 0.35, camBase.z);
+    camera.lookAt(narrow ? 0 : -1.5, 0, 0);
+    renderer.render(scene, camera);
+  }
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min((now - prev) / 1000, 0.05); prev = now;
+    time += dt;
+    // idle: after 3s with no input let the well wander so touch screens feel alive too
+    if (now - lastInput > 3000) {
+      target.x = Math.cos(time * 0.45) * 2.6; target.z = Math.sin(time * 0.31) * 2.0; target.s = 0.4;
+    }
+    U.uTime.value = time;
+    U.uMouse.value.x += (target.x - U.uMouse.value.x) * 0.09;
+    U.uMouse.value.z += (target.z - U.uMouse.value.z) * 0.09;
+    U.uMouse.value.y += (target.s - U.uMouse.value.y) * 0.06;
+    pulseT += dt; U.uPulse.value = pulseT;
+    draw();
+
+    // adaptive quality: step the pixel ratio down, then thin the star count
+    if (++frames > 30) {
+      slow = dt > 0.022 ? slow + 1 : Math.max(0, slow - 1);
+      if (slow > 40) {
+        slow = 0;
+        if (dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); }
+        else if (drawN > 20000) { drawN = Math.floor(drawN * 0.7); geo.setDrawRange(0, drawN); }
+      }
+    }
+  }
+  function start() { if (running || reduced.matches) return; running = true; prev = performance.now(); raf = requestAnimationFrame(frame); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+  // run only while on screen: own viewport, tab visibility, and (when embedded) the host page tells us via postMessage
+  let visible = true, hostVisible = true;
+  const sync = () => (visible && hostVisible && !document.hidden) ? start() : stop();
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; sync(); }).observe(canvas);
+  document.addEventListener('visibilitychange', sync);
+  addEventListener('message', e => { if (e.source === parent && e.data && typeof e.data.ngbVisible === 'boolean') { hostVisible = e.data.ngbVisible; sync(); } });
+  reduced.addEventListener('change', () => { reduced.matches ? (stop(), draw()) : start(); });
+
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); stop(); noGL(); });
+  resize();
+  draw();
+  start();
+}
+</script>
+</body>
+</html>
