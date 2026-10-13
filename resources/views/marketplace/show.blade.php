@@ -186,7 +186,7 @@
                 <form method="POST" action="{{ route('digital-products.purchase', $tier) }}">
                   @csrf
                   <button type="submit" class="buy-btn">
-                    {{ $tier->is_free ? 'Get '.($tier->tier ?? 'free') : 'Buy '.($tier->tier ?? 'now').' · $'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}
+                    {{ $tier->is_free ? 'Get '.($tier->tier ?? 'free') : 'Buy '.($listing->category === '3d-scenes' ? 'prompt + source' : ($tier->tier ?? 'now')).' · $'.rtrim(rtrim(number_format($tier->price,2),'0'),'.') }}
                   </button>
                 </form>
               @else

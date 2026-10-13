@@ -61,7 +61,7 @@ class ThreeDScenesSeeder extends Seeder
                     'tagline'     => 'Morphing liquid-glass hero blob',
                     'category'    => self::CATEGORY,
                     'tags'        => ['three.js', 'webgl', 'shader', 'hero', 'glassmorphism', 'blob'],
-                    'description' => "A morphing liquid-glass blob hero for your website: it refracts a living gradient, leans toward the cursor and pushes back when pressed. Claude prompt plus full source.\n\n".
+                    'description' => "A morphing liquid-glass blob hero: it refracts a living gradient and leans toward your cursor. Claude prompt plus full source.\n\n".
                         "Liquid Glass is a single shader-driven blob. The surface is a displaced icosphere with analytic normals; the glass is faked in the fragment shader by refracting the same gradient that is painted behind it, with chromatic dispersion, an environment reflection, thin-film iridescence and soft key lights. There are no render targets and no post-processing, so it is two draw calls and stays smooth on phones.\n\n".
                         "Built for real pages, not just for a demo reel:\n".
                         "- Pixel ratio capped and adaptive: it lowers resolution by itself if frames get slow\n".
