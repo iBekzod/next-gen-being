@@ -36,9 +36,6 @@ class LandingPacksSeeder extends Seeder
                     'description'   => $p['description'],
                     'category'      => $p['category'] ?? 'landing',
                     'tags'          => $p['tags'] ?? [],
-                    'rating'        => 4.9,
-                    'reviews_count' => random_int(6, 40),
-                    'sales_count'   => random_int(6, 40),
                 ],
                 [
                     ['tier' => 'prompt', 'title' => $name.' — Prompt Plan', 'price' => $p['price_prompt'], 'type' => 'prompt',   'desc' => 'The Claude Code prompts to build this exact page.'],

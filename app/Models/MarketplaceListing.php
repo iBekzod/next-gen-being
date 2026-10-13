@@ -59,4 +59,34 @@ class MarketplaceListing extends Model
     {
         return (float) ($this->tiers()->min('price') ?? 0);
     }
+
+    /**
+     * Social proof is only ever shown when it is real.
+     */
+    public function hasSales(): bool
+    {
+        return (int) $this->sales_count > 0;
+    }
+
+    public function hasReviews(): bool
+    {
+        return (int) $this->reviews_count > 0 && (float) $this->rating > 0;
+    }
+
+    /**
+     * Recompute denormalised stats from real data. sales_count = completed,
+     * paid purchases of this listing's tiers (the free prompt magnet is not a
+     * sale). There is no listing review system yet, so rating/reviews_count
+     * stay 0 until one exists - never invent them.
+     */
+    public function refreshStats(): void
+    {
+        $sales = ProductPurchase::query()
+            ->where('status', 'completed')
+            ->where('amount', '>', 0)
+            ->whereIn('digital_product_id', $this->tiers()->withoutGlobalScopes()->select('digital_products.id'))
+            ->count();
+
+        $this->forceFill(['sales_count' => $sales, 'reviews_count' => 0, 'rating' => 0])->saveQuietly();
+    }
 }

@@ -21,9 +21,6 @@ class FitTrackListingSeeder extends Seeder
                                  "Clean Laravel 12 + Alpine code, documented, deploy guide included.",
                 'category'    => 'saas',
                 'tags'        => ['laravel', 'alpine', 'saas', 'fitness'],
-                'rating'      => 4.9,
-                'reviews_count' => 23,
-                'sales_count' => 23,
             ],
             [
                 ['tier' => 'prompt', 'title' => 'FitTrack — Prompt Plan',  'price' => 5,  'type' => 'prompt',       'desc' => 'The full Claude Code build strategy & prompts.'],

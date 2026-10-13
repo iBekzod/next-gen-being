@@ -22,9 +22,6 @@ class NebulaListingSeeder extends Seeder
                                  "data-dense, and genuinely fast. Drop in your metrics and ship.",
                 'category'    => 'saas',
                 'tags'        => ['saas', 'dashboard', 'analytics', 'charts'],
-                'rating'      => 5.0,
-                'reviews_count' => 17,
-                'sales_count' => 17,
             ],
             [
                 ['tier' => 'prompt', 'title' => 'Nebula — Prompt Plan',   'price' => 6,  'type' => 'prompt',       'desc' => 'The Claude Code build plan + prompts for the whole dashboard.'],

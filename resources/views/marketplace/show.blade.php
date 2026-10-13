@@ -28,7 +28,7 @@
             'availability' => 'https://schema.org/InStock',
             'url' => route('marketplace.show', $listing),
         ] : null,
-        'aggregateRating' => $listing->reviews_count > 0 ? [
+        'aggregateRating' => $listing->hasReviews() ? [
             '@type' => 'AggregateRating',
             'ratingValue' => (string) $listing->rating,
             'reviewCount' => (string) $listing->reviews_count,

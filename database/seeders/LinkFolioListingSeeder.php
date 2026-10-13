@@ -21,9 +21,6 @@ class LinkFolioListingSeeder extends Seeder
                                  "Pure HTML/CSS/JS, zero build step, drop in your details and deploy anywhere.",
                 'category'    => 'landing',
                 'tags'        => ['landing', 'portfolio', 'html', 'css'],
-                'rating'      => 4.8,
-                'reviews_count' => 41,
-                'sales_count' => 41,
             ],
             [
                 ['tier' => 'prompt', 'title' => 'LinkFolio — Prompt Plan', 'price' => 4,  'type' => 'prompt',   'desc' => 'The Claude Code prompts to generate this portfolio.'],

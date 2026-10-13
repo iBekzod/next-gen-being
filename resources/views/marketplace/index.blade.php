@@ -43,7 +43,8 @@
               <div style="font-size:.8rem; color:var(--ink-faint); margin-top:2px;">{{ Str::limit($listing->tagline, 48) }}</div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                 <span class="m-display" style="color:var(--ink);">from ${{ rtrim(rtrim(number_format($listing->cheapestPrice(), 2), '0'), '.') }}</span>
-                <span style="font-size:.75rem; color:var(--ink-faint);">★ {{ number_format($listing->rating, 1) }} · {{ $listing->sales_count }} sales</span>
+                @php($__proof = array_filter([$listing->hasReviews() ? '★ '.number_format($listing->rating, 1) : null, $listing->hasSales() ? $listing->sales_count.' '.Str::plural('sale', $listing->sales_count) : null]))
+                <span style="font-size:.75rem; color:var(--ink-faint);">{{ $__proof ? implode(' · ', $__proof) : 'New' }}</span>
               </div>
             </div>
           </a>

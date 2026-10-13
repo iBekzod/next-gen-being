@@ -22,9 +22,6 @@ class HaloListingSeeder extends Seeder
                                  "Bring your own model, the polished front end is done.",
                 'category'    => 'ai',
                 'tags'        => ['ai', 'chat', 'assistant', 'ui'],
-                'rating'      => 4.9,
-                'reviews_count' => 28,
-                'sales_count' => 28,
             ],
             [
                 ['tier' => 'prompt', 'title' => 'Halo — Prompt Plan',   'price' => 6,  'type' => 'prompt',       'desc' => 'Prompts to generate the full assistant UI with Claude Code.'],

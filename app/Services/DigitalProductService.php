@@ -62,6 +62,9 @@ class DigitalProductService
         // Increment product stats
         $product->incrementPurchases();
 
+        // Keep the marketplace listing's real sales_count in step.
+        $product->listing?->refreshStats();
+
         return $purchase;
     }
 }

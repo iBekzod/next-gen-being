@@ -22,9 +22,6 @@ class AscendListingSeeder extends Seeder
                                  "Pure HTML/CSS/JS, no build step, swap the copy and launch.",
                 'category'    => 'landing',
                 'tags'        => ['landing', 'saas', 'pricing', 'marketing'],
-                'rating'      => 4.9,
-                'reviews_count' => 54,
-                'sales_count' => 54,
             ],
             [
                 ['tier' => 'prompt', 'title' => 'Ascend — Prompt Plan', 'price' => 5,  'type' => 'prompt',   'desc' => 'Prompts to generate the full landing with Claude Code.'],
