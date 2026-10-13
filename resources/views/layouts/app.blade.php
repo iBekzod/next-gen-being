@@ -5,6 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name='impact-site-verification' value='158187c4-9902-4b7b-a148-a8d3bdfe89eb'>
 
     @if ($__gaId = config('services.google.analytics_id'))
     <!-- Google Analytics 4 -->
