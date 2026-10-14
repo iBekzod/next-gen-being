@@ -1,7 +1,7 @@
 <style>
   #ngb-market{
     --paper: oklch(0.975 0.006 264); --surface:#fff; --surface-2: oklch(0.965 0.008 264);
-    --ink: oklch(0.18 0.035 264); --ink-soft: oklch(0.42 0.028 264); --ink-faint: oklch(0.58 0.02 264);
+    --ink: oklch(0.18 0.035 264); --ink-soft: oklch(0.42 0.028 264); --ink-faint: oklch(0.46 0.025 264);
     --line: oklch(0.90 0.012 264); --line-strong: oklch(0.83 0.016 264);
     --signal: oklch(0.58 0.17 255); --signal-ink: oklch(0.46 0.16 255); --signal-wash: oklch(0.95 0.03 255);
     --good: oklch(0.62 0.15 155); --amber: oklch(0.75 0.14 75);

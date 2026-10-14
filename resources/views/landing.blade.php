@@ -98,33 +98,53 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
     <style>
+        /* LIGHT MODE (default) */
         .ngb-hero{
+            --ink: #ffffff;
+            --ink-2: oklch(0.955 0.02 255);
+            --fg: oklch(0.15 0.038 264);
+            --muted: oklch(0.38 0.03 264);
+            --signal: oklch(0.52 0.22 255);
+            --line: oklch(0 0 0 / 0.07);
+            --hero-fade: #ffffff;
+            background: radial-gradient(120% 90% at 82% 8%, var(--ink-2), var(--ink) 60%);
+            color: var(--fg);
+        }
+        /* DARK MODE */
+        .dark .ngb-hero{
             --ink: oklch(0.16 0.038 264);
             --ink-2: oklch(0.24 0.055 264);
             --fg: oklch(0.97 0.012 250);
             --muted: oklch(0.75 0.038 255);
             --signal: oklch(0.66 0.18 250);
             --line: oklch(1 0 0 / 0.08);
+            --hero-fade: oklch(0.16 0.038 264);
             background: radial-gradient(120% 90% at 82% 8%, var(--ink-2), var(--ink) 60%);
             color: var(--fg);
         }
         .ngb-display{ font-family:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; font-weight:800; letter-spacing:-0.03em; line-height:0.98; }
-        .ngb-hero h1{ font-size: clamp(2.7rem, 7.2vw, 5.75rem); }
-        .ngb-grid-lines{
+        .ngb-hero h1{ font-size: clamp(2.7rem, 7.2vw, 5.75rem); color: var(--fg) !important; }
+        .ngb-hero p{ color: var(--muted) !important; }
+        .ngb-hero .ngb-hero-eyebrow,
+        .ngb-hero .ngb-hero-eyebrow span{ color: var(--muted) !important; }
+        .ngb-hero .ngb-grid-lines{
             background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
             background-size: 34px 34px; mask-image: radial-gradient(120% 80% at 50% 0%, #000 40%, transparent 78%);
         }
         .ngb-kicker{ font-family:"Bricolage Grotesque", sans-serif; }
-        .ngb-cta{ background: oklch(0.55 0.2 255); color: oklch(0.99 0.012 250); box-shadow: 0 8px 30px oklch(0.66 0.18 250 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
+        .ngb-cta{ background: oklch(0.55 0.2 255) !important; color: oklch(0.99 0.012 250) !important; box-shadow: 0 8px 30px oklch(0.66 0.18 250 / 0.35); transition: transform .25s cubic-bezier(.2,.9,.2,1), box-shadow .25s, filter .25s; }
         .ngb-cta:hover{ transform: translateY(-2px); box-shadow: 0 14px 44px oklch(0.66 0.18 250 / 0.5); filter: brightness(1.05); }
-        .ngb-ghost{ transition: background .25s, transform .25s cubic-bezier(.2,.9,.2,1); }
-        .ngb-ghost:hover{ background: oklch(1 0 0 / 0.07); transform: translateY(-2px); }
-        .ngb-word{ color: var(--signal); position: relative; white-space: nowrap; }
+        .ngb-ghost{ color: var(--fg) !important; border: 1px solid var(--line) !important; transition: background .25s, transform .25s cubic-bezier(.2,.9,.2,1); }
+        .ngb-ghost:hover{ background: oklch(0 0 0 / 0.05); transform: translateY(-2px); }
+        .dark .ngb-ghost:hover{ background: oklch(1 0 0 / 0.07); }
+        .ngb-word{ color: var(--signal) !important; position: relative; white-space: nowrap; }
         .ngb-reveal{ opacity:0; transform: translateY(18px); animation: ngbRise .9s cubic-bezier(.16,1,.3,1) forwards; }
         .ngb-d1{animation-delay:.05s} .ngb-d2{animation-delay:.16s} .ngb-d3{animation-delay:.28s} .ngb-d4{animation-delay:.40s} .ngb-d5{animation-delay:.52s}
         @keyframes ngbRise{ to{ opacity:1; transform: none; } }
         @media (prefers-reduced-motion: reduce){ .ngb-reveal{ animation:none; opacity:1; transform:none; } }
-        .ngb-metric b{ font-family:"Bricolage Grotesque", sans-serif; font-weight:800; letter-spacing:-0.02em; }
+        .ngb-hero .ngb-metric{ color: var(--muted) !important; }
+        .ngb-hero .ngb-metric span{ color: var(--muted) !important; }
+        .ngb-hero .ngb-metric b{ font-family:"Bricolage Grotesque", sans-serif; font-weight:800; letter-spacing:-0.02em; color: var(--fg) !important; }
         /* ---- site-wide landing cohesion ---- */
         #ngb-landing h2{ font-family:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; letter-spacing:-0.025em; font-weight:800; }
         .ngb-eyebrow{ font-family:"Bricolage Grotesque", sans-serif; font-weight:700; letter-spacing:.16em; color:oklch(0.6 0.2 252); }
@@ -138,11 +158,11 @@
     <section id="product-overview" class="ngb-hero relative overflow-hidden">
         <div class="absolute inset-0 ngb-grid-lines pointer-events-none"></div>
         <canvas id="ngb-hero-canvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
-        <div class="absolute inset-x-0 bottom-0 h-40 pointer-events-none" style="background:linear-gradient(to bottom, transparent, oklch(0.16 0.038 264))"></div>
+        <div class="absolute inset-x-0 bottom-0 h-40 pointer-events-none" style="background:linear-gradient(to bottom, transparent, var(--hero-fade))"></div>
 
         <div class="relative px-6 mx-auto max-w-7xl pt-24 pb-28 lg:pt-28 lg:pb-36">
             <div class="max-w-4xl">
-                <div class="ngb-reveal ngb-d1 inline-flex items-center gap-2.5 mb-8 text-[11px] font-semibold tracking-[0.18em] uppercase" style="color:var(--muted)">
+                <div class="ngb-reveal ngb-d1 ngb-hero-eyebrow inline-flex items-center gap-2.5 mb-8 text-[11px] font-semibold tracking-[0.18em] uppercase" style="color:var(--muted)">
                     <span class="relative flex w-2 h-2">
                         <span class="absolute inline-flex w-full h-full rounded-full animate-ping" style="background:var(--signal);opacity:.65"></span>
                         <span class="relative inline-flex w-2 h-2 rounded-full" style="background:var(--signal)"></span>
@@ -201,11 +221,15 @@
         }
         function frame(){
             t+=0.016; ctx.clearRect(0,0,w,h);
+            var isDark = document.documentElement.classList.contains('dark');
+            var dotBase = isDark ? 'rgba(96,162,255,' : 'rgba(37,99,235,';
+            var waveColor = isDark ? 'rgba(120,175,255,0.55)' : 'rgba(37,99,235,0.45)';
             for(var i=0;i<dots.length;i++){
                 var d=dots[i], dx=d.x-mx, dy=d.y-my, dist=Math.sqrt(dx*dx+dy*dy);
                 var push=Math.max(0,140-dist)/140;
                 var ox=d.x+(dx/(dist||1))*push*16, oy=d.y+(dy/(dist||1))*push*16;
-                ctx.fillStyle='rgba(96,162,255,'+(0.06+push*0.55)+')';
+                var alpha = isDark ? (0.06+push*0.55) : (0.10+push*0.45);
+                ctx.fillStyle=dotBase+alpha+')';
                 ctx.beginPath(); ctx.arc(ox,oy,0.8+push*1.9,0,6.2832); ctx.fill();
             }
             ctx.beginPath();
@@ -213,7 +237,7 @@
                 var yy=h*0.62 + Math.sin(x*0.011+t)*20*Math.sin(t*0.35) + Math.sin(x*0.028-t*1.4)*9;
                 x===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);
             }
-            ctx.strokeStyle='rgba(120,175,255,0.55)'; ctx.lineWidth=1.5; ctx.stroke();
+            ctx.strokeStyle=waveColor; ctx.lineWidth=1.5; ctx.stroke();
             raf=requestAnimationFrame(frame);
         }
         var raf;
@@ -221,7 +245,9 @@
         window.addEventListener('pointermove',function(e){ var r=c.getBoundingClientRect(); mx=e.clientX-r.left; my=e.clientY-r.top; });
         resize();
         if(reduce){
-            for(var i=0;i<dots.length;i++){ ctx.fillStyle='rgba(96,162,255,0.10)'; ctx.beginPath(); ctx.arc(dots[i].x,dots[i].y,1,0,6.2832); ctx.fill(); }
+            var isDark = document.documentElement.classList.contains('dark');
+            var dotColor = isDark ? 'rgba(96,162,255,0.10)' : 'rgba(37,99,235,0.12)';
+            for(var i=0;i<dots.length;i++){ ctx.fillStyle=dotColor; ctx.beginPath(); ctx.arc(dots[i].x,dots[i].y,1,0,6.2832); ctx.fill(); }
         } else { frame(); }
     })();
     </script>
@@ -374,15 +400,9 @@
                             <div class="px-6 pt-6 pb-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-800 border-b border-gray-200 dark:border-slate-700">
                                 <div class="flex items-start justify-between mb-3">
                                     <div class="flex items-center gap-3">
-                                        @if($category->icon)
-                                            <div class="text-3xl">{{ $category->icon }}</div>
-                                        @else
-                                            <div class="w-10 h-10 bg-blue-200 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                                                </svg>
-                                            </div>
-                                        @endif
+                                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <x-category-icon :category="$category" class="w-5 h-5" />
+                                        </div>
                                         <div class="flex-1">
                                             <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
                                                 <a href="{{ route('categories.show', $category->slug) }}">
@@ -515,113 +535,113 @@
             </div>
         </div>
     </section>
-    <section class="py-16 bg-slate-900">
+    <section class="py-16 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
         <div class="px-6 mx-auto max-w-7xl">
             <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between ngb-io">
                 <div class="max-w-2xl">
-                    <p class="ngb-eyebrow text-xs uppercase" style="color:oklch(0.74 0.15 252)">Premium intelligence platform</p>
-                    <h2 class="mt-3 text-4xl text-white">What sets NextGenBeing apart</h2>
-                    <p class="mt-4 text-base leading-7 text-slate-300">
+                    <p class="ngb-eyebrow text-xs uppercase">Premium intelligence platform</p>
+                    <h2 class="mt-3 text-4xl text-slate-900 dark:text-white">What sets NextGenBeing apart</h2>
+                    <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
                         Unlike general tech news, we specialize in <strong>actionable intelligence</strong>.
                         Every drop includes frameworks you can implement, tools you can test, and strategies you can replicate.
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('posts.index') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-slate-900 bg-white rounded-xl shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition">
+                    <a href="{{ route('posts.index') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:text-slate-900 dark:bg-white dark:hover:bg-slate-100 rounded-xl shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition">
                         Browse the library
                         <svg class="w-4 h-4 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </a>
-                    <a href="{{ route('search') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-white border border-white/30 rounded-xl hover:bg-white/10 transition">
+                    <a href="{{ route('search') }}" class="inline-flex items-center px-4 py-3 text-sm font-semibold text-slate-700 dark:text-white border border-slate-300 dark:border-white/30 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition">
                         Search intelligence
                     </a>
                 </div>
             </div>
             <div id="features" class="grid gap-6 mt-12 lg:grid-cols-3 ngb-io">
                 <!-- Feature 1: Systems & Workflows -->
-                <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
+                <div class="group p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-blue-500/50 rounded-2xl transition shadow-sm dark:shadow-none">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300">
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l-2 2M9 6l2-2m0 0l2 2m-2-2v13m4-8l-2-2m2 2l2-2m0 0V8m0 0l-2 2m0-2v13"/>
                             </svg>
                         </div>
-                        <span class="text-xs font-semibold text-blue-300/60 uppercase tracking-wider">Workflow architecture</span>
+                        <span class="text-xs font-semibold text-blue-600 dark:text-blue-300/60 uppercase tracking-wider">Workflow architecture</span>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">Operating systems that compound</h3>
-                    <p class="mt-2 text-sm text-slate-300 mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Operating systems that compound</h3>
+                    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 mb-4">
                         Discover the weekly agenda setups, async documentation stacks, and focus rituals that elite operators use to maintain clarity and momentum.
                     </p>
                     <ul class="space-y-2">
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Time-blocking frameworks proven by founders</span>
                         </li>
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Documentation templates for team alignment</span>
                         </li>
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Decision-making protocols that scale</span>
                         </li>
                     </ul>
                 </div>
 
                 <!-- Feature 2: Tooling Reviews -->
-                <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
+                <div class="group p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-blue-500/50 rounded-2xl transition shadow-sm dark:shadow-none">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300">
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             </svg>
                         </div>
-                        <span class="text-xs font-semibold text-blue-300/60 uppercase tracking-wider">Tooling reviews</span>
+                        <span class="text-xs font-semibold text-blue-600 dark:text-blue-300/60 uppercase tracking-wider">Tooling reviews</span>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">Objective, faceless breakdowns</h3>
-                    <p class="mt-2 text-sm text-slate-300 mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Objective, faceless breakdowns</h3>
+                    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 mb-4">
                         Compare AI copilots, research assistants, and automation platforms with unbiased analysis. No sponsored reviews. Pure tradeoffs.
                     </p>
                     <ul class="space-y-2">
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Hands-on testing across 50+ tools monthly</span>
                         </li>
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Cost analysis and ROI calculations</span>
                         </li>
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Integration guides and workflow patterns</span>
                         </li>
                     </ul>
                 </div>
 
                 <!-- Feature 3: Playbooks -->
-                <div class="group p-6 bg-white/5 border border-white/10 hover:border-blue-500/50 rounded-2xl transition">
+                <div class="group p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-blue-500/50 rounded-2xl transition shadow-sm dark:shadow-none">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300">
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>
                         </div>
-                        <span class="text-xs font-semibold text-blue-300/60 uppercase tracking-wider">Playbooks</span>
+                        <span class="text-xs font-semibold text-blue-600 dark:text-blue-300/60 uppercase tracking-wider">Playbooks</span>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">From idea to execution faster</h3>
-                    <p class="mt-2 text-sm text-slate-300 mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">From idea to execution faster</h3>
+                    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 mb-4">
                         Replicate the launch cadence, growth loops, and go-to-market strategies that power the next wave of internet-first companies.
                     </p>
                     <ul class="space-y-2">
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Step-by-step execution frameworks</span>
                         </li>
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Metrics to track and milestones to hit</span>
                         </li>
-                        <li class="flex items-start gap-2 text-xs text-slate-400">
-                            <span class="text-blue-400 mt-0.5">✓</span>
+                        <li class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="text-blue-600 dark:text-blue-400 mt-0.5">✓</span>
                             <span>Real case studies from 100+ launches</span>
                         </li>
                     </ul>
@@ -629,38 +649,38 @@
             </div>
 
             <!-- Trust & Authority Section -->
-            <div class="mt-16 pt-12 border-t border-white/10">
+            <div class="mt-16 pt-12 border-t border-slate-200 dark:border-white/10">
                 <div class="grid gap-12 md:grid-cols-3">
                     <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 text-blue-300 mb-4">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 mb-4">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        <h4 class="text-sm font-semibold text-white">Hands-on research</h4>
-                        <p class="mt-2 text-xs text-slate-400">
+                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white">Hands-on research</h4>
+                        <p class="mt-2 text-xs text-slate-600 dark:text-slate-400">
                             Every recommendation is tested and validated before publication. No speculation, no sponsored content.
                         </p>
                     </div>
                     <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 text-blue-300 mb-4">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 mb-4">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 6a3 3 0 11-6 0 3 3 0 016 0zM16 16a5 5 0 01-8 0"/>
                             </svg>
                         </div>
-                        <h4 class="text-sm font-semibold text-white">Built by operators</h4>
-                        <p class="mt-2 text-xs text-slate-400">
+                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white">Built by operators</h4>
+                        <p class="mt-2 text-xs text-slate-600 dark:text-slate-400">
                             Written by founders, product leaders, and engineers who've shipped at scale. Real experience, real insights.
                         </p>
                     </div>
                     <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 text-blue-300 mb-4">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 mb-4">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                             </svg>
                         </div>
-                        <h4 class="text-sm font-semibold text-white">Constantly updated</h4>
-                        <p class="mt-2 text-xs text-slate-400">
+                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white">Constantly updated</h4>
+                        <p class="mt-2 text-xs text-slate-600 dark:text-slate-400">
                             New drops every week. Playbooks refresh quarterly. Tools tracked in real-time as they evolve.
                         </p>
                     </div>

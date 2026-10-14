@@ -83,9 +83,9 @@ $categoryPosts = $category->publishedPosts()->limit(10)->get();
 <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
         <div class="flex items-center gap-4 mb-4">
-            @if($category->icon)
-                <div class="text-4xl">{{ $category->icon }}</div>
-            @endif
+            <div class="w-14 h-14 bg-white/20 text-white rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                <x-category-icon :category="$category" class="w-8 h-8" />
+            </div>
             <div class="flex-1">
                 <span class="inline-block px-3 py-1 mb-4 text-sm font-semibold tracking-wide uppercase rounded-full bg-white/20">Category</span>
                 <h1 class="text-4xl font-bold">{{ $category->name }}</h1>

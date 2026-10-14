@@ -810,7 +810,7 @@
                 </div>
 
                 <div class="pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
-                    <p class="text-sm text-center text-gray-400">
+                    <p class="text-sm text-center text-gray-500 dark:text-gray-400">
                         &copy; {{ date('Y') }} {{ setting('site_name') }}. All rights reserved. Built with Laravel &
                         Filament.
                     </p>

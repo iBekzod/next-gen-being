@@ -170,7 +170,7 @@
                   @csrf
                   <input type="email" name="email" required placeholder="you@email.com"
                          aria-label="Your email address"
-                         style="flex:1; padding:7px 10px; border:1.5px solid var(--line); border-radius:8px; font:inherit; min-width:0;">
+                         style="flex:1; padding:7px 10px; border:1.5px solid var(--line); border-radius:8px; font:inherit; min-width:0; background:var(--surface); color:var(--ink);">
                   <button type="submit" class="buy-btn" style="width:auto; padding:8px 12px;">Get it free</button>
                   {{-- Chastota tanlovi (spec §7). Standart — haftalik: kunlik digest
                        faqat oxirgi 24 soatda post chiqqanda yuboriladi. --}}
