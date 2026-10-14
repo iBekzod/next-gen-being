@@ -23,7 +23,7 @@ class LinkFolioListingSeeder extends Seeder
                 'tags'        => ['landing', 'portfolio', 'html', 'css'],
             ],
             [
-                ['tier' => 'prompt', 'title' => 'LinkFolio — Prompt Plan', 'price' => 4,  'type' => 'prompt',   'desc' => 'The Claude Code prompts to generate this portfolio.'],
+                ['tier' => 'prompt', 'title' => 'LinkFolio — Prompt Plan', 'price' => 0,  'type' => 'prompt',   'desc' => 'The Claude Code prompts to generate this portfolio.'],
                 ['tier' => 'design', 'title' => 'LinkFolio — Full Design', 'price' => 9,  'type' => 'template', 'desc' => 'The complete HTML/CSS/JS — the exact demo above.'],
                 ['tier' => 'bundle', 'title' => 'LinkFolio — Bundle',      'price' => 12, 'type' => 'template', 'desc' => 'Prompts + full design, discounted.'],
             ]

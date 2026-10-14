@@ -23,7 +23,7 @@ class FitTrackListingSeeder extends Seeder
                 'tags'        => ['laravel', 'alpine', 'saas', 'fitness'],
             ],
             [
-                ['tier' => 'prompt', 'title' => 'FitTrack — Prompt Plan',  'price' => 5,  'type' => 'prompt',       'desc' => 'The full Claude Code build strategy & prompts.'],
+                ['tier' => 'prompt', 'title' => 'FitTrack — Prompt Plan',  'price' => 0,  'type' => 'prompt',       'desc' => 'The full Claude Code build strategy & prompts.'],
                 ['tier' => 'design', 'title' => 'FitTrack — Design',       'price' => 7,  'type' => 'template',     'desc' => 'Complete HTML/CSS design — the exact demo UI.'],
                 ['tier' => 'code',   'title' => 'FitTrack — Full Project', 'price' => 49, 'type' => 'code_example', 'desc' => 'Working code, end to end. Clone, deploy, ship.'],
                 ['tier' => 'bundle', 'title' => 'FitTrack — Bundle',       'price' => 59, 'type' => 'code_example', 'desc' => 'Prompt + design + full project, discounted.'],

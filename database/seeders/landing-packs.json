@@ -75,7 +75,7 @@
       "webgl",
       "dark-mode"
     ],
-    "price_prompt": 5,
+    "price_prompt": 0,
     "price_design": 11,
     "price_bundle": 14
   },
@@ -91,7 +91,7 @@
       "three-js",
       "premium-landing"
     ],
-    "price_prompt": 5,
+    "price_prompt": 0,
     "price_design": 11,
     "price_bundle": 14
   }

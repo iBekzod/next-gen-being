@@ -24,7 +24,7 @@ class AscendListingSeeder extends Seeder
                 'tags'        => ['landing', 'saas', 'pricing', 'marketing'],
             ],
             [
-                ['tier' => 'prompt', 'title' => 'Ascend — Prompt Plan', 'price' => 5,  'type' => 'prompt',   'desc' => 'Prompts to generate the full landing with Claude Code.'],
+                ['tier' => 'prompt', 'title' => 'Ascend — Prompt Plan', 'price' => 0,  'type' => 'prompt',   'desc' => 'Prompts to generate the full landing with Claude Code.'],
                 ['tier' => 'design', 'title' => 'Ascend — Full Design', 'price' => 10, 'type' => 'template', 'desc' => 'The complete landing page — the exact demo above.'],
                 ['tier' => 'bundle', 'title' => 'Ascend — Bundle',      'price' => 13, 'type' => 'template', 'desc' => 'Prompts + full design, discounted.'],
             ]

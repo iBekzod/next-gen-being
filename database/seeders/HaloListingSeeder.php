@@ -24,7 +24,7 @@ class HaloListingSeeder extends Seeder
                 'tags'        => ['ai', 'chat', 'assistant', 'ui'],
             ],
             [
-                ['tier' => 'prompt', 'title' => 'Halo — Prompt Plan',   'price' => 6,  'type' => 'prompt',       'desc' => 'Prompts to generate the full assistant UI with Claude Code.'],
+                ['tier' => 'prompt', 'title' => 'Halo — Prompt Plan',   'price' => 0,  'type' => 'prompt',       'desc' => 'Prompts to generate the full assistant UI with Claude Code.'],
                 ['tier' => 'design', 'title' => 'Halo — Design',        'price' => 11, 'type' => 'template',     'desc' => 'The complete streaming chat interface — the exact demo above.'],
                 ['tier' => 'code',   'title' => 'Halo — Full Project',  'price' => 59, 'type' => 'code_example', 'desc' => 'Chat UI wired to a streaming API endpoint. Clone & deploy.'],
                 ['tier' => 'bundle', 'title' => 'Halo — Bundle',        'price' => 69, 'type' => 'code_example', 'desc' => 'Prompt + design + full project, discounted.'],
