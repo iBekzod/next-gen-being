@@ -75,6 +75,17 @@
   #ngb-market .ngb-backdrop{ position:fixed; inset:0; background:oklch(0.14 0.03 264 / .55); backdrop-filter:blur(3px);
     z-index:59; opacity:0; pointer-events:none; transition:opacity .3s; }
   #ngb-market .ngb-backdrop.show{ opacity:1; pointer-events:auto; }
+  #ngb-market .ngb-detail-grid{ grid-template-columns:1.5fr 1fr; }
+  #ngb-market .addr{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  @media (max-width: 760px){
+    #ngb-market .ngb-detail-grid{ grid-template-columns:1fr; }
+    #ngb-market .win-bar{ gap:8px; padding:9px 10px; }
+    #ngb-market .lights span{ width:11px; height:11px; }
+    #ngb-market .addr{ font-size:.7rem; text-align:left; }
+    #ngb-market .m-live{ display:none; }
+    #ngb-market .win-tools button, #ngb-market .win-tools a{ width:28px !important; height:26px !important; }
+    #ngb-market .win-body{ height:min(72vh, 560px); }
+  }
   @media (prefers-reduced-motion: reduce){
     #ngb-market .win-body{ transition:none; } #ngb-market .ngb-backdrop{ transition:none; }
   }
@@ -127,7 +138,7 @@
     </div>
     <p style="text-align:center; font-size:.78rem; color:var(--ink-faint); margin-bottom:28px;">This is the live product, not a screenshot. Click around, or hit fullscreen &#x26F6;, before you buy.</p>
 
-    <div class="grid gap-8" style="grid-template-columns:1.5fr 1fr;">
+    <div class="grid gap-8 ngb-detail-grid">
       <div>
         <h2 style="font-size:1.2rem; font-weight:700; margin:0 0 10px;">What you get</h2>
         <div style="color:var(--ink-soft); line-height:1.7;">{!! nl2br(e($listing->description)) !!}</div>
