@@ -106,20 +106,20 @@
           <span class="y" data-ngb-min title="Minimize" role="button" aria-label="Minimize demo"></span>
           <span class="g" data-ngb-full title="Fullscreen" role="button" aria-label="Fullscreen demo"></span>
         </div>
-        <div class="addr">🔒 {{ Str::slug($listing->title) }}-demo.nextgenbeing.com</div>
+        <div class="addr">🔒 nextgenbeing.com/websites/{{ $listing->slug }}</div>
         <span class="m-live" style="color:var(--good);"><span class="blink" style="background:var(--good);"></span>LIVE</span>
         @if($demoUrl)
           <div class="win-tools">
             <button type="button" data-ngb-min aria-label="Minimize demo" title="Minimize">&#x2015;</button>
             <button type="button" data-ngb-full aria-label="Toggle fullscreen" title="Fullscreen">&#x26F6;</button>
-            <a href="{{ $demoUrl }}" target="_blank" rel="noopener" role="button" aria-label="Open demo in new tab" title="Open in new tab"
+            <a href="{{ route('websites.demo', $listing->slug) }}" target="_blank" rel="noopener" role="button" aria-label="Open demo in new tab" title="Open in new tab"
                style="text-decoration:none; width:30px; height:28px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); display:grid; place-items:center; font-size:.9rem;">&#x2197;</a>
           </div>
         @endif
       </div>
       <div class="win-body">
         @if($demoUrl)
-          <iframe src="{{ $demoUrl }}" title="Live demo of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" allow="fullscreen"></iframe>
+          <iframe src="{{ route('websites.demo', $listing->slug) }}" title="Live demo of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" allow="fullscreen"></iframe>
         @else
           <div style="height:100%; display:grid; place-items:center; color:#8593b5;">Live demo coming soon</div>
         @endif

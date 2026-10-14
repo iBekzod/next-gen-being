@@ -46,6 +46,22 @@ trait SeedsMarketplaceListing
             app(DemoStorageService::class)->storeIndexHtml($slug, file_get_contents($demoFile));
         }
 
+        // Install poster image (WebP preferred, JPG fallback) so the grid card
+        // shows a real screenshot instead of the blue placeholder.
+        // ThreeDScenesSeeder handles its own posters; this covers all other listings.
+        $thumb = null;
+        foreach (['webp', 'jpg', 'jpeg', 'png'] as $ext) {
+            $posterSrc = database_path("seeders/posters/{$slug}.{$ext}");
+            if (is_file($posterSrc)) {
+                $thumb = "demos/{$slug}/poster.{$ext}";
+                Storage::disk('public')->put($thumb, file_get_contents($posterSrc));
+                break;
+            }
+        }
+        if ($thumb !== null) {
+            $model->forceFill(['thumbnail' => $thumb])->saveQuietly();
+        }
+
         foreach ($tiers as $t) {
             // Install the real deliverable (design = the demo HTML, prompt = the
             // build-plan doc). Tiers without a deliverable stay null and are shown

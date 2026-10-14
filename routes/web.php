@@ -114,6 +114,11 @@ Route::prefix('market')->name('marketplace.')->group(function () {
         ->middleware('signed')->name('prompt.download');
 });
 
+// Canonical demo URLs: nextgenbeing.com/websites/{slug}
+// Old pattern: {slug}-demo.nextgenbeing.com → 301 to this path (nginx snippet: jarvis/state/ngb-websites-nginx.md)
+Route::get('/websites/{slug}', [\App\Http\Controllers\WebsiteDemoController::class, 'show'])
+    ->name('websites.demo');
+
 // Authentication routes
 
 // Protected routes

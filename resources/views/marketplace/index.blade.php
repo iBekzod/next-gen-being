@@ -47,9 +47,9 @@
             <div class="m-thumb">
               <span class="m-live" style="position:absolute; top:10px; left:10px;"><span class="blink"></span>LIVE</span>
               @if($poster)
-                {{-- WebGL scenes show a static poster in the grid; the real scene only loads on the item page --}}
+                {{-- Poster shown in grid; the live demo loads on the item page --}}
                 <img class="m-poster" src="{{ $poster }}" alt="Preview of {{ $listing->title }}" width="600" height="375" loading="lazy" decoding="async">
-                <span class="m-hint" style="opacity:1;">3D · open for live demo</span>
+                <span class="m-hint" style="opacity:1;">{{ $listing->category === '3d-scenes' ? '3D · ' : '' }}open for live demo</span>
               @else
               <span class="m-display m-title">{{ Str::limit($listing->title, 18) }}</span>
               @endif
