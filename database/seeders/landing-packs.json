@@ -11,13 +11,13 @@
       "healthcare",
       "glassmorphism"
     ],
-    "price_prompt": 5,
+    "price_prompt": 0,
     "price_design": 11,
     "price_bundle": 14
   },
   {
     "slug": "fine-dining-landing",
-    "title": "Ember &amp; Oak \u2014 Restaurant / Hospitality Landing",
+    "title": "Ember & Oak \u2014 Restaurant / Hospitality Landing",
     "tagline": "Fire, patience, and one unforgettable table.",
     "description": "A premium, award-tier landing page for a live-fire fine dining restaurant, built as a single self-contained HTML file. The hero features a scroll-driven, mouse-parallax WebGL scene of a slowly rotating signature plate with a subsurface-glow food dome and rising additive steam, backed by glassmorphism panels, an interactive seasonal menu with course tabs, and kinetic headline motion \u2014 all in an ember-orange-on-espresso palette using OKLCH color.",
     "category": "landing",
@@ -27,7 +27,7 @@
       "hospitality",
       "landing-page"
     ],
-    "price_prompt": 5,
+    "price_prompt": 0,
     "price_design": 11,
     "price_bundle": 14
   },
