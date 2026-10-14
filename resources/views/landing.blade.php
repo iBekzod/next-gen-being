@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'NextGenBeing - Explore the tech that evolves you')
 @section('description', 'Curated insights, tool breakdowns, and operating frameworks for ambitious builders and creators.')
@@ -131,7 +131,7 @@
         .dark .ngb-eyebrow{ color:oklch(0.72 0.16 252); }
         .ngb-io{ opacity:0; transform:translateY(26px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
         .ngb-io.ngb-in{ opacity:1; transform:none; }
-        .ngb-io-2{ transition-delay:.09s } .ngb-io-3{ transition-delay:.18s }
+        .ngb-io-2{ transition-delay:.09s } .ngb-io-3{ transition-delay:.18s } .ngb-io-4{ transition-delay:.27s }
         @media (prefers-reduced-motion: reduce){ .ngb-io{ opacity:1; transform:none; transition:none; } }
     </style>
 
@@ -747,3 +747,7 @@
 </div>
 @endsection
 
+@push('scripts')
+{{-- Home page motion animations (#171) – loads only on this page --}}
+@vite(['resources/js/home-motion.js'])
+@endpush
