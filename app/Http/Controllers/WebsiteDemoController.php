@@ -22,6 +22,25 @@ use Illuminate\Http\RedirectResponse;
  */
 class WebsiteDemoController extends Controller
 {
+    /**
+     * ThemeForest-style live preview: a slim top bar (back to the listing, title,
+     * get/buy, remove frame) over the demo running full-height below it.
+     */
+    public function preview(string $slug, DemoStorageService $demos): \Illuminate\Contracts\View\View|RedirectResponse
+    {
+        $listing = MarketplaceListing::published()->where('slug', $slug)->firstOrFail();
+
+        if ($listing->demo_type === 'external' && $listing->demo_url) {
+            $frameUrl = $listing->demo_url;
+        } elseif ($listing->demo_type === 'static' && $demos->exists($slug)) {
+            $frameUrl = route('websites.raw', $slug);
+        } else {
+            abort(404);
+        }
+
+        return view('marketplace.preview', ['listing' => $listing, 'frameUrl' => $frameUrl]);
+    }
+
     public function show(string $slug, DemoStorageService $demos): Response|RedirectResponse
     {
         /** @var MarketplaceListing|null $listing */

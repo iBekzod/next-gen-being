@@ -117,13 +117,13 @@
           <span class="y" data-ngb-min title="Minimize" role="button" aria-label="Minimize demo"></span>
           <span class="g" data-ngb-full title="Fullscreen" role="button" aria-label="Fullscreen demo"></span>
         </div>
-        <div class="addr">🔒 nextgenbeing.com/websites/{{ $listing->slug }}</div>
+        <a class="addr" href="{{ route('websites.demo', $listing->slug) }}" style="text-decoration:none;">🔒 nextgenbeing.com/websites/{{ $listing->slug }}</a>
         <span class="m-live" style="color:var(--good);"><span class="blink" style="background:var(--good);"></span>LIVE</span>
         @if($demoUrl)
           <div class="win-tools">
             <button type="button" data-ngb-min aria-label="Minimize demo" title="Minimize">&#x2015;</button>
             <button type="button" data-ngb-full aria-label="Toggle fullscreen" title="Fullscreen">&#x26F6;</button>
-            <a href="{{ route('websites.demo', $listing->slug) }}" target="_blank" rel="noopener" role="button" aria-label="Open demo in new tab" title="Open in new tab"
+            <a href="{{ route('websites.demo', $listing->slug) }}" role="button" aria-label="Open live preview" title="Open live preview"
                style="text-decoration:none; width:30px; height:28px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); display:grid; place-items:center; font-size:.9rem;">&#x2197;</a>
           </div>
         @endif
@@ -147,7 +147,7 @@
       {{-- TIER PURCHASE PANEL --}}
       <div>
         <div style="background:var(--surface); border:1px solid var(--line-strong); border-radius:14px; padding:16px;">
-          <p style="font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px;">Choose your tier</p>
+          <p id="tiers" style="font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px; scroll-margin-top:90px;">Choose your tier</p>
           @if(session('success'))
             <p style="font-size:.8rem; color:var(--signal); margin:0 0 10px;">{{ session('success') }}</p>
           @endif

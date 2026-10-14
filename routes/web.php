@@ -116,8 +116,10 @@ Route::prefix('market')->name('marketplace.')->group(function () {
 
 // Canonical demo URLs: nextgenbeing.com/websites/{slug}
 // Old pattern: {slug}-demo.nextgenbeing.com → 301 to this path (nginx snippet: jarvis/state/ngb-websites-nginx.md)
-Route::get('/websites/{slug}', [\App\Http\Controllers\WebsiteDemoController::class, 'show'])
+Route::get('/websites/{slug}', [\App\Http\Controllers\WebsiteDemoController::class, 'preview'])
     ->name('websites.demo');
+Route::get('/websites/{slug}/raw', [\App\Http\Controllers\WebsiteDemoController::class, 'show'])
+    ->name('websites.raw');
 
 // Authentication routes
 
