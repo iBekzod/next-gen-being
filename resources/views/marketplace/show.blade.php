@@ -119,7 +119,7 @@
       </div>
       <div class="win-body">
         @if($demoUrl)
-          <iframe src="{{ route('websites.demo', $listing->slug) }}" title="Live demo of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" allow="fullscreen"></iframe>
+          <iframe src="{{ $demoUrl }}" title="Live demo of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" allow="fullscreen"></iframe>
         @else
           <div style="height:100%; display:grid; place-items:center; color:#8593b5;">Live demo coming soon</div>
         @endif

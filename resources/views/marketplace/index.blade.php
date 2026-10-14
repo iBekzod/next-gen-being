@@ -39,7 +39,7 @@
         @foreach($listings as $listing)
           @php
             $poster = $listing->posterUrl();
-            $cardDemo = $poster ? null : ($listing->demo_type === 'static'
+            $cardDemo = $listing->category === '3d-scenes' ? null : ($listing->demo_type === 'static'
               ? asset('storage/'.$listing->demo_path)
               : ($listing->demo_type === 'external' ? $listing->demo_url : null));
           @endphp
@@ -47,15 +47,16 @@
             <div class="m-thumb">
               <span class="m-live" style="position:absolute; top:10px; left:10px;"><span class="blink"></span>LIVE</span>
               @if($poster)
-                {{-- Poster shown in grid; the live demo loads on the item page --}}
+                {{-- Poster shown in grid; hover shows live preview for non-3D --}}
                 <img class="m-poster" src="{{ $poster }}" alt="Preview of {{ $listing->title }}" width="600" height="375" loading="lazy" decoding="async">
-                <span class="m-hint" style="opacity:1;">{{ $listing->category === '3d-scenes' ? '3D · ' : '' }}open for live demo</span>
               @else
-              <span class="m-display m-title">{{ Str::limit($listing->title, 18) }}</span>
+                <span class="m-display m-title">{{ Str::limit($listing->title, 18) }}</span>
               @endif
               @if($cardDemo)
                 <iframe class="m-demo" data-src="{{ $cardDemo }}" title="Live preview of {{ $listing->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
                 <span class="m-hint">Hover = live · click to open</span>
+              @elseif($poster)
+                <span class="m-hint" style="opacity:1;">{{ $listing->category === '3d-scenes' ? '3D · ' : '' }}open for live demo</span>
               @endif
             </div>
             <div style="padding:13px 15px;">

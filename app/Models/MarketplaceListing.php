@@ -31,6 +31,11 @@ class MarketplaceListing extends Model
         return 'slug';
     }
 
+    public function getTitleAttribute($value): string
+    {
+        return html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');

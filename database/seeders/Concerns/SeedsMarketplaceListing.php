@@ -28,6 +28,10 @@ trait SeedsMarketplaceListing
 
         $slug = $listing['slug'];
 
+        if (isset($listing['title'])) {
+            $listing['title'] = html_entity_decode($listing['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
         $model = MarketplaceListing::firstOrCreate(
             ['slug' => $slug],
             array_merge([
@@ -39,6 +43,10 @@ trait SeedsMarketplaceListing
                 'published_at'      => now(),
             ], $listing)
         );
+
+        if (! $model->wasRecentlyCreated) {
+            $model->update($listing);
+        }
 
         // Install the demo from the repo file (if present).
         $demoFile = database_path("seeders/demos/{$slug}.html");

@@ -28,7 +28,7 @@
   #ngb-market .m-thumb{ height:140px; position:relative; overflow:hidden; display:grid; place-items:center;
     background:linear-gradient(135deg, oklch(0.35 0.13 264), var(--signal)); }
   #ngb-market .m-thumb .m-demo{ position:absolute; inset:0; width:250%; height:250%; border:0;
-    transform:scale(.4); transform-origin:top left; opacity:0; transition:opacity .35s; pointer-events:none; background:#0b1020; }
+    transform:scale(.4); transform-origin:top left; opacity:0; transition:opacity .35s; pointer-events:none; background:#0b1020; z-index:1; }
   #ngb-market .m-card:hover .m-thumb .m-demo{ opacity:1; }
   #ngb-market .m-thumb .m-title{ position:relative; z-index:1; color:#fff; font-size:1.35rem; transition:opacity .3s; }
   #ngb-market .m-card:hover .m-thumb .m-title{ opacity:0; }
