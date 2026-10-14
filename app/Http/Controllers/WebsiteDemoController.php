@@ -33,12 +33,18 @@ class WebsiteDemoController extends Controller
         if ($listing->demo_type === 'external' && $listing->demo_url) {
             $frameUrl = $listing->demo_url;
         } elseif ($listing->demo_type === 'static' && $demos->exists($slug)) {
-            $frameUrl = route('websites.raw', $slug);
+            // Same storage URL the listing page embeds (frameable); /raw is the
+            // standalone page behind "Remove frame" (server sends X-Frame-Options DENY).
+            $frameUrl = $demos->url($slug);
         } else {
             abort(404);
         }
 
-        return view('marketplace.preview', ['listing' => $listing, 'frameUrl' => $frameUrl]);
+        return view('marketplace.preview', [
+            'listing'  => $listing,
+            'frameUrl' => $frameUrl,
+            'rawUrl'   => $listing->demo_type === 'static' ? route('websites.raw', $slug) : $frameUrl,
+        ]);
     }
 
     public function show(string $slug, DemoStorageService $demos): Response|RedirectResponse

@@ -44,7 +44,7 @@
         <div class="title" title="{{ $listing->title }}">{{ $listing->title }}</div>
         <div class="price">{{ $priceLabel }}</div>
         <a class="cta" href="{{ $listingUrl }}#tiers">{{ $price > 0 ? 'Buy now' : 'Get it free' }}</a>
-        <a class="rm" href="{{ $frameUrl }}" title="Open without this bar">Remove frame &#215;</a>
+        <a class="rm" href="{{ $rawUrl }}" title="Open without this bar">Remove frame &#215;</a>
     </div>
     <iframe src="{{ $frameUrl }}" title="Live preview of {{ $listing->title }}" allow="fullscreen"></iframe>
 </body>
