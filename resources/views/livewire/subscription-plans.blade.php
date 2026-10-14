@@ -1,4 +1,7 @@
 <div class="mt-12">
+    @if (session('error'))
+        <div class="p-4 mb-6 text-sm text-red-800 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/30 dark:text-red-200 dark:border-red-800">{{ session('error') }}</div>
+    @endif
     <!-- Pricing Grid -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($plans as $key => $plan)
@@ -76,29 +79,17 @@
                                     Current Plan
                                 </button>
                             @else
-                                <button wire:click="subscribe('{{ $key }}')" wire:loading.attr="disabled"
-                                    wire:loading.class="opacity-50 cursor-not-allowed"
-                                    class="w-full px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">
-                                    <span wire:loading.remove wire:target="subscribe('{{ $key }}')">
-                                        {{ $subscription ? 'Switch to ' . $plan['name'] : 'Start ' . $plan['interval'] . 'ly subscription' }}
-                                    </span>
-                                    <span wire:loading wire:target="subscribe('{{ $key }}')"
-                                        class="flex items-center justify-center">
-                                        <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                            </path>
-                                        </svg>
-                                    </span>
-                                </button>
+                                <a href="{{ route('subscription.checkout', $key) }}"
+                                    class="block w-full px-4 py-2 text-sm font-medium text-center text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">
+                                    {{ $subscription ? 'Switch to ' . $plan['name'] : 'Start ' . $plan['interval'] . 'ly subscription' }}
+                                </a>
                             @endif
                         @else
-                            <a href="{{ route('login') }}?redirect={{ urlencode(route('subscription.plans')) }}"
+                            <a href="{{ route('subscription.checkout', $key) }}"
                                 class="block w-full px-4 py-2 text-sm font-medium text-center text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">
-                                Sign in to subscribe
+                                Subscribe to {{ $plan['name'] }}
                             </a>
+                            <p class="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">Secure checkout by Lemon Squeezy. No account needed first.</p>
                         @endauth
                         @endif
                     </div>
@@ -180,7 +171,7 @@
                     <tr>
                         <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">Early Access</td>
                         <td class="px-6 py-4 text-center">
-                            <svg class="w-5 h-5 mx-auto text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-5 h-5 mx-auto text-gray-400 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                                     clip-rule="evenodd" />
@@ -204,14 +195,14 @@
                     <tr>
                         <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">Team Accounts</td>
                         <td class="px-6 py-4 text-center">
-                            <svg class="w-5 h-5 mx-auto text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-5 h-5 mx-auto text-gray-400 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                                     clip-rule="evenodd" />
                             </svg>
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <svg class="w-5 h-5 mx-auto text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-5 h-5 mx-auto text-gray-400 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                                     clip-rule="evenodd" />

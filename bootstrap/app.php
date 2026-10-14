@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        // Guest checkout: link the Lemon Squeezy webhook to an account by email.
+        $middleware->append(\App\Http\Middleware\ProvisionGuestCheckoutBillable::class);
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdminRole::class,
         ]);

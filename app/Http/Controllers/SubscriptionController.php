@@ -62,6 +62,72 @@ class SubscriptionController extends Controller
         return view('subscriptions.plans', compact('plans'));
     }
 
+    /**
+     * Plan key (as used on /pricing) => config key holding its Lemon Squeezy variant id.
+     */
+    private const PLAN_VARIANTS = [
+        'basic' => 'basic_variant_id',
+        'pro' => 'pro_variant_id',
+        'enterprise' => 'team_variant_id',
+    ];
+
+    /**
+     * One click from /pricing to the hosted Lemon Squeezy checkout.
+     *
+     * Logged in: the checkout is pre-filled with the user's name and email and
+     * carries user_id (plus the package's billable_id/type) so the webhook links
+     * the subscription to them. Guest: straight to checkout with guest_checkout=1;
+     * Lemon Squeezy collects the email and ProvisionGuestCheckoutBillable creates
+     * or links the account when the webhook arrives.
+     */
+    public function checkout(Request $request, string $plan)
+    {
+        $variantId = isset(self::PLAN_VARIANTS[$plan])
+            ? (string) config('services.lemonsqueezy.' . self::PLAN_VARIANTS[$plan])
+            : '';
+
+        if ($variantId === '') {
+            abort_unless(isset(self::PLAN_VARIANTS[$plan]), 404);
+
+            return redirect()->route('subscription.plans')
+                ->with('error', 'This plan is not available right now. Please try again soon.');
+        }
+
+        $user = Auth::user();
+
+        try {
+            if ($user) {
+                $checkout = $user->checkout($variantId, [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ], [
+                    'user_id' => (string) $user->id,
+                    'plan' => $plan,
+                ])->redirectTo(route('subscription.success'));
+            } else {
+                $checkout = \LemonSqueezy\Laravel\Checkout::make((string) config('lemon-squeezy.store'), $variantId)
+                    ->withCustomData(['guest_checkout' => '1', 'plan' => $plan])
+                    ->redirectTo(route('subscription.welcome'));
+            }
+
+            return redirect()->away($checkout->url());
+        } catch (\Throwable $e) {
+            \Log::error('Pricing checkout failed', [
+                'plan' => $plan,
+                'user_id' => $user?->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('subscription.plans')
+                ->with('error', 'We could not start checkout just now. Please try again in a moment.');
+        }
+    }
+
+    public function welcome()
+    {
+        return view('subscriptions.welcome');
+    }
+
     public function subscribe(Request $request)
     {
         $request->validate([
@@ -75,7 +141,7 @@ class SubscriptionController extends Controller
             $checkout = $user->checkout($request->variant_id, [
                 'name' => $user->name,
                 'email' => $user->email,
-            ]);
+            ], ['user_id' => (string) $user->id]);
 
             // Get the checkout URL and redirect
             $checkoutUrl = $checkout->url();

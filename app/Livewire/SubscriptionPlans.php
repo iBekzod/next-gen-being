@@ -70,52 +70,18 @@ class SubscriptionPlans extends Component
         $this->plans['enterprise']['price_id'] = config('services.lemonsqueezy.team_variant_id');
     }
 
+    /**
+     * Plan buttons are plain links to the checkout route; this stays so any
+     * older wire:click caller still lands on the same flow.
+     */
     public function subscribe($planKey)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        $plan = $this->plans[$planKey] ?? null;
-
-        if (!$plan || !$plan['price_id']) {
+        if (! isset($this->plans[$planKey]) || $planKey === 'free') {
             session()->flash('error', 'Invalid subscription plan selected.');
             return;
         }
 
-        // Check if LemonSqueezy is verified and ready
-        if (config('services.lemonsqueezy.test_mode', false)) {
-            session()->flash('info', '🚀 Premium subscriptions launching soon! We\'re finalizing payment processing. Check back within 24-48 hours.');
-            return;
-        }
-
-        try {
-            // Create LemonSqueezy checkout
-            $checkout = Auth::user()->checkout($plan['price_id'], [
-                'name' => Auth::user()->name,
-                'email' => Auth::user()->email,
-            ]);
-
-            // Get the checkout URL and redirect using Livewire's redirect method
-            $checkoutUrl = $checkout->url();
-
-            if ($checkoutUrl) {
-                return $this->redirect($checkoutUrl, navigate: false);
-            }
-
-            session()->flash('error', 'Unable to create checkout session.');
-            return;
-        } catch (\Exception $e) {
-            // If API key is not verified yet, show coming soon message
-            if (str_contains($e->getMessage(), 'API key') || str_contains($e->getMessage(), 'not configured')) {
-                session()->flash('info', '🚀 Premium subscriptions launching soon! We\'re finalizing payment processing. Check back within 24-48 hours.');
-                return;
-            }
-
-            session()->flash('error', 'Unable to start checkout. Please try again later.');
-            \Log::error('Subscription checkout error: ' . $e->getMessage());
-            return;
-        }
+        return $this->redirect(route('subscription.checkout', $planKey));
     }
 
     public function render()

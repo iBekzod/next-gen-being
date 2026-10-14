@@ -75,6 +75,9 @@ Route::get('/authors/{slug}', [AuthorController::class, 'show'])->name('authors.
 
 // Subscription routes
 Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('subscription.plans');
+Route::get('/pricing/checkout/{plan}', [SubscriptionController::class, 'checkout'])
+    ->middleware('throttle:20,1')->name('subscription.checkout');
+Route::get('/subscription/welcome', [SubscriptionController::class, 'welcome'])->name('subscription.welcome');
 
 // Digital Products / Resources routes
 use App\Http\Controllers\DigitalProductController;
