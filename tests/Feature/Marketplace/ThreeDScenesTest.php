@@ -32,8 +32,8 @@ class ThreeDScenesTest extends TestCase
             $this->assertSame('published', $scene->status);
             $this->assertSame('static', $scene->demo_type);
             Storage::disk('public')->assertExists("demos/{$scene->slug}/index.html");
-            Storage::disk('public')->assertExists("demos/{$scene->slug}/poster.jpg");
-            $this->assertSame("demos/{$scene->slug}/poster.jpg", $scene->thumbnail);
+            $this->assertMatchesRegularExpression("#^demos/{$scene->slug}/poster-[0-9a-f]{8}\.jpg$#", $scene->thumbnail);
+            Storage::disk('public')->assertExists($scene->thumbnail);
             // No invented social proof, ever.
             $this->assertSame(0, (int) $scene->sales_count);
             $this->assertFalse($scene->hasReviews());
@@ -90,7 +90,7 @@ class ThreeDScenesTest extends TestCase
 
         foreach (['stellar-drift-galaxy-hero', 'liquid-glass-blob-hero', 'meridian-wire-terrain-flyover'] as $slug) {
             $this->assertStringContainsString("/market/{$slug}", $html);
-            $this->assertStringContainsString("demos/{$slug}/poster.jpg", $html);
+            $this->assertMatchesRegularExpression("#demos/{$slug}/poster-[0-9a-f]{8}\.jpg#", $html);
         }
         // WebGL must never load in the grid: no card iframes for poster items.
         $this->assertStringNotContainsString('class="m-demo"', $html);
@@ -107,7 +107,7 @@ class ThreeDScenesTest extends TestCase
 
         $res->assertSee('demos/liquid-glass-blob-hero/index.html', false);
         $res->assertSee('<meta name="description" content="'.e($scene->seoDescription()).'"', false);
-        $res->assertSee('property="og:image" content="'.asset('storage/demos/liquid-glass-blob-hero/poster.jpg').'"', false);
+        $this->assertMatchesRegularExpression('#property="og:image" content="[^"]*/storage/demos/liquid-glass-blob-hero/poster-[0-9a-f]{8}\.jpg"#', $html);
         $res->assertSee('Prompt + source');
 
         preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
@@ -124,7 +124,7 @@ class ThreeDScenesTest extends TestCase
         $this->assertSame('USD', $product['offers']['priceCurrency']);
         $this->assertArrayNotHasKey('aggregateRating', $product);
         $this->assertArrayNotHasKey('review', $product);
-        $this->assertStringEndsWith('poster.jpg', $product['image']);
+        $this->assertMatchesRegularExpression('#poster-[0-9a-f]{8}\.jpg$#', $product['image']);
     }
 
     public function test_free_scene_page_has_the_email_gate_in_english(): void
