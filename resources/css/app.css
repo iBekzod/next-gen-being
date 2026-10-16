@@ -755,6 +755,18 @@
   html.dark .focus\:ring-blue-600:focus {
     --tw-ring-color: #2563eb;
   }
+/* Text on top of a photo + dark gradient overlay stays white in light mode
+   (the global light-mode .text-white remap would make it black on a dark image). */
+html:not(.dark) .ngb-on-media .text-white,
+html:not(.dark) .ngb-on-media h2.text-white,
+html:not(.dark) .ngb-on-media h3.text-white {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,.45);
+}
+html:not(.dark) .ngb-on-media .text-gray-100,
+html:not(.dark) .ngb-on-media .text-gray-200 {
+  color: #f3f4f6 !important;
+}
 }
 /* Component styles */
 @layer components {
@@ -1089,18 +1101,4 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-
-/* Text on top of a photo + dark gradient overlay stays white in light mode
-   (the global light-mode .text-white remap would make it black on a dark image). */
-html:not(.dark) .ngb-on-media .text-white,
-html:not(.dark) .ngb-on-media h2.text-white,
-html:not(.dark) .ngb-on-media h3.text-white {
-  color: #ffffff !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,.45);
-}
-html:not(.dark) .ngb-on-media .text-gray-100,
-html:not(.dark) .ngb-on-media .text-gray-200 {
-  color: #f3f4f6 !important;
 }
