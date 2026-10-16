@@ -106,7 +106,7 @@
       <a href="{{ route('marketplace.index') }}" style="color:var(--signal-ink);">Marketplace</a> / <a href="{{ route('marketplace.index', ['category' => $listing->category]) }}" style="color:var(--signal-ink);">{{ \App\Models\MarketplaceListing::categoryLabel($listing->category) }}</a> / {{ $listing->title }}
     </p>
     <h1 class="m-display" style="font-size:clamp(1.6rem,3.5vw,2.3rem); line-height:1.05; margin:0 0 6px;">{{ $listing->title }}</h1>
-    <p style="color:var(--ink-soft); margin:0 0 20px;">{{ $listing->tagline }} · by <b style="color:var(--ink);">{{ $listing->seller->name }}</b></p>
+    <p style="color:var(--ink-soft); margin:0 0 20px;">{{ $listing->tagline }} · by <b style="color:var(--ink);">{{ $listing->seller_name }}</b></p>
 
     {{-- LIVE DEMO WINDOW --}}
     <div class="ngb-backdrop" data-ngb-backdrop></div>

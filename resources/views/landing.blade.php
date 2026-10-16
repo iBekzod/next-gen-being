@@ -321,7 +321,7 @@
             <div class="grid lg:grid-cols-3 gap-8 ngb-io ngb-io-2">
                 <!-- Hero Featured Post -->
                 <div class="lg:col-span-2">
-                    <a href="{{ route('posts.show', $featuredPost->slug) }}" class="group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all h-96">
+                    <a href="{{ route('posts.show', $featuredPost->slug) }}" class="ngb-on-media group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all h-96">
                         @if($featuredPost->featured_image)
                             <img src="{{ $featuredPost->featured_image }}" alt="Featured article: {{ $featuredPost->title }}" title="{{ $featuredPost->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else

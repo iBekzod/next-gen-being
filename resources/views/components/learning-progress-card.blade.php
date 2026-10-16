@@ -86,7 +86,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @forelse(auth()->user()->achievements()->latest('achieved_at')->take(6)->get() as $achievement)
             <a href="javascript:void(0)" class="group block">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 h-48 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div class="ngb-on-media relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 h-48 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <!-- Achievement Icon/Image Background -->
                     <div class="absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 opacity-20 group-hover:opacity-30 transition-opacity"></div>
 

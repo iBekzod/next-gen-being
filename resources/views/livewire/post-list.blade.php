@@ -5,7 +5,7 @@
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
             @foreach($this->featuredPosts as $index => $post)
             <a href="{{ route('posts.show', $post->slug) }}" class="group block {{ $index === 0 ? 'lg:col-span-2' : '' }}">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 {{ $index === 0 ? 'h-96' : 'h-64' }} cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div class="ngb-on-media relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 {{ $index === 0 ? 'h-96' : 'h-64' }} cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-300">
                     @if($post->featured_image)
                     <img src="{{ $post->featured_image }}"
                          alt="{{ $post->title }}"
