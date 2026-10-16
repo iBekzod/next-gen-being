@@ -122,7 +122,7 @@ class ThreeDScenesSeeder extends Seeder
             $poster = database_path("seeders/posters/{$slug}.jpg");
             $thumb = null;
             if (is_file($poster)) {
-                $thumb = "demos/{$slug}/poster.jpg";
+                $thumb = "demos/{$slug}/poster-".substr(md5_file($poster), 0, 8).".jpg"; // hashed name busts the 30-day CDN cache
                 Storage::disk('public')->put($thumb, file_get_contents($poster));
             }
 
