@@ -16,12 +16,18 @@ namespace App\Services\Content;
  */
 class NewsBriefGate
 {
-    public const MIN_ITEMS = 2;
+    // 10-17: the 6-item, 2-sentence brief was ~280 words of hedges. A news post
+    // now needs real depth: >= MIN_TOTAL_WORDS across >= MIN_DOMAINS sources.
+    public const MIN_ITEMS = 4;
     public const MAX_ITEMS = 8;
-    public const MIN_SENTENCES = 2;
-    public const MAX_SENTENCES = 4;
-    public const MIN_WORDS_PER_ITEM = 15;
-    public const MAX_WORDS_PER_ITEM = 120;
+    public const MIN_SENTENCES = 4;
+    public const MAX_SENTENCES = 14;
+    public const MIN_WORDS_PER_ITEM = 100;
+    public const MAX_WORDS_PER_ITEM = 320;
+    public const MIN_TOTAL_WORDS = 1200;
+    public const MIN_TAKEAWAY_WORDS = 15;
+    public const TAKEAWAY_LABEL = '**How to use it:**';
+    public const MIN_DOMAINS = 4;
 
     private const SHORTENERS = ['bit.ly', 't.co', 'tinyurl.com', 'goo.gl', 'ow.ly', 'is.gd', 'buff.ly'];
 
@@ -44,6 +50,8 @@ class NewsBriefGate
         }
 
         $seen = [];
+        $domains = [];
+        $totalWords = 0;
         foreach ($items as $i => $item) {
             $n = $i + 1;
             $headline = trim((string) ($item['headline'] ?? ''));
@@ -64,6 +72,18 @@ class NewsBriefGate
             }
             $seen[$url] = true;
 
+            $takeaway = trim((string) ($item['takeaway'] ?? ''));
+            // Only real, configured partner slugs; anything else under /go/ would 404.
+            if (preg_match_all('#/go/([a-z0-9-]+)#i', $takeaway . ' ' . $summary, $gm)) {
+                foreach ($gm[1] as $slug) {
+                    if (! array_key_exists(strtolower($slug), (array) config('affiliate.links', []))) {
+                        $failures[] = "item{$n}:unknown_affiliate_slug";
+                    }
+                }
+            }
+            if (str_word_count($takeaway) < self::MIN_TAKEAWAY_WORDS) {
+                $failures[] = "item{$n}:no_takeaway";
+            }
             $words = str_word_count($summary);
             if ($words < self::MIN_WORDS_PER_ITEM || $words > self::MAX_WORDS_PER_ITEM) {
                 $failures[] = "item{$n}:summary_length";
@@ -79,6 +99,17 @@ class NewsBriefGate
             if (app(PublishGate::class)->fabricatedExperience($summary) !== []) {
                 $failures[] = "item{$n}:fabricated_experience";
             }
+            $totalWords += $words + str_word_count($takeaway);
+            if ($host !== '') {
+                $domains[preg_replace('/^www\./', '', $host)] = true;
+            }
+        }
+
+        if ($totalWords < self::MIN_TOTAL_WORDS) {
+            $failures[] = 'too_shallow';
+        }
+        if (count($domains) < self::MIN_DOMAINS) {
+            $failures[] = 'too_few_source_domains';
         }
 
         return $failures;
@@ -96,6 +127,12 @@ class NewsBriefGate
         }
         if ($sources < $sections) {
             $failures[] = 'missing_source_links';
+        }
+        if (substr_count($content, self::TAKEAWAY_LABEL) < $sections) {
+            $failures[] = 'missing_takeaways';
+        }
+        if (str_word_count(strip_tags($content)) < self::MIN_TOTAL_WORDS) {
+            $failures[] = 'too_shallow';
         }
         if (! $this->looksEnglish($content)) {
             $failures[] = 'not_english';

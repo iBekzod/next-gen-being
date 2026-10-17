@@ -167,9 +167,13 @@ class BotPostController extends Controller
         $data = $request->validate([
             'date' => 'required|date_format:Y-m-d',
             'author_id' => 'required|integer|exists:users,id',
+            'lead' => 'nullable|string|max:1500',
+            'featured_image_url' => 'nullable|url|max:2048',
+            'image_attribution' => 'nullable|array',
             'items' => 'required|array|min:1|max:20',
             'items.*.headline' => 'required|string|max:200',
-            'items.*.summary' => 'required|string|max:1200',
+            'items.*.summary' => 'required|string|max:2000',
+            'items.*.takeaway' => 'nullable|string|max:1500',
             'items.*.source_url' => 'required|string|max:2048',
             'items.*.source_name' => 'nullable|string|max:80',
         ]);
@@ -196,11 +200,31 @@ class BotPostController extends Controller
             return response()->json(['ok' => false, 'error' => 'gate_failed', 'failures' => $failures], 422);
         }
 
-        $content = "Today's AI news in short: " . count($items) . " items, each with a link to its source.\n\n";
+        // A news post without a cover image looked broken (10-17): required, not best-effort.
+        $imageData = ! empty($data['featured_image_url'])
+            ? ['url' => $data['featured_image_url'], 'attribution' => $data['image_attribution'] ?? null]
+            : null;
+        if (! $imageData) {
+            try {
+                $imageData = app(\App\Services\ImageGenerationService::class)
+                    ->generateFeaturedImage($title, 'artificial intelligence technology');
+            } catch (\Throwable $e) {
+                Log::warning('AI News cover image failed: ' . $e->getMessage());
+            }
+        }
+        if (empty($imageData['url'])) {
+            Log::warning('AI News rejected: no cover image');
+
+            return response()->json(['ok' => false, 'error' => 'gate_failed', 'failures' => ['no_cover_image']], 422);
+        }
+
+        $lead = trim((string) ($data['lead'] ?? ''));
+        $content = ($lead !== '' ? $lead : "Today's AI news in short: " . count($items) . " items, each with a link to its source.") . "\n\n";
         foreach ($items as $item) {
             $name = trim((string) ($item['source_name'] ?? ''))
                 ?: (string) preg_replace('/^www\./', '', (string) parse_url($item['source_url'], PHP_URL_HOST));
             $content .= '## ' . trim($item['headline']) . "\n\n" . trim($item['summary'])
+                . "\n\n" . NewsBriefGate::TAKEAWAY_LABEL . ' ' . trim((string) ($item['takeaway'] ?? ''))
                 . "\n\n[Source: {$name}](" . trim($item['source_url']) . ")\n\n";
         }
         $content .= "Summaries are condensed from the linked sources; follow each link for the full story.\n";
@@ -233,6 +257,8 @@ class BotPostController extends Controller
             'author_id' => $data['author_id'],
             'category_id' => $category->id,
             'post_type' => Post::TYPE_NEWS_BRIEF,
+            'featured_image' => $imageData['url'],
+            'image_attribution' => $imageData['attribution'] ?? null,
             'status' => $publish ? 'published' : 'draft',
             'published_at' => $publish ? now() : null,
             'is_premium' => false,
