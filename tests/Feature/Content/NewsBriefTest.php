@@ -141,7 +141,7 @@ class NewsBriefTest extends TestCase
         $post = Post::where('post_type', Post::TYPE_NEWS_BRIEF)->firstOrFail();
         $this->assertSame('AI News — October 11, 2026', $post->title);
         $this->assertSame('ai-news', $post->category->slug);
-        \$this->assertGreaterThanOrEqual(NewsBriefGate::MIN_TOTAL_WORDS, str_word_count(\$post->content));
+        $this->assertGreaterThanOrEqual(NewsBriefGate::MIN_TOTAL_WORDS, str_word_count($post->content));
         $this->assertSame('https://images.example.com/cover.jpg', $post->featured_image);
         $this->assertSame(5, substr_count($post->content, NewsBriefGate::TAKEAWAY_LABEL));
         $this->assertStringContainsString('[Source: Example Changelog](https://example.com/changelog)', $post->content);
