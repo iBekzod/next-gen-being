@@ -70,8 +70,11 @@ class AffiliateLinker
         if ($all !== []) {
             if (! str_contains($content, self::CTA_MARKER)) {
                 $top = $this->topSlug($all, $candidates, $programs, $content);
-                $content = $this->insertCta($content, $programs[$top]['anchor'], rtrim($baseUrl, '/') . '/go/' . $top);
-                $cta = true;
+                // Already-linked slug may be missing from active programs: no anchor, so no CTA.
+                if ($top !== null) {
+                    $content = $this->insertCta($content, $programs[$top]['anchor'], rtrim($baseUrl, '/') . '/go/' . $top);
+                    $cta = true;
+                }
             }
             if (! preg_match('/affiliate-disclosure/i', $content)) {
                 $content = $this->insertDisclosure($content, rtrim($baseUrl, '/'));
@@ -175,7 +178,7 @@ class AffiliateLinker
         return (bool) preg_match('/^\s*(#{1,6}\s|\||>|---|\*\*\*|___|\d+\.\s*\[[^\]]+\]\(#)/', $line);
     }
 
-    private function topSlug(array $all, array $candidates, array $programs, string $content): string
+    private function topSlug(array $all, array $candidates, array $programs, string $content): ?string
     {
         $best = null;
         $bestScore = -1;
@@ -190,8 +193,7 @@ class AffiliateLinker
             }
         }
 
-        // An already-linked tool that is no longer in the active program list.
-        return $best ?? $all[0];
+        return $best;
     }
 
     /** CTA box goes before the closing section (next steps / conclusion), else at the end. */
