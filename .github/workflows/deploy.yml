@@ -137,6 +137,9 @@ jobs:
           sudo -u www-data git fetch origin
           sudo -u www-data git reset --hard origin/main
 
+          # Eski keshlangan konfig yangi paket (schedule-monitor) konfigini yashirmasin
+          sudo -u www-data php artisan config:clear || true
+
           # Install PHP dependencies
           sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
 
