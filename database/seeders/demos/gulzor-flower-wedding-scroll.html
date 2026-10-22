@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gulzor — Florist and wedding flowers, a scroll-bloom website</title>
+<meta name="description" content="Scroll-driven florist website: a peony blooms as you scroll, seasonal bouquets, a live bouquet builder with price, and a wedding arch that grows flower by flower. GSAP and SVG, no build step.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --ivory:#fff9f3; --blush:#f8e4e2; --rose:#e48aa3; --peony:#d3607c; --plum:#3a1f2e; --sage:#86a287; --butter:#f3d58c; --kraft:#c9a47a;
+  --serif:"DM Serif Display","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --ease:cubic-bezier(.22,.61,.24,1);
+  --gut:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--ivory);color:var(--plum);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--peony);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--plum);color:var(--ivory);padding:8px 14px;border-radius:8px;z-index:100}.skip:focus{left:8px}
+
+nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:16px var(--gut)}
+nav::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,249,243,.92),rgba(255,249,243,0));pointer-events:none}
+nav>*{position:relative}
+.logo{font-family:var(--serif);font-size:28px;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+nav ul{display:flex;gap:32px;list-style:none;font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+nav ul a{opacity:.75;transition:opacity .3s,color .3s}nav ul a:hover{opacity:1;color:var(--peony)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 30px;border-radius:999px;background:var(--plum);color:var(--ivory);font-weight:600;font-size:14px;letter-spacing:.03em;transition:transform .4s var(--ease),background .3s}
+.btn:hover{transform:translateY(-2px);background:var(--peony)}
+.btn.line{background:transparent;color:var(--plum);border:1px solid rgba(58,31,46,.35)}
+.btn.line:hover{background:var(--plum);color:var(--ivory)}
+nav .btn{padding:10px 20px;font-size:13px}
+
+/* hero bloom */
+.hero{position:relative;height:100svh;overflow:hidden;background:radial-gradient(70% 70% at 50% 55%,#fdeceb 0%,var(--blush) 55%,#f1d3d4 100%)}
+.bigc{position:absolute;left:50%;top:50%;translate:-50% -56%}
+.hero .big{font-family:var(--serif);font-size:clamp(120px,27vw,440px);line-height:1;color:rgba(211,96,124,.16);letter-spacing:-.03em;white-space:nowrap;user-select:none}
+.bloomc{position:absolute;left:50%;top:54%;width:min(86vh,92vw);aspect-ratio:1;translate:-50% -50%}
+.bloom{width:100%;height:100%}
+.bloom svg{width:100%;height:100%;overflow:visible}
+.hero-t{position:absolute;left:var(--gut);bottom:clamp(30px,7vh,80px);max-width:min(480px,86vw);z-index:3}
+.hero-t h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,4.6vw,66px);line-height:1.02;letter-spacing:-.02em}
+.hero-t h1 em{color:var(--peony)}
+.hero-t p{margin:14px 0 22px;opacity:.75;max-width:38ch}
+.hero-r{position:absolute;right:var(--gut);bottom:clamp(30px,7vh,80px);text-align:right;font-size:12px;letter-spacing:.24em;text-transform:uppercase;opacity:.65;z-index:3}
+.hero-r b{display:block;font-family:var(--serif);font-size:42px;font-weight:400;letter-spacing:0;color:var(--peony);opacity:1}
+.petals{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.petals svg{position:absolute;top:-8%;animation:fall linear infinite;will-change:transform}
+@keyframes fall{0%{transform:translate3d(0,-10vh,0) rotate(0)}50%{transform:translate3d(40px,60vh,0) rotate(180deg)}100%{transform:translate3d(-30px,118vh,0) rotate(360deg)}}
+
+/* bouquets */
+.sec{padding:clamp(80px,14vh,170px) var(--gut)}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:clamp(28px,5vw,60px)}
+.sec-head h2{font-family:var(--serif);font-weight:400;font-size:clamp(46px,8vw,128px);line-height:.9;letter-spacing:-.025em}
+.sec-head h2 em{color:var(--peony)}
+.sec-head p{max-width:34ch;opacity:.7}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,24px)}
+.bq{border-radius:26px;overflow:hidden;background:var(--blush);display:flex;flex-direction:column;transition:transform .6s var(--ease)}
+.bq:hover{transform:translateY(-8px)}
+.bq:nth-child(2){background:#fbe9c9}.bq:nth-child(3){background:#e7e0f4}.bq:nth-child(4){background:#e1eadd}
+.bq svg{width:100%;height:auto;display:block;transition:transform .8s var(--ease)}
+.bq:hover svg{transform:scale(1.05) rotate(-1.5deg)}
+.bq div{padding:6px 22px 22px}
+.bq small{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;font-weight:600}
+.bq h3{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1;margin:6px 0 8px}
+.bq p{font-size:14px;opacity:.75;min-height:3em}
+.bq .r{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-weight:700}
+.bq .r button{padding:9px 16px;border-radius:99px;background:var(--plum);color:var(--ivory);font-size:13px}
+.bq .r button:hover{background:var(--peony)}
+
+/* builder */
+.builder{background:var(--plum);color:var(--ivory)}
+.builder .sec-head h2 em{color:var(--rose)}
+.b-g{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,5vw,80px);align-items:center}
+.pv{position:relative;border-radius:32px;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.12),rgba(255,255,255,.02));padding:clamp(10px,2vw,30px)}
+.pv svg{width:100%;height:auto;display:block;max-height:72vh}
+.ctrl{display:grid;gap:26px}
+.lab{font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:.6;font-weight:700;margin-bottom:10px;display:block}
+.opts{display:flex;gap:10px;flex-wrap:wrap}
+.opts button{padding:12px 20px;border-radius:99px;border:1px solid rgba(255,249,243,.3);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:10px;transition:all .25s}
+.opts button[aria-pressed=true]{background:var(--ivory);color:var(--plum);border-color:var(--ivory)}
+.opts i{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.ctrl input[type=text]{width:100%;padding:14px 18px;border-radius:14px;border:1px solid rgba(255,249,243,.3);background:rgba(255,249,243,.07);font-size:16px}
+.ctrl input::placeholder{color:rgba(255,249,243,.45)}
+.total{display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(255,249,243,.2);padding-top:18px}
+.total b{font-family:var(--serif);font-weight:400;font-size:clamp(44px,5vw,70px);line-height:1}
+.total span{font-size:13px;opacity:.7}
+.ctrl .btn{background:var(--rose);color:var(--plum)}.ctrl .btn:hover{background:var(--ivory)}
+.msg{min-height:1.5em;font-family:var(--serif);font-size:22px;color:var(--butter)}
+
+/* arch */
+.arch{position:relative;height:100svh;overflow:hidden;background:linear-gradient(180deg,#fdf1ee,#f6dcd9)}
+.arch svg{position:absolute;left:50%;bottom:0;translate:-50% 0;width:min(1100px,130vw);height:auto;overflow:visible}
+.arch-t{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:0 var(--gut);z-index:2;pointer-events:none}
+.arch-t h2{font-family:var(--serif);font-weight:400;font-size:clamp(40px,7vw,110px);line-height:.92;letter-spacing:-.025em}
+.arch-t h2 em{color:var(--peony)}
+.arch-t p{max-width:34ch;margin:16px auto 0;opacity:.75}
+.pk{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;pointer-events:auto}
+.pk span{padding:8px 16px;border-radius:99px;background:rgba(255,249,243,.8);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+
+/* how */
+.how{background:var(--blush)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2vw,30px)}
+.st{border-top:2px solid var(--plum);padding-top:20px}
+.st b{font-family:var(--serif);font-weight:400;font-size:64px;color:var(--peony);line-height:1}
+.st h3{font-family:var(--serif);font-weight:400;font-size:30px;margin:6px 0 8px}
+.st p{opacity:.75;max-width:32ch}
+footer{padding:30px var(--gut) 40px;background:var(--plum);color:var(--ivory);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:12px;opacity:.9}
+footer span{opacity:.6}
+
+.js .reveal{opacity:0;transform:translateY(40px)}
+
+@media (max-width:900px){
+  nav ul{display:none}
+  nav{background:rgba(255,249,243,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding-block:10px}
+  nav::before{display:none}
+  .logo{font-size:24px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .b-g{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .hero-r{display:none}
+  .bloomc{top:40%;width:min(110vw,64vh)}
+  .hero-t{bottom:22px}
+  .hero-t p{display:none}
+}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.petals{display:none}}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js")</script>
+<a class="skip" href="#bouquets">Skip to bouquets</a>
+<nav>
+  <a class="logo" href="#top"><svg viewBox="-12 -12 24 24" aria-hidden="true" id="logoFl"></svg>Gulzor</a>
+  <ul><li><a href="#bouquets">Bouquets</a></li><li><a href="#build">Build</a></li><li><a href="#weddings">Weddings</a></li><li><a href="#how">Delivery</a></li></ul>
+  <a class="btn" href="#build">Order flowers</a>
+</nav>
+
+<header class="hero" id="top">
+  <div class="bigc" aria-hidden="true"><div class="big">Gulzor</div></div>
+  <div class="petals" id="petals" aria-hidden="true"></div>
+  <div class="bloomc"><div class="bloom"><svg viewBox="0 0 800 800" id="bloom" role="img" aria-label="A peony opening as you scroll"></svg></div></div>
+  <div class="hero-t">
+    <h1>Flowers that arrive like <em>good news.</em></h1>
+    <p>A small florist and wedding studio. Hand-tied bouquets, delivered the same day across the city.</p>
+    <a class="btn" href="#build">Build a bouquet</a>
+  </div>
+  <div class="hero-r" aria-hidden="true"><b id="bl">0%</b>in bloom</div>
+</header>
+
+<section class="sec" id="bouquets">
+  <div class="sec-head reveal"><h2>This season's<br><em>bouquets</em></h2><p>Four hand-tied favourites. Prices are placeholders for your own shop.</p></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section class="sec builder" id="build">
+  <div class="sec-head reveal"><h2>Build your<br><em>own</em></h2><p>Choose the colours, the size and the paper, and watch it come together.</p></div>
+  <div class="b-g">
+    <div class="pv reveal"><svg viewBox="0 0 520 560" id="pv" role="img" aria-label="Live preview of your bouquet"></svg></div>
+    <div class="ctrl reveal">
+      <div><span class="lab">Colours</span><div class="opts" id="o-pal"></div></div>
+      <div><span class="lab">Size</span><div class="opts" id="o-size"></div></div>
+      <div><span class="lab">Paper</span><div class="opts" id="o-wrap"></div></div>
+      <div><label class="lab" for="note">Card message</label><input id="note" type="text" maxlength="60" placeholder="Happy birthday, Nilufar"></div>
+      <div class="total"><div><span>Your bouquet</span><b id="price">$46</b></div><span id="desc"></span></div>
+      <button class="btn" id="order">Order this bouquet</button>
+      <div class="msg" id="msg" role="status"></div>
+    </div>
+  </div>
+</section>
+
+<section class="arch" id="weddings" aria-label="Wedding flowers">
+  <svg viewBox="0 0 1000 720" id="arch" aria-hidden="true"></svg>
+  <div class="arch-t"><div><h2>Under the<br><em>arch</em></h2><p>Bridal bouquets, ceremony arches and tables, grown flower by flower for your day.</p><div class="pk"><span>Bridal bouquet</span><span>Arch &amp; aisle</span><span>Table pieces</span></div></div></div>
+</section>
+
+<section class="sec how" id="how">
+  <div class="sec-head reveal"><h2>From the<br><em>market</em> to you</h2><p>We buy flowers fresh at dawn and deliver the same day.</p></div>
+  <div class="steps">
+    <div class="st reveal"><b>1</b><h3>Choose</h3><p>Pick a ready bouquet or build your own, then add a card with a few words.</p></div>
+    <div class="st reveal"><b>2</b><h3>We tie it</h3><p>Stems are cut, conditioned and tied by hand the morning of delivery.</p></div>
+    <div class="st reveal"><b>3</b><h3>It arrives</h3><p>Same-day delivery in a water-wrapped box. Order before noon.</p></div>
+  </div>
+</section>
+<footer><div>Gulzor is a fictional florist. Template by NextGenBeing. The order button sends nothing, wire it to your own checkout.</div><span>Fonts: DM Serif Display, DM Sans (OFL). Animation: GSAP.</span></footer>
+
+<script>
+(function(){
+"use strict";
+var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches || !window.gsap;
+var $ = function(s){return document.querySelector(s)};
+function rng(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+function f(n){return (+n).toFixed(1)}
+
+/* teardrop petal pointing up from (cx,cy), length L, width W */
+function petalD(cx,cy,L,W){
+  return "M"+cx+","+cy+" C"+f(cx-W)+","+f(cy-L*.25)+" "+f(cx-W*1.05)+","+f(cy-L*.78)+" "+cx+","+f(cy-L)+" C"+f(cx+W*1.05)+","+f(cy-L*.78)+" "+f(cx+W)+","+f(cy-L*.25)+" "+cx+","+cy+"Z";
+}
+/* a small flower: concentric petal rings, used for cards, builder and arch */
+function flower(cx,cy,R,pal,seed,n){
+  var r=rng(seed||3),h='<g transform="translate('+f(cx)+' '+f(cy)+') rotate('+((r()*360)|0)+')">';
+  var layers=[[n||9,1,pal[0]],[(n||9)-2,.72,pal[1]],[(n||9)-4,.46,pal[2]]];
+  layers.forEach(function(l,k){
+    for(var i=0;i<l[0];i++){var a=i/l[0]*360+k*18;
+      h+='<path d="'+petalD(0,0,R*l[1],R*l[1]*.36)+'" fill="'+l[2]+'" stroke="rgba(58,31,46,.12)" stroke-width="'+f(R*.012)+'" transform="rotate('+f(a)+')"/>'}
+  });
+  return h+'<circle r="'+f(R*.1)+'" fill="#f3d58c"/></g>';
+}
+function leaf(x,y,L,rot){return '<path d="'+petalD(0,0,L,L*.26)+'" fill="#86a287" stroke="rgba(0,0,0,.08)" transform="translate('+f(x)+' '+f(y)+') rotate('+f(rot)+')"/>'}
+
+var PALS={
+  blush:{n:"Blush",c:["#f4b5c4","#e98ea8","#fbdce3"],sw:"#f0a3b7"},
+  sunset:{n:"Sunset",c:["#f6a45b","#e8685a","#fbd18a"],sw:"#ee8a58"},
+  ivory:{n:"Ivory",c:["#fff3e2","#efd9bd","#fffdf8"],sw:"#f3e3c8"},
+  lilac:{n:"Lilac",c:["#c9b2ee","#9b86d6","#e5dcf7"],sw:"#b49be3"}
+};
+
+/* nav logo flower + falling petals */
+$("#logoFl").innerHTML=flower(0,0,11,PALS.blush.c,2,7).replace("transform=\"translate(0.0 0.0)","transform=\"translate(0 0)");
+(function(){
+  var p=$("#petals"),r=rng(14),h="";
+  for(var i=0;i<12;i++){var s=14+r()*22;
+    h+='<svg viewBox="-10 -14 20 28" width="'+f(s)+'" height="'+f(s*1.4)+'" style="left:'+f(r()*100)+'%;animation-duration:'+f(11+r()*12)+'s;animation-delay:-'+f(r()*20)+'s;opacity:'+f(.45+r()*.4)+'"><path d="'+petalD(0,10,24,8)+'" fill="'+(r()>.5?"#ec9db0":"#f6c6d0")+'"/></svg>'}
+  p.innerHTML=h;
+})();
+
+/* ---------- hero peony: 4 layers of petals around (400,400) ---------- */
+var LAYERS=[[15,1,"#f2a9bb","#e07a97"],[12,.8,"#f5b9c8","#e68ba6"],[9,.6,"#f8cbd5","#ec9db4"],[6,.4,"#fbdde3","#f1b0c1"]];
+(function(){
+  var r=rng(5),h='<g transform="translate(400 400)"><defs>';
+  LAYERS.forEach(function(l,k){h+='<radialGradient id="pg'+k+'" cx=".5" cy="1" r="1"><stop offset="0" stop-color="'+l[3]+'"/><stop offset=".55" stop-color="'+l[2]+'"/><stop offset="1" stop-color="#fff1f2"/></radialGradient>'});
+  h+='</defs>';
+  /* leaves behind */
+  for(var i=0;i<7;i++){h+='<path class="lf" d="'+petalD(0,0,330+r()*40,60)+'" fill="#86a287" stroke="rgba(0,0,0,.08)" data-a="'+((i*51+20)|0)+'"/>'}
+  LAYERS.forEach(function(l,k){
+    for(var i=0;i<l[0];i++){var a=i/l[0]*360+k*(360/l[0]/2),L=300*l[1]*(.94+r()*.1),W=L*(.36+r()*.05);
+      h+='<path class="pt" d="'+petalD(0,0,L,W)+'" fill="url(#pg'+k+')" stroke="rgba(160,50,80,.18)" stroke-width="1.5" data-a="'+f(a)+'" data-k="'+k+'" data-s="'+f(.9+r()*.12)+'"/>'}
+  });
+  h+='</g><g id="stam" opacity="0">';
+  for(i=0;i<46;i++){var an=r()*6.283,d=Math.sqrt(r())*38;h+='<circle cx="'+f(400+Math.cos(an)*d)+'" cy="'+f(400+Math.sin(an)*d)+'" r="'+f(2.2+r()*2.4)+'" fill="'+(r()>.4?"#f3d58c":"#e9a94a")+'"/>'}
+  h+='</g>';
+  $("#bloom").innerHTML=h;
+})();
+
+/* ---------- ready bouquets ---------- */
+function bouquetArt(palKey,n,seed,paper){
+  var P=PALS[palKey].c,r=rng(seed),h='<svg viewBox="0 0 400 420" aria-hidden="true">';
+  for(var i=0;i<9;i++)h+=leaf(200+(r()*2-1)*20,250,150+r()*40,-80+i*20+r()*10);
+  var pts=[];for(i=0;i<n;i++){var a=i*2.39996,d=Math.sqrt(i+.6)*(98/Math.sqrt(n));pts.push([200+Math.cos(a)*d*1.1,180+Math.sin(a)*d*.95,i])}
+  pts.sort(function(a,b){return a[1]-b[1]});
+  var R=Math.max(34,Math.min(60,170/Math.sqrt(n)));
+  pts.forEach(function(p,k){h+=flower(p[0],p[1],R*(.9+r()*.2),[P[k%3==0?1:0],P[k%2?1:0],P[2]],seed+k,9)});
+  /* paper cone */
+  h+='<path d="M92,250 Q200,270 308,250 L226,400 Q200,412 174,400Z" fill="'+paper+'" stroke="rgba(0,0,0,.1)"/><path d="M92,250 Q200,270 308,250 L290,282 Q200,300 110,282Z" fill="rgba(255,255,255,.28)"/><path d="M168,300 L200,290 L232,300 L200,404Z" fill="rgba(0,0,0,.06)"/>';
+  h+='<path d="M184,296 Q200,314 216,296 Q200,306 184,296Z" fill="#3a1f2e"/><path d="M186,300 L170,330 M214,300 L230,330" stroke="#3a1f2e" stroke-width="4" stroke-linecap="round"/>';
+  return h+'</svg>';
+}
+var READY=[["Blush","Peony Morning","Soft pink blooms with sage leaves, tied with a linen bow.",46,13,"#e9d7c1"],["Sunset","Golden Hour","Warm apricot and coral, a bouquet that feels like late sun.",52,13,"#f0e2d0"],["Lilac","Evening Violet","Cool lilac and lavender tones wrapped in ivory paper.",48,13,"#fbf5ec"],["Ivory","Quiet Cloud","Cream and ivory only. A calm bouquet for weddings and thank-yous.",58,17,"#e9d7c1"]];
+$("#grid").innerHTML=READY.map(function(b,i){return '<article class="bq reveal">'+bouquetArt(b[0].toLowerCase(),b[4],40+i*7,b[5])+'<div><small>'+b[4]+' stems</small><h3>'+b[1]+'</h3><p>'+b[2]+'</p><div class="r"><span>$'+b[3]+'</span><button>Add to order</button></div></div></article>'}).join("");
+document.querySelectorAll(".bq .r button").forEach(function(b){b.onclick=function(){b.textContent="Added ✓";setTimeout(function(){b.textContent="Add to order"},1400)}});
+
+/* ---------- builder ---------- */
+var SIZES={S:{n:7,p:28,l:"Small, 7 stems"},M:{n:15,p:46,l:"Medium, 15 stems"},L:{n:25,p:72,l:"Large, 25 stems"}};
+var WRAPS={kraft:{n:"Kraft",c:"#c9a47a",p:0},ivory:{n:"Ivory",c:"#fbf5ec",p:3},black:{n:"Black",c:"#2b2226",p:3}};
+var S={pal:"blush",size:"M",wrap:"kraft"};
+function opt(id,obj,key,sw){
+  var el=$(id);el.innerHTML=Object.keys(obj).map(function(k){var o=obj[k];return '<button type="button" data-k="'+k+'" aria-pressed="'+(S[key]===k)+'">'+(sw?'<i style="background:'+(o.sw||o.c)+'"></i>':'')+(o.n||k)+'</button>'}).join("");
+  el.onclick=function(e){var b=e.target.closest("button");if(!b)return;S[key]=b.dataset.k;el.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b)});draw(true)};
+}
+function draw(animate){
+  var sz=SIZES[S.size],w=WRAPS[S.wrap];
+  $("#pv").innerHTML=bouquetArt(S.pal,sz.n,77,w.c).replace('<svg viewBox="0 0 400 420" aria-hidden="true">','').replace(/<\/svg>$/,"");
+  $("#pv").setAttribute("viewBox","0 0 400 420");
+  $("#price").textContent="$"+(sz.p+w.p);$("#desc").textContent=sz.l+" · "+w.n+" paper";
+  if(animate&&!reduce)gsap.from("#pv g",{scale:.2,opacity:0,duration:.6,stagger:{each:.012,from:"random"},ease:"back.out(1.6)",transformOrigin:"50% 50%"});
+}
+opt("#o-pal",PALS,"pal",true);opt("#o-size",{S:{n:"Small"},M:{n:"Medium"},L:{n:"Large"}},"size");opt("#o-wrap",WRAPS,"wrap",true);
+draw(false);
+$("#order").onclick=function(){var t=$("#note").value.trim(),sz=SIZES[S.size];$("#msg").textContent="Lovely. "+sz.l+" in "+PALS[S.pal].n.toLowerCase()+(t?', card: "'+t+'"':"")+". (Demo only, nothing was sent.)"};
+
+/* ---------- wedding arch ---------- */
+(function(){
+  var r=rng(23),h='<ellipse cx="500" cy="716" rx="460" ry="10" fill="rgba(58,31,46,.12)"/>',N=40,pals=[PALS.blush.c,PALS.ivory.c,PALS.lilac.c,PALS.sunset.c];
+  h+='<path d="M120,716 V380 A380,380 0 0 1 880,380 V716" fill="none" stroke="#b79a76" stroke-width="10" stroke-linecap="round"/>';
+  var items=[];
+  for(var i=0;i<N;i++){var t=i/(N-1),ang=Math.PI*(1-t);var x=500+Math.cos(ang)*380,y=380-Math.sin(ang)*380;if(t<.12||t>.88||true){y=Math.min(y,700)}
+    if(ang>Math.PI*0.995||ang<Math.PI*0.005){}
+    items.push([x+(r()*2-1)*12,y+(r()*2-1)*12,t])}
+  /* pillars of flowers down the sides */
+  for(i=0;i<6;i++){items.push([120+(r()*2-1)*14,380+i*55,.02+i*.01]);items.push([880+(r()*2-1)*14,380+i*55,.98-i*.01])}
+  items.forEach(function(it){h+='<g class="af" data-x="'+f(it[0])+'" data-y="'+f(it[1])+'" data-t="'+f(it[2])+'">'+leaf(it[0],it[1],44,r()*360)+leaf(it[0],it[1],40,r()*360)+'</g>'});
+  items.forEach(function(it,k){var p=pals[k%4];h+='<g class="af" data-x="'+f(it[0])+'" data-y="'+f(it[1])+'" data-t="'+f(it[2])+'">'+flower(it[0],it[1],32+r()*22,p,100+k,9)+'</g>'});
+  $("#arch").innerHTML=h;
+})();
+
+/* ---------- motion ---------- */
+document.querySelectorAll(".big").forEach(function(){});
+if(reduce){
+  document.documentElement.classList.remove("js");
+  document.querySelectorAll("#bloom .pt").forEach(function(p){var a=+p.dataset.a;p.setAttribute("transform","rotate("+a+")")});
+  document.querySelectorAll("#bloom .lf").forEach(function(p){p.setAttribute("transform","rotate("+p.dataset.a+")")});
+  $("#stam").setAttribute("opacity",1);$("#bl").textContent="100%";
+  return;
+}
+gsap.registerPlugin(ScrollTrigger);
+var pts=gsap.utils.toArray("#bloom .pt"),lfs=gsap.utils.toArray("#bloom .lf");
+/* petals are driven by one progress value and plain transform attributes (no per-petal tweens, no SVG origin maths) */
+var ease=gsap.parseEase("power2.out");
+function setBloom(v){
+  pts.forEach(function(p,i){
+    var k=+p.dataset.k,a=+p.dataset.a,s=+p.dataset.s,st=.06+k*.2+(i%15)*.008,lp=ease(Math.max(0,Math.min(1,(v-st)/.55)));
+    var rot=a*.07-12+(a-(a*.07-12))*lp,sx=.28+(s-.28)*lp,sy=.52+(s-.52)*lp;
+    p.setAttribute("transform","rotate("+rot.toFixed(2)+") scale("+sx.toFixed(3)+" "+sy.toFixed(3)+")");
+  });
+  lfs.forEach(function(l,i){
+    var lp=ease(Math.max(0,Math.min(1,(v-i*.03)/.5))),a=+l.dataset.a;
+    l.setAttribute("transform","rotate("+(a*.08-8+(a-(a*.08-8))*lp).toFixed(2)+") scale("+(.5+.5*lp).toFixed(3)+")");
+    l.setAttribute("opacity",lp.toFixed(2));
+  });
+}
+setBloom(0);
+
+/* intro: buds rise in, petals sway */
+gsap.from(".bloom",{scale:.6,opacity:0,duration:1.6,ease:"expo.out"});
+gsap.from(".hero-t > *",{y:30,opacity:0,duration:1,stagger:.12,ease:"power3.out",delay:.4});
+gsap.from(".big",{opacity:0,scale:.9,duration:2,ease:"power3.out"});
+
+var prog={v:0};
+var tl=gsap.timeline({defaults:{ease:"none"},scrollTrigger:{trigger:".hero",start:"top top",end:function(){return "+="+Math.round(innerHeight*2.4)},pin:true,scrub:.8,anticipatePin:1,invalidateOnRefresh:true}});
+var bv={v:0};
+tl.to(bv,{v:1,duration:1.7,onUpdate:function(){setBloom(bv.v)}},0);
+tl.to("#stam",{opacity:1,duration:.4},1.2);
+tl.to(prog,{v:100,duration:1.7,onUpdate:function(){$("#bl").textContent=Math.round(prog.v)+"%"}},0);
+tl.to(".bloom",{scale:1.12,rotation:14,duration:2,transformOrigin:"50% 50%"},0);
+tl.to(".big",{yPercent:-12,scale:1.08,duration:2},0);
+tl.to(".hero-t",{opacity:.0,y:-20,duration:.3},1.9).fromTo(".hero-t",{opacity:0,y:20},{opacity:1,y:0,duration:.3},2.1);
+tl.to({},{duration:.15},2.1);
+
+/* reveals */
+gsap.utils.toArray(".reveal").forEach(function(el,i){
+  gsap.to(el,{opacity:1,y:0,duration:1,ease:"power3.out",delay:(i%4)*.06,scrollTrigger:{trigger:el,start:"top 90%",once:true}});
+});
+/* arch grows flower by flower */
+var af=gsap.utils.toArray(".af");
+gsap.set(af,{transformOrigin:"50% 50%"});
+af.forEach(function(g){gsap.set(g,{scale:0,opacity:0,svgOrigin:g.dataset.x+" "+g.dataset.y})});
+var at=gsap.timeline({defaults:{ease:"back.out(1.5)"},scrollTrigger:{trigger:"#weddings",start:"top top",end:function(){return "+="+Math.round(innerHeight*1.8)},pin:true,scrub:.8,anticipatePin:1,invalidateOnRefresh:true}});
+af.forEach(function(g){at.to(g,{scale:1,opacity:1,duration:.4},+g.dataset.t*1.3)});
+at.from(".arch-t > div",{opacity:0,y:30,duration:.5,ease:"power2.out"},.9);
+at.to({},{duration:.4});
+addEventListener("load",function(){ScrollTrigger.refresh()});
+})();
+</script>
+</body>
+</html>

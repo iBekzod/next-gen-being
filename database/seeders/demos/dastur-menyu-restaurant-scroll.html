@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dastur — Uzbek restaurant website with a scroll-laid table</title>
+<meta name="description" content="Scroll-driven restaurant website: a dastarkhan is laid course by course as you scroll, then a tabbed menu and a booking widget. GSAP ScrollTrigger and SVG, no build step.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --indigo:#0a1b3f; --indigo2:#102a5c; --cobalt:#1c4e9a; --cream:#f6efe0; --linen:#efe4cc; --gold:#e3a93b; --pome:#b3263e; --turq:#2fa3a3; --ink:#1a1410;
+  --serif:"Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --ease:cubic-bezier(.22,.61,.24,1);
+  --gut:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--indigo);color:var(--cream);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--cream);color:var(--indigo);padding:8px 14px;border-radius:8px;z-index:100}.skip:focus{left:8px}
+
+nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:16px var(--gut);background:linear-gradient(180deg,rgba(10,27,63,.85),rgba(10,27,63,0))}
+.logo{font-family:var(--serif);font-size:30px;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:10px}
+.logo svg{width:26px;height:26px}
+nav ul{display:flex;gap:32px;list-style:none;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+nav ul a{opacity:.8;transition:opacity .3s}nav ul a:hover{opacity:1;color:var(--gold)}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:999px;background:var(--gold);color:var(--indigo);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:transform .4s var(--ease),box-shadow .4s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(227,169,59,.35)}
+nav .btn{padding:10px 20px;font-size:12px}
+
+/* hero */
+.hero{position:relative;min-height:100svh;display:grid;place-items:center;text-align:center;overflow:hidden;padding:110px var(--gut) 70px;
+  background:radial-gradient(70% 60% at 50% 45%,#17398a 0%,var(--indigo) 70%)}
+.medal{position:absolute;left:50%;top:50%;width:min(130vh,150vw);aspect-ratio:1;translate:-50% -50%;opacity:.9}
+.medal svg{width:100%;height:100%}
+.medal .r{transform-box:view-box;transform-origin:50% 50%;animation:rot 90s linear infinite}
+.medal .r2{animation-duration:140s;animation-direction:reverse}.medal .r3{animation-duration:200s}
+@keyframes rot{to{transform:rotate(360deg)}}
+.hero-c{position:relative;z-index:2;max-width:980px}
+.eyebrow{font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(96px,22vw,340px);line-height:.8;letter-spacing:-.03em;margin:.12em 0 .1em;color:var(--cream);text-shadow:0 8px 60px rgba(10,27,63,.7)}
+.hero h1 span{display:inline-block;overflow:hidden;vertical-align:top;padding:.04em .04em .12em}
+.hero h1 b{display:inline-block;font-weight:inherit;will-change:transform}
+.hero h1 em{color:var(--gold);font-weight:500}
+.hero p.lede{font-family:var(--serif);font-size:clamp(20px,2.3vw,32px);font-style:italic;max-width:30ch;margin:0 auto 34px;color:rgba(246,239,224,.9)}
+.hero .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn.line{background:transparent;color:var(--cream);border:1px solid rgba(246,239,224,.4)}
+.btn.line:hover{box-shadow:none;background:rgba(246,239,224,.08)}
+.cue{position:absolute;bottom:20px;left:50%;translate:-50% 0;font-size:11px;letter-spacing:.34em;text-transform:uppercase;opacity:.6;z-index:2}
+
+/* table story */
+.story{position:relative;height:100svh;overflow:hidden;background:radial-gradient(80% 80% at 70% 50%,#143272 0%,var(--indigo) 75%)}
+.story-in{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center;gap:2vw;padding:84px var(--gut) 40px}
+.cards{position:relative;min-height:min(62vh,520px)}
+.card{position:absolute;inset:0 auto auto 0;width:100%;max-width:520px}
+.card .n{font-family:var(--serif);font-size:clamp(18px,1.6vw,24px);color:var(--gold);letter-spacing:.2em}
+.card h2{font-family:var(--serif);font-weight:600;font-size:clamp(70px,10vw,170px);line-height:.85;letter-spacing:-.03em;margin:.06em 0 .12em}
+.card h2 em{font-weight:500;color:var(--gold)}
+.card .uz{font-family:var(--serif);font-style:italic;font-size:clamp(18px,1.7vw,26px);color:rgba(246,239,224,.7);margin-bottom:14px}
+.card p{max-width:42ch;font-size:clamp(14.5px,1.2vw,17px);color:rgba(246,239,224,.84)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.chips span{padding:7px 14px;border:1px solid rgba(227,169,59,.5);border-radius:99px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.stage{position:relative;height:100%;max-height:80svh;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:28px}
+.stage svg{width:100%;height:100%;max-height:80svh;overflow:visible}
+.rail{position:absolute;left:var(--gut);bottom:28px;display:flex;gap:8px;z-index:3}
+.rail i{width:30px;height:3px;border-radius:3px;background:rgba(246,239,224,.2);position:relative;overflow:hidden}
+.rail i::after{content:"";position:absolute;inset:0;background:var(--gold);transform:scaleX(var(--p,0));transform-origin:left}
+.count{position:absolute;right:var(--gut);bottom:22px;font-family:var(--serif);font-size:20px;letter-spacing:.2em;color:rgba(246,239,224,.7);z-index:3}
+
+/* menu */
+.menu{background:var(--cream);color:var(--ink);padding:clamp(80px,14vh,170px) var(--gut);position:relative}
+.menu::before{content:"";position:absolute;inset:0 0 auto 0;height:14px;background:repeating-linear-gradient(90deg,var(--cobalt) 0 14px,var(--gold) 14px 28px,var(--pome) 28px 42px,var(--cream) 42px 56px)}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:clamp(28px,5vw,60px)}
+.sec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(54px,9vw,150px);line-height:.85;letter-spacing:-.03em}
+.sec-head h2 em{color:var(--cobalt);font-weight:500}
+.sec-head p{max-width:34ch;opacity:.7}
+.mtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:34px}
+.mtabs button{padding:12px 24px;border-radius:99px;border:1px solid rgba(26,20,16,.25);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;transition:all .3s var(--ease)}
+.mtabs button[aria-selected=true]{background:var(--indigo);color:var(--cream);border-color:var(--indigo)}
+.items{display:grid;grid-template-columns:1fr 1fr;gap:0 clamp(30px,6vw,90px)}
+.it{padding:22px 0;border-bottom:1px solid rgba(26,20,16,.14)}
+.it .top{display:flex;align-items:baseline;gap:12px}
+.it h3{font-family:var(--serif);font-size:clamp(26px,2.6vw,38px);font-weight:600;line-height:1}
+.it .dots{flex:1;border-bottom:2px dotted rgba(26,20,16,.3);transform:translateY(-6px);min-width:20px}
+.it .pr{font-family:var(--serif);font-size:clamp(24px,2.4vw,34px);font-weight:600;color:var(--cobalt)}
+.it p{font-size:14.5px;opacity:.72;margin-top:6px;max-width:48ch}
+.it small{display:inline-block;margin-top:8px;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--pome)}
+
+/* band */
+.band{background:var(--pome);color:var(--cream);overflow:hidden;padding:18px 0}
+.band-t{display:flex;gap:44px;width:max-content;font-family:var(--serif);font-style:italic;font-size:clamp(30px,4.2vw,60px);white-space:nowrap;animation:mq 40s linear infinite}
+.band-t b{font-style:normal;font-weight:700;color:var(--gold)}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* book */
+.book{padding:clamp(80px,14vh,170px) var(--gut);background:radial-gradient(70% 90% at 15% 20%,#17398a,var(--indigo) 70%)}
+.book-g{display:grid;grid-template-columns:1fr minmax(0,520px);gap:clamp(28px,6vw,100px);align-items:center}
+.book h2{font-family:var(--serif);font-weight:600;font-size:clamp(58px,10vw,170px);line-height:.85;letter-spacing:-.03em}
+.book h2 em{color:var(--gold);font-weight:500}
+.book .info{margin-top:30px;display:grid;gap:6px;font-family:var(--serif);font-size:clamp(20px,2vw,28px)}
+.book .info span{opacity:.7;font-family:var(--sans);font-size:11px;letter-spacing:.24em;text-transform:uppercase;display:block;margin-top:14px}
+form{background:var(--cream);color:var(--ink);border-radius:28px;padding:clamp(22px,3vw,40px);display:grid;gap:20px}
+form label,.lab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;opacity:.65;display:block;margin-bottom:8px}
+form input[type=date],form input[type=text]{width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(26,20,16,.2);background:#fff;font-size:16px}
+.stepper{display:flex;align-items:center;gap:16px}
+.stepper button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(26,20,16,.25);font-size:22px;line-height:1}
+.stepper b{font-family:var(--serif);font-size:34px;min-width:2ch;text-align:center}
+.times{display:flex;gap:8px;flex-wrap:wrap}
+.times button{padding:10px 16px;border-radius:99px;border:1px solid rgba(26,20,16,.2);font-weight:600;font-size:14px;transition:all .25s}
+.times button[aria-pressed=true]{background:var(--cobalt);color:#fff;border-color:var(--cobalt)}
+.times button:disabled{opacity:.3;text-decoration:line-through;cursor:not-allowed}
+form .btn{justify-content:center;background:var(--indigo);color:var(--cream);width:100%}
+.ok{display:none;text-align:center;font-family:var(--serif);font-size:26px;padding:10px}
+.ok.show{display:block}
+footer{padding:28px var(--gut) 36px;background:var(--indigo);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:12px;opacity:.65;border-top:1px solid rgba(246,239,224,.12)}
+
+.js .reveal{opacity:0;transform:translateY(40px)}
+
+@media (max-width:860px){
+  nav{background:rgba(10,27,63,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding-block:10px}
+  nav ul{display:none}
+  .logo{font-size:26px}
+  .medal{opacity:.4}
+  .hero h1{font-size:clamp(110px,34vw,200px)}
+  .story-in{grid-template-columns:1fr;grid-template-rows:minmax(0,45%) minmax(0,1fr);padding-top:66px;gap:0;align-items:start}
+  .stage{order:-1;max-height:none}
+  .stage svg{max-height:100%}
+  .cards{min-height:0;height:100%}
+  .card h2{font-size:clamp(58px,19vw,100px)}
+  .card .uz{margin-bottom:6px}.card p{font-size:14px}
+  .chips{margin-top:12px}.chips span{padding:5px 10px;font-size:10px}
+  .rail{bottom:12px}.count{bottom:8px;font-size:16px}
+  .items{grid-template-columns:1fr}
+  .book-g{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.medal .r,.band-t{animation:none}}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js")</script>
+<a class="skip" href="#menu">Skip to the menu</a>
+<nav>
+  <a class="logo" href="#top"><svg viewBox="-20 -20 40 40" aria-hidden="true"><polygon id="logoStar" fill="#e3a93b"/></svg>Dastur</a>
+  <ul><li><a href="#story">The table</a></li><li><a href="#menu">Menu</a></li><li><a href="#book">Book</a></li></ul>
+  <a class="btn" href="#book">Reserve</a>
+</nav>
+
+<header class="hero" id="top">
+  <div class="medal" aria-hidden="true"><svg viewBox="-300 -300 600 600" id="medal"></svg></div>
+  <div class="hero-c">
+    <div class="eyebrow">Uzbek table · Plov · Somsa · Tea</div>
+    <h1><span><b>Das</b></span><span><b><em>tur</em></b></span></h1>
+    <p class="lede">A table is laid the old way: bread first, then plov, then tea that never runs out.</p>
+    <div class="row"><a class="btn" href="#story">Lay the table ↓</a><a class="btn line" href="#menu">See the menu</a></div>
+  </div>
+  <div class="cue">Scroll</div>
+</header>
+
+<section class="story" id="story" aria-label="The table is laid, course by course">
+  <div class="story-in">
+    <div class="cards" aria-live="polite">
+      <article class="card" id="k0"><div class="n">00 · DASTARKHAN</div><h2>The <em>cloth</em></h2><div class="uz">Dasturxon yozildi</div><p>In an Uzbek home the cloth goes down first. Everything after it is a gift to the guest, and the guest is never allowed to leave hungry.</p><div class="chips"><span>5 courses</span><span>Seats 4 to 6</span></div></article>
+      <article class="card" id="k1"><div class="n">01 · THE CENTRE</div><h2>Osh</h2><div class="uz">Toshkent to'y oshi</div><p>Yellow carrots, lamb and rice cooked in a cast-iron kazan over open flame. Chickpeas, raisins, quail eggs and a whole head of garlic steamed on top.</p><div class="chips"><span>3 hours</span><span>Serves 2</span><span>$16</span></div></article>
+      <article class="card" id="k2"><div class="n">02 · FROM THE TANDIR</div><h2>Non</h2><div class="uz">Patir non</div><p>Bread slapped onto the wall of a clay oven, stamped with a chekich and scattered with sesame. Break it, never cut it.</p><div class="chips"><span>Baked hourly</span><span>Serves 3</span><span>$3</span></div></article>
+      <article class="card" id="k3"><div class="n">03 · FOLDED</div><h2>Som<em>sa</em></h2><div class="uz">Tandir somsa</div><p>Flaky dough around hand-cut lamb and onion, baked on the tandir wall until the edges blister. Eat them hot, with black pepper.</p><div class="chips"><span>Tandir baked</span><span>3 pieces</span><span>$7</span></div></article>
+      <article class="card" id="k4"><div class="n">04 · FROM THE COALS</div><h2>Shash<em>lik</em></h2><div class="uz">Qo'y go'shti shashlik</div><p>Cubed lamb with tail fat on the skewer, grilled over coals and served with raw red onion, sumac and grilled tomato.</p><div class="chips"><span>Charcoal</span><span>3 skewers</span><span>$14</span></div></article>
+      <article class="card" id="k5"><div class="n">05 · THE LAST WORD</div><h2>Choy</h2><div class="uz">Ko'k choy, nabot bilan</div><p>Green tea poured back into the pot three times so it brews evenly, with rock sugar on the side. The bowl is never filled to the brim, so it will always be topped up.</p><div class="chips"><span>Refills free</span><span>Pot for 2</span><span>$4</span></div></article>
+    </div>
+    <div class="stage">
+      <svg viewBox="0 0 800 800" role="img" aria-label="Top-down illustration of a dastarkhan with plov, bread, somsa, shashlik and tea">
+        <defs>
+          <radialGradient id="rice" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#f1cc6c"/><stop offset="1" stop-color="#c8891f"/></radialGradient>
+          <radialGradient id="bread" cx=".45" cy=".4" r=".8"><stop offset="0" stop-color="#eab35c"/><stop offset=".75" stop-color="#c98232"/><stop offset="1" stop-color="#9a5a1b"/></radialGradient>
+          <linearGradient id="pastry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9b25a"/><stop offset="1" stop-color="#b9742b"/></linearGradient>
+          <radialGradient id="ceram" cx=".4" cy=".35" r=".9"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#dccdb0"/></radialGradient>
+          <radialGradient id="tray" cx=".4" cy=".35" r=".9"><stop offset="0" stop-color="#f0c577"/><stop offset=".7" stop-color="#b9772c"/><stop offset="1" stop-color="#7d4a17"/></radialGradient>
+          <radialGradient id="tea" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#e9b84a"/><stop offset="1" stop-color="#a86b14"/></radialGradient>
+          <radialGradient id="vig" cx=".5" cy=".5" r=".5"><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></radialGradient>
+          <radialGradient id="sh"><stop offset=".75" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+          <g id="plate"><circle cy="10" r="136" fill="url(#sh)"/><circle r="122" fill="url(#ceram)"/><circle r="119" fill="none" stroke="#1c4e9a" stroke-width="3"/><circle r="100" fill="none" stroke="#1c4e9a" stroke-width="1.5" stroke-dasharray="2 5"/><g id="petals"></g></g>
+        </defs>
+        <g id="cam">
+          <g id="cloth"></g>
+          <g id="dishes">
+            <g class="dish" id="x-non" transform="translate(400 128)"><g class="in"></g></g>
+            <g class="dish" id="x-somsa" transform="translate(672 400)"><g class="in"></g></g>
+            <g class="dish" id="x-shashlik" transform="translate(400 672)"><g class="in"></g></g>
+            <g class="dish" id="x-tea" transform="translate(128 400)"><g class="in"></g></g>
+            <g class="dish" id="x-osh" transform="translate(400 400)"><g class="in"></g></g>
+          </g>
+        </g>
+        <circle cx="400" cy="400" r="400" fill="url(#vig)" pointer-events="none"/>
+      </svg>
+    </div>
+  </div>
+  <div class="rail" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="count" aria-hidden="true" id="count">00 / 05</div>
+</section>
+
+<div class="band" aria-hidden="true"><div class="band-t" id="band"></div></div>
+
+<section class="menu" id="menu">
+  <div class="sec-head reveal"><h2>The<br><em>menu</em></h2><p>Everything is cooked to order. Names are Uzbek, prices are placeholders you can replace.</p></div>
+  <div class="mtabs reveal" role="tablist" aria-label="Menu section">
+    <button role="tab" aria-selected="true" data-k="mains">Mains</button>
+    <button role="tab" aria-selected="false" data-k="grill">Grill &amp; oven</button>
+    <button role="tab" aria-selected="false" data-k="soups">Soups &amp; salads</button>
+    <button role="tab" aria-selected="false" data-k="sweet">Tea &amp; sweets</button>
+  </div>
+  <div class="items" id="items" role="tabpanel"></div>
+</section>
+
+<div class="band" style="background:var(--cobalt)" aria-hidden="true"><div class="band-t" id="band2" style="animation-direction:reverse"></div></div>
+
+<section class="book" id="book">
+  <div class="book-g">
+    <div class="reveal">
+      <h2>Take<br>a <em>seat</em></h2>
+      <div class="info"><div><span>Address</span>7 Registan Street, Old City</div><div><span>Open</span>Daily 11:00 to 23:00</div><div><span>Phone</span>+000 00 000 00 00</div></div>
+    </div>
+    <form class="reveal" id="form" novalidate>
+      <div><label for="d">Date</label><input id="d" type="date"></div>
+      <div><div class="lab">Guests</div><div class="stepper"><button type="button" id="m" aria-label="Fewer guests">−</button><b id="g" aria-live="polite">2</b><button type="button" id="p" aria-label="More guests">+</button></div></div>
+      <div><div class="lab">Time</div><div class="times" id="times"></div></div>
+      <div><label for="n">Name</label><input id="n" type="text" autocomplete="name" placeholder="Your name"></div>
+      <button class="btn" type="submit">Request a table</button>
+      <div class="ok" id="ok" role="status"></div>
+    </form>
+  </div>
+</section>
+<footer><span>Dastur is a fictional restaurant. Template by NextGenBeing. The form sends nothing, wire it to your own backend.</span><span>Fonts: Cormorant Garamond, Manrope (OFL). Animation: GSAP.</span></footer>
+
+<script>
+(function(){
+"use strict";
+var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches || !window.gsap;
+var $ = function(s){return document.querySelector(s)};
+function rng(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+function f(n){return (+n).toFixed(1)}
+function starPts(r,k,n){var p=[];for(var i=0;i<n*2;i++){var a=Math.PI*i/n-Math.PI/2,rr=i%2?r*k:r;p.push(f(Math.cos(a)*rr)+","+f(Math.sin(a)*rr))}return p.join(" ")}
+
+/* logo star + hero medallion (8-point girih-style stars in rings) */
+$("#logoStar").setAttribute("points",starPts(18,.62,8));
+(function(){
+  var out='<defs><radialGradient id="mg"><stop offset="0" stop-color="#1c4e9a" stop-opacity=".0"/><stop offset="1" stop-color="#1c4e9a" stop-opacity=".35"/></radialGradient></defs><circle r="296" fill="url(#mg)"/>';
+  var rings=[[270,28,13,.6,"r"],[215,20,15,.58,"r2"],[160,14,14,.56,"r"],[105,9,13,.55,"r3"],[56,6,10,.55,"r2"]];
+  rings.forEach(function(g){
+    var r=g[0],n=g[1],s=g[2],h="";
+    for (var i=0;i<n;i++){var a=i/n*Math.PI*2;
+      h+='<g transform="translate('+f(Math.cos(a)*r)+' '+f(Math.sin(a)*r)+') rotate('+f(a*180/Math.PI+22.5)+')"><polygon points="'+starPts(s*1.9,g[3],8)+'" fill="'+(i%2?"none":"rgba(227,169,59,.10)")+'" stroke="rgba(227,169,59,.55)" stroke-width="1"/><circle r="'+f(s*.35)+'" fill="rgba(227,169,59,.5)"/></g>'}
+    out+='<g class="'+g[4]+'"><circle r="'+r+'" fill="none" stroke="rgba(246,239,224,.14)"/>'+h+'</g>';
+  });
+  out+='<polygon points="'+starPts(46,.5,8)+'" fill="#e3a93b" opacity=".85"/>';
+  $("#medal").innerHTML=out;
+})();
+
+/* marquees */
+function band(id,words){var s="";words.forEach(function(w,i){s+="<span>"+(i%2?"<b>"+w+"</b>":w)+"</span><span>✦</span>"});$(id).innerHTML=s+s+s+s}
+band("#band",["Osh","Somsa","Lag'mon","Shashlik","Manti","Non","Choy","Dimlama"]);
+band("#band2",["Welcome","Marhamat","Fresh from the tandir","Bismillah","Come hungry"]);
+
+/* ---------- dishes ---------- */
+var CX=0;
+function petals(r0,n,fill){var h="";for(var i=0;i<n;i++){var a=i/n*360;h+='<ellipse cx="0" cy="-'+(r0)+'" rx="3.4" ry="7.2" fill="'+fill+'" transform="rotate('+f(a)+')"/>'}return h}
+function plateWith(inner){return '<use href="#plate"/>'+'<g>'+petals(110,28,"#1c4e9a")+'</g>'+inner}
+
+function osh(){
+  var r=rng(11),h="",i,a,d,x,y;
+  h+='<circle r="96" fill="url(#rice)"/>';
+  for(i=0;i<230;i++){a=r()*6.283;d=Math.sqrt(r())*92;x=Math.cos(a)*d;y=Math.sin(a)*d;
+    h+='<ellipse cx="'+f(x)+'" cy="'+f(y)+'" rx="7" ry="2.1" fill="'+["#f6d982","#e3b04a","#c98c24","#f1cf6e"][(r()*4)|0]+'" transform="rotate('+((r()*180)|0)+' '+f(x)+' '+f(y)+')"/>'}
+  for(i=0;i<26;i++){a=r()*6.283;d=Math.sqrt(r())*80;x=Math.cos(a)*d;y=Math.sin(a)*d;
+    h+='<rect x="'+f(x-9)+'" y="'+f(y-1.8)+'" width="18" height="3.6" rx="1.8" fill="'+(r()>.5?"#e8802a":"#f3a247")+'" transform="rotate('+((r()*180)|0)+' '+f(x)+' '+f(y)+')"/>'}
+  for(i=0;i<16;i++){a=r()*6.283;d=Math.sqrt(r())*78;x=Math.cos(a)*d;y=Math.sin(a)*d;
+    h+='<circle cx="'+f(x)+'" cy="'+f(y)+'" r="4.8" fill="#e8cf95" stroke="#b98d3c" stroke-width="1"/>'}
+  for(i=0;i<14;i++){a=r()*6.283;d=Math.sqrt(r())*78;x=Math.cos(a)*d;y=Math.sin(a)*d;
+    h+='<ellipse cx="'+f(x)+'" cy="'+f(y)+'" rx="4.6" ry="3.2" fill="#4a1f3a" transform="rotate('+((r()*180)|0)+' '+f(x)+' '+f(y)+')"/>'}
+  [[-22,-10,15,12,20],[10,-20,14,11,-30],[4,10,16,12,60],[-12,24,13,10,-10],[28,12,12,10,35]].forEach(function(m){
+    h+='<g transform="translate('+m[0]+' '+m[1]+') rotate('+m[4]+')"><ellipse rx="'+m[2]+'" ry="'+m[3]+'" fill="#6f3517"/><ellipse rx="'+(m[2]-4)+'" ry="'+(m[3]-5)+'" cx="-2" cy="-2" fill="#9a5226"/><ellipse rx="5" ry="3" cx="-4" cy="-5" fill="#fff" opacity=".18"/></g>'});
+  [[-46,-48,-30],[0,-62,10],[48,-44,40]].forEach(function(e){
+    h+='<g transform="translate('+e[0]+' '+e[1]+') rotate('+e[2]+')"><ellipse rx="12" ry="15" fill="#fffdf6" stroke="#d9cdb0"/><circle r="6" fill="#f0b323"/><circle r="2" cx="-2" cy="-2" fill="#fff" opacity=".6"/></g>'});
+  h+='<g transform="translate(46 30)"><ellipse rx="22" ry="25" fill="#f4ecdc" stroke="#d6c9ac" stroke-width="1.5"/><path d="M0,-24 C-10,-8 -10,8 0,24 M0,-24 C10,-8 10,8 0,24 M-14,-14 C-6,-4 -6,10 -12,18 M14,-14 C6,-4 6,10 12,18" fill="none" stroke="#d6c9ac" stroke-width="1.5"/><path d="M-3,-24 L-1,-34 L3,-34 L3,-24Z" fill="#e0d3b5"/></g>';
+  return plateWith(h);
+}
+function non(){
+  var r=rng(5),h='<circle cy="9" r="94" fill="url(#sh)"/><circle r="82" fill="url(#bread)"/><circle r="82" fill="none" stroke="#7d4512" stroke-width="3" opacity=".5"/><circle r="62" fill="none" stroke="#7d4512" stroke-width="1.5" opacity=".35"/><circle r="40" fill="#d99a45" opacity=".8"/>';
+  var i,a,d,x,y;
+  [[9,6],[18,12],[27,18],[36,24]].forEach(function(g){for(var k=0;k<g[1];k++){var t=k/g[1]*6.283;h+='<circle cx="'+f(Math.cos(t)*g[0])+'" cy="'+f(Math.sin(t)*g[0])+'" r="2.1" fill="#8a4c15"/>'}});
+  h+='<circle r="3.2" fill="#8a4c15"/>';
+  for(i=0;i<80;i++){a=r()*6.283;d=44+Math.sqrt(r())*34;x=Math.cos(a)*d;y=Math.sin(a)*d;
+    h+='<ellipse cx="'+f(x)+'" cy="'+f(y)+'" rx="3.6" ry="2" fill="#fbf0d4" transform="rotate('+((r()*180)|0)+' '+f(x)+' '+f(y)+')"/>'}
+  h+='<path d="M-60,-40 A74,74 0 0 1 20,-72" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round"/>';
+  return h;
+}
+function somsa(){
+  var r=rng(9),h='<use href="#plate" transform="scale(.82)"/><g transform="scale(.82)">'+petals(110,28,"#1c4e9a")+'</g>';
+  [0,120,240].forEach(function(a,k){
+    h+='<g transform="rotate('+a+') translate(0 -30) rotate(0)"><path d="M0,-44 L40,24 L-40,24Z" fill="#000" opacity=".22" transform="translate(3 6)" stroke="#000" stroke-width="14" stroke-linejoin="round"/><path d="M0,-44 L40,24 L-40,24Z" fill="url(#pastry)" stroke="url(#pastry)" stroke-width="14" stroke-linejoin="round"/><path d="M0,-40 L36,22 L-36,22Z" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="2" stroke-dasharray="3 6"/><path d="M-30,16 L30,16 M-18,-4 L18,-4" stroke="#8d5217" stroke-opacity=".5" stroke-width="2"/>';
+    for(var i=0;i<26;i++){var x=(r()*2-1)*28,y=-20+r()*38;if(Math.abs(x)>(y+44)*.45)continue;h+='<ellipse cx="'+f(x)+'" cy="'+f(y)+'" rx="2.2" ry="1.2" fill="#fbf0d4" transform="rotate('+((r()*180)|0)+' '+f(x)+' '+f(y)+')"/>'}
+    h+='<path d="M-14,-20 L0,-34 L10,-20" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="4" stroke-linecap="round"/></g>'});
+  return h;
+}
+function shashlik(){
+  var r=rng(21),h='<g transform="rotate(-18)"><ellipse cy="12" rx="166" ry="104" fill="url(#sh)"/><ellipse rx="164" ry="102" fill="url(#ceram)"/><ellipse rx="160" ry="98" fill="none" stroke="#1c4e9a" stroke-width="3"/><ellipse rx="140" ry="80" fill="none" stroke="#1c4e9a" stroke-width="1.5" stroke-dasharray="2 5"/>';
+  /* onion rings and tomato */
+  for(var i=0;i<4;i++){h+='<circle cx="'+(-104+i*13)+'" cy="'+(52-i*4)+'" r="'+(13+i*1.5)+'" fill="none" stroke="#b4799f" stroke-width="3.5"/><circle cx="'+(-104+i*13)+'" cy="'+(52-i*4)+'" r="'+(10+i*1.5)+'" fill="none" stroke="#efe3ee" stroke-width="2"/>'}
+  h+='<g transform="translate(108 58)"><circle r="19" fill="#c7341f"/><circle r="19" fill="none" stroke="#7a1a10" stroke-width="2"/><path d="M0,-12 V12 M-12,0 H12 M-8,-8 L8,8 M8,-8 L-8,8" stroke="#e86b4f" stroke-width="2"/></g>';
+  [-44,0,44].forEach(function(y,k){
+    h+='<line x1="-150" x2="150" y1="'+y+'" y2="'+y+'" stroke="#b88a55" stroke-width="4" stroke-linecap="round"/><circle cx="-150" cy="'+y+'" r="5" fill="#8a6335"/>';
+    for(var j=0;j<6;j++){var x=-100+j*38+(r()*4-2);
+      h+='<g transform="translate('+f(x)+' '+y+')"><rect x="-17" y="-16" width="34" height="32" rx="10" fill="#8f3b1b"/><rect x="-13" y="-14" width="22" height="20" rx="8" fill="#b9582c"/><path d="M-12,-6 L10,-6 M-10,4 L12,4" stroke="#4a1a0a" stroke-width="3" stroke-linecap="round" opacity=".7"/><ellipse cx="-6" cy="-9" rx="6" ry="2.4" fill="#fff" opacity=".22"/>'+(j%3==1?'<rect x="-16" y="-15" width="32" height="8" rx="4" fill="#f0dfc0" opacity=".85"/>':'')+'</g>'}
+  });
+  for(i=0;i<40;i++){var x=(r()*2-1)*130,y=(r()*2-1)*70;h+='<circle cx="'+f(x)+'" cy="'+f(y)+'" r="1.6" fill="'+(r()>.5?"#3f8f3a":"#b3263e")+'" opacity=".8"/>'}
+  return h+'</g>';
+}
+function teaSet(){
+  var h='<circle cy="12" r="120" fill="url(#sh)"/><circle r="108" fill="url(#tray)"/><circle r="100" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="2"/><circle r="84" fill="none" stroke="#5a3210" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="3 6"/>';
+  for(var i=0;i<24;i++){var a=i/24*360;h+='<ellipse cx="0" cy="-93" rx="3" ry="5" fill="#5a3210" opacity=".45" transform="rotate('+a+')"/>'}
+  /* teapot */
+  h+='<g transform="translate(-34 -6)"><path d="M-46,-6 C-76,-6 -78,34 -46,34" fill="none" stroke="#143b7a" stroke-width="11" stroke-linecap="round"/><path d="M34,-14 L84,-44 L92,-34 L40,10Z" fill="#1c4e9a"/><circle r="50" fill="#1c4e9a"/><circle r="50" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/><circle r="40" fill="none" stroke="#f6efe0" stroke-width="2" stroke-dasharray="2 5"/><g>'+petals(31,10,"#f6efe0")+'</g><circle r="22" fill="#2a63b8"/><circle r="22" fill="none" stroke="#e3a93b" stroke-width="2"/><circle r="8" fill="#e3a93b"/><circle r="3" cx="-2" cy="-2" fill="#fff" opacity=".6"/><path d="M-30,-34 A44,44 0 0 1 8,-46" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/></g>';
+  /* piala bowls */
+  [[62,-48],[70,36]].forEach(function(p){h+='<g transform="translate('+p[0]+' '+p[1]+')"><circle r="32" fill="#000" opacity=".2" transform="translate(2 4)"/><circle r="31" fill="#fffaf0"/><circle r="31" fill="none" stroke="#1c4e9a" stroke-width="3"/><circle r="24" fill="url(#tea)"/><circle r="24" fill="none" stroke="#1c4e9a" stroke-opacity=".6" stroke-width="1.5"/><ellipse cx="-8" cy="-8" rx="9" ry="4" fill="#fff" opacity=".35" transform="rotate(-35 -8 -8)"/></g>'});
+  /* nabot rock sugar */
+  h+='<g transform="translate(-6 82)"><circle r="22" fill="#fffaf0" stroke="#1c4e9a" stroke-width="2"/>';
+  var r=rng(2);for(i=0;i<9;i++){var x=(r()*2-1)*12,y=(r()*2-1)*12;h+='<polygon points="'+f(x)+','+f(y-6)+' '+f(x+6)+','+f(y-1)+' '+f(x+3)+','+f(y+6)+' '+f(x-4)+','+f(y+5)+'" fill="#e9b24b" stroke="#b9792a" stroke-width="1" opacity=".95"/>'}
+  return h+'</g>';
+}
+$("#x-osh .in").innerHTML=osh();
+$("#x-non .in").innerHTML=non();
+$("#x-somsa .in").innerHTML=somsa();
+$("#x-shashlik .in").innerHTML=shashlik();
+$("#x-tea .in").innerHTML=teaSet();
+
+/* embroidered cloth */
+(function(){
+  var h='<circle cx="400" cy="400" r="392" fill="url(#sh)" transform="translate(0 10)"/><circle cx="400" cy="400" r="388" fill="#efe4cc"/><circle cx="400" cy="400" r="388" fill="none" stroke="#b3263e" stroke-width="10"/><circle cx="400" cy="400" r="370" fill="none" stroke="#1c4e9a" stroke-width="2"/>';
+  for(var i=0;i<32;i++){var a=i/32*360;
+    h+='<g transform="rotate('+a+' 400 400)"><path d="M400,20 C411,40 411,58 400,72 C389,58 389,40 400,20Z" fill="'+(i%2?"#1c4e9a":"#b3263e")+'" opacity=".9"/><circle cx="400" cy="90" r="4" fill="#e3a93b"/></g>'}
+  for(i=0;i<24;i++){a=i/24*360;h+='<g transform="rotate('+a+' 400 400)"><circle cx="400" cy="112" r="9" fill="none" stroke="#1c4e9a" stroke-width="2"/><path d="M400,126 L406,142 L400,156 L394,142Z" fill="#e3a93b" opacity=".85"/></g>'}
+  h+='<circle cx="400" cy="400" r="288" fill="none" stroke="#b3263e" stroke-width="1.5" stroke-dasharray="1 7" stroke-linecap="round"/><circle cx="400" cy="400" r="196" fill="none" stroke="#1c4e9a" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="1 7" stroke-linecap="round"/>';
+  $("#cloth").innerHTML=h;
+})();
+$("#plate").setAttribute("data-ok","1");
+
+/* ---------- menu ---------- */
+var MENU={
+ mains:[["Toshkent osh","Lamb, yellow carrot, rice, chickpeas, raisins, quail egg",16,"House special"],["Dimlama","Slow-steamed lamb, potato, cabbage, pepper and tomato",15,""],["Manti","Six steamed dumplings with lamb and pumpkin, sour cream",11,""],["Lag'mon","Hand-pulled noodles, beef, peppers and radish, fried or soup",12,""],["Norin","Cold horse-style noodles with thin sliced beef, onion and broth",13,"Winter"],["Chuchvara","Tiny boiled dumplings in a clear broth with dill",9,""]],
+ grill:[["Qo'y shashlik","Cubed lamb with tail fat, three skewers, onion and sumac",14,"Charcoal"],["Jigar kabob","Liver wrapped in fat, grilled until crisp at the edge",11,""],["Tandir somsa","Flaky pastry with hand-cut lamb and onion, three pieces",7,"Baked hourly"],["Patir non","Bread from the tandir, stamped and sesame-topped",3,""],["Lyulya kabob","Minced lamb on a flat skewer with herbs",12,""],["Tandir go'sht","Lamb shank baked on the oven wall for four hours",19,"Pre-order"]],
+ soups:[["Mastava","Rice and vegetable soup with lamb, sour yoghurt on the side",8,""],["Shurpa","Clear lamb broth with whole vegetables and herbs",9,""],["Achichuk","Thin tomato, onion and pepper salad, nothing else",5,"Refreshing"],["Bahor salad","Radish, cucumber, dill, spring onion and sour cream",6,""],["Qatiq","Strained yoghurt with garlic and dill",4,""],["Pickle plate","Cabbage, carrot, garlic and chilli, house-pickled",5,""]],
+ sweet:[["Ko'k choy","Green tea pot for two, free refills",4,"Always on"],["Qora choy","Black tea with lemon and nabot rock sugar",4,""],["Chak-chak","Fried dough pieces bound in honey",6,""],["Halva","Sesame and walnut halva, served with tea",6,""],["Pishmak","Little fried dough pillows with powdered sugar",5,""],["Shirchoy","Milk tea with butter, a village classic",5,""]]
+};
+function renderMenu(k,animate){
+  $("#items").innerHTML=MENU[k].map(function(m){return '<div class="it"><div class="top"><h3>'+m[0]+'</h3><span class="dots"></span><span class="pr">$'+m[2]+'</span></div><p>'+m[1]+'</p>'+(m[3]?'<small>'+m[3]+'</small>':'')+'</div>'}).join("");
+  document.querySelectorAll(".mtabs button").forEach(function(b){b.setAttribute("aria-selected",b.dataset.k===k)});
+  if(animate&&!reduce)gsap.from("#items .it",{opacity:0,y:20,duration:.5,stagger:.06,ease:"power2.out"});
+}
+document.querySelectorAll(".mtabs button").forEach(function(b){b.addEventListener("click",function(){renderMenu(b.dataset.k,true)})});
+renderMenu("mains",false);
+
+/* ---------- booking (client-side only) ---------- */
+(function(){
+  var g=2,time=null,t=$("#times"),d=$("#d");
+  var today=new Date();d.min=today.toISOString().slice(0,10);d.value=new Date(today.getTime()+864e5).toISOString().slice(0,10);
+  ["12:00","13:30","18:00","19:30","21:00"].forEach(function(s,i){var b=document.createElement("button");b.type="button";b.textContent=s;b.setAttribute("aria-pressed","false");if(i==3){b.disabled=true;b.title="Fully booked"}b.onclick=function(){time=s;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b)})};t.appendChild(b)});
+  $("#m").onclick=function(){g=Math.max(1,g-1);$("#g").textContent=g};
+  $("#p").onclick=function(){g=Math.min(12,g+1);$("#g").textContent=g};
+  $("#form").addEventListener("submit",function(e){e.preventDefault();var ok=$("#ok");
+    if(!time||!$("#n").value.trim()){ok.textContent="Please choose a time and add your name.";ok.className="ok show";return}
+    ok.textContent="Thank you, "+$("#n").value.trim()+". A table for "+g+" on "+d.value+" at "+time+" is requested.";ok.className="ok show"});
+})();
+
+if(reduce){
+  document.documentElement.classList.remove("js");
+  document.querySelectorAll(".card").forEach(function(c){c.style.cssText="position:static;margin-bottom:34px"});
+  $(".cards").style.minHeight="0";
+  var s=$(".story");s.style.height="auto";$(".story-in").style.cssText="position:relative;padding-block:90px;align-items:start";$(".rail").style.display="none";$("#count").style.display="none";
+  return;
+}
+
+gsap.registerPlugin(ScrollTrigger);
+
+/* hero intro */
+gsap.from(".hero h1 b",{yPercent:115,duration:1.4,ease:"expo.out",stagger:.12,delay:.1});
+gsap.from(".hero .eyebrow,.hero .lede,.hero .row",{y:26,opacity:0,duration:1,stagger:.12,ease:"power3.out",delay:.6});
+gsap.from(".medal",{scale:.7,opacity:0,duration:2,ease:"power3.out"});
+gsap.to(".medal",{scale:1.25,rotate:25,ease:"none",scrollTrigger:{trigger:".hero",start:"top top",end:"bottom top",scrub:true}});
+gsap.to(".hero-c",{yPercent:-14,opacity:.2,ease:"none",scrollTrigger:{trigger:".hero",start:"top top",end:"bottom 20%",scrub:true}});
+
+/* the laid table: one pinned, scrubbed timeline */
+var cam="#cam";
+gsap.set(cam,{svgOrigin:"400 400"});
+gsap.set("#cloth",{svgOrigin:"400 400",scale:.55,rotate:-40,opacity:0});
+gsap.set(".dish .in",{scale:1.35,opacity:0,y:-60,transformOrigin:"0 0"});
+gsap.set(".card",{opacity:0,y:30});
+gsap.set("#k0",{opacity:1,y:0});
+
+var T=[ /* camera target x,y,scale per card */
+  [400,400,1], [400,400,1.9], [400,128,2.75], [672,400,2.35], [400,672,2.3], [128,400,2.3]
+];
+var tl=gsap.timeline({defaults:{ease:"power2.inOut"},scrollTrigger:{trigger:"#story",start:"top top",end:function(){return "+="+Math.round(innerHeight*6.6)},pin:true,scrub:.7,anticipatePin:1,invalidateOnRefresh:true,
+  onUpdate:function(self){var t=self.progress*tl.duration();var k=t<1.1?0:Math.min(5,Math.floor(t-.1));
+    document.querySelectorAll(".rail i").forEach(function(i,n){i.style.setProperty("--p",Math.max(0,Math.min(1,t-(n+1.1))))});
+    $("#count").textContent="0"+k+" / 05"}}});
+/* intro: cloth unfolds, dishes land one by one */
+tl.to("#cloth",{scale:1,rotate:0,opacity:1,duration:.7,ease:"power3.out"},0);
+["x-osh","x-non","x-somsa","x-shashlik","x-tea"].forEach(function(id,i){
+  tl.to("#"+id+" .in",{scale:1,opacity:1,y:0,duration:.34,ease:"back.out(1.5)"},.3+i*.14);
+});
+/* tour: each stop = camera move, card swap */
+var at=1.0;
+for(var k=1;k<=5;k++){
+  var t=T[k];
+  tl.to(cam,{x:-t[2]*(t[0]-400),y:-t[2]*(t[1]-400),scale:t[2],duration:.6},at);
+  tl.to("#k"+(k-1),{opacity:0,y:-30,duration:.25,ease:"power1.in"},at-.05);
+  tl.fromTo("#k"+k,{opacity:0,y:36},{opacity:1,y:0,duration:.35,ease:"power2.out"},at+.18);
+  at+=1.0;
+}
+/* finale: pull back */
+tl.to(cam,{x:0,y:0,scale:.92,duration:.9},at+.1);
+tl.to("#cloth",{rotate:20,duration:1.2,ease:"none"},at-.2);
+tl.to({},{duration:.1},at+1);
+
+/* menu + book reveals */
+gsap.utils.toArray(".reveal").forEach(function(el){
+  gsap.to(el,{opacity:1,y:0,duration:1,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 88%",once:true}});
+});
+gsap.to(".band-t",{xPercent:-8,ease:"none",scrollTrigger:{trigger:".band",start:"top bottom",end:"bottom top",scrub:true}});
+addEventListener("load",function(){ScrollTrigger.refresh()});
+})();
+</script>
+</body>
+</html>

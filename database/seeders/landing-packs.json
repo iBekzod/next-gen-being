@@ -94,5 +94,59 @@
     "price_prompt": 0,
     "price_design": 11,
     "price_bundle": 14
+  },
+  {
+    "slug": "brew-story-coffee-scroll",
+    "title": "Tamber — Scroll-Story Cafe Website",
+    "tagline": "Grind, pour, sip: a cafe site told by scroll.",
+    "description": "A premium cafe and coffee roaster website where one pinned scene tells the whole story as you scroll: beans are ground, water is poured in a slow spiral, and the cup is filled and served. Giant editorial typography, a warm espresso-to-crema palette that shifts with each chapter, a live readout of grams, time and water temperature, a bean shop with product cards and a tabbed brew guide.\n\nEverything is drawn in SVG and animated with GSAP ScrollTrigger, so there are no photos to license and no video to load. One HTML file, no build step. Respects prefers-reduced-motion, works at phone width, and stays smooth on mid-range phones.",
+    "category": "landing",
+    "tags": [
+      "cafe",
+      "coffee",
+      "scrolltrigger",
+      "gsap",
+      "svg",
+      "storytelling"
+    ],
+    "price_prompt": 0,
+    "price_design": 12,
+    "price_bundle": 16
+  },
+  {
+    "slug": "dastur-menyu-restaurant-scroll",
+    "title": "Dastur — Scroll-Laid Restaurant Website",
+    "tagline": "A dastarkhan laid course by course as you scroll.",
+    "description": "A restaurant website for Uzbek or any shared-table cuisine. As you scroll, an embroidered cloth unfolds and five dishes land on it, then the camera tours the table: plov, bread, somsa, shashlik and tea, each with its own story card, serving size and price. Below it sit a tabbed menu with dotted price leaders and a booking widget with date, guests and time slots.\n\nThe dishes are hand-built SVG illustrations, so there are no stock photos and no licensing questions. GSAP ScrollTrigger, one HTML file, no build step. The booking form is client-side only; wire it to your own backend.",
+    "category": "landing",
+    "tags": [
+      "restaurant",
+      "menu",
+      "scrolltrigger",
+      "gsap",
+      "svg",
+      "booking"
+    ],
+    "price_prompt": 0,
+    "price_design": 12,
+    "price_bundle": 16
+  },
+  {
+    "slug": "gulzor-flower-wedding-scroll",
+    "title": "Gulzor — Scroll-Bloom Florist Website",
+    "tagline": "A peony that blooms as you scroll, plus a live bouquet builder.",
+    "description": "A florist and wedding studio website. The hero is a peony that opens petal by petal as you scroll, with a live percent-in-bloom readout. Below it: seasonal bouquet cards, an interactive bouquet builder (colours, size, paper, card message) with a live preview and live price, and a wedding arch that grows flower by flower.\n\nAll flowers are generated SVG, so there are no photos to license. GSAP ScrollTrigger, one HTML file, no build step. The order button is a demo; connect it to your own checkout.",
+    "category": "landing",
+    "tags": [
+      "florist",
+      "wedding",
+      "scrolltrigger",
+      "gsap",
+      "svg",
+      "bouquet-builder"
+    ],
+    "price_prompt": 0,
+    "price_design": 12,
+    "price_bundle": 16
   }
 ]
