@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // (Nextgenbeing topic) and to storage/logs/error-feed.jsonl for Jarvis.
         // Filtering (4xx), dedupe and the hourly cap live in ErrorReporter;
         // it never throws back into the request.
+        // Bot probes of nonexistent Livewire methods (e.g. _xNonExist) are not app bugs.
+        $exceptions->dontReport(\Livewire\Exceptions\MethodNotFoundException::class);
         $exceptions->reportable(function (\Throwable $e): void {
             app(\App\Services\Telemetry\ErrorReporter::class)->report($e);
         });
