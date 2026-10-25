@@ -1,6 +1,6 @@
 # Velluto Latte Pour (cafe) - Build Prompts
 
-Prompts to rebuild or restyle this exact page with Claude Code. One HTML file, no photos, no build step. three.js 0.160 (cdnjs, ES module + importmap) renders every object live; fonts are Fraunces + Inter from Google Fonts.
+Prompts to rebuild or restyle this exact page with Claude Code. One HTML file, no build step, no external photos: three.js animates the scene live and four AI-generated plates (sphere, crown splash, pour, flavour latte; generate your own with an image model and embed as WebP) are crossfaded in at the hero, the splash and the latte section. three.js 0.160 (cdnjs, ES module + importmap) renders every object live; fonts are Fraunces + Inter from Google Fonts.
 
 ## 1. Scaffold and layering
 "Create ONE HTML file. A fixed full-screen transparent WebGL canvas (z-index 3, pointer-events none). Section backgrounds sit below it; text and cards sit above it (z-index 6). For pinned sections use TWO sticky 100vh layers in the same section: a background layer (colour, waves, the centre card) and a foreground layer with margin-top:-100vh and z-index 6 (titles, side cards). Palette: cream #f3ede4, ink #2a1d16, terracotta #b46c4a, sand #e6d3c1. Header: two-line serif logo, centred nav with underlined active link, pill search, dark pill Sign Up, burger; fixed dark chat bubble bottom-right."
