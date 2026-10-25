@@ -152,16 +152,16 @@
   {
     "slug": "velluto-latte-pour-scroll",
     "title": "Velluto - Latte Pour Scroll Website",
-    "tagline": "A coffee ball drops into milk, the splash floods the page, and a milk stream leads to a latte builder.",
-    "description": "A premium cafe website told entirely by scroll. A shaded 3D-style coffee ball falls into a pool of milk, the splash throws a crown of droplets and ripples, a coffee cloud blooms through the milk and the milk rises until it floods the page. A milk stream then runs down the page edge, bends around each chapter and finally pours into an interactive \"Make your latte\" builder.\n\nIn the builder, five flavours (vanilla, caramel, mocha, hazelnut, pistachio), three milks, hot or iced and three sizes change the cup, the latte art, the floating ingredients and the glow behind the page, with a live name, tasting note and sample price. Also included: parallax ingredients, a scroll-skewed flavour marquee, a short menu, a visit section, and polished Instrument Serif + Manrope typography.\n\nEverything is drawn on a canvas and in SVG, so there are no photos to license, no video to load and no libraries: one HTML file. Works at 400 px wide, respects prefers-reduced-motion, and the page stays readable if scripts fail. Brand, prices and address are placeholders for you to replace; the template sends nothing, so you connect your own checkout.",
+    "tagline": "A glossy 3D coffee sphere drops into milk, the splash fills the page and funnels into a latte you flavour yourself.",
+    "description": "A premium cafe website told by scroll, rendered live in 3D. The hero floats a glossy coffee sphere with orbiting chocolate drops, a caramel cube and a porcelain ring next to a bold serif headline and product cards. In the pinned Milk section the sphere falls into a cup, a milk crown splashes up, ripples spread across the whole page and the milk then funnels into a stream that pours into the next section.\n\n\"Make your latte\" is a terracotta section with a speckled ceramic cup that fills as you arrive, a vanilla flower, a chocolate chunk and a caramel ribbon; pick vanilla, caramel or mocha to change the crema. Below it, a small builder (flavour, milk, hot or iced, size) shows a name, a tasting note and a sample price, plus a short menu and a footer.\n\nEverything is real-time three.js (no photos to license, no video to load) in one HTML file; the product card images are rendered by the page itself. Layout is responsive down to 400 px and the page stays readable without WebGL. Brand, prices and address are placeholders; the order button sends nothing until you connect your own checkout. Checked in desktop Chrome only.",
     "category": "landing",
     "tags": [
       "cafe",
       "coffee",
-      "canvas",
+      "threejs",
+      "3d",
       "scroll-animation",
-      "interactive",
-      "svg"
+      "interactive"
     ],
     "price_prompt": 0,
     "price_design": 14,

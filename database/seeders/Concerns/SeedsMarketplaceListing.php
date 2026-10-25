@@ -61,7 +61,7 @@ trait SeedsMarketplaceListing
         foreach (['webp', 'jpg', 'jpeg', 'png'] as $ext) {
             $posterSrc = database_path("seeders/posters/{$slug}.{$ext}");
             if (is_file($posterSrc)) {
-                $thumb = "demos/{$slug}/poster.{$ext}";
+                $thumb = "demos/{$slug}/poster-".substr(md5_file($posterSrc), 0, 8).".{$ext}"; // hashed name busts the CDN cache when the poster changes
                 Storage::disk('public')->put($thumb, file_get_contents($posterSrc));
                 break;
             }
