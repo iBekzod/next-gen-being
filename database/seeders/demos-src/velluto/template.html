@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Velluto - Pour Beyond the Rim | Scroll Coffee Website Template</title>
+<meta name="description" content="Scroll-driven cafe website: a glossy coffee sphere drops into milk, the splash fills the page, the milk funnels into a latte and you pick your flavour. AI-rendered 3D objects floating with scroll parallax, one HTML file.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,0..100,0..1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f3ece1; --cream2:#ebe2d4; --paper:#fbf8f3; --ink:#2a1d16; --ink2:#6e5f55;
+  --terra:#b0694a; --terra2:#97543a; --sand:#e8dccd; --pill:#efe2d3; --neck:2.6vw;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif; --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* header */
+header{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:24px;padding:20px clamp(16px,4vw,56px);transition:background .3s,color .3s}
+header.solid{background:rgba(243,236,225,.84);backdrop-filter:blur(12px)}
+header.dark{color:#fbefe4}
+header.dark.solid{background:rgba(160,92,62,.86)}
+.logo{font-family:var(--serif);font-variation-settings:'SOFT' 100,'WONK' 0;line-height:.95;font-size:22px;font-weight:700;letter-spacing:-.01em}
+.logo small{display:block;font-family:var(--sans);font-size:9.5px;font-weight:700;letter-spacing:.2em;margin-top:3px}
+nav.main{display:flex;gap:30px;margin:0 auto;font-size:13.5px;font-weight:500}
+nav.main a{opacity:.85;padding-bottom:5px;border-bottom:1.5px solid transparent}
+nav.main a.on{opacity:1;border-color:currentColor}
+.search{display:flex;align-items:center;gap:14px;border:1.4px solid currentColor;border-radius:99px;padding:8px 14px;font-size:12.5px;width:150px;opacity:.85}
+.search span{flex:1;opacity:.7}
+.signup{background:var(--ink);color:#fff;border-radius:99px;padding:10px 20px;font-size:12.5px;font-weight:600}
+header.dark .signup{background:#2a1d16}
+.burger{width:22px;display:grid;gap:5px}.burger i{display:block;height:1.6px;background:currentColor}
+
+/* shared */
+.eyebrow{font-size:12.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+.h-big{font-family:var(--serif);font-weight:900;font-variation-settings:'opsz' 144,'SOFT' 100,'WONK' 0;letter-spacing:-.015em;line-height:.95;text-transform:uppercase}
+.btn-dark{display:inline-flex;align-items:center;background:var(--ink);color:#fff;border-radius:99px;padding:12px 24px;font-size:13px;font-weight:600}
+.btn-line{display:inline-flex;align-items:center;border:1.4px solid var(--ink);border-radius:99px;padding:11px 20px;font-size:13px;font-weight:600}
+.circ{width:40px;height:40px;border-radius:50%;border:1.4px solid var(--ink);display:inline-grid;place-items:center;background:rgba(255,255,255,.5)}
+.circ svg{width:16px;height:16px}
+.dots{display:flex;gap:8px;justify-content:center;align-items:center}
+.dots i{width:8px;height:8px;border-radius:50%;border:1.4px solid var(--ink);opacity:.7}
+.dots i.on{background:var(--ink);opacity:1;width:24px;border-radius:4px}
+.pill-tag{display:inline-block;background:var(--pill);border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:600;color:#8a5a3a}
+.card{background:rgba(255,255,255,.74);backdrop-filter:blur(14px);border-radius:24px;box-shadow:0 24px 50px -24px rgba(80,50,30,.35);border:1px solid rgba(255,255,255,.85)}
+.tile{border-radius:26px;background:linear-gradient(160deg,#e9dccb,#d9c6b0);position:relative;overflow:hidden;display:grid;place-items:center}
+.tile img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 16px 18px rgba(70,40,22,.28))}
+.fx{position:absolute;transform:translate(-50%,-50%);pointer-events:none;will-change:transform}
+.fx img{width:100%;height:auto;filter:drop-shadow(0 14px 16px rgba(70,38,20,.26))}
+.arc-bg{position:absolute;inset:0;width:100%;height:100%}
+
+/* 1 hero */
+#hero{position:relative;height:100vh;min-height:660px;overflow:hidden}
+.hero-copy{position:absolute;left:clamp(16px,6vw,96px);top:25vh;max-width:600px;z-index:6}
+.hero-copy .h-big{font-size:clamp(46px,5.6vw,92px);margin:14px 0 22px}
+.hero-copy p{font-size:14px;line-height:1.55;color:var(--ink2);max-width:330px;margin-bottom:26px}
+.hero-copy .row{display:flex;gap:12px;align-items:center}
+.hero-cards{position:absolute;right:-70px;top:29vh;display:flex;gap:22px;z-index:5}
+.hero-cards .tile{width:clamp(180px,16vw,240px);aspect-ratio:4/5.2}
+.hero-cards .lbl{position:absolute;left:12px;bottom:12px;background:#fff;border-radius:99px;padding:7px 12px;font-size:11px;font-weight:600}
+.hero-cards .mini{position:absolute;right:12px;bottom:12px;width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.hero-cards .mini svg{width:15px;height:15px}
+#hero .dots{position:absolute;left:0;right:0;bottom:11vh}
+.hero-hint{position:absolute;left:0;right:0;bottom:2vh;text-align:center;font-family:var(--serif);font-weight:800;font-variation-settings:'SOFT' 100;font-size:clamp(30px,3.4vw,52px);letter-spacing:-.02em;z-index:4}
+
+/* 2 story (collections -> milk), pinned */
+#story{position:relative;height:440vh}
+.stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--cream)}
+.stage .t-wrap{position:absolute;top:12vh;left:0;right:0;text-align:center;z-index:6}
+.stage .t-wrap .eyebrow{opacity:.8}
+.stage .t-wrap h2{font-size:clamp(40px,4.6vw,70px);margin-top:10px;letter-spacing:-.02em;text-transform:none;position:relative}
+.stage .t-wrap h2 span{display:block}
+.stage .t-wrap h2 .t2{position:absolute;left:0;right:0;top:0;opacity:0;text-transform:uppercase}
+.cc{position:absolute;top:49vh;width:clamp(150px,17vw,265px);aspect-ratio:1/1.18;transform:translate(-50%,-50%);z-index:3}
+#cc-l{left:calc(50% - clamp(170px,21vw,330px))}
+#cc-c{left:50%;z-index:4}
+#cc-r{left:calc(50% + clamp(170px,21vw,330px))}
+.cc.tile{border-radius:30px}
+#sd{position:absolute;left:50%;top:0;width:clamp(96px,10.5vw,170px);transform:translate(-50%,-50%);z-index:7;pointer-events:none;filter:drop-shadow(0 18px 18px rgba(70,38,20,.3))}
+#seq{position:absolute;inset:0;width:100%;height:100%;z-index:2;opacity:0;pointer-events:none}
+.side-l{position:absolute;left:7vw;top:40vh;width:clamp(230px,19vw,280px);padding:20px 20px 22px;z-index:8;opacity:0}
+.side-l .h-big{font-size:40px;margin:12px 0 10px;letter-spacing:-.02em}
+.side-l p{font-size:12.5px;line-height:1.5;color:var(--ink2);margin-bottom:16px}
+.side-l .row{display:flex;gap:8px}
+.side-l .heart{position:absolute;right:18px;top:18px;width:20px}
+.side-l .btn-dark,.side-l .btn-line{padding:9px 15px;font-size:12px}
+.side-r{position:absolute;right:8vw;top:38vh;width:clamp(180px,14.5vw,215px);padding:12px;z-index:8;opacity:0}
+.side-r .tile{aspect-ratio:1/.95;margin:10px 0 12px;border-radius:16px}
+.side-r .x{position:absolute;right:16px;top:14px;font-size:18px;line-height:1}
+.side-r .row{display:flex;justify-content:space-between;align-items:center}
+.side-r .btn-line{padding:7px 12px;font-size:11px}
+.nav-l{position:absolute;left:2.2vw;top:62vh;z-index:8;background:#fff;opacity:0}
+.stage .dots{position:absolute;left:0;right:0;bottom:7vh;z-index:8}
+
+/* 3 latte */
+#latte{position:relative;height:230vh;background:var(--terra);color:#fbefe4}
+#latte .stage{background:radial-gradient(120% 90% at 50% 38%,#c0785a 0%,#b0694a 48%,#9a573a 100%)}
+#latte .stage::before{content:'';position:absolute;left:0;right:0;top:0;height:22vh;background:linear-gradient(#eee6d9,rgba(238,230,217,0));z-index:2;pointer-events:none}
+.corner-tr{position:absolute;right:-12vw;top:-17vw;width:31vw;aspect-ratio:1;border-radius:50%;background:#f0dfcd;z-index:1}
+.corner-bl{position:absolute;left:-11vw;bottom:-13vw;width:31vw;aspect-ratio:1;border-radius:50%;background:var(--cream);z-index:1}
+.corner-bl svg{position:absolute;inset:0;width:100%;height:100%}
+.corner-bl text{font:600 13px var(--sans);letter-spacing:.2em;fill:var(--ink)}
+.latte-title{position:absolute;top:10vh;left:0;right:0;text-align:center;z-index:6}
+.latte-title .eyebrow{opacity:.85}
+.latte-title .h-big{font-size:clamp(46px,6vw,98px);color:#fbeee2;line-height:.98;margin-top:6px;text-shadow:0 3px 0 rgba(120,60,35,.28)}
+.latte-title .sub{margin-top:16px;font-size:clamp(15px,1.7vw,24px);font-weight:600;letter-spacing:.03em;color:#fbeee2}
+.stream{position:absolute;left:50%;top:0;width:var(--neck);height:0;transform:translateX(-50%);z-index:3;background:linear-gradient(90deg,#efe6d8,#fffdf9 40%,#f6efe4 70%,#e7dccb);border-radius:0 0 40% 40%/0 0 16px 16px;pointer-events:none}
+#l-cup{left:50%;top:70%;width:clamp(260px,38vw,600px);z-index:4}
+#l-vanilla{left:19%;top:56%;width:clamp(110px,15vw,240px);z-index:5}
+#l-swirl{left:34%;top:77%;width:clamp(70px,9vw,150px);z-index:5}
+#l-choc{left:79%;top:47%;width:clamp(86px,11vw,180px);z-index:5}
+#l-marsh{left:11%;top:23%;width:clamp(36px,4.2vw,66px);z-index:5}
+#l-bean{left:68%;top:37%;width:clamp(30px,3.2vw,52px);z-index:5}
+#l-cube{left:9%;top:83%;width:clamp(36px,4.2vw,64px);z-index:5}
+#l-marsh2{left:84%;top:79%;width:clamp(30px,3.4vw,54px);z-index:5}
+#l-ring{left:94%;top:27%;width:clamp(26px,2.6vw,40px);z-index:5}
+#l-bean2{left:62%;top:86%;width:clamp(26px,2.6vw,42px);z-index:5}
+.flv{position:absolute;z-index:7;font-size:clamp(12px,1.05vw,15px);font-weight:600;letter-spacing:.08em;color:#fbeee2;padding:6px 11px;border-radius:99px;transition:background .25s,color .25s}
+.flv:hover,.flv.on{background:#fbeee2;color:var(--terra2)}
+#f-vanilla{left:7%;top:42%}
+#f-mocha{left:82%;top:63%}
+#f-caramel{left:33%;top:90%}
+.arcs{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+.arcs path{fill:none;stroke:#fbeee2;stroke-width:1.2;opacity:.8;vector-effect:non-scaling-stroke}
+.arcs circle{fill:#fbeee2}
+.flavor-note{position:absolute;left:50%;bottom:1.8vh;transform:translateX(-50%);z-index:7;font-size:13px;opacity:.95;white-space:nowrap}
+#latte .dots{bottom:5.5vh}
+#latte .dots i{border-color:#fbeee2}#latte .dots i.on{background:#fbeee2}
+.pulse{animation:pulse .7s ease-out}
+@keyframes pulse{0%{filter:drop-shadow(0 0 0 rgba(255,235,200,0)) brightness(1)}35%{filter:drop-shadow(0 0 26px rgba(255,235,200,.9)) brightness(1.15)}100%{filter:none}}
+
+/* 4 make it yours */
+#yours{position:relative;z-index:6;background:var(--cream);padding:90px clamp(16px,6vw,96px) 40px;border-radius:44px 44px 0 0;margin-top:-44px}
+#yours .head{text-align:center;margin-bottom:56px}
+#yours .head .h-big{font-size:clamp(40px,5vw,76px);margin-top:10px}
+.build{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;max-width:1100px;margin:0 auto}
+.opts{display:grid;gap:26px;align-content:start}
+.opt h4{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:12px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{border:1.4px solid var(--ink);border-radius:99px;padding:10px 18px;font-size:14px;font-weight:500;transition:background .2s,color .2s}
+.chip.on{background:var(--ink);color:#fff}
+.summary{padding:30px;display:flex;flex-direction:column;gap:14px;background:var(--paper)}
+.summary .name{font-family:var(--serif);font-weight:900;font-variation-settings:'SOFT' 100;font-size:34px;letter-spacing:-.02em;line-height:1}
+.summary .note{color:var(--ink2);font-size:14px;line-height:1.55}
+.summary .price{font-family:var(--serif);font-size:44px;font-weight:700;margin-top:auto}
+.summary small{color:var(--ink2);font-size:12px}
+.menu{max-width:1100px;margin:90px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.menu .item{padding:22px;border-radius:26px;background:var(--paper)}
+.menu .item .tile{aspect-ratio:4/3;margin-bottom:16px;border-radius:20px}
+.menu .item h5{font-family:var(--serif);font-size:24px;font-weight:700;display:flex;justify-content:space-between}
+.menu .item p{font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.5}
+footer{max-width:1100px;margin:90px auto 0;padding-top:30px;border-top:1px solid #d9cfc2;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;font-size:13px;color:var(--ink2)}
+footer .logo{color:var(--ink)}
+.chat{position:fixed;right:22px;bottom:22px;z-index:20;width:50px;height:50px;border-radius:50%;background:var(--ink);display:grid;place-items:center;box-shadow:0 8px 20px rgba(42,29,22,.3)}
+.chat svg{width:22px;height:22px}
+
+@media (max-width:760px){
+  nav.main,.search{display:none}
+  header{gap:12px}header .signup{margin-left:auto}
+  .hero-copy{top:13vh;right:16px}
+  .hero-copy p{max-width:none}
+  .hero-cards{display:none}
+  #hero .dots{display:none}
+  #h-ball{top:76%!important;width:66vw!important}
+  .hero-hint{bottom:1.5vh}
+  .stage .t-wrap{top:11vh}
+  .cc{width:170px;top:52vh}
+  #cc-l{left:-6%}#cc-r{left:106%}
+  .side-l{left:16px;right:16px;width:auto;top:auto;bottom:10vh;padding:14px 16px}
+  .side-l .h-big{font-size:28px;margin:8px 0 6px}
+  .side-l p{display:none}
+  .side-r,.nav-l{display:none}
+  #sd{width:92px}
+  :root{--neck:3.4vw}
+  .latte-title{top:9vh}
+  #l-cup{top:62%;width:min(86vw,360px)}
+  #l-vanilla{left:17%;top:48%;width:92px}
+  #l-swirl{left:27%;top:73%;width:70px}
+  #l-choc{left:83%;top:46%;width:84px}
+  #l-marsh{left:9%;top:30%}#l-bean{left:78%;top:33%}#l-cube{left:7%;top:84%}#l-marsh2{left:90%;top:75%}#l-ring,#l-bean2{display:none}
+  #f-vanilla{left:3%;top:36%}#f-mocha{left:70%;top:60%}#f-caramel{left:30%;top:86%}
+  .arcs{display:none}
+  .flavor-note{bottom:2.2vh;font-size:12px}
+  #latte .dots{display:none}
+  .corner-tr{width:46vw;right:-22vw;top:-24vw}.corner-bl{width:54vw;left:-26vw;bottom:-26vw}
+  .corner-bl text{font-size:20px}
+  .build,.menu{grid-template-columns:1fr}
+  .hide-m{display:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="logo">Velluto<small>THE ROASTERY</small></div>
+  <nav class="main"><a class="on" href="#hero">Home</a><a href="#story">About</a><a href="#latte">Features</a><a href="#visit">Contact</a></nav>
+  <div class="search"><span>Search...</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+  <button class="signup">Sign Up</button>
+  <div class="burger"><i></i><i></i><i></i></div>
+</header>
+
+<!-- SECTION 1 -->
+<section id="hero">
+  <svg class="arc-bg" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
+    <rect width="1440" height="900" fill="#f3ece1"/>
+    <path d="M0 140 C 260 70 470 100 610 220 C 760 350 700 530 880 610 C 1060 690 1210 570 1440 620 L1440 900 L0 900Z" fill="#ebe2d4"/>
+    <path d="M300 0 C 420 120 560 150 700 110 C 860 60 980 120 1060 0Z" fill="#f0e7da"/>
+  </svg>
+  <div class="hero-copy">
+    <div class="eyebrow">Section 1</div>
+    <h1 class="h-big">Pour beyond<br>the rim.</h1>
+    <p>Small-batch espresso, slow-steamed milk and a cup that tastes like it took all morning. Roasted every Thursday, poured all week.</p>
+    <div class="row"><a class="btn-dark" href="#latte">Shop Now</a><a class="circ" href="#story" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+  </div>
+  <div class="hero-cards">
+    <div class="tile"><img data-s="press" alt="Glass french press"><span class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+    <div class="tile"><img data-s="pitcher" alt="Copper milk pitcher"><span class="lbl">Double Brew</span></div>
+  </div>
+  <div class="fx" id="h-ball" data-amp="10" data-par="90" data-rot="2" style="left:50%;top:54%;width:clamp(300px,36vw,560px)"><img data-s="ball" alt="Glossy coffee sphere"></div>
+  <div class="fx hide-m" data-amp="12" data-par="160" data-rot="8" style="left:62%;top:20%;width:clamp(46px,5vw,80px)"><img data-s="cube" alt=""></div>
+  <div class="fx" data-amp="9" data-par="120" data-rot="10" style="left:27%;top:76%;width:clamp(50px,6vw,96px)"><img data-s="ring" alt=""></div>
+  <div class="fx hide-m" data-amp="8" data-par="200" data-rot="14" style="left:79%;top:16%;width:clamp(22px,2.4vw,38px)"><img data-s="marsh" alt=""></div>
+  <div class="fx hide-m" data-amp="10" data-par="70" data-rot="12" style="left:44%;top:84%;width:clamp(30px,3.4vw,54px)"><img data-s="bean" alt=""></div>
+  <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  <div class="hero-hint">Collections</div>
+</section>
+
+<!-- SECTION 2: collections -> milk (pinned, scroll-driven) -->
+<section id="story">
+  <div class="stage" id="stage">
+    <svg class="arc-bg" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
+      <rect width="1440" height="900" fill="#f3ece1"/>
+      <path d="M0 330 C 240 290 420 360 720 330 C 1000 300 1200 250 1440 300 L1440 900 L0 900Z" fill="#ece3d5"/>
+      <path d="M0 540 C 300 490 520 580 760 540 C 1000 500 1220 560 1440 520 L1440 900 L0 900Z" fill="#f1e9dd"/>
+    </svg>
+    <canvas id="seq" width="960" height="540" aria-hidden="true"></canvas>
+    <div class="t-wrap">
+      <div class="eyebrow" id="eb2">Collections &mdash;</div>
+      <h2 class="h-big"><span class="t1">Our Collections</span><span class="t2">Milk</span></h2>
+    </div>
+
+    <div class="cc tile" id="cc-l"><img data-s="press" alt="French press"></div>
+    <div class="cc tile" id="cc-c"><img data-s="mug" alt="Mug of milk"></div>
+    <div class="cc tile" id="cc-r"><img data-s="pitcher" alt="Copper pitcher"></div>
+    <img id="sd" data-s="sphdrip" alt="">
+
+    <button class="circ nav-l" id="nav-l" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+    <div class="side-l card" id="side-l">
+      <span class="pill-tag">Signature No. 2</span>
+      <svg class="heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+      <h3 class="h-big">Milk</h3>
+      <p>Whole milk from one farm, steamed to 62 degrees so it stays sweet, glossy and thick enough to hold a pattern.</p>
+      <div class="row"><a class="btn-dark" href="#yours">Shop Now</a><a class="btn-line" href="#yours">Learn more</a></div>
+    </div>
+    <div class="side-r card" id="side-r">
+      <span class="pill-tag">New &amp; Cold</span><span class="x">&times;</span>
+      <div class="tile"><img data-s="press" alt="Cold brew press"></div>
+      <div class="row"><span class="btn-line">Choose Now</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+    </div>
+
+    <div class="fx s-fx" data-px="-6" data-py="-4" data-amp="10" data-rot="10" style="left:24%;top:24%;width:clamp(40px,4.6vw,72px)"><img data-s="drops" alt=""></div>
+    <div class="fx s-fx" data-px="5" data-py="-3" data-amp="12" data-rot="9" style="left:76%;top:23%;width:clamp(52px,5.4vw,84px)"><img data-s="cube" alt=""></div>
+    <div class="fx s-fx hide-m" data-px="-4" data-py="6" data-amp="8" data-rot="12" style="left:15%;top:78%;width:clamp(54px,5.4vw,88px)"><img data-s="bean" alt=""></div>
+    <div class="fx s-fx hide-m" data-px="6" data-py="5" data-amp="9" data-rot="8" style="left:82%;top:78%;width:clamp(38px,4.2vw,66px)"><img data-s="sugar" alt=""></div>
+    <div class="fx s-fx" data-px="-3" data-py="-5" data-amp="9" data-rot="14" style="left:12%;top:36%;width:clamp(36px,3.8vw,60px)"><img data-s="marsh" alt=""></div>
+    <div class="fx s-fx hide-m" data-px="4" data-py="-6" data-amp="7" data-rot="10" style="left:90%;top:40%;width:clamp(30px,3vw,48px)"><img data-s="ring" alt=""></div>
+
+    <div class="dots"><i></i><i class="on"></i><i></i></div>
+  </div>
+</section>
+
+<!-- SECTION 3: make your latte -->
+<section id="latte">
+  <div class="stage" id="lstage">
+    <div class="corner-tr"></div>
+    <div class="corner-bl"><svg viewBox="0 0 300 300" aria-hidden="true"><defs><path id="ring" d="M150 150 m-104 0 a104 104 0 1 1 208 0 a104 104 0 1 1 -208 0"/></defs><text><textPath href="#ring">VELLUTO &#183; SLOW ROASTED &#183; SMALL BATCH &#183; </textPath></text></svg></div>
+    <div class="stream" id="stream"></div>
+    <div class="latte-title"><div class="eyebrow">Section 3 &mdash;</div><h2 class="h-big">Make your<br>latte.</h2><div class="sub">CHOOSE YOUR FLAVOR</div></div>
+    <svg class="arcs" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M13 50 C 8 60, 12 70, 27 77"/><circle cx="27" cy="77" r=".5"/>
+      <path d="M78 66 C 84 62, 86 56, 83 50"/>
+      <path d="M43 92 C 52 91, 58 88, 64 87"/><circle cx="64" cy="87" r=".5"/>
+      <path d="M66 44 C 62 43, 59 43, 56 44"/>
+    </svg>
+    <div class="fx" id="l-cup" data-amp="6" data-rot="1"><img data-s="cup" alt="Latte with rosetta art"></div>
+    <div class="fx" id="l-vanilla" data-amp="10" data-rot="5" data-fl="vanilla"><img data-s="vanilla" alt="Vanilla flower"></div>
+    <div class="fx" id="l-swirl" data-amp="12" data-rot="7" data-fl="caramel"><img data-s="swirl" alt="Caramel swirl"></div>
+    <div class="fx" id="l-choc" data-amp="10" data-rot="8" data-fl="mocha"><img data-s="choc" alt="Chocolate"></div>
+    <div class="fx" id="l-marsh" data-amp="10" data-rot="12"><img data-s="marsh" alt=""></div>
+    <div class="fx" id="l-bean" data-amp="9" data-rot="14"><img data-s="bean" alt=""></div>
+    <div class="fx" id="l-cube" data-amp="8" data-rot="10"><img data-s="cube" alt=""></div>
+    <div class="fx" id="l-marsh2" data-amp="8" data-rot="9"><img data-s="sugar" alt=""></div>
+    <div class="fx" id="l-ring" data-amp="7" data-rot="16"><img data-s="ring" alt=""></div>
+    <div class="fx" id="l-bean2" data-amp="7" data-rot="12"><img data-s="bean" alt=""></div>
+    <button class="flv on" id="f-vanilla" data-f="vanilla">VANILLA</button>
+    <button class="flv" id="f-mocha" data-f="mocha">MOCHA</button>
+    <button class="flv" id="f-caramel" data-f="caramel">CARAMEL</button>
+    <div class="flavor-note" id="flavor-note">Vanilla latte &middot; bourbon vanilla, soft crema</div>
+    <div class="dots"><i></i><i></i><i class="on"></i></div>
+  </div>
+</section>
+
+<!-- SECTION 4 -->
+<section id="yours">
+  <div class="head"><div class="eyebrow">Section 4 &mdash;</div><h2 class="h-big">Make it yours</h2></div>
+  <div class="build">
+    <div class="opts">
+      <div class="opt"><h4>Flavour</h4><div class="chips" data-k="flavor"><button class="chip on" data-v="vanilla">Vanilla</button><button class="chip" data-v="caramel">Caramel</button><button class="chip" data-v="mocha">Mocha</button></div></div>
+      <div class="opt"><h4>Milk</h4><div class="chips" data-k="milk"><button class="chip on" data-v="whole">Whole</button><button class="chip" data-v="oat">Oat</button><button class="chip" data-v="almond">Almond</button></div></div>
+      <div class="opt"><h4>Temperature</h4><div class="chips" data-k="temp"><button class="chip on" data-v="hot">Hot</button><button class="chip" data-v="iced">Iced</button></div></div>
+      <div class="opt"><h4>Size</h4><div class="chips" data-k="size"><button class="chip" data-v="s">Small</button><button class="chip on" data-v="m">Medium</button><button class="chip" data-v="l">Large</button></div></div>
+    </div>
+    <div class="summary card">
+      <span class="pill-tag" style="align-self:flex-start">Your cup</span>
+      <div class="name" id="s-name">Hot Vanilla Latte</div>
+      <div class="note" id="s-note">Medium, whole milk. Bourbon vanilla folded into a double ristretto.</div>
+      <div class="price" id="s-price">$4.60</div>
+      <small>Sample prices. Connect your own checkout to take orders.</small>
+      <button class="btn-dark" style="align-self:flex-start">Add to order</button>
+    </div>
+  </div>
+  <div class="menu">
+    <div class="item"><div class="tile"><img data-s="saucer" alt="Flat white"></div><h5>Flat White <span>$3.90</span></h5><p>Double ristretto, thin microfoam, no sugar needed.</p></div>
+    <div class="item"><div class="tile"><img data-s="press" alt="Cold pour"></div><h5>Cold Pour <span>$4.20</span></h5><p>Eighteen-hour steep, poured over one big cube.</p></div>
+    <div class="item"><div class="tile"><img data-s="pitcher" alt="Brew kit"></div><h5>Brew Kit <span>$29</span></h5><p>Beans, filter and a bottle to take the ritual home.</p></div>
+  </div>
+  <footer id="visit">
+    <div class="logo">Velluto<small>THE ROASTERY</small></div>
+    <div>12 Example Street, Your City<br>Mon-Sat 7:30-18:00</div>
+    <div>hello@example.com<br>Brand, prices and address are placeholders.</div>
+  </footer>
+</section>
+
+<a class="chat" href="#visit" aria-label="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="16" height="13" rx="4"/><path d="M8 21l3-4"/></svg></a>
+
+<script>
+/* images: AI-rendered (Gemini) objects, cut out to transparent WebP, embedded once and reused */
+var IMG=/*IMG_MAP*/{};
+var SEQ=/*SEQ_MAP*/[];
+document.querySelectorAll('img[data-s]').forEach(function(i){ i.src=IMG[i.dataset.s]; });
+
+/* builder + flavour picker */
+(function(){
+  var state={flavor:'vanilla',milk:'whole',temp:'hot',size:'m'};
+  var F={vanilla:['Vanilla','Bourbon vanilla folded into a double ristretto.','bourbon vanilla, soft crema'],
+         caramel:['Caramel','Slow-cooked salted caramel stirred through the milk.','salted caramel, toffee finish'],
+         mocha:['Mocha','70% dark chocolate melted into the shot.','dark cocoa, long finish']};
+  var M={whole:['whole milk',0],oat:['oat milk',.5],almond:['almond milk',.5]};
+  var S={s:['Small',-.5],m:['Medium',0],l:['Large',.7]};
+  function render(){
+    var f=F[state.flavor];
+    document.getElementById('s-name').textContent=(state.temp==='hot'?'Hot ':'Iced ')+f[0]+' Latte';
+    document.getElementById('s-note').textContent=S[state.size][0]+', '+M[state.milk][0]+'. '+f[1];
+    document.getElementById('s-price').textContent='$'+(4.6+M[state.milk][1]+S[state.size][1]+(state.temp==='iced'?.3:0)).toFixed(2);
+    document.getElementById('flavor-note').textContent=f[0]+' latte · '+f[2];
+    document.querySelectorAll('.flv').forEach(function(b){b.classList.toggle('on',b.dataset.f===state.flavor)});
+    document.querySelectorAll('.chips').forEach(function(c){c.querySelectorAll('.chip').forEach(function(b){b.classList.toggle('on',b.dataset.v===state[c.dataset.k])})});
+    var el=document.querySelector('[data-fl="'+state.flavor+'"] img'); if(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
+  }
+  document.querySelectorAll('.flv').forEach(function(b){b.addEventListener('click',function(){state.flavor=b.dataset.f;render()})});
+  document.querySelectorAll('.chips').forEach(function(c){c.addEventListener('click',function(e){var b=e.target.closest('.chip');if(b){state[c.dataset.k]=b.dataset.v;render()}})});
+  var hdr=document.getElementById('hdr'),lat=document.getElementById('lstage');
+  function hd(){var r=lat.getBoundingClientRect();hdr.classList.toggle('solid',scrollY>40);hdr.classList.toggle('dark',r.top<60&&r.bottom>60)}
+  addEventListener('scroll',hd,{passive:true});hd();
+  window.__velluto=state;
+})();
+
+/* scroll choreography */
+(function(){
+  var $=function(s){return document.querySelector(s)}, $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+  var cl=function(v,a,b){a=a||0;b=b==null?1:b;return Math.min(b,Math.max(a,v))};
+  var sm=function(a,b,v){var t=cl((v-a)/(b-a));return t*t*(3-2*t)};
+  var lerp=function(a,b,t){return a+(b-a)*t};
+  var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var H=innerHeight,W=innerWidth; addEventListener('resize',function(){H=innerHeight;W=innerWidth});
+  var fxs=$$('.fx').map(function(el){ return {el:el,sec:el.closest('section'),amp:+el.dataset.amp||8,par:+el.dataset.par||0,rot:+el.dataset.rot||0,px:+el.dataset.px||0,py:+el.dataset.py||0,ph:Math.random()*6,story:el.classList.contains('s-fx')}; });
+  var story=$('#story'),stage=$('#stage'),latte=$('#latte');
+  var cl_=$('#cc-l'),cc=$('#cc-c'),cr=$('#cc-r'),sd=$('#sd'),seq=$('#seq'),sideL=$('#side-l'),sideR=$('#side-r'),navL=$('#nav-l'),t1=$('.t1'),t2=$('.t2'),eb2=$('#eb2'),stream=$('#stream'),lcup=$('#l-cup'),lstage=$('#lstage');
+  var mobile=function(){return W<=760};
+  var frames=[],sctx=seq.getContext('2d'),lastI=-1,loaded=false;
+  function loadSeq(){ if(loaded||!SEQ.length) return; loaded=true; frames=SEQ.map(function(u){var im=new Image();im.decoding='async';im.src=u;return im}); }
+  addEventListener('load',function(){ setTimeout(loadSeq,200) });
+  function drawSeq(u){ loadSeq(); var n=frames.length; if(!n) return; var i=Math.min(n-1,Math.max(0,Math.round(u*(n-1)))); var im=frames[i];
+    if(!(im.complete&&im.naturalWidth)){ for(var d=1;d<n;d++){ var a=frames[i-d],b=frames[i+d]; if(a&&a.complete&&a.naturalWidth){im=a;break} if(b&&b.complete&&b.naturalWidth){im=b;break} } }
+    if(i===lastI&&im.complete) return; lastI=i; if(im.naturalWidth) sctx.drawImage(im,0,0,seq.width,seq.height); }
+  function frame(now){
+    var t=RM?1.2:now/1000;
+    var sr=story.getBoundingClientRect(); var p=cl(-sr.top/(sr.height-H));
+    var lr=latte.getBoundingClientRect(); var q=cl(-lr.top/(lr.height-H));
+    // floating objects
+    for(var i=0;i<fxs.length;i++){ var f=fxs[i], y=0, x=0;
+      var sr2=f.sec.getBoundingClientRect(); if(sr2.bottom<-200||sr2.top>H+200) continue;
+      if(f.story){ x=(p-.5)*f.px*W/100; y=(p-.5)*f.py*H/100; }
+      else if(f.par){ y=-((sr2.top+sr2.height/2-H/2)/H)*f.par; }
+      if(!RM){ y+=Math.sin(t*.9+f.ph)*f.amp; x+=Math.cos(t*.6+f.ph)*f.amp*.4; }
+      var r=RM?0:Math.sin(t*.5+f.ph)*f.rot;
+      f.el.style.transform='translate(-50%,-50%) translate3d('+x.toFixed(1)+'px,'+y.toFixed(1)+'px,0) rotate('+r.toFixed(2)+'deg)'; }
+    // story phases
+    if(sr.bottom>-50&&sr.top<H+50){
+      var mob=mobile();
+      var tIn=sm(0,.24,p), tMove=sm(.3,.46,p), fade1=sm(.34,.46,p), seqA=sm(.46,.56,p), cardOut=seqA;
+      var yFall=lerp(-14,mob?30:34,tIn)*H/100, yMerge=lerp(0,(mob?16:14)*H/100,tMove);
+      sd.style.top=(yFall+yMerge)+'px'; sd.style.opacity=String(1-sm(.44,.52,p)); sd.style.transform='translate(-50%,-50%) scale('+lerp(1,.74,tMove)+')';
+      t1.style.opacity=String(1-fade1); t1.style.transform='translateY('+(-fade1*14)+'px)';
+      t2.style.opacity=String(fade1); t2.style.transform='translateY('+((1-fade1)*14)+'px)';
+      eb2.textContent=fade1>.5?'Section 2 —':'Collections —';
+      var sc=1+.3*tMove;
+      cc.style.transform='translate(-50%,-50%) scale('+sc+')'; cc.style.opacity=String(1-cardOut);
+      var sideOut=fade1;
+      cl_.style.opacity=String((1-sideOut)*(1-cardOut)); cl_.style.transform='translate(calc(-50% - '+(sideOut*8)+'vw),-50%)';
+      cr.style.opacity=String((1-sideOut)*(1-cardOut)); cr.style.transform='translate(calc(-50% + '+(sideOut*8)+'vw),-50%)';
+      var cardIn=sm(.36,.48,p)*(1-sm(.82,.92,p));
+      sideL.style.opacity=String(cardIn); sideL.style.transform='translateX('+((1-sm(.36,.48,p))*-30+sm(.6,.8,p)*-24)+'px)';
+      sideR.style.opacity=String(cardIn); sideR.style.transform='translateX('+((1-sm(.36,.48,p))*30+sm(.6,.8,p)*24)+'px)';
+      navL.style.opacity=String(cardIn);
+      // AI-rendered (Veo) milk-pour clip, scrubbed by scroll: drop, crown splash, ripples, stream
+      seq.style.opacity=seqA.toFixed(3); seq.style.display=seqA>.002?'block':'none';
+      if(seqA>.002) drawSeq(cl((p-.5)/.46));
+    }
+    // latte: stream pours from the top into the cup
+    if(lr.bottom>-50&&lr.top<H+50){
+      var cr2=lcup.getBoundingClientRect(), ls=lstage.getBoundingClientRect();
+      var lt=sm(0,.3,q);
+      stream.style.height=Math.max(0,H*.08+lt*(cr2.top-ls.top+cr2.height*.2-H*.08))+'px';
+      stream.style.opacity=String(1-sm(.8,.95,q));
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
