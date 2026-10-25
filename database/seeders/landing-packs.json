@@ -148,5 +148,23 @@
     "price_prompt": 0,
     "price_design": 12,
     "price_bundle": 16
+  },
+  {
+    "slug": "velluto-latte-pour-scroll",
+    "title": "Velluto - Latte Pour Scroll Website",
+    "tagline": "A coffee ball drops into milk, the splash floods the page, and a milk stream leads to a latte builder.",
+    "description": "A premium cafe website told entirely by scroll. A shaded 3D-style coffee ball falls into a pool of milk, the splash throws a crown of droplets and ripples, a coffee cloud blooms through the milk and the milk rises until it floods the page. A milk stream then runs down the page edge, bends around each chapter and finally pours into an interactive \"Make your latte\" builder.\n\nIn the builder, five flavours (vanilla, caramel, mocha, hazelnut, pistachio), three milks, hot or iced and three sizes change the cup, the latte art, the floating ingredients and the glow behind the page, with a live name, tasting note and sample price. Also included: parallax ingredients, a scroll-skewed flavour marquee, a short menu, a visit section, and polished Instrument Serif + Manrope typography.\n\nEverything is drawn on a canvas and in SVG, so there are no photos to license, no video to load and no libraries: one HTML file. Works at 400 px wide, respects prefers-reduced-motion, and the page stays readable if scripts fail. Brand, prices and address are placeholders for you to replace; the template sends nothing, so you connect your own checkout.",
+    "category": "landing",
+    "tags": [
+      "cafe",
+      "coffee",
+      "canvas",
+      "scroll-animation",
+      "interactive",
+      "svg"
+    ],
+    "price_prompt": 0,
+    "price_design": 14,
+    "price_bundle": 18
   }
 ]
