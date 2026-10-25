@@ -195,7 +195,8 @@ Categories: comparison, tutorial, deep-dive, best-practices, architecture, scali
                         ]
                     ],
                     'temperature' => 0.8, // Higher temperature for creativity
-                    'max_tokens' => 2000,
+                    // gpt-oss reasoning tokenlari max_tokens'dan yeydi; 30 mavzu JSON'i 2000 ga sig'maydi
+                    'max_tokens' => 8000,
                 ]);
 
             if (!$response->successful()) {
