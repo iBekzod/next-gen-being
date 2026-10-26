@@ -1,7 +1,7 @@
 [
   {
     "slug": "dental-clinic-landing",
-    "title": "Lumen Dental Studio \u2014 Medical / Dental Landing",
+    "title": "Lumen Dental Studio — Medical / Dental Landing",
     "tagline": "Calm, precise, remarkably human dentistry.",
     "description": "A premium, award-tier landing page for a modern dental practice, built as a single self-contained HTML file. It features a scroll-driven WebGL scene of a rotating tooth that dissolves into a translucent, layered cross-section amid drifting particles, plus glassmorphism panels, a kinetic headline reveal, and an interactive treatments explorer with live pricing.",
     "category": "landing",
@@ -17,9 +17,9 @@
   },
   {
     "slug": "fine-dining-landing",
-    "title": "Ember & Oak \u2014 Restaurant / Hospitality Landing",
+    "title": "Ember & Oak — Restaurant / Hospitality Landing",
     "tagline": "Fire, patience, and one unforgettable table.",
-    "description": "A premium, award-tier landing page for a live-fire fine dining restaurant, built as a single self-contained HTML file. The hero features a scroll-driven, mouse-parallax WebGL scene of a slowly rotating signature plate with a subsurface-glow food dome and rising additive steam, backed by glassmorphism panels, an interactive seasonal menu with course tabs, and kinetic headline motion \u2014 all in an ember-orange-on-espresso palette using OKLCH color.",
+    "description": "A premium, award-tier landing page for a live-fire fine dining restaurant, built as a single self-contained HTML file. The hero features a scroll-driven, mouse-parallax WebGL scene of a slowly rotating signature plate with a subsurface-glow food dome and rising additive steam, backed by glassmorphism panels, an interactive seasonal menu with course tabs, and kinetic headline motion — all in an ember-orange-on-espresso palette using OKLCH color.",
     "category": "landing",
     "tags": [
       "restaurant",
@@ -33,9 +33,9 @@
   },
   {
     "slug": "web3-protocol-landing",
-    "title": "Nexus Protocol \u2014 Crypto / Web3 Landing",
+    "title": "Nexus Protocol — Crypto / Web3 Landing",
     "tagline": "The settlement layer for a borderless economy.",
-    "description": "A premium, dark, award-tier landing page for Nexus Protocol, a fictional Web3 settlement layer. It pairs a scroll-reactive WebGL blockchain graph \u2014 a fresnel-lit wireframe icosahedron with orbiting satellite nodes and data packets traveling its edges \u2014 with glassmorphism panels, a kinetic headline, and an interactive network-stack tab explorer. Fully self-contained in one HTML file with a canvas aurora fallback and reduced-motion support.",
+    "description": "A premium, dark, award-tier landing page for Nexus Protocol, a fictional Web3 settlement layer. It pairs a scroll-reactive WebGL blockchain graph — a fresnel-lit wireframe icosahedron with orbiting satellite nodes and data packets traveling its edges — with glassmorphism panels, a kinetic headline, and an interactive network-stack tab explorer. Fully self-contained in one HTML file with a canvas aurora fallback and reduced-motion support.",
     "category": "landing",
     "tags": [
       "web3",
@@ -49,7 +49,7 @@
   },
   {
     "slug": "fintech-vault-landing",
-    "title": "Meridian Pay \u2014 Fintech / Digital Banking Landing",
+    "title": "Meridian Pay — Fintech / Digital Banking Landing",
     "tagline": "Money that moves at the speed of intent.",
     "description": "A premium, award-tier dark landing page for Meridian Pay, a fictional neobank. The hero features a scroll- and cursor-driven WebGL scene of a slowly rotating brushed-metal credit card with fresnel-rim shading and additive ribbons of transaction light streaming from its chip, backed by a live fee calculator with tabs and glassmorphism throughout. Built as one self-contained HTML file with a Canvas aurora fallback and full prefers-reduced-motion support.",
     "category": "landing",
@@ -65,7 +65,7 @@
   },
   {
     "slug": "ai-saas-landing",
-    "title": "Cortex AI \u2014 SaaS / AI Tool Landing",
+    "title": "Cortex AI — SaaS / AI Tool Landing",
     "tagline": "Your team's second brain, always awake.",
     "description": "A premium, dark, award-tier landing page for Cortex AI, a fictional B2B AI productivity tool. It features a live WebGL neural-network brain of glowing orbs and firing synapse threads that morph toward the cursor and respond to scroll, glassmorphism panels in a vivid-indigo palette, a kinetic headline reveal, and a genuinely interactive capabilities tab widget. Built as one self-contained HTML file for startup founders and B2B agencies who need a conversion-focused launch page.",
     "category": "landing",
@@ -81,7 +81,7 @@
   },
   {
     "slug": "luxury-estate-landing",
-    "title": "Aureline Residences \u2014 Luxury Real Estate Landing",
+    "title": "Aureline Residences — Luxury Real Estate Landing",
     "tagline": "Homes that answer to no one but the light.",
     "description": "A premium, award-tier WebGL landing page for a boutique luxury property studio. A cinematic 3D villa assembles floor-by-floor as you scroll while a real-time sun casts moving shadows across the terraces and a glass pool reflects the sky. Editorial champagne-gold-on-charcoal design with glassmorphism panels, a kinetic headline, an interactive dawn/noon/dusk light-tour, and a full Canvas aurora fallback.",
     "category": "landing",
@@ -97,7 +97,7 @@
   },
   {
     "slug": "brew-story-coffee-scroll",
-    "title": "Tamber \u2014 Scroll-Story Cafe Website",
+    "title": "Tamber — Scroll-Story Cafe Website",
     "tagline": "Grind, pour, sip: a cafe site told by scroll.",
     "description": "A premium cafe and coffee roaster website where one pinned scene tells the whole story as you scroll: beans are ground, water is poured in a slow spiral, and the cup is filled and served. Giant editorial typography, a warm espresso-to-crema palette that shifts with each chapter, a live readout of grams, time and water temperature, a bean shop with product cards and a tabbed brew guide.\n\nEverything is drawn in SVG and animated with GSAP ScrollTrigger, so there are no photos to license and no video to load. One HTML file, no build step. Respects prefers-reduced-motion, works at phone width, and stays smooth on mid-range phones.",
     "category": "landing",
@@ -115,7 +115,7 @@
   },
   {
     "slug": "dastur-menyu-restaurant-scroll",
-    "title": "Dastur \u2014 Scroll-Laid Restaurant Website",
+    "title": "Dastur — Scroll-Laid Restaurant Website",
     "tagline": "A dastarkhan laid course by course as you scroll.",
     "description": "A restaurant website for Uzbek or any shared-table cuisine. As you scroll, an embroidered cloth unfolds and five dishes land on it, then the camera tours the table: plov, bread, somsa, shashlik and tea, each with its own story card, serving size and price. Below it sit a tabbed menu with dotted price leaders and a booking widget with date, guests and time slots.\n\nThe dishes are hand-built SVG illustrations, so there are no stock photos and no licensing questions. GSAP ScrollTrigger, one HTML file, no build step. The booking form is client-side only; wire it to your own backend.",
     "category": "landing",
@@ -133,7 +133,7 @@
   },
   {
     "slug": "gulzor-flower-wedding-scroll",
-    "title": "Gulzor \u2014 Scroll-Bloom Florist Website",
+    "title": "Gulzor — Scroll-Bloom Florist Website",
     "tagline": "A peony that blooms as you scroll, plus a live bouquet builder.",
     "description": "A florist and wedding studio website. The hero is a peony that opens petal by petal as you scroll, with a live percent-in-bloom readout. Below it: seasonal bouquet cards, an interactive bouquet builder (colours, size, paper, card message) with a live preview and live price, and a wedding arch that grows flower by flower.\n\nAll flowers are generated SVG, so there are no photos to license. GSAP ScrollTrigger, one HTML file, no build step. The order button is a demo; connect it to your own checkout.",
     "category": "landing",
@@ -152,15 +152,15 @@
   {
     "slug": "velluto-latte-pour-scroll",
     "title": "Velluto - Latte Pour Scroll Website",
-    "tagline": "A glossy coffee sphere drops into milk, the splash fills the page and a milk stream pours into a latte you flavour yourself.",
-    "description": "A premium cafe website told by scroll, with photoreal renders. The hero floats a glossy coffee sphere with a caramel cube, a porcelain ring and coffee beans next to a bold serif headline and product cards. A collections row of rounded product cards leads into the pinned Milk section, where the sphere drops into milk, a crown splash rises, ripples spread across the page and a milk stream carries you into the next section.\n\n\"Make your latte\" is a terracotta section with a speckled ceramic cup of latte art, a vanilla flower, chocolate shards and a caramel ribbon floating on parallax, and a milk stream pouring in from above; pick vanilla, caramel or mocha to light up that ingredient. Below it, a small builder (flavour, milk, hot or iced, size) shows a name, a tasting note and a sample price, plus a short menu and a footer.\n\nOne HTML file, no build step: every visual is an AI-rendered photoreal image (glossy sphere, french press, pitcher, mug, vanilla, caramel, chocolate, latte) cut out to transparent WebP and floated with scroll parallax, plus a 72-frame AI-rendered milk-pour clip (sphere drop, crown splash, ripples, stream) scrubbed by scroll. Original artwork generated for this template, nothing to license. Layout is responsive down to 400 px and works without WebGL (none is used). Brand, prices and address are placeholders; the order button sends nothing until you connect your own checkout. Checked in desktop Chrome only.",
+    "tagline": "A glossy coffee sphere drops into a cup, milk fills it and vanilla, caramel and chocolate float in as you scroll.",
+    "description": "A premium cafe website told by one scroll-driven animation. A cream editorial hero with a glossy coffee sphere, product cards and bold serif type leads into a pinned terracotta section that plays a 100-frame photoreal clip on a canvas: the sphere drops into an empty speckled cup, milk wells up with a crown splash, the rosetta latte art forms, and a vanilla flower, caramel ribbon, chocolate chunk, coffee beans and marshmallows drift in and settle around the cup. Two glass text cards (Milk, Signature No. 2) fade in on a separate layer, and at the end the headline \"Make your latte.\" appears with VANILLA / CARAMEL / MOCHA buttons that sit on their ingredients.\n\nBelow it: a small builder (flavour, milk, hot or iced, size) with a live name, tasting note and sample price, a three-item menu and a footer. Palette: cream, terracotta, espresso; Fraunces and Inter.\n\nOne HTML file, no build step. The clip was rendered with Gemini (Nano Banana start and end stills with the same background colour, Veo for the motion between them), cut to WebP frames and embedded; GSAP ScrollTrigger and Lenis load from a CDN with a plain-scroll fallback. Original artwork generated for this template, nothing to license. Responsive down to 400 px and respects reduced-motion (shows the finished latte). Brand, prices and address are placeholders; the order button sends nothing until you connect your own checkout. Checked in desktop Chrome only; page weight is about 1.9 MB because the frames are embedded.",
     "category": "landing",
     "tags": [
       "cafe",
       "coffee",
       "photoreal",
-      "3d",
       "scroll-animation",
+      "canvas",
       "interactive"
     ],
     "price_prompt": 0,

@@ -1,37 +1,35 @@
 # Velluto Latte Pour (cafe) - Build Prompts
 
-Prompts to rebuild or restyle this exact page with Claude Code and an image model. One HTML file, no build step, no WebGL: every visual is an AI-rendered photoreal image (cut out to transparent WebP, floated with scroll parallax) plus one AI-rendered video turned into a scroll-scrubbed frame sequence. Fonts are Fraunces (soft, heavy) and Inter.
+Prompts to rebuild or restyle this page with Claude Code, Gemini (Nano Banana for stills, Veo for motion) and ffmpeg. One HTML file: a cream editorial hero, then a pinned terracotta section that draws ONE AI-rendered clip, cut into 100 WebP frames, on a canvas as you scroll. Fonts are Fraunces (soft, heavy) and Inter.
 
-## 1. Render the objects (image model, e.g. Gemini / Nano Banana)
-"Hyper-realistic glossy 3D product-render asset sheet, 4K, 16:9, on a PURE WHITE seamless background, no floor, no ground shadows. Eight separate isolated objects in a loose 4x2 grid with generous empty white space so nothing touches: a roasted coffee bean, a glossy cream marshmallow sphere, a white vanilla orchid with two vanilla pods, a thick glossy golden caramel ribbon swirl, a broken shard of dark milk chocolate bar, a glossy caramel cube with a drip, a milk drop with a tiny splash crown, a glossy dark chocolate bead. Soft warm studio light from upper left, crisp specular highlights, warm cream / caramel / terracotta / chocolate palette. No text, no logos."
-Repeat for: speckled stoneware latte cup with rosetta latte art (no saucer), glass french press, copper milk pitcher, chocolate sphere with a milk drip, mug of milk with a chocolate bead, porcelain ring, sugar cube, caramel droplets. Cut each object out (rembg or any background remover), trim, resize to its display size x2 and save as WebP with alpha (quality ~82).
+## 1. Pick the background colour first
+One hex for the stills and the prompts (here #B0694A, terracotta). The video comes back slightly darker with a vignette, so the page samples six edge colours per frame and paints the canvas margin with them.
 
-## 2. Render the pour clip (video model, e.g. Veo in Gemini)
-"Photorealistic commercial product cinematography, 16:9, locked-off static camera, macro lens, shallow depth of field, soft bright high-key studio light, warm cream palette. A single glossy dark espresso-brown chocolate sphere falls in slow motion into a wide pool of creamy white milk; a symmetrical milk crown splash rises with thin tendrils and droplets, ripples spread, then a thick smooth ribbon of milk pours down into the pool. Nothing else in frame, no hands, no text."
-Then: `ffmpeg -i clip.mp4 -t 9.6 -vf "fps=7.5,scale=960:540,curves=all='0/0 0.45/0.55 1/1'" -c:v libwebp -quality 58 seq/%03d.webp` (72 frames, ~480 KB).
+## 2. START still (Gemini, image)
+"Photorealistic 3D product render, a plain empty matte-white speckled ceramic latte cup with handle on a saucer, centered, slightly high 3/4 front view, the cup about 40 percent of the frame width. Directly above the empty cup, floating in mid-air, one glossy dark chocolate-brown coffee sphere with a mirror-like surface, a few coffee beans and two small cream marshmallow spheres. Soft warm studio key light from upper left, gentle soft shadow, solid flat smooth terracotta background of exactly #B0694A, no gradient, no texture, no horizon line, no text, no hands, no other objects. 16:9, generous empty margin."
 
-## 3. Layout
-"Clean editorial layout on cream (#f3ece1) with soft curved arc shapes. Small nav (Home About Features Contact), a Search pill and a black Sign Up pill. Headlines in Fraunces weight 900, SOFT 100, uppercase. Section labels like 'SECTION 2 -'. Rounded-square product cards, side cards with 'Shop Now' / 'Choose Now' pill buttons, pagination dots."
+## 3. END still: edit the START still (same chat)
+"Edit this exact image and output a new image with the identical 16:9 frame: keep the cup, saucer, camera angle, lighting and the solid terracotta #B0694A background exactly the same size and position. Change only the contents: the cup is now filled with a creamy latte with a detailed white rosetta latte art, and a thin crown-shaped milk splash rises just above the rim; the glossy sphere is gone. Floating around the cup with sharp frozen motion, all inside the frame with a clear margin: a cream vanilla flower with two vanilla pods on the left, a glossy caramel swirl ribbon at lower left, a dark chocolate chunk on the right, a few coffee beans and two cream marshmallow spheres. Photorealistic, no text."
+Editing the first image (instead of generating a new one) keeps cup, camera and colour identical, which is what stops the video model from cross-dissolving.
 
-## 4. Hero
-"Left: 'Section 1', a huge two-line headline, one short paragraph, a dark Shop Now pill and a circular arrow. Centre: the glossy coffee sphere cutout floating with a slow bob. Right: two product cards (french press, copper pitcher) bleeding off the edge. Around: caramel cube, porcelain ring, marshmallow, coffee bean as separate cutouts, each with its own parallax speed (data-par), float amplitude and tiny rotation. 'Collections' peeks at the bottom."
+## 4. The motion (Veo in Gemini, Videos, frames to video: attach START then END)
+"Use the first attached image as the exact FIRST frame and the second attached image as the exact LAST frame. The cup, saucer, camera and terracotta background stay identical in both. Physically real continuous motion: the glossy coffee sphere drops straight down into the empty cup, a creamy latte wells up and fills the cup, a crown-shaped milk splash rises and settles, the rosetta latte art forms on the surface, while the vanilla flower, caramel swirl, chocolate chunk, coffee beans and marshmallows drift in slowly from outside the frame and float into their final positions around the cup, reaching the last frame by real motion only. Smooth, unhurried, even motion. Absolutely NO cross-dissolve, NO fade, NO morph, NO ghost double exposure, NO cut. Steady locked camera, no zoom, constant soft studio lighting, solid terracotta background throughout, photorealistic, no text, no hands."
 
-## 5. Collections to Milk (pinned, 440vh)
-"A sticky 100vh stage with scroll progress p. 0-0.3: title 'Our Collections', three tiles (french press, mug of milk, copper pitcher) and the sphere-with-milk-drip cutout falls from the title into the centre tile. 0.3-0.46: title swaps to 'Milk', side tiles slide out, the centre tile scales up, a text card (Signature No. 2, Shop Now / Learn more) slides in on the left and a small product card on the right. 0.46-0.56: a canvas with the pour clip fades in over everything. 0.5-0.96: draw frame round(u*(n-1)) of the sequence to the canvas, so scrolling plays the drop, crown splash, ripples and the stream. Small cutouts keep floating on top."
+## 5. Frames
+`ffmpeg -i clip.mp4 -t 10 -vf "fps=10,scale=1200:-2" -c:v libwebp -quality 72 -compression_level 6 seq/%03d.webp` gives 100 frames, about 1.4 MB.
 
-## 6. Make your latte
-"Terracotta section (radial gradient #c0785a to #9a573a) with cream corner circles, one with circular text. Chunky cream headline 'Make your latte.' and 'CHOOSE YOUR FLAVOR'. The latte cup cutout sits low-centre; vanilla flower on the left, caramel swirl in front, chocolate shard on the right, marshmallow, beans and cube floating. Thin curved lines with dot ends connect labels VANILLA / CARAMEL / MOCHA to their ingredient; clicking a label lights that ingredient up and updates a note. A white milk stream grows from the top edge down into the cup as you scroll, matching the width of the stream at the end of the pour clip."
+## 6. Layout and scroll
+"Cream (#f3ece1) editorial hero with soft arc shapes, small nav, Search pill, black Sign Up pill, huge uppercase Fraunces headline, glossy sphere cutout floating, two product cards bleeding off the edge. Then a 560vh section with a sticky 100vh stage and one full-size canvas. Frame index = round(progress * (N-1)); progress from GSAP ScrollTrigger with Lenis smoothing, plain getBoundingClientRect fallback if the CDNs are blocked. Per frame, paint the canvas with the clip's own six edge colours, draw the frame with feathered edges, scaled to fit (wider crop on phones). Two glass cards fade in on a separate layer (Milk at 0, Signature No. 2 at 0.33). At 0.8 the headline 'Make your latte.' and VANILLA / CARAMEL / MOCHA buttons fade in, positioned on top of the ingredients from frame-relative coordinates; clicking one updates a note. Reduced motion: show the last frame."
 
 ## 7. Make it yours
-"Chips for flavour, milk, temperature and size update a summary card (name, note, sample price). A three-item menu on sand tiles with cutouts and a footer with placeholder address."
+"Chips for flavour, milk, temperature and size update a summary card (name, note, sample price). A three-item menu on sand tiles and a footer with placeholder address."
 
 ## Customisation prompts
-- "Swap the coffee sphere for a matcha sphere and the milk for oat milk; regenerate the renders in green tones."
-- "Add a fourth flavour, cardamom, with its own cutout, label and note."
-- "Put my real menu, address and hours in; remove all placeholders."
-- "Translate all copy to my language and keep the layout."
+- "Swap the coffee sphere for a matcha sphere and the milk for oat milk; regenerate both stills in green tones."
+- "Add a fourth flavour, cardamom, to the end still and the buttons."
+- "Put my real menu, address and hours in; remove every placeholder."
+- "Translate all copy and keep the layout."
 
 ## Pre-launch checklist
-- Replace placeholder brand, prices, address and email; connect your own checkout.
-- Re-render or replace any image you do not want to ship; keep image alt text meaningful.
-- Test the scroll sequence on a real phone; frames are 960x540 WebP.
+- Replace the placeholder brand, prices, address and email; connect your own checkout.
+- Test on a real phone; the page weighs about 1.9 MB because the frames are embedded. For production, host the frames as separate files.
