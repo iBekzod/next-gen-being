@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Forno - Wood-Fired Pizza | Scroll Animation Restaurant Website Template</title>
+<meta name="description" content="Scroll-driven pizza restaurant website: sauce, tomatoes, mozzarella and basil fall onto the dough and bake into a Margherita as you scroll. One HTML file, AI-rendered photoreal frame sequence on a canvas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..800,0..100&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#181411; --bg2:#201a16; --cream:#f4ead8; --muted:#b9ab97; --ember:#e4572e; --ember2:#c9431f; --leaf:#8fb35c;
+  --glass:rgba(244,234,216,.09); --line:rgba(244,234,216,.16);
+  --serif:'Fraunces',Georgia,'Times New Roman',serif; --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--cream);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.serif{font-family:var(--serif);font-variation-settings:'SOFT' 60}
+
+header{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:28px;padding:20px clamp(16px,4vw,56px);transition:background .3s,backdrop-filter .3s}
+header.solid{background:rgba(24,20,17,.72);backdrop-filter:blur(12px)}
+.logo{font-family:var(--serif);font-weight:700;font-size:26px;letter-spacing:-.02em;font-variation-settings:'SOFT' 100}
+.logo i{color:var(--ember);font-style:normal}
+nav{display:flex;gap:30px;margin:0 auto;font-size:13.5px;color:var(--muted)}
+nav a:hover{color:var(--cream)}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;border-radius:99px;padding:11px 22px;font-size:13px;font-weight:600;transition:background .2s,transform .2s}
+.pill:hover{background:var(--ember2);transform:translateY(-1px)}
+.pill.ghost{background:transparent;border:1.4px solid var(--line);color:var(--cream)}
+.pill.ghost:hover{background:var(--glass)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ember)}
+
+/* pinned story: one canvas, frame index from scroll progress */
+#story{position:relative;height:420vh}
+.stage{position:sticky;top:0;height:100vh;overflow:hidden;background:radial-gradient(70% 70% at 50% 52%,#241d18 0%,var(--bg) 70%)}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-mask-image:radial-gradient(closest-side at 50% 50%,#000 78%,transparent 100%);mask-image:radial-gradient(closest-side at 50% 50%,#000 78%,transparent 100%)}
+.cards{position:absolute;inset:0;pointer-events:none}
+.card{position:absolute;left:clamp(16px,6vw,96px);top:50%;width:min(400px,calc(100% - 32px));padding:30px 30px 28px;border-radius:26px;background:rgba(26,21,18,.66);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -30px rgba(0,0,0,.7);opacity:0;transform:translateY(-50%) translateY(24px);will-change:opacity,transform}
+.card h2{font-family:var(--serif);font-weight:700;font-variation-settings:'opsz' 120,'SOFT' 80;font-size:clamp(34px,3.6vw,54px);line-height:1;letter-spacing:-.02em;margin:12px 0 14px}
+.card p{font-size:14.5px;line-height:1.6;color:var(--muted);margin-bottom:20px}
+.card.right{left:auto;right:clamp(16px,6vw,96px)}
+.card .row{display:flex;gap:10px;flex-wrap:wrap;pointer-events:auto}
+.hud{position:absolute;right:clamp(16px,3vw,44px);bottom:clamp(18px,4vh,40px);z-index:5;display:flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.14em;color:var(--muted);font-variant-numeric:tabular-nums}
+.hud .bar{width:clamp(80px,12vw,160px);height:2px;background:var(--line);position:relative;border-radius:2px;overflow:hidden}
+.hud .bar i{position:absolute;inset:0;background:var(--ember);transform-origin:left;transform:scaleX(0)}
+.hint{position:absolute;left:50%;bottom:clamp(18px,4vh,40px);transform:translateX(-50%);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);transition:opacity .4s}
+#load{position:absolute;left:0;top:0;height:2px;background:var(--ember);width:0;z-index:40;transition:width .2s,opacity .5s}
+
+/* after the story */
+section.block{position:relative;padding:clamp(70px,10vw,130px) clamp(16px,6vw,96px)}
+.sec-head{max-width:1100px;margin:0 auto 48px;display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
+.sec-head h2{font-family:var(--serif);font-weight:700;font-variation-settings:'opsz' 144,'SOFT' 80;font-size:clamp(40px,5.4vw,84px);line-height:.98;letter-spacing:-.025em;margin-top:12px}
+.sec-head p{max-width:340px;color:var(--muted);font-size:14.5px;line-height:1.6}
+.steps{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{border-radius:26px;overflow:hidden;background:var(--bg2);border:1px solid var(--line)}
+.step canvas,.step img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--bg)}
+.step div{padding:20px 22px 24px}
+.step b{font-family:var(--serif);font-size:24px;font-variation-settings:'SOFT' 80}
+.step p{margin-top:6px;color:var(--muted);font-size:13.5px;line-height:1.55}
+.menu{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:0 56px}
+.item{padding:24px 0;border-top:1px solid var(--line)}
+.item .top{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.item h3{font-family:var(--serif);font-weight:600;font-size:26px;font-variation-settings:'SOFT' 80}
+.item .price{font-family:var(--serif);font-size:22px;color:var(--ember)}
+.item p{margin-top:6px;color:var(--muted);font-size:14px;line-height:1.55;max-width:46ch}
+.tag{display:inline-block;margin-left:10px;font:600 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--leaf);vertical-align:middle}
+.visit{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:stretch}
+.visit .big{padding:clamp(28px,4vw,52px);border-radius:30px;background:linear-gradient(150deg,#3a1c12,#27140e 60%);border:1px solid var(--line)}
+.visit .big h2{font-family:var(--serif);font-weight:700;font-variation-settings:'opsz' 144,'SOFT' 80;font-size:clamp(36px,4.4vw,66px);line-height:1;letter-spacing:-.02em;margin:12px 0 18px}
+.visit .big p{color:#d9c7ae;font-size:15px;line-height:1.6;max-width:44ch;margin-bottom:24px}
+.visit .info{padding:clamp(24px,3vw,40px);border-radius:30px;background:var(--bg2);border:1px solid var(--line);display:grid;gap:22px;align-content:start;font-size:14.5px;line-height:1.6}
+.visit .info b{display:block;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:600}
+footer{max-width:1100px;margin:70px auto 0;padding-top:28px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;color:var(--muted);font-size:13px}
+
+@media (max-width:860px){
+  nav{display:none}header{gap:12px}header .pill{margin-left:auto}
+  .card,.card.right{left:16px;right:16px;top:auto;bottom:calc(52px + env(safe-area-inset-bottom,0px));width:auto;padding:22px 22px 20px;transform:translateY(24px)}
+  .card h2{font-size:32px;margin:8px 0 10px}.card p{font-size:13.5px;margin-bottom:14px}
+  #cv{top:-6vh;height:68%}
+  .hud{left:16px;right:16px;justify-content:space-between}
+  .hint{display:none}
+  .steps,.menu,.visit{grid-template-columns:1fr}
+  .menu{gap:0}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<div id="load"></div>
+<header id="hdr">
+  <a class="logo" href="#top">Forno<i>.</i></a>
+  <nav><a href="#story">The pizza</a><a href="#how">How it is made</a><a href="#menu">Menu</a><a href="#visit">Visit</a></nav>
+  <a class="pill" href="#visit">Book a table</a>
+</header>
+
+<section id="story" aria-label="Pizza assembling as you scroll">
+  <div class="stage" id="stage">
+    <canvas id="cv" width="960" height="720" role="img" aria-label="Sauce, tomatoes, mozzarella and basil fall onto pizza dough and bake into a Margherita"></canvas>
+    <div class="cards">
+      <article class="card" data-in="-.2" data-out=".3">
+        <div class="eyebrow">01 &mdash; Raw</div>
+        <h2>Fresh has a wild side.</h2>
+        <p>Slow-risen dough, crushed tomatoes, milky mozzarella and a handful of basil. Nothing hidden, nothing frozen. Scroll and watch it come together.</p>
+        <div class="row"><a class="pill" href="#menu">See the menu</a><a class="pill ghost" href="#visit">Find us</a></div>
+      </article>
+      <article class="card right" data-in=".34" data-out=".66">
+        <div class="eyebrow">02 &mdash; Together</div>
+        <h2>It all comes together.</h2>
+        <p>Sauce first, spread in one slow spiral. Then the cheese, torn by hand, and basil right at the end so it keeps its green.</p>
+      </article>
+      <article class="card" data-in=".74" data-out="1.01">
+        <div class="eyebrow">03 &mdash; Fired</div>
+        <h2>Wildly good pizza.</h2>
+        <p>Into a very hot oven for about ninety seconds, until the crust blisters and the cheese just starts to colour. Straight to the table.</p>
+        <div class="row"><a class="pill" href="#visit">Book a table</a><a class="pill ghost" href="#menu">Order for pickup</a></div>
+      </article>
+    </div>
+    <div class="hint" id="hint">Scroll</div>
+    <div class="hud" aria-hidden="true"><span id="pct">000</span><span class="bar"><i id="bar"></i></span><span>100</span></div>
+  </div>
+</section>
+
+<section class="block" id="how" style="background:var(--bg2)">
+  <div class="sec-head"><div><div class="eyebrow">How it is made</div><h2>Three honest steps.</h2></div><p>Frames from the scroll animation above, so the page shows exactly what it promises.</p></div>
+  <div class="steps">
+    <div class="step"><canvas data-f="0"></canvas><div><b>Dough</b><p>Stretched by hand from dough that rested for a full day, so the rim stays airy.</p></div></div>
+    <div class="step"><canvas data-f="48"></canvas><div><b>Sauce &amp; cheese</b><p>Crushed tomatoes, a little salt, mozzarella torn rather than sliced.</p></div></div>
+    <div class="step"><canvas data-f="96"></canvas><div><b>Fire</b><p>A very hot oven, a minute and a half, and a rim that blisters and chars in spots.</p></div></div>
+  </div>
+</section>
+
+<section class="block" id="menu">
+  <div class="sec-head"><div><div class="eyebrow">Menu</div><h2>Pizza, simply.</h2></div><p>Sample dishes and prices. Replace them with your own menu.</p></div>
+  <div class="menu">
+    <div class="item"><div class="top"><h3>Margherita<span class="tag">Classic</span></h3><span class="price">$11</span></div><p>Tomato, mozzarella, basil, olive oil.</p></div>
+    <div class="item"><div class="top"><h3>Marinara<span class="tag">Vegan</span></h3><span class="price">$9</span></div><p>Tomato, garlic, oregano, olive oil. No cheese.</p></div>
+    <div class="item"><div class="top"><h3>Diavola</h3><span class="price">$13</span></div><p>Tomato, mozzarella, spicy salami, chilli oil.</p></div>
+    <div class="item"><div class="top"><h3>Funghi</h3><span class="price">$13</span></div><p>Mozzarella, roasted mushrooms, thyme, a little cream.</p></div>
+    <div class="item"><div class="top"><h3>Quattro Formaggi</h3><span class="price">$14</span></div><p>Mozzarella, gorgonzola, parmesan, fontina.</p></div>
+    <div class="item"><div class="top"><h3>Burrata &amp; Basil</h3><span class="price">$15</span></div><p>Tomato base, a whole burrata added after the oven.</p></div>
+  </div>
+</section>
+
+<section class="block" id="visit" style="padding-top:0">
+  <div class="visit">
+    <div class="big"><div class="eyebrow">Visit</div><h2>Save a table by the oven.</h2><p>Walk-ins welcome, tables held for fifteen minutes. Connect your own booking tool to the button.</p><a class="pill" href="#">Book a table</a></div>
+    <div class="info">
+      <div><b>Address</b>12 Example Street, Your City</div>
+      <div><b>Hours</b>Tue-Sun 12:00-22:30<br>Closed Mondays</div>
+      <div><b>Contact</b>hello@example.com<br>+1 000 000 0000</div>
+    </div>
+  </div>
+  <footer><span class="logo">Forno<i>.</i></span><span>Brand, menu, prices and address are placeholders for the template.</span></footer>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+/* AI-rendered clip (Veo, start + end still), cropped and cut to WebP frames, embedded once */
+var SEQ=/*SEQ_MAP*/[];
+(function(){
+  var $=function(s){return document.querySelector(s)}, $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+  var cl=function(v,a,b){return Math.min(b,Math.max(a,v))}, sm=function(a,b,v){var t=cl((v-a)/(b-a),0,1);return t*t*(3-2*t)};
+  var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var N=SEQ.length, imgs=new Array(N), ready=0, cv=$('#cv'), ctx=cv.getContext('2d'), stage=$('#stage'), story=$('#story');
+  var cards=$$('.card'), bar=$('#bar'), pct=$('#pct'), hint=$('#hint'), hdr=$('#hdr'), load=$('#load');
+  var target=0, cur=0, lastI=-1, lastS=0, dpr=Math.min(2,window.devicePixelRatio||1);
+
+  function size(){ var r=cv.getBoundingClientRect(); cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr); lastI=-1; }
+  function draw(i,sh){ sh=sh||0;
+    var im=imgs[i]; if(!im||!im.complete||!im.naturalWidth){ for(var d=1;d<N;d++){ var a=imgs[i-d],b=imgs[i+d]; if(a&&a.complete&&a.naturalWidth){im=a;break} if(b&&b.complete&&b.naturalWidth){im=b;break} } }
+    if(!im||!im.naturalWidth) return;
+    var W=cv.width,H=cv.height, s=Math.min(W/im.naturalWidth,H/im.naturalHeight)*(W/H<1?1.1:.84), w=im.naturalWidth*s, h=im.naturalHeight*s;
+    var ox=(W-w)/2+(W/H>1?sh*W:0), oy=(H-h)/2; ctx.fillStyle='#181411'; ctx.fillRect(0,0,W,H); ctx.drawImage(im,ox,oy,w,h);
+    var g=ctx.createLinearGradient(0,oy,0,oy+h*.14); g.addColorStop(0,'rgba(24,20,17,1)'); g.addColorStop(1,'rgba(24,20,17,0)'); ctx.fillStyle=g; ctx.fillRect(ox,oy,w,h*.14);
+    lastI=i; lastS=sh;
+  }
+  /* frame 1 first, the rest in the background */
+  function loadAll(){
+    SEQ.forEach(function(u,i){ var im=new Image(); im.decoding='async'; im.onload=function(){ ready++; load.style.width=(ready/N*100)+'%'; if(ready===N) setTimeout(function(){load.style.opacity=0},400); if(i===0||i===lastI) lastI=-1; }; im.src=u; imgs[i]=im; });
+  }
+  /* small stills for the "How it is made" strip, drawn from the same frames */
+  function stills(){ $$('.step canvas').forEach(function(c){ var im=imgs[+c.dataset.f]; if(!im||!im.complete||!im.naturalWidth) return; var w=c.clientWidth||400; c.width=w*dpr; c.height=Math.round(w*0.75*dpr); var x=c.getContext('2d'); x.fillStyle='#181411'; x.fillRect(0,0,c.width,c.height); var s=Math.min(c.width/im.naturalWidth,c.height/im.naturalHeight)*1.02; x.drawImage(im,(c.width-im.naturalWidth*s)/2,(c.height-im.naturalHeight*s)/2,im.naturalWidth*s,im.naturalHeight*s); c.dataset.done=1; }); }
+
+  /* progress: ScrollTrigger when loaded, native fallback otherwise */
+  function native(){ var r=story.getBoundingClientRect(); return cl(-r.top/(r.height-innerHeight),0,1); }
+  var useST=false;
+  if(window.gsap&&window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger); useST=true;
+    ScrollTrigger.create({trigger:story,start:'top top',end:'bottom bottom',onUpdate:function(s){target=s.progress}});
+    if(window.Lenis&&!RM){ var lenis=new Lenis({lerp:.09,wheelMultiplier:.9}); lenis.on('scroll',ScrollTrigger.update); gsap.ticker.add(function(t){lenis.raf(t*1000)}); gsap.ticker.lagSmoothing(0);
+      document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){var h=a.getAttribute('href'); if(h.length>1&&$(h)){e.preventDefault();lenis.scrollTo(h,{offset:0})}})}); }
+  }
+  function frame(){
+    if(!useST) target=native();
+    cur+= (target-cur)*(RM?1:.22); if(Math.abs(target-cur)<.0004) cur=target;
+    var p=RM?1:cur, i=Math.round(p*(N-1)), sh=.075*(1-2*sm(.28,.38,p)+2*sm(.64,.76,p)); if(i!==lastI||Math.abs(sh-lastS)>.0008) draw(i,sh);
+    bar.style.transform='scaleX('+p.toFixed(4)+')'; pct.textContent=('00'+Math.round(p*100)).slice(-3);
+    hint.style.opacity=p<.03?1:0;
+    cards.forEach(function(c){ var a=+c.dataset.in,b=+c.dataset.out, o=sm(a,a+.05,p)*(1-sm(b-.05,b,p)); c.style.opacity=o.toFixed(3); c.style.transform=(innerWidth>860?'translateY(-50%) ':'')+'translateY('+((1-o)*24)+'px)'; c.style.pointerEvents=o>.5?'auto':'none'; });
+    hdr.classList.toggle('solid',scrollY>40);
+    requestAnimationFrame(frame);
+  }
+  addEventListener('resize',function(){size();stills()});
+  size(); loadAll(); requestAnimationFrame(frame);
+  addEventListener('load',function(){ var t=setInterval(function(){ if(ready>=N){clearInterval(t);stills();} },300); setTimeout(function(){clearInterval(t)},30000); });
+  window.__forno={get progress(){return cur},frames:N};
+})();
+</script>
+</body>
+</html>

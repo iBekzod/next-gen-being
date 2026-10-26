@@ -97,7 +97,7 @@
   },
   {
     "slug": "brew-story-coffee-scroll",
-    "title": "Tamber — Scroll-Story Cafe Website",
+    "title": "Tamber \u2014 Scroll-Story Cafe Website",
     "tagline": "Grind, pour, sip: a cafe site told by scroll.",
     "description": "A premium cafe and coffee roaster website where one pinned scene tells the whole story as you scroll: beans are ground, water is poured in a slow spiral, and the cup is filled and served. Giant editorial typography, a warm espresso-to-crema palette that shifts with each chapter, a live readout of grams, time and water temperature, a bean shop with product cards and a tabbed brew guide.\n\nEverything is drawn in SVG and animated with GSAP ScrollTrigger, so there are no photos to license and no video to load. One HTML file, no build step. Respects prefers-reduced-motion, works at phone width, and stays smooth on mid-range phones.",
     "category": "landing",
@@ -115,7 +115,7 @@
   },
   {
     "slug": "dastur-menyu-restaurant-scroll",
-    "title": "Dastur — Scroll-Laid Restaurant Website",
+    "title": "Dastur \u2014 Scroll-Laid Restaurant Website",
     "tagline": "A dastarkhan laid course by course as you scroll.",
     "description": "A restaurant website for Uzbek or any shared-table cuisine. As you scroll, an embroidered cloth unfolds and five dishes land on it, then the camera tours the table: plov, bread, somsa, shashlik and tea, each with its own story card, serving size and price. Below it sit a tabbed menu with dotted price leaders and a booking widget with date, guests and time slots.\n\nThe dishes are hand-built SVG illustrations, so there are no stock photos and no licensing questions. GSAP ScrollTrigger, one HTML file, no build step. The booking form is client-side only; wire it to your own backend.",
     "category": "landing",
@@ -133,7 +133,7 @@
   },
   {
     "slug": "gulzor-flower-wedding-scroll",
-    "title": "Gulzor — Scroll-Bloom Florist Website",
+    "title": "Gulzor \u2014 Scroll-Bloom Florist Website",
     "tagline": "A peony that blooms as you scroll, plus a live bouquet builder.",
     "description": "A florist and wedding studio website. The hero is a peony that opens petal by petal as you scroll, with a live percent-in-bloom readout. Below it: seasonal bouquet cards, an interactive bouquet builder (colours, size, paper, card message) with a live preview and live price, and a wedding arch that grows flower by flower.\n\nAll flowers are generated SVG, so there are no photos to license. GSAP ScrollTrigger, one HTML file, no build step. The order button is a demo; connect it to your own checkout.",
     "category": "landing",
@@ -161,6 +161,24 @@
       "photoreal",
       "3d",
       "scroll-animation",
+      "interactive"
+    ],
+    "price_prompt": 0,
+    "price_design": 14,
+    "price_bundle": 18
+  },
+  {
+    "slug": "forno-pizza-scroll",
+    "title": "Forno - Pizza Restaurant Scroll Website",
+    "tagline": "Sauce, tomatoes, mozzarella and basil fall onto the dough and bake into a pizza as you scroll.",
+    "description": "A pizza-restaurant website told by one scroll-driven animation. A pinned section plays a 97-frame photoreal clip on a canvas: a splash of tomato sauce, whole tomatoes, torn mozzarella and basil fall onto raw dough, the sauce spreads, the cheese melts and the crust blisters into a finished Margherita on a walnut board. Three glass text cards (Raw, Together, Fired) fade in on a separate layer as you scroll, with a live 000/100 progress counter.\n\nBelow the animation: a \"How it is made\" strip drawn from the same frames, a six-item sample menu, and a visit/booking block. Dark, warm palette (near-black, cream, ember red) with Fraunces and Inter.\n\nOne HTML file, no build step. The clip was rendered with Gemini (Nano Banana start and end stills, Veo for the motion between them), cut to WebP frames and embedded; GSAP ScrollTrigger and Lenis load from a CDN, with a plain-scroll fallback if they are blocked. Original artwork generated for this template, nothing to license. Responsive down to 400 px and respects reduced-motion (shows the finished pizza). Brand, menu, prices and address are placeholders; the booking buttons go nowhere until you connect your own tool. Checked in desktop Chrome only; page weight is about 4.7 MB because the frames are embedded.",
+    "category": "landing",
+    "tags": [
+      "restaurant",
+      "pizza",
+      "photoreal",
+      "scroll-animation",
+      "canvas",
       "interactive"
     ],
     "price_prompt": 0,
