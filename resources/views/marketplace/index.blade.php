@@ -113,7 +113,7 @@
   #ngb-market .m-frame-bar{ display:flex; align-items:center; gap:6px; padding:9px 12px; background:oklch(0.22 0.03 264); }
   #ngb-market .m-frame-bar i{ width:9px; height:9px; border-radius:50%; background:oklch(0.5 0.03 264); }
   #ngb-market .m-frame-body{ display:block; position:relative; aspect-ratio:16/10; overflow:hidden; }
-  #ngb-market .m-frame-body iframe{ position:absolute; top:0; left:0; width:250%; height:250%; border:0; transform:scale(.4); transform-origin:top left; pointer-events:none; background:#0b1020; }
+  #ngb-market .m-frame-body iframe{ position:absolute; top:0; left:0; width:calc(250% + 30px); height:250%; border:0; transform:scale(.4); transform-origin:top left; pointer-events:none; background:#0b1020; }
   #ngb-market .m-steps{ list-style:none; margin:0 0 34px; padding:0; display:grid; grid-template-columns:1fr; gap:12px; }
   @media (min-width:700px){ #ngb-market .m-steps{ grid-template-columns:repeat(3,1fr); } }
   #ngb-market .m-steps li{ display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
