@@ -12,11 +12,33 @@
 @include('marketplace.partials.tokens')
 <div id="ngb-market">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-    <header class="mb-8">
-      <p style="color:var(--signal-ink); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:.72rem;">Live product marketplace</p>
-      <h1 class="m-display" style="font-size:clamp(1.9rem,4vw,2.7rem); line-height:1.05; margin:.3rem 0;">Try it live. Then buy.</h1>
-      <p style="color:var(--ink-soft); max-width:60ch;">Every product is a real, running app, not a screenshot. Open the demo, click around, then buy the prompt plan, the design, or the full code.</p>
+    @php
+      $__feat = $listings->getCollection()->first(fn ($l) => $l->category !== '3d-scenes' && in_array($l->demo_type, ['static', 'external'], true));
+      $__featSrc = $__feat ? ($__feat->demo_type === 'static' ? asset('storage/'.$__feat->demo_path) : $__feat->demo_url) : null;
+    @endphp
+    <header class="m-hero mb-10">
+      <div>
+        <p style="color:var(--signal-ink); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:.72rem;">Live product marketplace</p>
+        <h1 class="m-display" style="font-size:clamp(2.1rem,5vw,3.4rem); line-height:1.02; margin:.4rem 0 .8rem;">Try it live.<br>Then buy.</h1>
+        <p style="color:var(--ink-soft); max-width:52ch; font-size:1.02rem; line-height:1.6;">Every product is a real, running app, not a screenshot. Open the demo, click around, then buy the prompt plan, the design, or the full code.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;">
+          <a href="#m-grid" class="m-cta">Browse {{ $listings->total() }} live demos</a>
+          @if($__feat)<a href="{{ route('marketplace.show', $__feat) }}" class="m-cta m-cta-ghost">Open {{ Str::before($__feat->title, ' - ') }}</a>@endif
+        </div>
+      </div>
+      @if($__featSrc)
+        <a href="{{ route('marketplace.show', $__feat) }}" class="m-frame" aria-label="Live preview: {{ $__feat->title }}">
+          <span class="m-frame-bar"><i></i><i></i><i></i><span class="m-live" style="margin-left:auto;"><span class="blink"></span>LIVE</span></span>
+          <span class="m-frame-body"><iframe src="{{ $__featSrc }}" title="Live preview of {{ $__feat->title }}" sandbox="allow-scripts allow-same-origin" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></span>
+        </a>
+      @endif
     </header>
+
+    <ol class="m-steps">
+      <li><b>1</b><span><strong>Try it live</strong>Open any demo and click around, no signup.</span></li>
+      <li><b>2</b><span><strong>Pick what you need</strong>The prompt plan, the design, or the full code.</span></li>
+      <li><b>3</b><span><strong>Make it yours</strong>Paste the prompt into Claude or ship the source.</span></li>
+    </ol>
 
     @if($__is3d)
       <div style="margin:-8px 0 22px; padding:14px 16px; border:1px solid var(--line-strong); border-radius:12px; background:var(--surface); color:var(--ink-soft); font-size:.9rem; line-height:1.6; max-width:78ch;">
@@ -35,7 +57,7 @@
     @if($listings->isEmpty())
       <p style="color:var(--ink-faint);">No products yet. Check back soon.</p>
     @else
-      <div class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+      <div id="m-grid" class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); scroll-margin-top:90px;">
         @foreach($listings as $listing)
           @php
             $poster = $listing->posterUrl();
@@ -81,6 +103,24 @@
   #ngb-market .m-card:hover .m-thumb .m-poster{ transform:scale(1.04); }
   #ngb-market .m-thumb:has(.m-poster){ height:168px; background:#0b0f1c; }
   @media (prefers-reduced-motion: reduce){ #ngb-market .m-thumb .m-poster{ transition:none; } }
+
+  #ngb-market .m-hero{ display:grid; grid-template-columns:1fr; gap:28px; align-items:center; }
+  @media (min-width:900px){ #ngb-market .m-hero{ grid-template-columns:1.05fr 1fr; gap:48px; } }
+  #ngb-market .m-cta{ display:inline-flex; align-items:center; padding:11px 20px; border-radius:999px; background:var(--signal); color:#fff; font-weight:700; font-size:.92rem; text-decoration:none; border:1px solid var(--signal); transition:transform .15s, box-shadow .15s; }
+  #ngb-market .m-cta:hover{ transform:translateY(-2px); box-shadow:0 12px 30px oklch(0.4 0.15 255 / .3); }
+  #ngb-market .m-cta-ghost{ background:transparent; color:var(--ink); border-color:var(--line-strong); }
+  #ngb-market .m-frame{ display:block; border:1px solid var(--line-strong); border-radius:14px; overflow:hidden; background:#0b1020; box-shadow:0 30px 80px oklch(0.2 0.03 264 / .22); text-decoration:none; }
+  #ngb-market .m-frame-bar{ display:flex; align-items:center; gap:6px; padding:9px 12px; background:oklch(0.22 0.03 264); }
+  #ngb-market .m-frame-bar i{ width:9px; height:9px; border-radius:50%; background:oklch(0.5 0.03 264); }
+  #ngb-market .m-frame-body{ display:block; position:relative; aspect-ratio:16/10; overflow:hidden; }
+  #ngb-market .m-frame-body iframe{ position:absolute; top:0; left:0; width:250%; height:250%; border:0; transform:scale(.4); transform-origin:top left; pointer-events:none; background:#0b1020; }
+  #ngb-market .m-steps{ list-style:none; margin:0 0 34px; padding:0; display:grid; grid-template-columns:1fr; gap:12px; }
+  @media (min-width:700px){ #ngb-market .m-steps{ grid-template-columns:repeat(3,1fr); } }
+  #ngb-market .m-steps li{ display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+  #ngb-market .m-steps b{ flex:0 0 28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--signal-wash); color:var(--signal-ink); font-size:.82rem; }
+  #ngb-market .m-steps strong{ display:block; color:var(--ink); font-size:.92rem; }
+  #ngb-market .m-steps span span, #ngb-market .m-steps li > span{ color:var(--ink-soft); font-size:.84rem; line-height:1.45; }
+  #ngb-market .m-steps li > span strong{ margin-bottom:2px; }
 </style>
 <script>
 (function () {

@@ -18,7 +18,7 @@
                     Get the Best Articles in Your Inbox
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 text-sm">
-                    Join 10,000+ readers. No spam, unsubscribe anytime.
+                    Get new articles in your inbox. No spam, unsubscribe anytime.
                 </p>
             </div>
         @endif
