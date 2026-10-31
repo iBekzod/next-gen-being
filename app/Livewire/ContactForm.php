@@ -10,19 +10,20 @@ use Illuminate\Support\Facades\Auth;
 class ContactForm extends Component
 {
     #[Validate('required|string|min:2|max:100')]
-    public string $name = '';
+    // Tur ataylab yo'q: Livewire massivni tayinlashda TypeError beradi; updated*() hooklari uni satrga aylantiradi.
+    public $name = '';
 
     #[Validate('required|email|max:255')]
-    public string $email = '';
+    public $email = '';
 
     #[Validate('required|in:general,support,feedback,partnership')]
-    public string $subject_type = 'general';
+    public $subject_type ='general';
 
     #[Validate('required|string|min:5|max:255')]
-    public string $subject = '';
+    public $subject = '';
 
     #[Validate('required|string|min:20|max:5000')]
-    public string $message = '';
+    public $message = '';
 
     public bool $submitted = false;
 
