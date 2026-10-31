@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\HelpReport;
 use Livewire\Component;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +25,7 @@ class ContactForm extends Component
     #[Validate('required|string|min:20|max:5000')]
     public string $message = '';
 
+    #[Locked]
     public bool $submitted = false;
 
     public function mount(): void
