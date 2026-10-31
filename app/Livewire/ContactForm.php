@@ -10,19 +10,19 @@ use Illuminate\Support\Facades\Auth;
 class ContactForm extends Component
 {
     #[Validate('required|string|min:2|max:100')]
-    public string $name = '';
+    public string|array $name = '';
 
     #[Validate('required|email|max:255')]
-    public string $email = '';
+    public string|array $email = '';
 
     #[Validate('required|in:general,support,feedback,partnership')]
-    public string $subject_type = 'general';
+    public string|array $subject_type = 'general';
 
     #[Validate('required|string|min:5|max:255')]
-    public string $subject = '';
+    public string|array $subject = '';
 
     #[Validate('required|string|min:20|max:5000')]
-    public string $message = '';
+    public string|array $message = '';
 
     public bool $submitted = false;
 
