@@ -16,13 +16,19 @@ class MarketplaceController extends Controller
             $query->where('category', $category);
         }
 
+        if ($q = trim((string) $request->query('q'))) {
+            $like = '%'.mb_strtolower(addcslashes($q, '%_\\')).'%';
+            $query->where(fn ($w) => $w->whereRaw('lower(title) like ?', [$like])
+                ->orWhereRaw('lower(tagline) like ?', [$like]));
+        }
+
         $sort = $request->query('sort', 'newest');
         match ($sort) {
             'popular' => $query->orderByDesc('sales_count'),
             default   => $query->orderByDesc('published_at'),
         };
 
-        $listings = $query->paginate(12)->withQueryString();
+        $listings = $query->paginate(24)->withQueryString();
 
         $categories = MarketplaceListing::published()
             ->whereNotNull('category')->distinct()->pluck('category');

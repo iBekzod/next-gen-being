@@ -46,16 +46,22 @@
       </div>
     @endif
 
-    <div class="mb-6 flex flex-wrap gap-2">
-      @php $__active = request('category'); @endphp
-      <a href="{{ route('marketplace.index') }}" @if(! $__active) aria-current="page" @endif style="border:1px solid {{ $__active ? 'var(--line-strong)' : 'var(--signal)' }}; border-radius:999px; padding:6px 14px; font-size:.82rem; color:{{ $__active ? 'var(--ink-soft)' : 'var(--signal-ink)' }}; font-weight:{{ $__active ? 400 : 700 }};">All</a>
-      @foreach($categories as $cat)
-        <a href="{{ route('marketplace.index', ['category' => $cat]) }}" @if($__active === $cat) aria-current="page" @endif style="border:1px solid {{ $__active === $cat ? 'var(--signal)' : 'var(--line-strong)' }}; border-radius:999px; padding:6px 14px; font-size:.82rem; color:{{ $__active === $cat ? 'var(--signal-ink)' : 'var(--ink-soft)' }}; font-weight:{{ $__active === $cat ? 700 : 400 }};">{{ \App\Models\MarketplaceListing::categoryLabel($cat) }}</a>
-      @endforeach
-    </div>
+    @php $__active = request('category'); $__q = trim((string) request('q')); @endphp
+    <form method="get" action="{{ route('marketplace.index') }}" class="m-bar" role="search">
+      <nav class="m-chips" aria-label="Categories">
+        <a href="{{ route('marketplace.index', array_filter(['q' => $__q])) }}" class="m-chip" @if(! $__active) aria-current="page" @endif>All</a>
+        @foreach($categories as $cat)
+          <a href="{{ route('marketplace.index', array_filter(['category' => $cat, 'q' => $__q])) }}" class="m-chip" @if($__active === $cat) aria-current="page" @endif>{{ \App\Models\MarketplaceListing::categoryLabel($cat) }}</a>
+        @endforeach
+      </nav>
+      @if($__active)<input type="hidden" name="category" value="{{ $__active }}">@endif
+      <label class="m-search"><span class="sr-only">Search products</span>
+        <input type="search" name="q" value="{{ $__q }}" placeholder="Search products" maxlength="60" autocomplete="off">
+      </label>
+    </form>
 
     @if($listings->isEmpty())
-      <p style="color:var(--ink-faint);">No products yet. Check back soon.</p>
+      <div class="m-empty"><p>{{ $__q ? 'Nothing matches "'.e($__q).'".' : 'No products yet. Check back soon.' }}</p>@if($__q || $__active)<a href="{{ route('marketplace.index') }}" class="m-cta m-cta-ghost">Clear filters</a>@endif</div>
     @else
       <div id="m-grid" class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); scroll-margin-top:90px;">
         @foreach($listings as $listing)
@@ -65,9 +71,10 @@
               ? asset('storage/'.$listing->demo_path)
               : ($listing->demo_type === 'external' ? $listing->demo_url : null));
           @endphp
-          <a href="{{ route('marketplace.show', $listing) }}" class="m-card" style="display:block; text-decoration:none;">
+          <a href="{{ route('marketplace.show', $listing) }}" class="m-card m-reveal" style="display:block; text-decoration:none; --i:{{ $loop->index % 8 }};">
             <div class="m-thumb">
               <span class="m-live" style="position:absolute; top:10px; left:10px;"><span class="blink"></span>LIVE</span>
+              @if($listing->category)<span class="m-cat">{{ \App\Models\MarketplaceListing::categoryLabel($listing->category) }}</span>@endif
               @if($poster)
                 {{-- Poster shown in grid; hover shows live preview for non-3D --}}
                 <img class="m-poster" src="{{ $poster }}" alt="Preview of {{ $listing->title }}" width="600" height="375" loading="lazy" decoding="async">
@@ -85,9 +92,9 @@
               <div style="font-weight:700; color:var(--ink);">{{ $listing->title }}</div>
               <div style="font-size:.8rem; color:var(--ink-faint); margin-top:2px;">{{ Str::limit($listing->tagline, 48) }}</div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <span class="m-display" style="color:var(--ink);">{{ $listing->cheapestPrice() <= 0 ? 'Free' : ($listing->tiers->where('status', 'published')->count() > 1 ? 'from ' : '').'$'.rtrim(rtrim(number_format($listing->cheapestPrice(), 2), '0'), '.') }}</span>
+                <span class="m-display m-price {{ $listing->cheapestPrice() <= 0 ? 'm-free' : '' }}">{{ $listing->cheapestPrice() <= 0 ? 'Free' : ($listing->tiers->where('status', 'published')->count() > 1 ? 'from ' : '').'$'.rtrim(rtrim(number_format($listing->cheapestPrice(), 2), '0'), '.') }}</span>
                 @php($__proof = array_filter([$listing->hasReviews() ? '★ '.number_format($listing->rating, 1) : null, $listing->hasSales() ? $listing->sales_count.' '.Str::plural('sale', $listing->sales_count) : null]))
-                <span style="font-size:.75rem; color:var(--ink-faint);">{{ $__proof ? implode(' · ', $__proof) : 'New' }}</span>
+                <span style="font-size:.75rem; color:var(--ink-faint);">{{ $__proof ? implode(' · ', $__proof) : 'Live demo' }}</span>
               </div>
             </div>
           </a>
@@ -101,7 +108,7 @@
 <style>
   #ngb-market .m-thumb .m-poster{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .5s cubic-bezier(.16,1,.3,1); }
   #ngb-market .m-card:hover .m-thumb .m-poster{ transform:scale(1.04); }
-  #ngb-market .m-thumb:has(.m-poster){ height:168px; background:#0b0f1c; }
+  #ngb-market .m-thumb:has(.m-poster){ height:190px; background:#0b0f1c; }
   @media (prefers-reduced-motion: reduce){ #ngb-market .m-thumb .m-poster{ transition:none; } }
 
   #ngb-market .m-hero{ display:grid; grid-template-columns:1fr; gap:28px; align-items:center; }
@@ -121,7 +128,38 @@
   #ngb-market .m-steps strong{ display:block; color:var(--ink); font-size:.92rem; }
   #ngb-market .m-steps span span, #ngb-market .m-steps li > span{ color:var(--ink-soft); font-size:.84rem; line-height:1.45; }
   #ngb-market .m-steps li > span strong{ margin-bottom:2px; }
+
+  #ngb-market .m-hero{ position:relative; }
+  #ngb-market .m-hero::before{ content:""; position:absolute; inset:-60px -40px auto auto; width:520px; height:520px; max-width:90%; background:radial-gradient(closest-side, oklch(0.6 0.17 255 / .22), transparent); z-index:-1; animation:mfloat 9s ease-in-out infinite alternate; pointer-events:none; }
+  @keyframes mfloat{ to{ transform:translate(-30px,24px) scale(1.08); } }
+  #ngb-market .m-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  #ngb-market .m-chips{ display:flex; gap:8px; overflow-x:auto; max-width:100%; scrollbar-width:none; padding:2px; }
+  #ngb-market .m-chips::-webkit-scrollbar{ display:none; }
+  #ngb-market .m-chip{ white-space:nowrap; border:1px solid var(--line-strong); border-radius:999px; padding:7px 15px; font-size:.84rem; color:var(--ink-soft); transition:background .15s,color .15s,border-color .15s; }
+  #ngb-market .m-chip:hover{ border-color:var(--signal); color:var(--ink); }
+  #ngb-market .m-chip[aria-current]{ background:var(--signal); border-color:var(--signal); color:#fff; font-weight:700; }
+  #ngb-market .m-search input{ width:240px; max-width:100%; padding:8px 14px; border-radius:999px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:.86rem; }
+  #ngb-market .m-search input:focus{ outline:2px solid var(--signal); outline-offset:1px; }
+  @media (max-width:560px){ #ngb-market .m-search, #ngb-market .m-search input{ width:100%; } }
+  #ngb-market .m-cat{ position:absolute; top:9px; right:10px; z-index:2; font-size:.66rem; font-weight:700; color:#fff; background:oklch(0.15 0.03 264 / .6); backdrop-filter:blur(6px); padding:3px 9px; border-radius:999px; }
+  #ngb-market .m-price{ color:var(--ink); }
+  #ngb-market .m-price.m-free{ color:var(--good); }
+  #ngb-market .m-empty{ text-align:center; padding:60px 0; color:var(--ink-soft); }
+  #ngb-market .m-empty .m-cta{ margin-top:14px; }
+  .js #ngb-market .m-reveal{ opacity:0; transform:translateY(18px); }
+  .js #ngb-market .m-reveal.in{ opacity:1; transform:none; transition:opacity .6s ease calc(var(--i)*60ms), transform .6s cubic-bezier(.16,1,.3,1) calc(var(--i)*60ms), border-color .2s, box-shadow .2s; }
+  .js #ngb-market .m-reveal.in:hover{ transform:translateY(-3px); transition-delay:0s; }
+  @media (prefers-reduced-motion: reduce){ .js #ngb-market .m-reveal{ opacity:1; transform:none; } #ngb-market .m-hero::before{ animation:none; } }
 </style>
+<script>
+(function () {
+  var cards = document.querySelectorAll('#ngb-market .m-reveal');
+  if (!('IntersectionObserver' in window)) { return; }
+  document.documentElement.classList.add('js');
+  var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -40px 0px' });
+  cards.forEach(function (c) { io.observe(c); });
+})();
+</script>
 <script>
 (function () {
   // Lazy-load each card's live demo the first time it is hovered/focused.
