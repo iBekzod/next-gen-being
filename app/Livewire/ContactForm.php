@@ -6,6 +6,7 @@ use App\Models\HelpReport;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ContactForm extends Component
 {
@@ -34,29 +35,13 @@ class ContactForm extends Component
         }
     }
 
-    public function updatedName($value): void
+    // Massiv qiymat typed string propertyga yozilganda TypeError bo'ladi (updated* hooklar kech ishlaydi).
+    // updating hook tip tekshiruvidan oldin ishlaydi, shuning uchun validatsiya xatosi beramiz.
+    public function updating($name, $value): void
     {
-        $this->name = is_array($value) ? ($value[0] ?? '') : (string) $value;
-    }
-
-    public function updatedEmail($value): void
-    {
-        $this->email = is_array($value) ? ($value[0] ?? '') : (string) $value;
-    }
-
-    public function updatedSubjectType($value): void
-    {
-        $this->subject_type = is_array($value) ? ($value[0] ?? 'general') : (string) $value;
-    }
-
-    public function updatedSubject($value): void
-    {
-        $this->subject = is_array($value) ? ($value[0] ?? '') : (string) $value;
-    }
-
-    public function updatedMessage($value): void
-    {
-        $this->message = is_array($value) ? ($value[0] ?? '') : (string) $value;
+        if (is_array($value)) {
+            throw ValidationException::withMessages([explode('.', (string) $name)[0] => 'Invalid value.']);
+        }
     }
 
     public function submit(): void
