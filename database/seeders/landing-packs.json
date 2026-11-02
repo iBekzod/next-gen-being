@@ -184,5 +184,23 @@
     "price_prompt": 0,
     "price_design": 14,
     "price_bundle": 18
+  },
+  {
+    "slug": "nikoh-taklifnoma-scroll",
+    "title": "Nikoh - Wedding Invitation Scroll Website",
+    "tagline": "Tap to open the arch doors, flowers part as you scroll, and the couple's names are written in. Uzbek and Russian, three palettes, music.",
+    "description": "An online wedding invitation (to'y taklifnoma) built as a phone-first scroll story. The guest opens a link and sees two ornate arch doors with a wax-style seal; one tap swings them open (and starts the music). A pinned hero then plays as you scroll: two flower clusters slide apart and bloom, the names are written in script, the date appears and a live countdown starts. Below: a day program timeline with a gold line that draws as you scroll, a venue block with a placeholder map, a front-end RSVP form, and a closing screen with falling petals.\n\nThree palettes (emerald, sky blue, burgundy) switch from a small dial or with ?theme=zumrad|osmon|bordo. Uzbek (Latin, with oʻ and gʻ) and Russian switch from a UZ/RU pill. A link like ?to=Alisher greets the guest by name, so one file can be shared with every guest. Names, date, venue and program are placeholders in one CONFIG object at the top of the file.\n\nOne HTML file of about 0.9 MB, no build step: GSAP 3.12.5 and ScrollTrigger load from a CDN, with a plain-scroll fallback if they are blocked; reduced-motion shows everything without the pinned animation. The three arch backgrounds were generated with Higgsfield and embedded as compressed WebP; the music is an original synthesized 30-second loop with a mute button (browsers block autoplay, so it starts on the first tap). Nothing to license. Responsive down to 390 px. The RSVP form and the map are placeholders: the form sends nothing until you connect your own receiver, and the map button needs your own link. Checked in desktop Chrome at 1440 and 390 px only, not on a real phone or Safari.",
+    "category": "landing",
+    "tags": [
+      "wedding",
+      "invitation",
+      "uzbek",
+      "scroll-animation",
+      "interactive",
+      "music"
+    ],
+    "price_prompt": 0,
+    "price_design": 14,
+    "price_bundle": 18
   }
 ]
