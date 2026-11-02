@@ -70,6 +70,15 @@ trait SeedsMarketplaceListing
             $model->forceFill(['thumbnail' => $thumb])->saveQuietly();
         }
 
+        // Optional link-preview assets for demos that declare og:image / apple-touch-icon
+        // (nikoh-taklifnoma-scroll): posters/{slug}-og.jpg -> demos/{slug}/og.jpg, {slug}-icon.png -> demos/{slug}/apple-touch-icon.png
+        foreach (['-og.jpg' => 'og.jpg', '-icon.png' => 'apple-touch-icon.png'] as $suffix => $dest) {
+            $extra = database_path("seeders/posters/{$slug}{$suffix}");
+            if (is_file($extra)) {
+                Storage::disk('public')->put("demos/{$slug}/{$dest}", file_get_contents($extra));
+            }
+        }
+
         foreach ($tiers as $t) {
             // Install the real deliverable (design = the demo HTML, prompt = the
             // build-plan doc). Tiers without a deliverable stay null and are shown
