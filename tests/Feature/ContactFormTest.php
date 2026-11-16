@@ -58,4 +58,13 @@ class ContactFormTest extends TestCase
 
         Livewire::test(ContactForm::class)->set('submitted', ['x']);
     }
+
+    public function test_locked_property_tampering_renders_403_not_500(): void
+    {
+        $this->withoutVite();
+        $response = app(\Illuminate\Contracts\Debug\ExceptionHandler::class)
+            ->render(request(), new CannotUpdateLockedPropertyException('submitted'));
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
 }
