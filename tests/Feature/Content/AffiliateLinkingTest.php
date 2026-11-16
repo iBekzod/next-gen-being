@@ -119,6 +119,15 @@ MD;
         $this->assertFalse($r['changed']);
     }
 
+    public function test_existing_link_to_inactive_program_skips_cta_without_error(): void
+    {
+        $content = "Built with [Make](https://nextgenbeing.com/go/make) today.\n\n## Next steps\n\nShip it.\n";
+        $r = (new AffiliateLinker())->apply('Automation notes', $content, $this->programs(), self::BASE);
+
+        $this->assertFalse($r['cta']);
+        $this->assertStringNotContainsString(AffiliateLinker::CTA_MARKER, $r['content']);
+    }
+
     public function test_command_dry_run_saves_nothing_and_real_run_saves(): void
     {
         config(['affiliate.links.elevenlabs.url' => 'https://try.elevenlabs.io/x']);
