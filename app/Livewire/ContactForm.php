@@ -4,26 +4,31 @@ namespace App\Livewire;
 
 use App\Models\HelpReport;
 use Livewire\Component;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
 
 class ContactForm extends Component
 {
+    // Untyped on purpose: a crafted Livewire request can post arrays, and a typed
+    // `string` property would throw a TypeError (500) before validation runs.
+    // The updated* hooks below coerce every value back to a string.
     #[Validate('required|string|min:2|max:100')]
-    public string $name = '';
+    public $name = '';
 
     #[Validate('required|email|max:255')]
-    public string $email = '';
+    public $email = '';
 
     #[Validate('required|in:general,support,feedback,partnership')]
-    public string $subject_type = 'general';
+    public $subject_type = 'general';
 
     #[Validate('required|string|min:5|max:255')]
-    public string $subject = '';
+    public $subject = '';
 
     #[Validate('required|string|min:20|max:5000')]
-    public string $message = '';
+    public $message = '';
 
+    #[Locked]
     public bool $submitted = false;
 
     public function mount(): void
@@ -36,27 +41,37 @@ class ContactForm extends Component
 
     public function updatedName($value): void
     {
-        $this->name = is_array($value) ? ($value[0] ?? '') : (string) $value;
+        $this->name = self::toText($value);
     }
 
     public function updatedEmail($value): void
     {
-        $this->email = is_array($value) ? ($value[0] ?? '') : (string) $value;
+        $this->email = self::toText($value);
     }
 
     public function updatedSubjectType($value): void
     {
-        $this->subject_type = is_array($value) ? ($value[0] ?? 'general') : (string) $value;
+        $this->subject_type = self::toText($value, 'general');
     }
 
     public function updatedSubject($value): void
     {
-        $this->subject = is_array($value) ? ($value[0] ?? '') : (string) $value;
+        $this->subject = self::toText($value);
     }
 
     public function updatedMessage($value): void
     {
-        $this->message = is_array($value) ? ($value[0] ?? '') : (string) $value;
+        $this->message = self::toText($value);
+    }
+
+    /** First scalar of a (possibly nested) array, as a string. */
+    private static function toText(mixed $value, string $default = ''): string
+    {
+        while (is_array($value)) {
+            $value = reset($value);
+        }
+
+        return is_scalar($value) ? (string) $value : $default;
     }
 
     public function submit(): void
