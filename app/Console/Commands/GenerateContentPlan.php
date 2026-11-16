@@ -195,7 +195,8 @@ Categories: comparison, tutorial, deep-dive, best-practices, architecture, scali
                         ]
                     ],
                     'temperature' => 0.8, // Higher temperature for creativity
-                    'max_tokens' => 2000,
+                    // Reasoning models spend part of this budget thinking; 2000 truncated the 30-topic JSON.
+                    'max_tokens' => 8000,
                 ]);
 
             if (!$response->successful()) {
@@ -203,7 +204,7 @@ Categories: comparison, tutorial, deep-dive, best-practices, architecture, scali
                 return null;
             }
 
-            $content = $response->json()['choices'][0]['message']['content'];
+            $content = (string) ($response->json('choices.0.message.content') ?? '');
 
             // Try to parse JSON from response
             $data = json_decode($content, true);
