@@ -68,6 +68,8 @@ return [
         ModelNotFoundException::class,
         TokenMismatchException::class,
         ThrottleRequestsException::class,
+        // Bot probes calling nonexistent Livewire methods (e.g. _xNonExist).
+        \Livewire\Exceptions\MethodNotFoundException::class,
     ],
 
     /*
