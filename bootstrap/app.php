@@ -30,6 +30,18 @@ return Application::configure(basePath: dirname(__DIR__))
             \Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class,
             fn ($e) => new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException($e->getMessage(), $e),
         );
+        // Bot probes: file uploads posted to components without WithFileUploads,
+        // and calls to methods a component does not expose. Malformed client
+        // requests, so 400 (not reported by ErrorReporter) instead of 500.
+        foreach ([
+            \Livewire\Features\SupportFileUploads\MissingFileUploadsTraitException::class,
+            \Livewire\Exceptions\MethodNotFoundException::class,
+        ] as $probe) {
+            $exceptions->map(
+                $probe,
+                fn ($e) => new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage(), $e),
+            );
+        }
         $exceptions->reportable(function (\Throwable $e): void {
             app(\App\Services\Telemetry\ErrorReporter::class)->report($e);
         });
