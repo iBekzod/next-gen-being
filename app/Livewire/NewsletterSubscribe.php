@@ -2,19 +2,29 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\CoercesTextInput;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use App\Services\NewsletterService;
 use Illuminate\Support\Facades\Log;
 
 class NewsletterSubscribe extends Component
 {
-    // Intentionally untyped: Livewire assigns the raw client value BEFORE updated*
-    // hooks run, so typed properties throw TypeError on array payloads from bots.
-    // The updated* hooks below coerce values to the expected type.
+    use CoercesTextInput;
+
+    // Untyped on purpose: a crafted Livewire request can post arrays, and a typed
+    // `string` property would throw a TypeError (500) before validation runs.
+    // The updated* hooks below coerce every value back to a string.
     public $email = '';
     public $frequency = 'weekly';
-    public $subscribed = false;
-    public $error = '';
+
+    // Server-only state: the client may never write these.
+    #[Locked]
+    public bool $subscribed = false;
+    #[Locked]
+    public string $error = '';
+    // Untyped: Livewire assigns the matching mount param before mount() runs.
+    #[Locked]
     public $compact = false;
 
     protected $rules = [
@@ -27,33 +37,19 @@ class NewsletterSubscribe extends Component
         'email.email' => 'Please enter a valid email address',
     ];
 
-    public function mount($compact = false)
+    public function mount($compact = false): void
     {
-        $this->compact = (bool) (is_array($compact) ? ($compact[0] ?? false) : $compact);
+        $this->compact = (bool) self::toText($compact);
     }
 
-    // Coerce array → string/bool because Livewire v3 strict typing crashes if
-    // bot/external traffic sends arrays into typed properties.
-    public function updatedEmail($value)
+    public function updatedEmail($value): void
     {
-        $this->email = is_array($value) ? ($value[0] ?? '') : (string) $value;
+        $this->email = self::toText($value);
     }
-    public function updatedFrequency($value)
+
+    public function updatedFrequency($value): void
     {
-        $val = is_array($value) ? ($value[0] ?? 'weekly') : (string) $value;
-        $this->frequency = in_array($val, ['daily','weekly','monthly']) ? $val : 'weekly';
-    }
-    public function updatedSubscribed($value)
-    {
-        $this->subscribed = (bool) (is_array($value) ? ($value[0] ?? false) : $value);
-    }
-    public function updatedError($value)
-    {
-        $this->error = is_array($value) ? ($value[0] ?? '') : (string) $value;
-    }
-    public function updatedCompact($value)
-    {
-        $this->compact = (bool) (is_array($value) ? ($value[0] ?? false) : $value);
+        $this->frequency = self::toText($value);
     }
 
     public function subscribe()

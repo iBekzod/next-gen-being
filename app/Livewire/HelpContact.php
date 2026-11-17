@@ -2,25 +2,24 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\CoercesTextInput;
 use App\Models\HelpReport;
 use Livewire\Component;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
 
 class HelpContact extends Component
 {
-    // Tip ataylab yozilmagan: mijoz massiv yuborsa bool propertyga
-    // o'rnatishda TypeError bo'lardi. updatedShowModal normallashtiradi.
-    public $showModal = false;
+    use CoercesTextInput;
 
-    public function updatedShowModal($value)
-    {
-        $this->showModal = is_array($value) ? false : (bool) $value;
-    }
+    // Only the server opens/closes the modal (openModal/closeModal).
+    #[Locked]
+    public bool $showModal = false;
 
-    // Tiplar ataylab yozilmagan: mijoz massiv yuborsa Livewire tipli
-    // propertyga o'rnatishda TypeError tashlardi (updated* hooklar undan keyin
-    // ishlaydi). Endi updated* hook normallashtiradi, 'string' qoidasi tekshiradi.
+    // Untyped on purpose: a crafted Livewire request can post arrays, and a typed
+    // `string` property would throw a TypeError (500) before validation runs.
+    // The updated* hooks below coerce every value back to a string.
     #[Validate('required|string|in:help,report,bug,feature_request')]
     public $type = 'help';
 
@@ -35,24 +34,24 @@ class HelpContact extends Component
 
     protected $listeners = ['show-help-modal' => 'openModal'];
 
-    public function updatedType($value)
+    public function updatedType($value): void
     {
-        $this->type = is_array($value) ? ($value[0] ?? 'help') : $value;
+        $this->type = self::toText($value);
     }
 
-    public function updatedSubject($value)
+    public function updatedSubject($value): void
     {
-        $this->subject = is_array($value) ? ($value[0] ?? '') : $value;
+        $this->subject = self::toText($value);
     }
 
-    public function updatedDescription($value)
+    public function updatedDescription($value): void
     {
-        $this->description = is_array($value) ? ($value[0] ?? '') : $value;
+        $this->description = self::toText($value);
     }
 
-    public function updatedPriority($value)
+    public function updatedPriority($value): void
     {
-        $this->priority = is_array($value) ? ($value[0] ?? 'normal') : $value;
+        $this->priority = self::toText($value);
     }
 
     public function openModal()

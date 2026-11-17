@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\CoercesTextInput;
 use App\Models\HelpReport;
 use Livewire\Component;
 use Livewire\Attributes\Locked;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 
 class ContactForm extends Component
 {
+    use CoercesTextInput;
+
     // Untyped on purpose: a crafted Livewire request can post arrays, and a typed
     // `string` property would throw a TypeError (500) before validation runs.
     // The updated* hooks below coerce every value back to a string.
@@ -62,16 +65,6 @@ class ContactForm extends Component
     public function updatedMessage($value): void
     {
         $this->message = self::toText($value);
-    }
-
-    /** First scalar of a (possibly nested) array, as a string. */
-    private static function toText(mixed $value, string $default = ''): string
-    {
-        while (is_array($value)) {
-            $value = reset($value);
-        }
-
-        return is_scalar($value) ? (string) $value : $default;
     }
 
     public function submit(): void
