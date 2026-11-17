@@ -192,9 +192,13 @@ Schedule::command('backup:monitor')
     ->dailyAt('04:00')
     ->timezone(config('app.timezone'));
 
-// Clean old backups (monthly)
+// Clean old backups daily, BEFORE the 04:00 monitor, so the retention
+// policy in config/backup.php (incl. its size cap) is applied before the
+// MaximumStorageInMegabytes health check runs. A monthly clean let 30+
+// daily dumps pile up past the cap and failed backup:monitor.
 Schedule::command('backup:clean')
-    ->monthly();
+    ->dailyAt('03:30')
+    ->timezone(config('app.timezone'));
 
 // ========================================
 // VIDEO GENERATION & SOCIAL MEDIA PUBLISHING
