@@ -202,5 +202,41 @@
     "price_prompt": 0,
     "price_design": 14,
     "price_bundle": 18
+  },
+  {
+    "slug": "atelier-dark-bespoke-scroll",
+    "title": "Sartor - Dark Bespoke Atelier Scroll Website",
+    "tagline": "Flat pattern pieces assemble into a jacket as you scroll, then you design and price your own.",
+    "description": "A dark, editorial website for a bespoke tailoring atelier, told through scroll. A gold thread draws itself across a Bodoni headline, then a pinned stage turns ten flat pattern pieces into a finished pinstripe jacket: the pieces fly in, fill with cloth, stitch lines appear and buttons pop on, with a live stitch counter and a five-step list. A pinned horizontal cloth room scrolls four vector swatches (pinstripe, herringbone, glen check, twill). A live configurator redraws the jacket for cloth, lining, buttons and a three-letter monogram and updates the price and lead time. Below: a timeline whose line fills as you scroll, animated counters and an appointment form.\n\nOne HTML file, no build step, no photos and no video, so nothing to license: all art is SVG patterns and paths. GSAP 3.12.5 and ScrollTrigger load from cdnjs; if they are blocked the finished jacket and all content show without animation. Reduced-motion is respected. Bodoni Moda and Manrope from Google Fonts. Responsive down to 390 px (the cloth room stacks and the pin is dropped on phones). Checked in desktop Chrome at 1440 and 390 px only, not on a real phone or Safari. Brand, prices and the form are placeholders; the form sends nothing until you connect your own tool.",
+    "category": "landing",
+    "tags": [
+      "tailoring",
+      "fashion",
+      "dark",
+      "scroll-animation",
+      "svg",
+      "configurator"
+    ],
+    "price_prompt": 0,
+    "price_design": 14,
+    "price_bundle": 18
+  },
+  {
+    "slug": "orbit-saas-orbit-scroll",
+    "title": "Orbit - SaaS Landing With Orbit Scroll Animation",
+    "tagline": "Eight tool icons orbit a core, then settle into one unified inbox as you scroll.",
+    "description": "A light, kinetic landing page for a fictional workspace app. The hero has blurred colour blobs, a split-word headline and a floating dashboard that scrubs flat on scroll and tilts with the mouse. A pinned dark section animates eight coloured tool icons around two rings, then eases each one into a row of a white Unified inbox card while the core fades, with three highlighted steps beside it. Then a bento grid (working toggles, growing bars, a typed search demo, a code block), animated counters, a monthly/yearly pricing toggle that tweens the prices, an ROI calculator with three sliders, a FAQ and a gradient call to action.\n\nOne HTML file, no build step, no images: everything is CSS, text and DOM nodes, so nothing to license. GSAP 3.12.5 and ScrollTrigger load from cdnjs; if they are blocked the finished inbox and all content show without animation. Reduced-motion is respected. Sora and Inter from Google Fonts. Responsive down to 390 px. Checked in desktop Chrome at 1440 and 390 px only, not on a real phone or Safari. Product name, prices and figures are placeholders; tool icons use generic letters, not brand logos; the email form sends nothing until you connect your own tool.",
+    "category": "landing",
+    "tags": [
+      "saas",
+      "light",
+      "scroll-animation",
+      "pricing",
+      "calculator",
+      "interactive"
+    ],
+    "price_prompt": 0,
+    "price_design": 14,
+    "price_bundle": 18
   }
 ]
